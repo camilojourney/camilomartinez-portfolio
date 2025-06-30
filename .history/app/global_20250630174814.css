@@ -492,7 +492,7 @@ table {
 .liquid-glass-chat {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow:
+  box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -507,7 +507,7 @@ table {
 .liquid-glass-message {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
@@ -515,7 +515,7 @@ table {
 .liquid-glass-user-message {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(6, 182, 212, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -523,7 +523,7 @@ table {
 .liquid-glass-bot-message {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
@@ -531,7 +531,7 @@ table {
 .liquid-glass-typing {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
@@ -539,7 +539,7 @@ table {
 .liquid-glass-input {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -547,7 +547,7 @@ table {
 .liquid-glass-send-btn {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(6, 182, 212, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
@@ -573,7 +573,7 @@ table {
 .liquid-glass-info-card {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow:
+  box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: all 0.3s ease;
@@ -581,7 +581,7 @@ table {
 
 .liquid-glass-info-card:hover {
   transform: translateY(-2px);
-  box-shadow:
+  box-shadow: 
     0 12px 40px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
@@ -615,7 +615,7 @@ table {
 
 /* Enhanced focus states */
 .liquid-glass-input:focus {
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 0 2px rgba(6, 182, 212, 0.3);
@@ -627,11 +627,11 @@ table {
     margin: 1rem;
     padding: 1.5rem;
   }
-
+  
   .liquid-glass-chat-container {
     margin: 0;
   }
-
+  
   .liquid-glass-message,
   .liquid-glass-user-message,
   .liquid-glass-bot-message {

@@ -218,7 +218,7 @@ table {
 .liquid-glass-nav {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  box-shadow:
+  box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -254,7 +254,7 @@ table {
 .liquid-glass-card {
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
-  box-shadow:
+  box-shadow: 
     0 24px 48px rgba(0, 0, 0, 0.2),
     0 8px 24px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -277,7 +277,7 @@ table {
 .liquid-glass-primary {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow:
+  box-shadow: 
     0 8px 24px rgba(6, 182, 212, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
@@ -302,7 +302,7 @@ table {
 .liquid-glass-secondary {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -311,7 +311,7 @@ table {
 .liquid-glass-project {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow:
+  box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
@@ -337,7 +337,7 @@ table {
 .liquid-glass-icon {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow:
+  box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -346,73 +346,22 @@ table {
 .liquid-glass-blog {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow:
+  box-shadow: 
     0 4px 24px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Contact page liquid glass enhancements */
-.liquid-glass-contact-card {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  position: relative;
-  overflow: hidden;
-  display: block;
-  text-decoration: none;
-}
-
-.liquid-glass-contact-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.liquid-glass-contact-card:hover::before {
-  opacity: 1;
-}
-
-/* Enhanced hover effects for contact cards */
-.liquid-glass-contact-card:hover {
-  text-decoration: none;
-  transform: translateY(-2px);
-}
-
-/* Accessibility improvements */
-.liquid-glass-contact-card:focus {
-  outline: 2px solid rgba(6, 182, 212, 0.5);
-  outline-offset: 2px;
-}
-
-.liquid-glass-contact-card:focus-visible {
-  outline: 2px solid rgba(6, 182, 212, 0.8);
-  outline-offset: 2px;
-}
-
 /* Enhanced animations */
 @keyframes liquid-float {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translate(0, 0) rotate(0deg) scale(1);
   }
-
   25% {
     transform: translate(20px, -30px) rotate(1deg) scale(1.05);
   }
-
   50% {
     transform: translate(-15px, 25px) rotate(-0.5deg) scale(0.95);
   }
-
   75% {
     transform: translate(25px, 15px) rotate(0.5deg) scale(1.02);
   }
@@ -432,13 +381,10 @@ table {
 
 /* Concentric harmony effects */
 @keyframes concentric-pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     opacity: 0.3;
     transform: scale(1);
   }
-
   50% {
     opacity: 0.5;
     transform: scale(1.05);
@@ -455,7 +401,7 @@ table {
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
   }
-
+  
   .liquid-glass-nav {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -473,168 +419,18 @@ table {
   0% {
     background-position: -200% center;
   }
-
   100% {
     background-position: 200% center;
   }
 }
 
 .shimmer-on-hover:hover {
-  background: linear-gradient(90deg,
-      transparent 25%,
-      rgba(255, 255, 255, 0.1) 50%,
-      transparent 75%);
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 75%
+  );
   background-size: 200% 100%;
   animation: subtle-shimmer 2s ease-in-out;
-}
-
-/* Chat component liquid glass styles */
-.liquid-glass-chat {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.liquid-glass-chat-container {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.liquid-glass-message {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.liquid-glass-user-message {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow:
-    0 4px 16px rgba(6, 182, 212, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.liquid-glass-bot-message {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.liquid-glass-typing {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.liquid-glass-input {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.liquid-glass-send-btn {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow:
-    0 4px 16px rgba(6, 182, 212, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.liquid-glass-send-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.liquid-glass-send-btn:hover::before {
-  left: 100%;
-}
-
-/* Info cards for about page */
-.liquid-glass-info-card {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: all 0.3s ease;
-}
-
-.liquid-glass-info-card:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-/* Animation delays for typing dots */
-.animation-delay-200 {
-  animation-delay: 0.2s;
-}
-
-.animation-delay-400 {
-  animation-delay: 0.4s;
-}
-
-/* Custom scrollbar */
-.scrollbar-thin {
-  scrollbar-width: thin;
-}
-
-.scrollbar-thumb-white\/20::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 0.375rem;
-}
-
-.scrollbar-track-transparent::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-
-/* Enhanced focus states */
-.liquid-glass-input:focus {
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 0 2px rgba(6, 182, 212, 0.3);
-}
-
-/* Mobile responsiveness improvements */
-@media (max-width: 768px) {
-  .liquid-glass-card {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-
-  .liquid-glass-chat-container {
-    margin: 0;
-  }
-
-  .liquid-glass-message,
-  .liquid-glass-user-message,
-  .liquid-glass-bot-message {
-    max-width: 280px;
-  }
 }

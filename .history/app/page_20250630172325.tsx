@@ -54,7 +54,7 @@ export default function Page() {
             <h2 className="text-3xl md:text-4xl font-light text-white mb-4">Featured Work</h2>
             <div className="w-16 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent mx-auto"></div>
           </div>
-
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {/* Project Card 1 - Enhanced liquid glass */}
             <div className="group liquid-glass-project backdrop-blur-xl bg-white/[0.04] border border-white/[0.08] rounded-2xl p-8 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-500 hover:transform hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/10">
@@ -114,4 +114,5 @@ export default function Page() {
       </section>
     </LiquidPage>
   )
+}
 }
