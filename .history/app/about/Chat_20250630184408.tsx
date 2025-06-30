@@ -19,8 +19,10 @@ export default function Chat() {
     const [isBotTyping, setIsBotTyping] = useState(false);
     // Ref to scroll to the bottom of the chat
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
-    // Track which messages are new for animation
-    const [animatingMessageIds, setAnimatingMessageIds] = useState<Set<number>>(new Set());
+    // Track which messages are new for animation - using useRef to persist across renders
+    const animatingMessageIds = useRef<Set<number>>(new Set());
+    // State to trigger re-renders when animations change
+    const [animationTrigger, setAnimationTrigger] = useState(0);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

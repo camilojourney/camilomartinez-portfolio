@@ -62,11 +62,7 @@ export default function Chat() {
         setMessages(prev => [...prev, userMessage]);
         
         // Mark this message for animation
-        setAnimatingMessageIds(prev => {
-            const newSet = new Set(prev);
-            newSet.add(userMessage.id);
-            return newSet;
-        });
+        setAnimatingMessageIds(prev => new Set([...prev, userMessage.id]));
         
         // Remove animation after it completes
         setTimeout(() => {
@@ -86,11 +82,7 @@ export default function Chat() {
             setMessages(prev => [...prev, botMessage]);
             
             // Mark bot message for animation
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.add(botMessage.id);
-                return newSet;
-            });
+            setAnimatingMessageIds(prev => new Set([...prev, botMessage.id]));
             
             // Remove bot message animation after it completes
             setTimeout(() => {
@@ -131,7 +123,8 @@ export default function Chat() {
                 {messages.map((msg, index) => (
                     <div
                         key={msg.id}
-                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} ${animatingMessageIds.has(msg.id) ? 'animate-message-appear' : ''}`}
+                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-message-appear`}
+                        style={{ animationDelay: `${index * 0.05}s` }}
                     >
                         {msg.sender === 'bot' && (
                             <Image

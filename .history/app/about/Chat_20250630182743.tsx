@@ -19,8 +19,6 @@ export default function Chat() {
     const [isBotTyping, setIsBotTyping] = useState(false);
     // Ref to scroll to the bottom of the chat
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
-    // Track which messages are new for animation
-    const [animatingMessageIds, setAnimatingMessageIds] = useState<Set<number>>(new Set());
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,22 +58,6 @@ export default function Chat() {
         // Add user message to the chat
         const userMessage: Message = { id: Date.now(), text: input, sender: 'user' };
         setMessages(prev => [...prev, userMessage]);
-        
-        // Mark this message for animation
-        setAnimatingMessageIds(prev => {
-            const newSet = new Set(prev);
-            newSet.add(userMessage.id);
-            return newSet;
-        });
-        
-        // Remove animation after it completes
-        setTimeout(() => {
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(userMessage.id);
-                return newSet;
-            });
-        }, 500);
 
         setIsBotTyping(true);
 
@@ -84,23 +66,6 @@ export default function Chat() {
             const botResponseText = getBotResponse(input);
             const botMessage: Message = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
             setMessages(prev => [...prev, botMessage]);
-            
-            // Mark bot message for animation
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.add(botMessage.id);
-                return newSet;
-            });
-            
-            // Remove bot message animation after it completes
-            setTimeout(() => {
-                setAnimatingMessageIds(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(botMessage.id);
-                    return newSet;
-                });
-            }, 500);
-            
             setIsBotTyping(false);
         }, 1200); // 1.2 second delay
 
@@ -113,7 +78,7 @@ export default function Chat() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent relative">
                 {/* Glass overlay gradient at top */}
                 <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none z-10"></div>
-
+                
                 {/* Initial bot message with avatar */}
                 <div className="flex items-start gap-3 justify-start animate-fade-in">
                     <Image
@@ -131,7 +96,8 @@ export default function Chat() {
                 {messages.map((msg, index) => (
                     <div
                         key={msg.id}
-                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} ${animatingMessageIds.has(msg.id) ? 'animate-message-appear' : ''}`}
+                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-slide-in`}
+                        style={{ animationDelay: `${index * 0.1}s` }}
                     >
                         {msg.sender === 'bot' && (
                             <Image
@@ -143,8 +109,8 @@ export default function Chat() {
                             />
                         )}
                         <div className={`${msg.sender === 'user'
-                            ? 'liquid-glass-user-message backdrop-blur-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30'
-                            : 'liquid-glass-bot-message backdrop-blur-lg bg-white/[0.08] border border-white/[0.12]'
+                                ? 'liquid-glass-user-message backdrop-blur-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30'
+                                : 'liquid-glass-bot-message backdrop-blur-lg bg-white/[0.08] border border-white/[0.12]'
                             } rounded-2xl p-4 max-w-md shadow-lg transform transition-all duration-300 hover:scale-[1.02]`}>
                             <p className="text-sm text-white/90 leading-relaxed">{msg.text}</p>
                         </div>
@@ -176,7 +142,7 @@ export default function Chat() {
                     </div>
                 )}
                 <div ref={messagesEndRef} />
-
+                
                 {/* Glass overlay gradient at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/[0.03] to-transparent pointer-events-none z-10"></div>
             </div>

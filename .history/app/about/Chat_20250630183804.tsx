@@ -131,7 +131,8 @@ export default function Chat() {
                 {messages.map((msg, index) => (
                     <div
                         key={msg.id}
-                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} ${animatingMessageIds.has(msg.id) ? 'animate-message-appear' : ''}`}
+                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-message-appear`}
+                        style={{ animationDelay: `${index * 0.05}s` }}
                     >
                         {msg.sender === 'bot' && (
                             <Image

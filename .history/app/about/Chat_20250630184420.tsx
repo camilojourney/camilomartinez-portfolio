@@ -1,6 +1,13 @@
-'use client';
-
-import { useState, FormEvent, useEffect, useRef } from 'react';
+'use client';    // State to hold the conversation history
+    const [messages, setMessages] = useState<Message[]>([]);
+    // State to hold the user's current input
+    const [input, setInput] = useState('');
+    // State to show if the bot is "typing"
+    const [isBotTyping, setIsBotTyping] = useState(false);
+    // Ref to scroll to the bottom of the chat
+    const messagesEndRef = useRef<null | HTMLDivElement>(null);
+    // Track which messages have been shown before to prevent re-animation
+    const [shownMessageIds, setShownMessageIds] = useState<Set<number>>(new Set());seState, FormEvent, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
 // Define the structure for a single message object
@@ -19,8 +26,10 @@ export default function Chat() {
     const [isBotTyping, setIsBotTyping] = useState(false);
     // Ref to scroll to the bottom of the chat
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
-    // Track which messages are new for animation
-    const [animatingMessageIds, setAnimatingMessageIds] = useState<Set<number>>(new Set());
+    // Track which messages are new for animation - using useRef to persist across renders
+    const animatingMessageIds = useRef<Set<number>>(new Set());
+    // State to trigger re-renders when animations change
+    const [animationTrigger, setAnimationTrigger] = useState(0);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

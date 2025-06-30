@@ -3,7 +3,7 @@ import LiquidNav from './liquid-nav'
 
 interface LiquidPageProps {
     children: React.ReactNode
-    currentPage?: 'home' | 'blog' | 'contact' | 'about' | 'projects'
+    currentPage?: 'home' | 'blog' | 'contact' | 'about'
     backgroundVariant?: 'default' | 'warm' | 'cool' | 'purple'
     className?: string
 }

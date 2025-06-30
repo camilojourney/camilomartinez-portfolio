@@ -60,22 +60,6 @@ export default function Chat() {
         // Add user message to the chat
         const userMessage: Message = { id: Date.now(), text: input, sender: 'user' };
         setMessages(prev => [...prev, userMessage]);
-        
-        // Mark this message for animation
-        setAnimatingMessageIds(prev => {
-            const newSet = new Set(prev);
-            newSet.add(userMessage.id);
-            return newSet;
-        });
-        
-        // Remove animation after it completes
-        setTimeout(() => {
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(userMessage.id);
-                return newSet;
-            });
-        }, 500);
 
         setIsBotTyping(true);
 
@@ -84,23 +68,6 @@ export default function Chat() {
             const botResponseText = getBotResponse(input);
             const botMessage: Message = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
             setMessages(prev => [...prev, botMessage]);
-            
-            // Mark bot message for animation
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.add(botMessage.id);
-                return newSet;
-            });
-            
-            // Remove bot message animation after it completes
-            setTimeout(() => {
-                setAnimatingMessageIds(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(botMessage.id);
-                    return newSet;
-                });
-            }, 500);
-            
             setIsBotTyping(false);
         }, 1200); // 1.2 second delay
 
@@ -131,7 +98,8 @@ export default function Chat() {
                 {messages.map((msg, index) => (
                     <div
                         key={msg.id}
-                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} ${animatingMessageIds.has(msg.id) ? 'animate-message-appear' : ''}`}
+                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-message-appear`}
+                        style={{ animationDelay: `${index * 0.05}s` }}
                     >
                         {msg.sender === 'bot' && (
                             <Image

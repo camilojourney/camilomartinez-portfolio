@@ -19,8 +19,6 @@ export default function Chat() {
     const [isBotTyping, setIsBotTyping] = useState(false);
     // Ref to scroll to the bottom of the chat
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
-    // Track which messages are new for animation
-    const [animatingMessageIds, setAnimatingMessageIds] = useState<Set<number>>(new Set());
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,22 +58,6 @@ export default function Chat() {
         // Add user message to the chat
         const userMessage: Message = { id: Date.now(), text: input, sender: 'user' };
         setMessages(prev => [...prev, userMessage]);
-        
-        // Mark this message for animation
-        setAnimatingMessageIds(prev => {
-            const newSet = new Set(prev);
-            newSet.add(userMessage.id);
-            return newSet;
-        });
-        
-        // Remove animation after it completes
-        setTimeout(() => {
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(userMessage.id);
-                return newSet;
-            });
-        }, 500);
 
         setIsBotTyping(true);
 
@@ -84,23 +66,6 @@ export default function Chat() {
             const botResponseText = getBotResponse(input);
             const botMessage: Message = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
             setMessages(prev => [...prev, botMessage]);
-            
-            // Mark bot message for animation
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.add(botMessage.id);
-                return newSet;
-            });
-            
-            // Remove bot message animation after it completes
-            setTimeout(() => {
-                setAnimatingMessageIds(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(botMessage.id);
-                    return newSet;
-                });
-            }, 500);
-            
             setIsBotTyping(false);
         }, 1200); // 1.2 second delay
 
@@ -108,12 +73,9 @@ export default function Chat() {
     };
 
     return (
-        <div className="liquid-glass-chat-container w-full flex flex-col h-[36rem]">
-            {/* Messages Area - with improved glass overlay */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent relative">
-                {/* Glass overlay gradient at top */}
-                <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none z-10"></div>
-
+        <div className="liquid-glass-chat-container w-full">
+            {/* Messages Area */}
+            <div className="h-[30rem] overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                 {/* Initial bot message with avatar */}
                 <div className="flex items-start gap-3 justify-start animate-fade-in">
                     <Image
@@ -131,7 +93,8 @@ export default function Chat() {
                 {messages.map((msg, index) => (
                     <div
                         key={msg.id}
-                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} ${animatingMessageIds.has(msg.id) ? 'animate-message-appear' : ''}`}
+                        className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-slide-in`}
+                        style={{ animationDelay: `${index * 0.1}s` }}
                     >
                         {msg.sender === 'bot' && (
                             <Image
@@ -176,30 +139,27 @@ export default function Chat() {
                     </div>
                 )}
                 <div ref={messagesEndRef} />
-
-                {/* Glass overlay gradient at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/[0.03] to-transparent pointer-events-none z-10"></div>
             </div>
 
-            {/* Enhanced Larger Input Bar */}
-            <div className="liquid-glass-input-container-large backdrop-blur-xl bg-white/[0.03] border-t border-white/[0.08] p-8">
+            {/* Enhanced Full-Width Input Bar */}
+            <div className="liquid-glass-input-container backdrop-blur-xl bg-white/[0.03] border-t border-white/[0.08] p-6">
                 <form onSubmit={handleSendMessage} className="w-full">
-                    <div className="relative flex items-center gap-6">
+                    <div className="relative flex items-center gap-4">
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Ask me anything about Camilo..."
-                            className="flex-1 liquid-glass-input-enhanced backdrop-blur-lg bg-white/[0.05] border border-white/[0.12] text-white placeholder-white/50 rounded-3xl px-10 py-6 text-xl font-light focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-400/50 transition-all duration-300 shadow-lg"
+                            className="flex-1 liquid-glass-input-enhanced backdrop-blur-lg bg-white/[0.05] border border-white/[0.12] text-white placeholder-white/50 rounded-3xl px-8 py-5 text-lg font-light focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-400/50 transition-all duration-300 shadow-lg"
                         />
                         <button
                             type="submit"
                             disabled={!input.trim()}
-                            className="liquid-glass-send-enhanced backdrop-blur-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300 p-6 rounded-3xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 hover:text-cyan-200 transition-all duration-300 transform hover:scale-[1.05] shadow-lg group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            className="liquid-glass-send-enhanced backdrop-blur-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300 p-5 rounded-3xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 hover:text-cyan-200 transition-all duration-300 transform hover:scale-[1.05] shadow-lg group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
                             {/* Custom Paper Plane Icon */}
                             <svg
-                                className="w-7 h-7 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300"
+                                className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -216,9 +176,9 @@ export default function Chat() {
                 </form>
 
                 {/* Suggested Questions */}
-                <div className="mt-8 pt-6 border-t border-white/[0.08]">
-                    <p className="text-base text-white/60 mb-4 font-medium">💡 Try asking:</p>
-                    <div className="flex flex-wrap gap-3">
+                <div className="mt-6 pt-4 border-t border-white/[0.08]">
+                    <p className="text-sm text-white/60 mb-3 font-medium">💡 Try asking:</p>
+                    <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => {
                                 setInput('What are his technical skills?');
@@ -228,7 +188,7 @@ export default function Chat() {
                                     if (form) form.requestSubmit();
                                 }, 100);
                             }}
-                            className="liquid-glass-suggestion-btn backdrop-blur-lg bg-white/[0.04] border border-white/[0.08] text-white/80 px-5 py-3 rounded-xl text-sm font-medium hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
+                            className="liquid-glass-suggestion-btn backdrop-blur-lg bg-white/[0.04] border border-white/[0.08] text-white/80 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
                         >
                             🛠️ Skills?
                         </button>
@@ -240,7 +200,7 @@ export default function Chat() {
                                     if (form) form.requestSubmit();
                                 }, 100);
                             }}
-                            className="liquid-glass-suggestion-btn backdrop-blur-lg bg-white/[0.04] border border-white/[0.08] text-white/80 px-5 py-3 rounded-xl text-sm font-medium hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
+                            className="liquid-glass-suggestion-btn backdrop-blur-lg bg-white/[0.04] border border-white/[0.08] text-white/80 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
                         >
                             📖 His Story?
                         </button>
@@ -252,7 +212,7 @@ export default function Chat() {
                                     if (form) form.requestSubmit();
                                 }, 100);
                             }}
-                            className="liquid-glass-suggestion-btn backdrop-blur-lg bg-white/[0.04] border border-white/[0.08] text-white/80 px-5 py-3 rounded-xl text-sm font-medium hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
+                            className="liquid-glass-suggestion-btn backdrop-blur-lg bg-white/[0.04] border border-white/[0.08] text-white/80 px-4 py-2 rounded-xl text-sm font-medium hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
                         >
                             🔄 Past Experience?
                         </button>
