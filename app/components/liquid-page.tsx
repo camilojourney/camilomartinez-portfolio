@@ -3,7 +3,7 @@ import LiquidNav from './liquid-nav'
 
 interface LiquidPageProps {
     children: React.ReactNode
-    currentPage?: 'home' | 'blog' | 'contact' | 'about'
+    currentPage?: 'home' | 'blog' | 'contact' | 'about' | 'projects'
     backgroundVariant?: 'default' | 'warm' | 'cool' | 'purple'
     className?: string
 }
@@ -19,7 +19,7 @@ export default function LiquidPage({
             <LiquidBackground variant={backgroundVariant} />
             <LiquidNav currentPage={currentPage} />
 
-            <div className={`relative z-10 h-full overflow-y-auto ${className}`}>
+            <div className={`relative z-10 h-full overflow-y-auto page-transition ${className}`}>
                 <div className="min-h-full flex items-center justify-center p-8 pt-32">
                     {children}
                 </div>
