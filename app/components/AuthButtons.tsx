@@ -1,4 +1,4 @@
-import { auth, signIn, signOut } from "app/api/auth/[...nextauth]/route"
+import { auth, signIn, signOut } from "../../lib/auth"
 
 export async function AuthButtons() {
     const session = await auth()

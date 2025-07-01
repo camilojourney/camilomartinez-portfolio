@@ -1,4 +1,4 @@
-import { auth } from "app/api/auth/[...nextauth]/route"
+import { auth } from "../../lib/auth"
 import { AuthButtons } from "app/components/AuthButtons"
 import { RecoveryChart } from "app/components/RecoveryChart"
 import LiquidPage from 'app/components/liquid-page'
