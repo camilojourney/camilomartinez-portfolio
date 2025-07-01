@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    trustHost: true, // 👈 ADD THIS LINE - Critical for localhost development
     providers: [
         {
             id: "whoop",
@@ -73,6 +74,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
     },
     pages: {
+        signIn: '/signin', // Custom sign-in page for better error handling
         error: '/auth/error',
     },
     secret: process.env.AUTH_SECRET,
