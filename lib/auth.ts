@@ -1,92 +1,64 @@
 import NextAuth from "next-auth"
+import { OAuthConfig } from "next-auth/providers"
+
+interface WhoopProfile {
+    user_id: number
+    email: string
+    first_name: string
+    last_name: string
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    trustHost: true, // 👈 ADD THIS LINE - Critical for localhost development
+    debug: true,
+    trustHost: true,
+    secret: process.env.AUTH_SECRET,
     providers: [
         {
             id: "whoop",
-            name: "WHOOP",
+            name: "Whoop",
             type: "oauth",
+            clientId: process.env.WHOOP_CLIENT_ID,
+            clientSecret: process.env.WHOOP_CLIENT_SECRET,
             authorization: {
                 url: "https://api.prod.whoop.com/oauth/oauth2/auth",
                 params: {
-                    scope: "read:recovery read:cycles read:sleep read:workout read:profile read:body_measurement offline",
+                    scope: "read:recovery read:cycles read:sleep read:workout read:profile read:body_measurement",
                     response_type: "code",
+                    state: "securitystate123456789"
                 },
             },
-            token: "https://api.prod.whoop.com/oauth/oauth2/token",
+            token: {
+                url: "https://api.prod.whoop.com/oauth/oauth2/token",
+                params: { grant_type: "authorization_code" }
+            },
             userinfo: "https://api.prod.whoop.com/developer/v1/user/profile/basic",
-            clientId: process.env.WHOOP_CLIENT_ID,
-            clientSecret: process.env.WHOOP_CLIENT_SECRET,
-            profile(profile: any) {
+            checks: [],
+            client: {
+                token_endpoint_auth_method: "client_secret_post"
+            },
+            profile(profile: WhoopProfile) {
                 return {
-                    id: profile.user_id?.toString() || "unknown",
-                    name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "WHOOP User",
-                    email: profile.email || null,
+                    id: profile.user_id.toString(),
+                    name: `${profile.first_name} ${profile.last_name}`,
+                    email: profile.email,
+                    image: null,
                 }
             },
-        }
+        } as OAuthConfig<WhoopProfile>,
     ],
+    pages: {
+        signIn: '/signin',
+    },
     callbacks: {
         async jwt({ token, account }) {
             if (account) {
-                token.accessToken = account.access_token
-                token.refreshToken = account.refresh_token
-                token.expiresAt = account.expires_at
+                token.accessToken = account.access_token;
             }
-
-            // Check if token is expired and refresh if needed
-            if (token.expiresAt && Date.now() > (token.expiresAt as number) * 1000) {
-                try {
-                    const response = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            grant_type: 'refresh_token',
-                            refresh_token: token.refreshToken,
-                            client_id: process.env.WHOOP_CLIENT_ID,
-                            client_secret: process.env.WHOOP_CLIENT_SECRET,
-                            scope: 'offline',
-                        }),
-                    })
-
-                    if (response.ok) {
-                        const refreshedTokens = await response.json()
-                        token.accessToken = refreshedTokens.access_token
-                        token.refreshToken = refreshedTokens.refresh_token
-                        token.expiresAt = Math.floor(Date.now() / 1000) + refreshedTokens.expires_in
-                    } else {
-                        console.error('Token refresh failed:', response.status, response.statusText)
-                    }
-                } catch (error) {
-                    console.error('Token refresh error:', error)
-                }
-            }
-
-            return token
+            return token;
         },
         async session({ session, token }) {
-            session.accessToken = token.accessToken as string
-            session.refreshToken = token.refreshToken as string
-            return session
-        },
-    },
-    pages: {
-        signIn: '/signin', // Custom sign-in page for better error handling
-        error: '/auth/error',
-    },
-    secret: process.env.AUTH_SECRET,
-    cookies: {
-        sessionToken: {
-            name: "next-auth.session-token",
-            options: {
-                httpOnly: true,
-                sameSite: "lax",
-                path: "/",
-                secure: process.env.NODE_ENV === "production",
-            },
+            session.accessToken = token.accessToken as string;
+            return session;
         },
     },
 })
