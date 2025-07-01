@@ -77,6 +77,35 @@ export default function Page() {
               </div>
             </div>
 
+            {/* Live WHOOP Data Demo Card - NEW */}
+            <div className="group liquid-glass-project backdrop-blur-xl bg-white/[0.04] border border-white/[0.08] rounded-2xl p-8 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-500 hover:transform hover:scale-[1.02] hover:shadow-xl hover:shadow-orange-500/10">
+              <div className="flex items-start gap-6">
+                <div className="liquid-glass-icon backdrop-blur-lg bg-gradient-to-br from-orange-400/20 to-red-500/20 border border-orange-300/20 rounded-2xl p-4 group-hover:from-orange-400/30 group-hover:to-red-500/30 transition-all duration-300">
+                  <svg className="w-8 h-8 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <h3 className="text-xl font-medium text-white group-hover:text-orange-300 transition-colors duration-300">Live WHOOP API Demo</h3>
+                    <span className="inline-block px-3 py-1 text-xs backdrop-blur-lg bg-gradient-to-r from-green-500/15 to-emerald-500/15 text-green-300 rounded-full border border-green-400/20 animate-pulse">
+                      🔴 LIVE
+                    </span>
+                  </div>
+                  <p className="text-white/70 mb-4 leading-relaxed">Real-time fitness data visualization using WHOOP's OAuth API. Connect your account to see live recovery, HRV, and sleep metrics.</p>
+                  <div className="flex items-center gap-4">
+                    <Link href="/live-data" className="inline-flex items-center text-orange-400 hover:text-orange-300 transition-colors duration-300 group/link">
+                      <span className="font-medium">View Live Demo</span>
+                      <svg className="w-4 h-4 ml-2 group-hover/link:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                    <span className="text-white/40 text-sm">OAuth 2.0 + Next.js</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Project Card 2 - Enhanced liquid glass */}
             <div className="group liquid-glass-project backdrop-blur-xl bg-white/[0.04] border border-white/[0.08] rounded-2xl p-8 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-500 hover:transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10">
               <div className="flex items-start gap-6">

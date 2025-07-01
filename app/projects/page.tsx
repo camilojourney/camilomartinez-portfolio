@@ -92,7 +92,7 @@ export default function ProjectsPage() {
 
                 {/* Projects Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                    <ProjectCard 
+                    <ProjectCard
                         title="Interactive 'About Me' Chatbot"
                         summary="A live demonstration of a full-stack application built with Next.js and NLP to create an engaging, interactive user experience. Features real-time conversation flow and glassmorphism UI design."
                         imageUrl="/images/project-chatbot.png"
@@ -100,7 +100,7 @@ export default function ProjectsPage() {
                         status="live"
                         techStack={['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Vercel']}
                     />
-                    <ProjectCard 
+                    <ProjectCard
                         title="AI Content Creator"
                         summary="A conceptual application using advanced NLP models to help marketers and writers accelerate their creative workflow. Includes content generation, editing assistance, and optimization features."
                         imageUrl="/images/project-content-creator.png"
@@ -108,7 +108,7 @@ export default function ProjectsPage() {
                         status="concept"
                         techStack={['Next.js', 'Python', 'OpenAI API', 'NLP Libraries', 'PostgreSQL']}
                     />
-                    <ProjectCard 
+                    <ProjectCard
                         title="AI Coaching App"
                         summary="A conceptual personalized coaching application that uses AI to provide tailored guidance for professional development, skill building, and goal achievement based on user data and preferences."
                         imageUrl="/images/project-coach-app.png"
@@ -116,7 +116,7 @@ export default function ProjectsPage() {
                         status="concept"
                         techStack={['Next.js', 'Python', 'Machine Learning', 'Database', 'Analytics']}
                     />
-                    <ProjectCard 
+                    <ProjectCard
                         title="Data Analytics Portfolio"
                         summary="A comprehensive showcase of data analysis projects demonstrating proficiency in statistical modeling, data visualization, and business intelligence using modern analytics tools."
                         imageUrl="/images/project-analytics.png"
@@ -131,8 +131,8 @@ export default function ProjectsPage() {
                     <p className="text-white/60 mb-6 text-base md:text-lg font-light">
                         Interested in seeing more details about any of these projects?
                     </p>
-                    <Link 
-                        href="/contact" 
+                    <Link
+                        href="/contact"
                         className="liquid-glass-cta-btn backdrop-blur-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20 inline-flex items-center gap-3"
                     >
                         <span>Let's discuss your project</span>

@@ -60,14 +60,14 @@ export default function Chat() {
         // Add user message to the chat
         const userMessage: Message = { id: Date.now(), text: input, sender: 'user' };
         setMessages(prev => [...prev, userMessage]);
-        
+
         // Mark this message for animation
         setAnimatingMessageIds(prev => {
             const newSet = new Set(prev);
             newSet.add(userMessage.id);
             return newSet;
         });
-        
+
         // Remove animation after it completes
         setTimeout(() => {
             setAnimatingMessageIds(prev => {
@@ -84,14 +84,14 @@ export default function Chat() {
             const botResponseText = getBotResponse(input);
             const botMessage: Message = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
             setMessages(prev => [...prev, botMessage]);
-            
+
             // Mark bot message for animation
             setAnimatingMessageIds(prev => {
                 const newSet = new Set(prev);
                 newSet.add(botMessage.id);
                 return newSet;
             });
-            
+
             // Remove bot message animation after it completes
             setTimeout(() => {
                 setAnimatingMessageIds(prev => {
@@ -100,7 +100,7 @@ export default function Chat() {
                     return newSet;
                 });
             }, 500);
-            
+
             setIsBotTyping(false);
         }, 1200); // 1.2 second delay
 
