@@ -1,5 +1,3 @@
-"use client"
-
 import LiquidPage from 'app/components/liquid-page'
 
 export default function ContactPage() {

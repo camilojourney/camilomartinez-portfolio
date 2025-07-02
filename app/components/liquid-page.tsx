@@ -1,5 +1,6 @@
 import LiquidBackground from './liquid-background'
 import LiquidNav from './liquid-nav'
+import Footer from './footer'
 
 interface LiquidPageProps {
     children: React.ReactNode
@@ -20,8 +21,11 @@ export default function LiquidPage({
             <LiquidNav currentPage={currentPage} />
 
             <div className={`relative z-10 h-full overflow-y-auto page-transition ${className}`}>
-                <div className="min-h-full flex items-center justify-center p-8 pt-32">
-                    {children}
+                <div className="min-h-full flex flex-col">
+                    <div className="flex-1 flex items-center justify-center p-8 pt-32">
+                        {children}
+                    </div>
+                    <Footer />
                 </div>
             </div>
         </div>
