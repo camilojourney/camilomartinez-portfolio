@@ -9,7 +9,7 @@ interface WhoopProfile {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    debug: true,
+    debug: process.env.NODE_ENV !== "production", // Only debug in development
     trustHost: true,
     secret: process.env.AUTH_SECRET,
     providers: [
@@ -27,6 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     state: "securitystate123456789"
                 },
             },
+            redirectProxyUrl: process.env.NEXTAUTH_URL,
             token: {
                 url: "https://api.prod.whoop.com/oauth/oauth2/token",
                 params: { grant_type: "authorization_code" }
