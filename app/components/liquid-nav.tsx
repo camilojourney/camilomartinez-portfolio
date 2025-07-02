@@ -6,9 +6,9 @@ interface LiquidNavProps {
 
 export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
     return (
-        <div className="fixed top-0 left-0 w-full z-50 p-6">
-            <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-8 py-4 max-w-md mx-auto shadow-2xl shadow-black/10">
-                <div className="flex justify-center space-x-6">
+        <div className="fixed top-0 left-0 w-full z-50 p-4 pt-safe-area-inset-top md:p-6">
+            <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-4 py-3 md:px-8 md:py-4 max-w-md mx-auto shadow-2xl shadow-black/10">
+                <div className="flex justify-center space-x-3 md:space-x-6 text-sm md:text-base">
                     <a
                         href="/"
                         className={`nav-item transition-all duration-300 relative ${currentPage === 'home' ? 'text-white' : 'text-white/70 hover:text-white'

@@ -22,7 +22,7 @@ export default function LiquidPage({
 
             <div className={`relative z-10 h-full overflow-y-auto page-transition ${className}`}>
                 <div className="min-h-full flex flex-col">
-                    <div className="flex-1 flex items-center justify-center p-8 pt-32">
+                    <div className="flex-1 flex items-center justify-center p-4 pt-24 md:p-8 md:pt-32">
                         {children}
                     </div>
                     <Footer />
