@@ -65,13 +65,14 @@ function YouTubeIcon() {
 
 export default function Footer() {
   return (
-    <footer className="p-8 relative z-10">
+    <footer className="p-4 md:p-8 relative z-10">
       {/* Liquid glass footer container */}
-      <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl p-6 md:p-8 max-w-4xl mx-auto shadow-xl shadow-black/10">
-        <ul className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-6 md:justify-center text-white/80">
+      <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl p-4 md:p-8 max-w-4xl mx-auto shadow-xl shadow-black/10">
+        {/* Mobile: Grid layout, Desktop: Horizontal layout */}
+        <ul className="grid grid-cols-2 gap-2 md:flex md:flex-row md:space-y-0 md:space-x-6 md:justify-center text-white/80">
           <li>
             <a
-              className="group flex items-center justify-center md:justify-start transition-all duration-300 hover:text-orange-400 p-2 rounded-xl hover:bg-white/[0.06]"
+              className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-orange-400 p-2 rounded-xl hover:bg-white/[0.06]"
               rel="noopener noreferrer"
               target="_blank"
               href="/rss"
@@ -82,7 +83,7 @@ export default function Footer() {
           </li>
           <li>
             <a
-              className="group flex items-center justify-center md:justify-start transition-all duration-300 hover:text-white p-2 rounded-xl hover:bg-white/[0.06]"
+              className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-white p-2 rounded-xl hover:bg-white/[0.06]"
               rel="noopener noreferrer"
               target="_blank"
               href="https://github.com/camilomartinez777"
@@ -93,7 +94,7 @@ export default function Footer() {
           </li>
           <li>
             <a
-              className="group flex items-center justify-center md:justify-start transition-all duration-300 hover:text-blue-400 p-2 rounded-xl hover:bg-white/[0.06]"
+              className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-blue-400 p-2 rounded-xl hover:bg-white/[0.06]"
               rel="noopener noreferrer"
               target="_blank"
               href="https://www.linkedin.com/in/camilomartinez-ai/"
@@ -104,7 +105,7 @@ export default function Footer() {
           </li>
           <li>
             <a
-              className="group flex items-center justify-center md:justify-start transition-all duration-300 hover:text-pink-400 p-2 rounded-xl hover:bg-white/[0.06]"
+              className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-pink-400 p-2 rounded-xl hover:bg-white/[0.06]"
               rel="noopener noreferrer"
               target="_blank"
               href="https://www.instagram.com/camiloexperience/"
@@ -115,7 +116,7 @@ export default function Footer() {
           </li>
           <li>
             <a
-              className="group flex items-center justify-center md:justify-start transition-all duration-300 hover:text-white p-2 rounded-xl hover:bg-white/[0.06]"
+              className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-white p-2 rounded-xl hover:bg-white/[0.06]"
               rel="noopener noreferrer"
               target="_blank"
               href="https://x.com/camilojourney"
@@ -126,7 +127,7 @@ export default function Footer() {
           </li>
           <li>
             <a
-              className="group flex items-center justify-center md:justify-start transition-all duration-300 hover:text-red-500 p-2 rounded-xl hover:bg-white/[0.06]"
+              className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-red-500 p-2 rounded-xl hover:bg-white/[0.06]"
               rel="noopener noreferrer"
               target="_blank"
               href="https://www.youtube.com/@camiloexperience"
