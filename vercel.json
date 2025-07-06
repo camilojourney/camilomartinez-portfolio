@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/whoop-collector",
+      "path": "/api/cron/daily-whoop-sync",
       "schedule": "0 14 * * *",
       "headers": {
         "Authorization": "Bearer whoop_daily_sync_2024_secure_key_x7mQ9pR3nF8vK2jL"
