@@ -7,6 +7,9 @@ const navItems = {
   '/blog': {
     name: 'blog',
   },
+  '/whoop-dashboard': {
+    name: 'whoop',
+  },
   '/contact': {
     name: 'contact',
   },

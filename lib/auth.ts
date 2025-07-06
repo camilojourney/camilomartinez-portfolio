@@ -23,17 +23,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 url: "https://api.prod.whoop.com/oauth/oauth2/auth",
                 params: {
                     scope: "read:recovery read:cycles read:sleep read:workout read:profile read:body_measurement",
-                    response_type: "code",
-                    state: "securitystate123456789"
+                    response_type: "code"
                 },
             },
-            redirectProxyUrl: process.env.NEXTAUTH_URL,
             token: {
                 url: "https://api.prod.whoop.com/oauth/oauth2/token",
                 params: { grant_type: "authorization_code" }
             },
             userinfo: "https://api.prod.whoop.com/developer/v1/user/profile/basic",
-            checks: [],
+            checks: ["state"],
             client: {
                 token_endpoint_auth_method: "client_secret_post"
             },
