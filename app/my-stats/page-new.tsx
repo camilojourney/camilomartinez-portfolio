@@ -1,7 +1,6 @@
 import { sql } from '@vercel/postgres';
 import LiquidPage from '../components/liquid-page';
 import { ActivityHeatmap } from '../../components/ActivityHeatmap';
-import { StrainVsRecoveryChart } from '../../components/StrainVsRecoveryChart';
 
 async function getStrainData() {
     try {
@@ -18,35 +17,8 @@ async function getStrainData() {
     }
 }
 
-async function getStrainRecoveryData() {
-    try {
-        const result = await sql`
-            SELECT
-                c.start_time::date as cycle_date,
-                c.strain,
-                r.recovery_score
-            FROM whoop_cycles c
-            INNER JOIN whoop_recovery r ON c.id = r.cycle_id
-            WHERE c.strain IS NOT NULL
-                AND r.recovery_score IS NOT NULL
-                AND r.recovery_score > 0
-                AND c.strain > 0
-            ORDER BY c.start_time DESC
-        `;
-        return result.rows as Array<{
-            cycle_date: string;
-            strain: number;
-            recovery_score: number;
-        }>;
-    } catch (error) {
-        console.error('Error fetching strain vs recovery data:', error);
-        return [];
-    }
-}
-
 export default async function MyStats() {
     const strainData = await getStrainData();
-    const strainRecoveryData = await getStrainRecoveryData();
 
     return (
         <LiquidPage backgroundVariant="purple">
@@ -102,24 +74,6 @@ export default async function MyStats() {
                             <ActivityHeatmap data={strainData} />
                         </div>
 
-                        {/* Tier 1: Advanced Analytics - Strain vs Recovery Correlation */}
-                        <div className="mb-16">
-                            <div className="mb-8 text-center">
-                                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-6 py-3 mb-4">
-                                    <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-                                    <span className="text-cyan-300 font-medium text-sm tracking-wide">TIER 1: PERFORMANCE ANALYTICS</span>
-                                </div>
-                                <h2 className="text-2xl font-light text-white/90 mb-3">
-                                    "How does my daily effort impact my body's ability to recover?"
-                                </h2>
-                                <p className="text-white/60 font-light text-lg max-w-3xl mx-auto leading-relaxed">
-                                    This scatter plot reveals the fundamental relationship between training intensity and recovery capacity,
-                                    with trend line analysis demonstrating data science capabilities beyond simple visualization.
-                                </p>
-                            </div>
-                            <StrainVsRecoveryChart data={strainRecoveryData} />
-                        </div>
-
                         {/* Coming Soon: Advanced Analytics */}
                         <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl p-12 text-center">
                             <div className="mb-8">
@@ -135,7 +89,14 @@ export default async function MyStats() {
                                 </p>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-6 text-left">
+                            <div className="grid md:grid-cols-3 gap-6 text-left">
+                                <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
+                                    <div className="text-cyan-400 mb-3">📊</div>
+                                    <h4 className="text-white font-medium mb-2">Strain vs Recovery</h4>
+                                    <p className="text-white/60 text-sm font-light">
+                                        "How well do I balance training intensity with recovery needs?"
+                                    </p>
+                                </div>
                                 <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
                                     <div className="text-purple-400 mb-3">😴</div>
                                     <h4 className="text-white font-medium mb-2">Sleep Optimization</h4>
