@@ -19,13 +19,8 @@ export async function GET(request: NextRequest) {
         const client = await pool.connect();
 
         try {
-            // Get user_id from the session
-            let user_id;
-            try {
-                user_id = session.accessToken ? JSON.parse(session.accessToken).user_id : null;
-            } catch {
-                user_id = session.user?.id;
-            }
+            // Get user_id from the session - it's stored in session.user.id
+            const user_id = session.user?.id;
 
             if (!user_id) {
                 return NextResponse.json({ error: 'User ID not found in session' }, { status: 400 });
