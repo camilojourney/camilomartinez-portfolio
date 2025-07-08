@@ -168,12 +168,12 @@ export default async function LiveDataPage() {
 
                             {/* Workout Count Chart */}
                             <div className="mb-12">
-                                <!-- Workout Count Chart removed -->
+                                {/* Workout Count Chart removed */}
                             </div>
 
                             {/* Workout Hours Chart */}
                             <div>
-                                <!-- Workout Hours Chart removed -->
+                                {/* Workout Hours Chart removed */}
                             </div>
                         </div>
                     </div>
