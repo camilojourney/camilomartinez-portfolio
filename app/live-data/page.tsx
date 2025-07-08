@@ -1,6 +1,9 @@
 import { auth } from "../../lib/auth"
 import { AuthButtons } from "app/components/AuthButtons"
 import { RecoveryChart } from "app/components/RecoveryChart"
+import StrainVsSleepChart from "../../components/StrainVsSleepChart"
+import WorkoutCountChart from "../../components/WorkoutCountChart"
+import WorkoutHoursChart from "../../components/WorkoutHoursChart"
 import LiquidPage from 'app/components/liquid-page'
 
 async function getWhoopData(accessToken: string): Promise<any> {
@@ -137,6 +140,42 @@ export default async function LiveDataPage() {
                                 </pre>
                             </div>
                         </details>
+                    </div>
+                )}
+
+                {/* Advanced Analytics Section - Always show if user is authenticated */}
+                {session && (
+                    <div className="mt-12 space-y-8">
+                        {/* Strain vs Sleep Chart */}
+                        <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8">
+                            <h2 className="text-2xl font-semibold text-white mb-6 text-center">
+                                Advanced Analytics Dashboard
+                            </h2>
+                            <p className="text-white/70 text-center mb-8">
+                                These charts use stored data from your WHOOP account to show insights about strain, sleep performance, recovery, and workout patterns.
+                            </p>
+                            <StrainVsSleepChart />
+                        </div>
+
+                        {/* Workout Analytics */}
+                        <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8">
+                            <h2 className="text-2xl font-semibold text-white mb-6 text-center">
+                                Workout Analytics
+                            </h2>
+                            <p className="text-white/70 text-center mb-8">
+                                Analyze your workout patterns over time with detailed breakdowns by sport type.
+                            </p>
+
+                            {/* Workout Count Chart */}
+                            <div className="mb-12">
+                                <WorkoutCountChart />
+                            </div>
+
+                            {/* Workout Hours Chart */}
+                            <div>
+                                <WorkoutHoursChart />
+                            </div>
+                        </div>
                     </div>
                 )}
 
