@@ -108,7 +108,7 @@ export class WhoopV1Client {
 
         return allCycles;
     }
-
+–
     // Get sleep data for a specific cycle (DEPRECATED - doesn't work)
     async getSleep(cycleId: number): Promise<WhoopSleep> {
         return this.makeRequest<WhoopSleep>(`/cycle/${cycleId}/sleep`);
