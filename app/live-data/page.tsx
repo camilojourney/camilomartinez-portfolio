@@ -1,9 +1,6 @@
 import { auth } from "../../lib/auth"
 import { AuthButtons } from "app/components/AuthButtons"
 import { RecoveryChart } from "app/components/RecoveryChart"
-import StrainVsSleepChart from "../../components/StrainVsSleepChart"
-import WorkoutCountChart from "../../components/WorkoutCountChart"
-import WorkoutHoursChart from "../../components/WorkoutHoursChart"
 import LiquidPage from 'app/components/liquid-page'
 
 async function getWhoopData(accessToken: string): Promise<any> {
@@ -154,7 +151,10 @@ export default async function LiveDataPage() {
                             <p className="text-white/70 text-center mb-8">
                                 These charts use stored data from your WHOOP account to show insights about strain, sleep performance, recovery, and workout patterns.
                             </p>
-                            <StrainVsSleepChart />
+                                                        <div className="text-center py-12">
+                                <div className="text-white/60 text-lg mb-4">📊 Charts Coming Soon</div>
+                                <div className="text-white/40">Advanced analytics will be available soon</div>
+                            </div>
                         </div>
 
                         {/* Workout Analytics */}
@@ -168,12 +168,12 @@ export default async function LiveDataPage() {
 
                             {/* Workout Count Chart */}
                             <div className="mb-12">
-                                <WorkoutCountChart />
+                                <!-- Workout Count Chart removed -->
                             </div>
 
                             {/* Workout Hours Chart */}
                             <div>
-                                <WorkoutHoursChart />
+                                <!-- Workout Hours Chart removed -->
                             </div>
                         </div>
                     </div>
