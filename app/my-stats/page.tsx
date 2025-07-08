@@ -120,38 +120,6 @@ export default async function MyStats() {
                             <StrainVsRecoveryChart data={strainRecoveryData} />
                         </div>
 
-                        {/* Coming Soon: Advanced Analytics */}
-                        <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl p-12 text-center">
-                            <div className="mb-8">
-                                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-6 py-3 mb-6">
-                                    <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-                                    <span className="text-cyan-300 font-medium text-sm tracking-wide">COMING SOON</span>
-                                </div>
-                                <h3 className="text-3xl font-light text-white mb-4">Advanced Performance Analytics</h3>
-                                <p className="text-white/70 font-light text-lg leading-relaxed max-w-4xl mx-auto mb-8">
-                                    Additional tier-1 visualizations are in development, including strain vs. recovery correlation analysis,
-                                    sleep efficiency trends, and activity performance patterns. Each will follow the same data storytelling
-                                    approach—asking specific questions and providing clear, actionable insights.
-                                </p>
-                            </div>
-
-                            <div className="grid md:grid-cols-2 gap-6 text-left">
-                                <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
-                                    <div className="text-purple-400 mb-3">😴</div>
-                                    <h4 className="text-white font-medium mb-2">Sleep Optimization</h4>
-                                    <p className="text-white/60 text-sm font-light">
-                                        "What sleep patterns optimize my performance and recovery?"
-                                    </p>
-                                </div>
-                                <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
-                                    <div className="text-green-400 mb-3">🏃‍♂️</div>
-                                    <h4 className="text-white font-medium mb-2">Training Periodization</h4>
-                                    <p className="text-white/60 text-sm font-light">
-                                        "How do my training cycles align with performance peaks?"
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
                     </>
                 )}
             </div>
