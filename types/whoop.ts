@@ -1,4 +1,4 @@
-// WHOOP V1 API Response Types
+// WHOOP V2 API Response Types
 
 export interface WhoopUser {
     user_id: number;
@@ -25,7 +25,8 @@ export interface WhoopCycle {
 }
 
 export interface WhoopSleep {
-    id: number;
+    id: string; // Changed from number to UUID string in v2
+    activityV1Id?: number; // Optional backwards compatibility with v1 ID
     user_id: number;
     created_at: string;
     updated_at: string;
@@ -60,7 +61,7 @@ export interface WhoopSleep {
 
 export interface WhoopRecovery {
     cycle_id: number;
-    sleep_id: number;
+    sleep_id: string; // Changed to string to match WhoopSleep.id (UUID)
     user_id: number;
     created_at: string;
     updated_at: string;
@@ -76,7 +77,8 @@ export interface WhoopRecovery {
 }
 
 export interface WhoopWorkout {
-    id: number;
+    id: string; // Changed from number to UUID string in v2
+    activityV1Id?: number; // Optional backwards compatibility with v1 ID
     user_id: number;
     created_at: string;
     updated_at: string;
@@ -143,7 +145,8 @@ export interface DbCycle {
 }
 
 export interface DbSleep {
-    id: number;
+    id: string; // Changed to string to store UUID from v2 API
+    activity_v1_id?: number; // Store v1 ID for backwards compatibility
     user_id: number;
     cycle_id: number;
     start_time: string;
@@ -165,7 +168,7 @@ export interface DbSleep {
 
 export interface DbRecovery {
     cycle_id: number;
-    sleep_id: number;
+    sleep_id: string; // Changed to string to match sleep UUID
     user_id: number;
     score_state: string;
     recovery_score: number;
@@ -176,7 +179,8 @@ export interface DbRecovery {
 }
 
 export interface DbWorkout {
-    id: number;
+    id: string; // Changed to string to store UUID from v2 API
+    activity_v1_id?: number; // Store v1 ID for backwards compatibility
     user_id: number;
     start_time: string;
     end_time: string;

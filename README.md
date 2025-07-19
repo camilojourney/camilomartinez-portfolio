@@ -43,7 +43,7 @@ A premium, interactive portfolio showcasing expertise in AI development, data an
 - **Authentication**: NextAuth.js with OAuth 2.0 (WHOOP integration)
 - **Database**: Vercel Postgres for WHOOP data storage
 - **Content**: MDX for blog posts with syntax highlighting
-- **APIs**: WHOOP REST API v1 integration
+- **APIs**: WHOOP REST API v2 integration (fresh v2 setup - migrated from v1 before Oct 1, 2025 deadline)
 - **Automation**: Vercel Cron Jobs for daily data sync
 - **Deployment**: Vercel with Speed Insights and Web Analytics
 - **Performance**: Optimized images, SEO, and Core Web Vitals

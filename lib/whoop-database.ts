@@ -63,14 +63,14 @@ export class WhoopDatabaseService {
         try {
             const result = await sql`
               INSERT INTO whoop_sleep (
-                id, user_id, cycle_id, start_time, end_time, timezone_offset,
+                id, activity_v1_id, user_id, cycle_id, start_time, end_time, timezone_offset,
                 nap, score_state, sleep_performance_percentage, respiratory_rate,
                 sleep_consistency_percentage, sleep_efficiency_percentage,
                 total_in_bed_time_milli, total_awake_time_milli, total_light_sleep_time_milli,
                 total_slow_wave_sleep_time_milli, total_rem_sleep_time_milli, disturbance_count
               )
               VALUES (
-                ${sleep.id}, ${sleep.user_id}, ${cycleId}, ${sleep.start}, ${sleep.end},
+                ${sleep.id}, ${sleep.activityV1Id || null}, ${sleep.user_id}, ${cycleId}, ${sleep.start}, ${sleep.end},
                 ${sleep.timezone_offset}, ${sleep.nap}, ${sleep.score_state},
                 ${hasScore && sleep.score ? sleep.score.sleep_performance_percentage : null},
                 ${hasScore && sleep.score ? sleep.score.respiratory_rate : null},
@@ -85,6 +85,7 @@ export class WhoopDatabaseService {
               )
               ON CONFLICT (id)
               DO UPDATE SET
+                activity_v1_id = EXCLUDED.activity_v1_id,
                 start_time = EXCLUDED.start_time,
                 end_time = EXCLUDED.end_time,
                 timezone_offset = EXCLUDED.timezone_offset,
@@ -109,7 +110,7 @@ export class WhoopDatabaseService {
     }
 
     // Recovery operations
-    async upsertRecovery(recovery: WhoopRecovery, sleepId?: number): Promise<void> {
+    async upsertRecovery(recovery: WhoopRecovery, sleepId?: string): Promise<void> {
         console.log(`💾 Upserting recovery for cycle ${recovery.cycle_id}, sleepId: ${sleepId || 'null'}`);
         try {
             const result = await sql`
@@ -150,14 +151,14 @@ export class WhoopDatabaseService {
 
         await sql`
       INSERT INTO whoop_workouts (
-        id, user_id, start_time, end_time, timezone_offset, sport_id,
+        id, activity_v1_id, user_id, start_time, end_time, timezone_offset, sport_id,
         score_state, strain, average_heart_rate, max_heart_rate, kilojoule,
         distance_meter, altitude_gain_meter, altitude_change_meter,
         zone_zero_milli, zone_one_milli, zone_two_milli, zone_three_milli,
         zone_four_milli, zone_five_milli
       )
       VALUES (
-        ${workout.id}, ${workout.user_id}, ${workout.start}, ${workout.end},
+        ${workout.id}, ${workout.activityV1Id || null}, ${workout.user_id}, ${workout.start}, ${workout.end},
         ${workout.timezone_offset}, ${workout.sport_id}, ${workout.score_state},
         ${workout.score.strain || 0}, ${workout.score.average_heart_rate || 0},
         ${workout.score.max_heart_rate || 0}, ${workout.score.kilojoule || 0},
@@ -169,6 +170,7 @@ export class WhoopDatabaseService {
       )
       ON CONFLICT (id)
       DO UPDATE SET
+        activity_v1_id = EXCLUDED.activity_v1_id,
         start_time = EXCLUDED.start_time,
         end_time = EXCLUDED.end_time,
         timezone_offset = EXCLUDED.timezone_offset,
