@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '../../../lib/auth';
-import { WhoopV1Client } from '../../../lib/whoop-client';
+import { WhoopV2Client } from '../../../lib/whoop-client';
 import { WhoopDatabaseService } from '../../../lib/whoop-database';
 
 export async function POST(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Initialize clients
-        const whoopClient = new WhoopV1Client(session.accessToken);
+        const whoopClient = new WhoopV2Client(session.accessToken);
         const dbService = new WhoopDatabaseService();
 
         // Get user profile

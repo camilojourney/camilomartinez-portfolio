@@ -9,8 +9,8 @@ import {
     WhoopSleepResponse
 } from '../types/whoop';
 
-export class WhoopV1Client {
-    private baseUrl = 'https://api.prod.whoop.com/developer/v1';
+export class WhoopV2Client {
+    private baseUrl = 'https://api.prod.whoop.com/developer/v2';
     private accessToken: string;
     private lastRequestTime = 0;
     private minRequestInterval = 200; // 200ms between requests (5 requests per second max)
@@ -109,13 +109,13 @@ export class WhoopV1Client {
         return allCycles;
     }
 
-    // Get sleep data for a specific cycle (DEPRECATED - doesn't work)
+    // Get sleep data for a specific cycle (v2 uses /cycle/{cycleId}/sleep relationship)
     async getSleep(cycleId: number): Promise<WhoopSleep> {
         return this.makeRequest<WhoopSleep>(`/cycle/${cycleId}/sleep`);
     }
 
-    // Get sleep data by sleep ID (correct method)
-    async getSleepById(sleepId: number): Promise<WhoopSleep> {
+    // Get sleep data by sleep ID (sleep IDs are now UUIDs in v2)
+    async getSleepById(sleepId: string): Promise<WhoopSleep> {
         return this.makeRequest<WhoopSleep>(`/activity/sleep/${sleepId}`);
     }
 
@@ -186,6 +186,7 @@ export class WhoopV1Client {
         let recovery: WhoopRecovery | null = null;
 
         try {
+            // In v2, the sleep endpoint for cycles should work properly
             sleep = await this.getSleep(cycleId);
         } catch (error) {
             console.warn(`No sleep data for cycle ${cycleId}:`, error);
