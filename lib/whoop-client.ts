@@ -10,6 +10,9 @@ import {
     WhoopRecoveryResponse
 } from '../types/whoop';
 
+
+const WHOOP_PAGE_LIMIT = 25;
+
 export class WhoopV2Client {
     private baseUrl = 'https://api.prod.whoop.com/developer/v2';
     private accessToken: string;
@@ -134,11 +137,11 @@ export class WhoopV2Client {
 
     // Get cycles with pagination (v2 API)
     async getCycles(start?: string, end?: string, nextToken?: string): Promise<WhoopCyclesResponse> {
-        const params = new URLSearchParams();
+
+        const params = new URLSearchParams({ limit: `${WHOOP_PAGE_LIMIT}` });
         if (start) params.append('start', start);
         if (end) params.append('end', end);
         if (nextToken) params.append('nextToken', nextToken);
-        params.append('limit', '50'); // v2 API supports up to 50 records per page
 
         const endpoint = `/cycle${params.toString() ? `?${params.toString()}` : ''}`;
         console.log('🔍 DEBUG: Getting cycles with params:', Object.fromEntries(params.entries()));
@@ -147,6 +150,7 @@ export class WhoopV2Client {
 
     // Get all cycles (handles pagination automatically)
     async getAllCycles(start?: string, end?: string): Promise<WhoopCycle[]> {
+
         console.log('� Getting all cycles');
         console.log('📅 Date range:', {
             start: start ? new Date(start).toISOString() : 'beginning',
@@ -176,7 +180,7 @@ export class WhoopV2Client {
             nextToken = response.next_token;
 
             // Safety check to prevent infinite loops
-            if (pageCount > 50) {
+            if (pageCount > 500) {
                 console.warn('🚨 WARNING: Breaking pagination loop after 50 pages to prevent infinite requests');
                 break;
             }
@@ -202,6 +206,7 @@ export class WhoopV2Client {
         if (start) params.append('start', start);
         if (end) params.append('end', end);
         if (nextToken) params.append('nextToken', nextToken);
+        params.append('limit', String(WHOOP_PAGE_LIMIT));
 
         const endpoint = `/activity/sleep${params.toString() ? `?${params.toString()}` : ''}`;
         return this.makeRequest<WhoopSleepResponse>(endpoint);
@@ -230,11 +235,10 @@ export class WhoopV2Client {
 
     // Get recovery collection with pagination
     async getRecoveryCollection(start?: string, end?: string, nextToken?: string, limit: number = 50): Promise<WhoopRecoveryResponse> {
-        const params = new URLSearchParams();
+        const params = new URLSearchParams({ limit: String(WHOOP_PAGE_LIMIT) });
         if (start) params.append('start', start);
         if (end) params.append('end', end);
         if (nextToken) params.append('nextToken', nextToken);
-        params.append('limit', limit.toString());
 
         const endpoint = `/recovery${params.toString() ? `?${params.toString()}` : ''}`;
 
@@ -268,8 +272,8 @@ export class WhoopV2Client {
             allRecovery.push(...records);
             nextToken = response.next_token;
 
-            if (pageCount > 50) {
-                console.warn('🚨 WARNING: Breaking recovery pagination loop after 50 pages');
+            if (pageCount > 500) {
+                console.warn('🚨 WARNING: Breaking recovery pagination loop after 500 pages');
                 break;
             }
         } while (nextToken);
@@ -280,11 +284,11 @@ export class WhoopV2Client {
 
     // Get workouts with pagination
     async getWorkouts(start?: string, end?: string, nextToken?: string, limit: number = 50): Promise<WhoopWorkoutsResponse> {
-        const params = new URLSearchParams();
+
+        const params = new URLSearchParams({ limit: String(WHOOP_PAGE_LIMIT) });
         if (start) params.append('start', start);
         if (end) params.append('end', end);
         if (nextToken) params.append('nextToken', nextToken);
-        params.append('limit', limit.toString());
 
         const endpoint = `/activity/workout${params.toString() ? `?${params.toString()}` : ''}`;
 
@@ -316,7 +320,7 @@ export class WhoopV2Client {
             allWorkouts.push(...records);
             nextToken = response.next_token;
 
-            if (pageCount > 50) {
+            if (pageCount > 500) {
                 console.warn('🚨 WARNING: Breaking workouts pagination loop after 50 pages');
                 break;
             }
