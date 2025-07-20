@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '../../../../lib/auth';
 import { WhoopV2Client } from '../../../../lib/whoop-client';
 import { WhoopDatabaseService } from '../../../../lib/whoop-database';
 
@@ -10,9 +11,25 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const accessToken = process.env.WHOOP_ACCESS_TOKEN;
+        // Try to get token from session first (with automatic refresh), fallback to env
+        let accessToken = process.env.WHOOP_ACCESS_TOKEN;
+        let tokenSource = 'environment';
+
+        try {
+            const session = await auth();
+            if (session?.accessToken) {
+                accessToken = session.accessToken;
+                tokenSource = 'session (auto-refreshed)';
+            }
+        } catch (sessionError) {
+            console.log('Session not available, using environment token');
+        }
+
         if (!accessToken) {
-            return NextResponse.json({ error: 'No access token' }, { status: 500 });
+            return NextResponse.json({
+                error: 'No access token available',
+                suggestion: 'Sign in to WHOOP or update environment variable'
+            }, { status: 500 });
         }
 
         const whoopClient = new WhoopV2Client(accessToken);
@@ -41,7 +58,7 @@ export async function GET(request: Request) {
             // Sync sleep
             const sleepData = await whoopClient.getAllSleep(startDate, endDate);
             for (const sleep of sleepData) {
-                const matchingCycle = cycles.find(cycle => 
+                const matchingCycle = cycles.find(cycle =>
                     new Date(sleep.start) >= new Date(cycle.start) &&
                     new Date(sleep.start) <= new Date(cycle.end)
                 );
@@ -67,6 +84,7 @@ export async function GET(request: Request) {
             success: results.errors.length === 0,
             message: 'Daily WHOOP sync completed',
             results,
+            tokenSource,
             timestamp: new Date().toISOString()
         });
 
