@@ -53,8 +53,8 @@ export class WhoopDatabaseService {
     }
 
     // Sleep operations
-    async upsertSleep(sleep: WhoopSleep, cycleId: number): Promise<void> {
-        console.log(`💾 Upserting sleep for cycle ${cycleId}, sleep ID: ${sleep.id}, score_state: ${sleep.score_state}`);
+    async upsertSleep(sleep: WhoopSleep, cycleId?: number): Promise<void> {
+        console.log(`💾 Upserting sleep for cycle ${cycleId || 'unknown'}, sleep ID: ${sleep.id}, score_state: ${sleep.score_state}`);
 
         // Handle cases where score data might be missing
         const hasScore = sleep.score && sleep.score_state === 'SCORED';
@@ -70,7 +70,7 @@ export class WhoopDatabaseService {
                 total_slow_wave_sleep_time_milli, total_rem_sleep_time_milli, disturbance_count
               )
               VALUES (
-                ${sleep.id}, ${sleep.activityV1Id || null}, ${sleep.user_id}, ${cycleId}, ${sleep.start}, ${sleep.end},
+                ${sleep.id}, ${sleep.activityV1Id || null}, ${sleep.user_id}, ${cycleId || null}, ${sleep.start}, ${sleep.end},
                 ${sleep.timezone_offset}, ${sleep.nap}, ${sleep.score_state},
                 ${hasScore && sleep.score ? sleep.score.sleep_performance_percentage : null},
                 ${hasScore && sleep.score ? sleep.score.respiratory_rate : null},
@@ -111,18 +111,26 @@ export class WhoopDatabaseService {
 
     // Recovery operations
     async upsertRecovery(recovery: WhoopRecovery, sleepId?: string): Promise<void> {
-        console.log(`💾 Upserting recovery for cycle ${recovery.cycle_id}, sleepId: ${sleepId || 'null'}`);
         try {
+            // Use sleep_id from recovery object if available, otherwise use the provided sleepId
+            const finalSleepId = recovery.sleep_id || sleepId || null;
+
+            // Skip if no score data
+            if (!recovery.score) {
+                console.log(`Skipping recovery for cycle ${recovery.cycle_id} - no score data`);
+                return;
+            }
+
             const result = await sql`
           INSERT INTO whoop_recovery (
             cycle_id, sleep_id, user_id, score_state, recovery_score,
             resting_heart_rate, hrv_rmssd_milli, spo2_percentage, skin_temp_celsius
           )
           VALUES (
-            ${recovery.cycle_id}, ${sleepId || null}, ${recovery.user_id},
-            ${recovery.score_state}, ${recovery.score.recovery_score},
-            ${recovery.score.resting_heart_rate}, ${recovery.score.hrv_rmssd_milli},
-            ${recovery.score.spo2_percentage}, ${recovery.score.skin_temp_celsius}
+            ${recovery.cycle_id}, ${finalSleepId}, ${recovery.user_id},
+            ${recovery.score_state}, ${recovery.score.recovery_score || 0},
+            ${recovery.score.resting_heart_rate || 0}, ${recovery.score.hrv_rmssd_milli || 0},
+            ${recovery.score.spo2_percentage || null}, ${recovery.score.skin_temp_celsius || null}
           )
           ON CONFLICT (cycle_id)
           DO UPDATE SET
@@ -134,7 +142,7 @@ export class WhoopDatabaseService {
             spo2_percentage = EXCLUDED.spo2_percentage,
             skin_temp_celsius = EXCLUDED.skin_temp_celsius
         `;
-            console.log(`✅ Recovery upsert result:`, result);
+            console.log(`✅ Recovery upsert successful for cycle ${recovery.cycle_id}`);
         } catch (error) {
             console.error(`❌ Recovery upsert failed for cycle ${recovery.cycle_id}:`, error);
             throw error;

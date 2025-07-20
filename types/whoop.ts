@@ -66,14 +66,19 @@ export interface WhoopRecovery {
     created_at: string;
     updated_at: string;
     score_state: string;
-    score: {
+    score?: {
         user_calibrating: boolean;
         recovery_score: number;
         resting_heart_rate: number;
         hrv_rmssd_milli: number;
-        spo2_percentage: number;
-        skin_temp_celsius: number;
+        spo2_percentage?: number;
+        skin_temp_celsius?: number;
     };
+}
+
+export interface WhoopRecoveryResponse {
+    records: WhoopRecovery[];
+    next_token?: string;
 }
 
 export interface WhoopWorkout {

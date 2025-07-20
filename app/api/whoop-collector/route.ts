@@ -12,6 +12,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
         }
 
+        // Parse request body to check for mode
+        const body = await request.json().catch(() => ({}));
+        const mode = body.mode || 'daily'; // Default to daily if no mode specified
+        const isDaily = mode === 'daily';
+        const now = new Date();
+
+        console.log(`🔧 Running ${mode} collection`);
+
         // Initialize clients
         const whoopClient = new WhoopV2Client(session.accessToken);
         const dbService = new WhoopDatabaseService();
@@ -36,82 +44,149 @@ export async function POST(request: NextRequest) {
         console.log('Latest cycle date:', latestCycleDate);
         console.log('Latest workout date:', latestWorkoutDate);
 
-        // Calculate start date for incremental sync (last 3 days to ensure we don't miss anything)
-        const now = new Date();
-        const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
-
-        const cycleStartDate = latestCycleDate && latestCycleDate > threeDaysAgo
-            ? latestCycleDate.toISOString()
-            : threeDaysAgo.toISOString();
-
-        const workoutStartDate = latestWorkoutDate && latestWorkoutDate > threeDaysAgo
-            ? latestWorkoutDate.toISOString()
-            : threeDaysAgo.toISOString();
+        // Calculate start date based on mode
+        let startDate: string | undefined;
+        if (isDaily) {
+            // Daily mode: collect last 3 days to catch any delayed data
+            const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
+            startDate = threeDaysAgo.toISOString();
+            console.log('📅 Daily mode: collecting last 3 days from', startDate);
+        } else {
+            // Historical mode: collect ALL data (no start date limit)
+            startDate = undefined; // This will fetch all historical data
+            console.log('📅 Historical mode: collecting ALL historical data (no date limit)');
+            console.log('⚠️ This may take a while and use significant API requests');
+            console.log('💡 WHOOP rate limits: 100 req/min, 10,000 req/day');
+        }
 
         // Collect new cycles
         try {
-            console.log('Fetching new cycles since:', cycleStartDate);
-            const cycles = await whoopClient.getAllCycles(cycleStartDate);
-            console.log(`Found ${cycles.length} cycles to process`);
+            console.log('🔍 DEBUG: About to fetch cycles...');
+            console.log('🔍 DEBUG: startDate =', startDate);
+            console.log('🔍 DEBUG: mode =', mode);
+
+            const cycles = await whoopClient.getAllCycles(startDate);
+
+            console.log('🔍 DEBUG: Raw cycles response:', {
+                count: cycles.length,
+                firstCycle: cycles[0] ? {
+                    id: cycles[0].id,
+                    start: cycles[0].start,
+                    end: cycles[0].end
+                } : null,
+                lastCycle: cycles[cycles.length - 1] ? {
+                    id: cycles[cycles.length - 1].id,
+                    start: cycles[cycles.length - 1].start,
+                    end: cycles[cycles.length - 1].end
+                } : null
+            });
 
             if (cycles.length > 0) {
+                console.log(`📊 Date range of cycles: ${cycles[cycles.length - 1]?.start} to ${cycles[0]?.start}`);
+
+                // Try to upsert cycles
+                console.log('🔍 DEBUG: About to upsert cycles to database...');
                 await dbService.upsertCycles(cycles);
                 results.newCycles = cycles.length;
+                console.log('🔍 DEBUG: Successfully upserted cycles to database');
+            } else {
+                console.log('🔍 DEBUG: No cycles found - this might be the issue!');
+            }
+        } catch (error) {
+            console.error('❌ ERROR: Error fetching cycles:', error);
+            results.errors.push(`Error fetching cycles: ${error}`);
+        }
 
-                // For each new cycle, get sleep and recovery data
-                for (const cycle of cycles) {
-                    try {
-                        // Get sleep data
-                        try {
-                            const sleep = await whoopClient.getSleep(cycle.id);
-                            await dbService.upsertSleep(sleep, cycle.id);
-                            results.newSleep++;
-                            console.log(`Stored sleep data for cycle ${cycle.id}`);
-                        } catch (error) {
-                            console.warn(`No sleep data for cycle ${cycle.id}:`, error);
-                            results.errors.push(`No sleep data for cycle ${cycle.id}`);
-                        }
+        // Collect sleep data first (recovery depends on sleep data)
+        try {
+            console.log('🛌 Fetching all sleep data since:', startDate);
+            const sleepData = await whoopClient.getAllSleep(startDate);
+            console.log(`Found ${sleepData.length} sleep records to process`);
 
-                        // Get recovery data
-                        try {
-                            const recovery = await whoopClient.getRecovery(cycle.id);
-                            await dbService.upsertRecovery(recovery);
-                            results.newRecovery++;
-                            console.log(`Stored recovery data for cycle ${cycle.id}`);
-                        } catch (error) {
-                            console.warn(`No recovery data for cycle ${cycle.id}:`, error);
-                            results.errors.push(`No recovery data for cycle ${cycle.id}`);
-                        }
+            for (const sleep of sleepData) {
+                try {
+                    // Store all sleep records - the database will handle cycle relationships
+                    await dbService.upsertSleep(sleep);
+                    results.newSleep++;
+                    console.log(`✅ Stored sleep data: ${sleep.id}`);
+                } catch (error) {
+                    console.error(`❌ Error storing sleep ${sleep.id}:`, error);
+                    results.errors.push(`Error storing sleep ${sleep.id}: ${error}`);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error fetching sleep data:', error);
+            results.errors.push(`Error fetching sleep data: ${error}`);
+        }
 
-                        // Small delay to avoid rate limiting
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    } catch (error) {
-                        console.error(`Error processing cycle ${cycle.id}:`, error);
-                        results.errors.push(`Error processing cycle ${cycle.id}: ${error}`);
+        // Collect recovery data in bulk (more efficient than per-cycle)
+        try {
+            console.log('🔄 Fetching all recovery data since:', startDate);
+            const recoveryData = await whoopClient.getAllRecovery(startDate);
+            console.log(`Found ${recoveryData.length} recovery records to process`);
+
+            for (const recovery of recoveryData) {
+                try {
+                    await dbService.upsertRecovery(recovery);
+                    results.newRecovery++;
+                    console.log(`✅ Stored recovery data for cycle ${recovery.cycle_id}`);
+                } catch (error) {
+                    // Enhanced debugging for foreign key constraint violations
+                    if (error instanceof Error && error.message.includes('whoop_recovery_sleep_id_fkey')) {
+                        console.error(`🔍 DEBUG: Foreign key violation for recovery cycle ${recovery.cycle_id}`);
+                        console.error(`🔍 DEBUG: Recovery references sleep_id: ${recovery.sleep_id}`);
+                        console.error(`🔍 DEBUG: This sleep_id might not exist in our whoop_sleep table`);
+
+                        // Add this to results for visibility
+                        results.errors.push(`Recovery cycle ${recovery.cycle_id} references missing sleep_id: ${recovery.sleep_id}`);
+                    } else {
+                        console.error(`❌ Error storing recovery for cycle ${recovery.cycle_id}:`, error);
+                        results.errors.push(`Error storing recovery for cycle ${recovery.cycle_id}: ${error}`);
                     }
                 }
             }
         } catch (error) {
-            console.error('Error fetching cycles:', error);
-            results.errors.push(`Error fetching cycles: ${error}`);
+            console.error('❌ Error fetching recovery data:', error);
+            results.errors.push(`Error fetching recovery data: ${error}`);
         }
 
         // Collect new workouts
         try {
-            console.log('Fetching new workouts since:', workoutStartDate);
-            const workouts = await whoopClient.getAllWorkouts(workoutStartDate);
+            console.log('🏃‍♂️ Fetching new workouts since:', startDate);
+            const workouts = await whoopClient.getAllWorkouts(startDate);
             console.log(`Found ${workouts.length} workouts to process`);
 
             if (workouts.length > 0) {
                 await dbService.upsertWorkouts(workouts);
                 results.newWorkouts = workouts.length;
+                console.log(`✅ Stored ${workouts.length} workouts`);
             }
         } catch (error) {
-            console.error('Error fetching workouts:', error);
+            console.error('❌ Error fetching workouts:', error);
             results.errors.push(`Error fetching workouts: ${error}`);
         }
 
-        console.log('Daily collection results:', results);
+        console.log(`${mode === 'historical' ? 'Historical' : 'Daily'} collection results:`, results);
+
+        // Add summary statistics
+        console.log(`📊 Collection Summary:`);
+        console.log(`  - Cycles: ${results.newCycles}`);
+        console.log(`  - Sleep Records: ${results.newSleep}`);
+        console.log(`  - Recovery Records: ${results.newRecovery}`);
+        console.log(`  - Workouts: ${results.newWorkouts}`);
+        console.log(`  - Errors: ${results.errors.length}`);
+
+        if (results.errors.length > 0) {
+            console.log(`⚠️ Foreign Key Issues: ${results.errors.filter(e => e.includes('sleep_id')).length}`);
+        }
+
+        // Add completion message for historical runs
+        if (!isDaily) {
+            console.log(`🎉 COMPLETE HISTORICAL COLLECTION FINISHED!`);
+            console.log(`📈 Total Records: ${results.newCycles + results.newSleep + results.newRecovery + results.newWorkouts}`);
+            console.log(`💾 Your entire WHOOP history has been synchronized`);
+        }
+
         return NextResponse.json(results);
 
     } catch (error) {

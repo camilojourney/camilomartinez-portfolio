@@ -114,16 +114,16 @@ export default function WhoopDashboard() {
             setDebugInfo({
                 user: result.user || session.user,
                 data_counts: {
-                    cycles: result.summary?.totalCycles || 0,
-                    sleep: result.summary?.totalSleep || 0,
-                    recovery: result.summary?.totalRecovery || 0,
-                    workouts: result.summary?.totalWorkouts || 0
+                    cycles: result.counts?.cycles || 0,
+                    sleep: result.counts?.sleep || 0,
+                    recovery: result.counts?.recovery || 0,
+                    workouts: result.counts?.workouts || 0
                 },
                 latest_dates: {
-                    latest_cycle: result.cycles?.[0]?.created_at,
-                    latest_sleep: result.sleep?.[0]?.created_at,
-                    latest_recovery: result.recovery?.[0]?.created_at,
-                    latest_workout: result.workouts?.[0]?.created_at
+                    latest_cycle: result.recent?.cycles?.rows?.[0]?.start_time,
+                    latest_sleep: result.recent?.sleep?.rows?.[0]?.start_time,
+                    latest_recovery: result.recent?.recovery?.rows?.[0]?.created_at,
+                    latest_workout: result.recent?.workouts?.rows?.[0]?.created_at
                 },
                 database_status: true,
                 api_status: true,
@@ -316,33 +316,39 @@ export default function WhoopDashboard() {
                                 {historicalResult && (
                                     <div className="mt-6 p-6 backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl">
                                         <h3 className="font-medium text-white mb-4">Historical Collection Results:</h3>
-                                        {historicalResult.errors && historicalResult.errors.length > 0 ? (
-                                            <div className="text-red-400 space-y-2">
-                                                {historicalResult.errors.map((error, i) => (
-                                                    <p key={i} className="flex items-center gap-2 font-light">
-                                                        <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                                                        {error}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-green-400 space-y-3 font-light">
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Cycles: {historicalResult.newCycles || 0}
-                                                </p>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Sleep Records: {historicalResult.newSleep || 0}
-                                                </p>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Recovery Records: {historicalResult.newRecovery || 0}
-                                                </p>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Workouts: {historicalResult.newWorkouts || 0}
-                                                </p>
+
+                                        {/* Always show success metrics */}
+                                        <div className="text-green-400 space-y-3 font-light mb-6">
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Cycles: {historicalResult.newCycles || 0}
+                                            </p>
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Sleep Records: {historicalResult.newSleep || 0}
+                                            </p>
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Recovery Records: {historicalResult.newRecovery || 0}
+                                            </p>
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Workouts: {historicalResult.newWorkouts || 0}
+                                            </p>
+                                        </div>
+
+                                        {/* Show errors if any exist */}
+                                        {historicalResult.errors && historicalResult.errors.length > 0 && (
+                                            <div className="border-t border-white/10 pt-4">
+                                                <h4 className="text-yellow-400 font-medium mb-3">Warnings:</h4>
+                                                <div className="text-yellow-400 space-y-2">
+                                                    {historicalResult.errors.map((error, i) => (
+                                                        <p key={i} className="flex items-center gap-2 font-light text-sm">
+                                                            <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
+                                                            {error}
+                                                        </p>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -381,33 +387,39 @@ export default function WhoopDashboard() {
                                 {dailyResult && (
                                     <div className="mt-6 p-6 backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl">
                                         <h3 className="font-medium text-white mb-4">Daily Collection Results:</h3>
-                                        {dailyResult.errors && dailyResult.errors.length > 0 ? (
-                                            <div className="text-red-400 space-y-2">
-                                                {dailyResult.errors.map((error, i) => (
-                                                    <p key={i} className="flex items-center gap-2 font-light">
-                                                        <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                                                        {error}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-green-400 space-y-3 font-light">
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Cycles: {dailyResult.newCycles || 0}
-                                                </p>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Sleep Records: {dailyResult.newSleep || 0}
-                                                </p>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Recovery Records: {dailyResult.newRecovery || 0}
-                                                </p>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                    New Workouts: {dailyResult.newWorkouts || 0}
-                                                </p>
+
+                                        {/* Always show success metrics */}
+                                        <div className="text-green-400 space-y-3 font-light mb-6">
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Cycles: {dailyResult.newCycles || 0}
+                                            </p>
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Sleep Records: {dailyResult.newSleep || 0}
+                                            </p>
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Recovery Records: {dailyResult.newRecovery || 0}
+                                            </p>
+                                            <p className="flex items-center gap-3">
+                                                <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                                                New Workouts: {dailyResult.newWorkouts || 0}
+                                            </p>
+                                        </div>
+
+                                        {/* Show errors if any exist */}
+                                        {dailyResult.errors && dailyResult.errors.length > 0 && (
+                                            <div className="border-t border-white/10 pt-4">
+                                                <h4 className="text-yellow-400 font-medium mb-3">Warnings:</h4>
+                                                <div className="text-yellow-400 space-y-2">
+                                                    {dailyResult.errors.map((error, i) => (
+                                                        <p key={i} className="flex items-center gap-2 font-light text-sm">
+                                                            <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
+                                                            {error}
+                                                        </p>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
