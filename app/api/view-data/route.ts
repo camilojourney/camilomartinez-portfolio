@@ -28,11 +28,11 @@ export async function GET() {
         return NextResponse.json({
             success: true,
             counts: {
-                users: users[0]?.count || 0,
-                cycles: cycles[0]?.count || 0,
-                sleep: sleep[0]?.count || 0,
-                recovery: recovery[0]?.count || 0,
-                workouts: workouts[0]?.count || 0
+                users: parseInt(users.rows[0]?.count) || 0,
+                cycles: parseInt(cycles.rows[0]?.count) || 0,
+                sleep: parseInt(sleep.rows[0]?.count) || 0,
+                recovery: parseInt(recovery.rows[0]?.count) || 0,
+                workouts: parseInt(workouts.rows[0]?.count) || 0
             },
             recent: {
                 cycles: recentCycles,
