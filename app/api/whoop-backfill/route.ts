@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
+import { auth } from '../../../lib/auth';
 import { WhoopV2Client } from '../../../lib/whoop-client';
 import { WhoopDatabaseService } from '../../../lib/whoop-database';
 
 export async function POST() {
     try {
-        // For now, use environment variable for testing
-        const accessToken = process.env.WHOOP_ACCESS_TOKEN;
-        
-        if (!accessToken) {
-            return NextResponse.json({ error: 'No access token available' }, { status: 401 });
+        // Get the authenticated session
+        const session = await auth();
+
+        if (!session?.accessToken) {
+            return NextResponse.json({ error: 'Not authenticated or no access token available' }, { status: 401 });
         }
+
+        const accessToken = session.accessToken;
 
         const whoopClient = new WhoopV2Client(accessToken);
         const dbService = new WhoopDatabaseService();
@@ -36,11 +39,11 @@ export async function POST() {
 
         for (const sleep of sleepData) {
             // Find matching cycle for this sleep
-            const matchingCycle = cycles.find(cycle => 
+            const matchingCycle = cycles.find(cycle =>
                 new Date(sleep.start) >= new Date(cycle.start) &&
                 new Date(sleep.start) <= new Date(cycle.end)
             );
-            
+
             if (matchingCycle) {
                 await dbService.upsertSleep(sleep, matchingCycle.id);
             }

@@ -5,8 +5,8 @@ import LiquidPage from 'app/components/liquid-page'
 
 async function getWhoopData(accessToken: string): Promise<any> {
     try {
-        // Fetch the last 7 days of recovery data
-        const response = await fetch('https://api.prod.whoop.com/developer/v1/recovery?limit=7', {
+        // Fetch the last 7 days of recovery data using v2 API
+        const response = await fetch('https://api.prod.whoop.com/developer/v2/recovery?limit=7', {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
@@ -143,6 +143,22 @@ export default async function LiveDataPage() {
                 {/* Advanced Analytics Section - Always show if user is authenticated */}
                 {session && (
                     <div className="mt-12 space-y-8">
+                        {/* Personal Dashboard Link */}
+                        <div className="liquid-glass-card backdrop-blur-lg bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-2xl p-8 text-center">
+                            <h2 className="text-2xl font-semibold text-white mb-4">
+                                Want to Track Your Performance Over Time?
+                            </h2>
+                            <p className="text-white/70 mb-6">
+                                Check out the comprehensive performance dashboard with historical charts and insights.
+                            </p>
+                            <a
+                                href="/my-stats"
+                                className="inline-block bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-lg hover:bg-purple-500/30 transition-colors"
+                            >
+                                View My Performance Dashboard →
+                            </a>
+                        </div>
+
                         {/* Strain vs Sleep Chart */}
                         <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8">
                             <h2 className="text-2xl font-semibold text-white mb-6 text-center">
@@ -151,9 +167,15 @@ export default async function LiveDataPage() {
                             <p className="text-white/70 text-center mb-8">
                                 These charts use stored data from your WHOOP account to show insights about strain, sleep performance, recovery, and workout patterns.
                             </p>
-                                                        <div className="text-center py-12">
-                                <div className="text-white/60 text-lg mb-4">📊 Charts Coming Soon</div>
-                                <div className="text-white/40">Advanced analytics will be available soon</div>
+                            <div className="text-center py-12">
+                                <div className="text-white/60 text-lg mb-4">📊 Charts Available in My Stats</div>
+                                <div className="text-white/40 mb-6">Visit the My Stats page to see your beautiful performance charts</div>
+                                <a
+                                    href="/my-stats"
+                                    className="inline-block bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-lg hover:bg-purple-500/30 transition-colors"
+                                >
+                                    View My Stats Dashboard →
+                                </a>
                             </div>
                         </div>
 

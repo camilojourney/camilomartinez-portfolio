@@ -12,16 +12,16 @@ export async function GET() {
 
         // Get recent records
         const recentCycles = await sql`
-            SELECT id, start_time, end_time, strain 
-            FROM whoop_cycles 
-            ORDER BY start_time DESC 
+            SELECT id, start_time, end_time, strain
+            FROM whoop_cycles
+            ORDER BY start_time DESC
             LIMIT 5
         `;
 
         const recentSleep = await sql`
-            SELECT id, start_time, end_time, sleep_performance_percentage 
-            FROM whoop_sleep 
-            ORDER BY start_time DESC 
+            SELECT id, start_time, end_time, sleep_performance_percentage
+            FROM whoop_sleep
+            ORDER BY start_time DESC
             LIMIT 5
         `;
 
@@ -42,8 +42,8 @@ export async function GET() {
         });
     } catch (error) {
         console.error('View data error:', error);
-        return NextResponse.json({ 
-            error: 'Failed to view data', 
+        return NextResponse.json({
+            error: 'Failed to view data',
             details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 });
     }
