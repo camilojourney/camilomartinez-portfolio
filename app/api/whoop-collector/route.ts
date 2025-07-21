@@ -40,14 +40,15 @@ export async function POST(request: NextRequest) {
             console.log('📅 Historical mode: collecting ALL historical data');
         }
 
-        // STEP 1: Fetch and save ALL sleep data FIRST.
+        // STEP 1: Fetch and save ALL sleep data FIRST. It has reliable pagination.
+        let allSleepData = [];
         try {
             console.log('🛌 Fetching all sleep data since:', startDate);
-            const sleepData = await whoopClient.getAllSleep(startDate);
-            if (sleepData.length > 0) {
-                await dbService.upsertSleeps(sleepData); // Assumes a bulk upsert method
-                results.newSleep = sleepData.length;
-                console.log(`✅ Stored ${sleepData.length} sleep records.`);
+            allSleepData = await whoopClient.getAllSleep(startDate);
+            if (allSleepData.length > 0) {
+                await dbService.upsertSleeps(allSleepData);
+                results.newSleep = allSleepData.length;
+                console.log(`✅ Stored ${allSleepData.length} sleep records.`);
             }
         } catch (error) {
             const errorMessage = `Error with sleep data: ${error instanceof Error ? error.message : String(error)}`;
@@ -55,17 +56,29 @@ export async function POST(request: NextRequest) {
             results.errors.push(errorMessage);
         }
 
-        // STEP 2: Collect and save cycles.
+        // STEP 2: Fetch cycles using the reliable cycle_ids from the sleep data.
         try {
-            console.log('🔄 Fetching cycles since:', startDate);
-            const cycles = await whoopClient.getAllCycles(startDate);
+            console.log('🔄 Fetching cycles based on sleep data...');
+            const cycleIds = [...new Set(allSleepData.map(s => s.cycle_id))];
+            console.log(`Found ${cycleIds.length} unique cycles to fetch.`);
+
+            const cycles = [];
+            for (const cycleId of cycleIds) {
+                try {
+                    const cycle = await whoopClient.getCycleById(cycleId);
+                    cycles.push(cycle);
+                } catch (error) {
+                    console.warn(`Could not fetch details for cycle ${cycleId}. Skipping.`);
+                }
+            }
+
             if (cycles.length > 0) {
-                await dbService.upsertCycles(cycles); // Assumes a bulk upsert method
+                await dbService.upsertCycles(cycles);
                 results.newCycles = cycles.length;
                 console.log(`✅ Stored ${cycles.length} cycles.`);
             }
         } catch (error) {
-            const errorMessage = `Error with cycles: ${error instanceof Error ? error.message : String(error)}`;
+            const errorMessage = `Error with cycle data: ${error instanceof Error ? error.message : String(error)}`;
             console.error('❌', errorMessage);
             results.errors.push(errorMessage);
         }
@@ -75,7 +88,7 @@ export async function POST(request: NextRequest) {
             console.log('❤️‍🩹 Fetching all recovery data since:', startDate);
             const recoveryData = await whoopClient.getAllRecovery(startDate);
             if (recoveryData.length > 0) {
-                const { newRecoveryCount, errors } = await dbService.upsertRecoveries(recoveryData); // Assumes a bulk upsert method
+                const { newRecoveryCount, errors } = await dbService.upsertRecoveries(recoveryData);
                 results.newRecovery = newRecoveryCount;
                 results.errors.push(...errors);
                 console.log(`✅ Stored ${newRecoveryCount} recovery records.`);
@@ -91,7 +104,7 @@ export async function POST(request: NextRequest) {
             console.log('🏃‍♂️ Fetching new workouts since:', startDate);
             const workouts = await whoopClient.getAllWorkouts(startDate);
             if (workouts.length > 0) {
-                await dbService.upsertWorkouts(workouts); // Assumes a bulk upsert method
+                await dbService.upsertWorkouts(workouts);
                 results.newWorkouts = workouts.length;
                 console.log(`✅ Stored ${workouts.length} workouts.`);
             }
