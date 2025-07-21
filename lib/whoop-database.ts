@@ -24,7 +24,6 @@ export class WhoopDatabaseService {
 
     // Cycle operations
     async upsertCycle(cycle: WhoopCycle): Promise<void> {
-        // Ensure score exists before destructuring
         if (!cycle.score) {
             console.warn(`Skipping cycle ${cycle.id} due to missing score data.`);
             return;
@@ -235,3 +234,4 @@ export class WhoopDatabaseService {
         return result.rows[0]?.latest_date ? new Date(result.rows[0].latest_date) : null;
     }
 }
+
