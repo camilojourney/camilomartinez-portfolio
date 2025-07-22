@@ -9,7 +9,7 @@ import {
 const WHOOP_PAGE_LIMIT = 25;
 
 export class WhoopV2Client {
-    private baseUrl = 'https://api.prod.whoop.com/v2';
+    private baseUrl = 'https://api.prod.whoop.com/developer/v2';
     private accessToken: string;
     private lastRequestTime = 0;
     private minRequestInterval = 700; // 700ms between requests (~85 requests/minute, safely under 100 limit)

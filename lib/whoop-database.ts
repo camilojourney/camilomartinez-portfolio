@@ -23,7 +23,7 @@ export class WhoopDatabaseService {
     }
 
     // Cycle operations
-    private async upsertCycle(cycle: WhoopCycle) {
+    async upsertCycle(cycle: WhoopCycle) {
         if (!cycle.score) {
             console.warn(`Skipping cycle ${cycle.id} due to missing score data.`);
             return;
