@@ -53,13 +53,11 @@ export default function WhoopDashboard() {
         setHistoricalResult(null);
 
         try {
-            const response = await fetch('/api/whoop-collector', {
+            const response = await fetch('/api/whoop-collector-v2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    mode: 'historical',
-                    skipWorkouts: false,
-                    skipCycles: false
+                    mode: 'historical'
                 })
             });
 
@@ -82,9 +80,12 @@ export default function WhoopDashboard() {
         setDailyResult(null);
 
         try {
-            const response = await fetch('/api/whoop-collector-daily', {
+            const response = await fetch('/api/whoop-collector-v2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mode: 'daily'
+                })
             });
 
             const result = await response.json();
