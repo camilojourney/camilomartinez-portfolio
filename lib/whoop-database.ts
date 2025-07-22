@@ -275,4 +275,42 @@ export class WhoopDatabaseService {
         `;
         return result.rows[0]?.latest_date ? new Date(result.rows[0].latest_date) : null;
     }
+    
+    // Method to update the cycle_id in sleep records using the recovery data
+    async updateSleepCycleRelationships(recoveries: WhoopRecovery[]): Promise<void> {
+        console.log(`Updating cycle relationships for ${recoveries.length} recovery records...`);
+        
+        // Process in batches to avoid overwhelming the database
+        const batchSize = 50;
+        for (let i = 0; i < recoveries.length; i += batchSize) {
+            const batch = recoveries.slice(i, i + batchSize);
+            
+            // Filter out records with missing sleep_id or cycle_id
+            const validRecords = batch.filter(r => r.sleep_id && r.cycle_id);
+            
+            if (validRecords.length === 0) continue;
+            
+            // Build an array of objects for the update operation
+            const updateData = validRecords.map(r => ({
+                sleep_id: r.sleep_id,
+                cycle_id: r.cycle_id
+            }));
+            
+            // Update each relationship
+            try {
+                for (const data of updateData) {
+                    await sql`
+                        UPDATE whoop_sleep
+                        SET cycle_id = ${data.cycle_id}
+                        WHERE id = ${data.sleep_id}
+                        AND (cycle_id IS NULL OR cycle_id != ${data.cycle_id});
+                    `;
+                }
+                console.log(`✅ Updated relationships for batch of ${validRecords.length} records`);
+            } catch (error) {
+                console.error('❌ Error updating sleep-cycle relationships:', error);
+                throw error;
+            }
+        }
+    }
 }
