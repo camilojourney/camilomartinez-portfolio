@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
             // Use the new getAllCycles method we added to the client
             const allCycles = await whoopClient.getAllCycles(startDate);
             console.log(`Found ${allCycles.length} cycles via pagination`);
-            
+
             if (allCycles.length > 0) {
                 await dbService.upsertCycles(allCycles);
                 results.newCycles = allCycles.length;
