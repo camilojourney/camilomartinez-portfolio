@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '../../../lib/auth';
 import { WhoopV2Client } from '../../../lib/whoop-client';
 import { WhoopDatabaseService } from '../../../lib/whoop-database';
+import { WhoopSleep, WhoopCycle, WhoopRecovery, WhoopWorkout } from '../../../types/whoop';
 
 export async function POST(request: NextRequest) {
     const session = await auth();
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest) {
 
         console.log(`🔧 Running ${mode} collection`);
 
+        // Initialize clients with v2 API
         const whoopClient = new WhoopV2Client(session.accessToken);
         const dbService = new WhoopDatabaseService();
         const userProfile = await whoopClient.getUserProfile();
@@ -30,18 +32,23 @@ export async function POST(request: NextRequest) {
             errors: [] as string[],
         };
 
+        // Determine date range for collection
         let startDate: string | undefined;
         if (isDaily) {
+            // For daily collection, get last 3 days to ensure no gaps
             const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
             startDate = threeDaysAgo.toISOString();
             console.log('📅 Daily mode: collecting last 3 days from', startDate);
         } else {
+            // For historical collection, start from undefined to get all data
+            // or you could set a very old date like:
+            // startDate = '2010-01-01T00:00:00Z';
             startDate = undefined;
             console.log('📅 Historical mode: collecting ALL historical data');
         }
 
         // STEP 1: Fetch and save ALL sleep data FIRST. It has reliable pagination.
-        let allSleepData = [];
+        let allSleepData: WhoopSleep[] = [];
         try {
             console.log('🛌 Fetching all sleep data since:', startDate);
             allSleepData = await whoopClient.getAllSleep(startDate);
@@ -56,26 +63,19 @@ export async function POST(request: NextRequest) {
             results.errors.push(errorMessage);
         }
 
-        // STEP 2: Fetch cycles using the reliable cycle_ids from the sleep data.
+        // STEP 2: Fetch cycles using direct pagination (v2 API)
         try {
-            console.log('🔄 Fetching cycles based on sleep data...');
-            const cycleIds = [...new Set(allSleepData.map(s => s.cycle_id))];
-            console.log(`Found ${cycleIds.length} unique cycles to fetch.`);
-
-            const cycles = [];
-            for (const cycleId of cycleIds) {
-                try {
-                    const cycle = await whoopClient.getCycleById(cycleId);
-                    cycles.push(cycle);
-                } catch (error) {
-                    console.warn(`Could not fetch details for cycle ${cycleId}. Skipping.`);
-                }
-            }
-
-            if (cycles.length > 0) {
-                await dbService.upsertCycles(cycles);
-                results.newCycles = cycles.length;
-                console.log(`✅ Stored ${cycles.length} cycles.`);
+            console.log('🔄 Fetching all cycles since:', startDate);
+            // Use the new getAllCycles method we added to the client
+            const allCycles = await whoopClient.getAllCycles(startDate);
+            console.log(`Found ${allCycles.length} cycles via pagination`);
+            
+            if (allCycles.length > 0) {
+                await dbService.upsertCycles(allCycles);
+                results.newCycles = allCycles.length;
+                console.log(`✅ Stored ${allCycles.length} cycles from direct fetch.`);
+            } else {
+                console.warn('⚠️ No cycles found via direct fetch! This is unusual and may indicate an API issue.');
             }
         } catch (error) {
             const errorMessage = `Error with cycle data: ${error instanceof Error ? error.message : String(error)}`;
@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
             results.errors.push(errorMessage);
         }
 
+        // Summary of collection results
         console.log(`📊 Collection Summary:`);
         console.log(`  - Cycles: ${results.newCycles}`);
         console.log(`  - Sleep Records: ${results.newSleep}`);
@@ -134,4 +135,14 @@ export async function POST(request: NextRequest) {
             details: error instanceof Error ? error.message : 'Unknown error',
         }, { status: 500 });
     }
+}
+
+// GET endpoint for debugging
+export async function GET() {
+    return NextResponse.json({
+        message: 'WHOOP Data Collector',
+        description: 'This endpoint collects data from the WHOOP API and stores it in the database.',
+        usage: 'Send a POST request to collect data. Add {"mode": "historical"} to the body for full historical collection.',
+        documentation: 'See the whoop-client.ts and whoop-database.ts files for more details on the implementation.'
+    });
 }
