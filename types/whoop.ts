@@ -26,7 +26,7 @@ export interface WhoopCycle {
 
 export interface WhoopSleep {
     id: string; // Changed from number to UUID string in v2
-    activityV1Id?: number; // Optional backwards compatibility with v1 ID
+    v1_id?: number; // Optional backwards compatibility with v1 ID (matches API response)
     user_id: number;
     created_at: string;
     updated_at: string;
@@ -83,7 +83,7 @@ export interface WhoopRecoveryResponse {
 
 export interface WhoopWorkout {
     id: string; // Changed from number to UUID string in v2
-    activityV1Id?: number; // Optional backwards compatibility with v1 ID
+    v1_id?: number; // Optional backwards compatibility with v1 ID (matches API response)
     user_id: number;
     created_at: string;
     updated_at: string;
@@ -91,6 +91,7 @@ export interface WhoopWorkout {
     end: string;
     timezone_offset: string;
     sport_id: number;
+    sport_name?: string; // Add sport_name field from API
     score_state: string;
     score: {
         strain: number;
