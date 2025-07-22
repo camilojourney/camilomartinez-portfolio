@@ -3,17 +3,13 @@ import {
     WhoopCycle,
     WhoopSleep,
     WhoopRecovery,
-    WhoopWorkout,
-    WhoopCyclesResponse,
-    WhoopWorkoutsResponse,
-    WhoopSleepResponse,
-    WhoopRecoveryResponse
+    WhoopWorkout
 } from '../types/whoop';
 
 const WHOOP_PAGE_LIMIT = 25;
 
 export class WhoopV2Client {
-    private baseUrl = 'https://api.prod.whoop.com/developer/v2';
+    private baseUrl = 'https://api.prod.whoop.com/v2';
     private accessToken: string;
     private lastRequestTime = 0;
     private minRequestInterval = 700; // 700ms between requests (~85 requests/minute, safely under 100 limit)
@@ -103,11 +99,25 @@ export class WhoopV2Client {
         return this.makeRequest<WhoopCycle>(`/cycle/${cycleId}`);
     }
 
+    async getSleep(cycleId: number): Promise<WhoopSleep> {
+        // According to API docs, we can get sleep for a specific cycle
+        return this.makeRequest<WhoopSleep>(`/cycle/${cycleId}/sleep`);
+    }
+
+    async getRecovery(cycleId: number): Promise<WhoopRecovery> {
+        // According to API docs, we can get recovery for a specific cycle
+        return this.makeRequest<WhoopRecovery>(`/cycle/${cycleId}/recovery`);
+    }
+
     private async paginatedGet<T>(endpoint: string, start?: string, end?: string): Promise<T[]> {
         const allRecords: T[] = [];
         let nextToken: string | undefined;
         let pageCount = 0;
+
+        console.log(`[DEBUG] Starting pagination for: ${endpoint}`);
+
         do {
+            pageCount++;
             const params = new URLSearchParams({ limit: String(WHOOP_PAGE_LIMIT) });
             if (start) params.append('start', start);
             if (end) params.append('end', end);
@@ -115,16 +125,28 @@ export class WhoopV2Client {
 
             const response = await this.makeRequest<{ records: T[], next_token?: string }>(`${endpoint}?${params.toString()}`);
 
+            // --- Enhanced Debug Logs ---
+            console.log(`[DEBUG] Page ${pageCount} for ${endpoint} | Records received: ${response.records?.length || 0}`);
+            if (response.next_token) {
+                console.log(`[DEBUG] next_token found: ${response.next_token}`);
+            } else {
+                console.log(`[DEBUG] No next_token found. Ending pagination for ${endpoint}.`);
+            }
+            // --- End Enhanced Debug Logs ---
+
             if (response.records?.length) {
                 allRecords.push(...response.records);
             }
+
             nextToken = response.next_token;
-            pageCount++;
+
             if (pageCount > 500) {
                 console.warn(`🚨 WARNING: Breaking pagination loop for ${endpoint} after 500 pages`);
                 break;
             }
         } while (nextToken);
+
+        console.log(`[DEBUG] Finished pagination for ${endpoint}. Total pages: ${pageCount}, Total records: ${allRecords.length}`);
         return allRecords;
     }
 
