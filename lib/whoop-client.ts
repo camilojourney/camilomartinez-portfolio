@@ -139,4 +139,8 @@ export class WhoopV2Client {
     async getAllWorkouts(start?: string, end?: string): Promise<WhoopWorkout[]> {
         return this.paginatedGet<WhoopWorkout>('/activity/workout', start, end);
     }
+
+    async getAllCycles(start?: string, end?: string): Promise<WhoopCycle[]> {
+        return this.paginatedGet<WhoopCycle>('/cycle', start, end);
+    }
 }
