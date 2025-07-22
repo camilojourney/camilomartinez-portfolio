@@ -163,6 +163,44 @@ export class WhoopV2Client {
     }
 
     async getAllCycles(start?: string, end?: string): Promise<WhoopCycle[]> {
-        return this.paginatedGet<WhoopCycle>('/cycle', start, end);
+        const allCycles: WhoopCycle[] = [];
+        let nextToken: string | undefined;
+        let localEnd = end;
+        let pageCount = 0;
+        do {
+            pageCount++;
+            const params = new URLSearchParams({ limit: String(WHOOP_PAGE_LIMIT) });
+            if (start) params.append('start', start);
+            if (localEnd) params.append('end', localEnd);
+            if (nextToken) params.append('nextToken', nextToken);
+
+            console.log(`[DEBUG] Page ${pageCount} for /cycle | Params: ${params.toString()}`);
+            const response = await this.makeRequest<{ records: WhoopCycle[]; next_token?: string }>(
+                `/cycle?${params.toString()}`
+            );
+            const records = response.records || [];
+            console.log(`[DEBUG] Records received: ${records.length}`);
+
+            if (records.length > 0) {
+                allCycles.push(...records);
+            }
+
+            if (response.next_token) {
+                console.log(`[DEBUG] next_token found: ${response.next_token}`);
+                nextToken = response.next_token;
+            } else if (records.length === WHOOP_PAGE_LIMIT) {
+                // No next_token but full page: use time-based pagination fallback
+                const earliest = records.reduce((min, r) => (r.start < min ? r.start : min), records[0].start);
+                localEnd = new Date(new Date(earliest).getTime() - 1).toISOString();
+                console.log(`[DEBUG] No next_token; fallback end set to ${localEnd}`);
+                nextToken = undefined;
+            } else {
+                console.log(`[DEBUG] No next_token and fewer than page limit; ending pagination for /cycle.`);
+                break;
+            }
+        } while (true);
+
+        console.log(`[DEBUG] Finished pagination for /cycle. Total pages: ${pageCount}, Total records: ${allCycles.length}`);
+        return allCycles;
     }
 }

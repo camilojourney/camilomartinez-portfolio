@@ -34,12 +34,15 @@ export async function POST(request: NextRequest) {
         };
 
         // Date range
-        let startDate: string | undefined;
+        // Determine date range for collection
+        let startDate: string;
         if (isDaily) {
+            // Fetch recent data (last 3 days)
             const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
             startDate = threeDaysAgo.toISOString();
         } else {
-            startDate = undefined; // Get ALL historical data
+            // Historical mode: set to epoch to fetch all cycles
+            startDate = new Date(0).toISOString();
         }
 
         console.log(`📅 Collection mode: ${mode}, Start date: ${startDate || 'ALL HISTORY'}`);
