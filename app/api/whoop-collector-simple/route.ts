@@ -3,23 +3,6 @@ import { auth } from '../../../lib/auth';
 import { WhoopV2Client } from '../../../lib/whoop-client';
 import { WhoopDatabaseService } from '../../../lib/whoop-database';
 
-/**
- * WHOOP API V2 Collector - Optimized Version
- * 
- * This implementation focuses on using only the collection endpoints that work consistently:
- * - /cycle - Collection of all cycles
- * - /activity/sleep - Collection of all sleep records  
- * - /recovery - Collection of all recovery records
- * - /activity/workout - Collection of all workout records
- * 
- * RELATIONSHIP MAPPING STRATEGY:
- * 1. Collect all cycles, sleep, and recovery data independently
- * 2. Use the recovery records to establish relationships between cycles and sleep
- *    (Recovery contains both cycle_id and sleep_id, serving as a join table)
- * 3. Update the cycle_id in sleep records based on these relationships
- * 
- * NOTE: The /cycle/{id}/sleep endpoint consistently returns 404 errors and is NOT used
- */
 export async function POST(request: NextRequest) {
     const session = await auth();
     if (!session?.accessToken) {
@@ -31,12 +14,12 @@ export async function POST(request: NextRequest) {
         const mode = body.mode || 'daily';
         const isDaily = mode === 'daily';
 
-        console.log(`🔧 Running ${mode} collection with OPTIMIZED strategy`);
+        console.log(`🔧 Running ${mode} collection with SIMPLIFIED strategy`);
 
         // Initialize clients
         const whoopClient = new WhoopV2Client(session.accessToken);
         const dbService = new WhoopDatabaseService();
-
+        
         // Get user profile first
         const userProfile = await whoopClient.getUserProfile();
         await dbService.upsertUser(userProfile);
@@ -61,8 +44,8 @@ export async function POST(request: NextRequest) {
 
         console.log(`📅 Collection mode: ${mode}, Start date: ${startDate || 'ALL HISTORY'}`);
 
-        // COLLECTION STRATEGY: Use collection endpoints only (no individual cycle queries)
-
+        // IMPROVED COLLECTION STRATEGY: Use collection endpoints with relationship mapping
+        
         // 1. Get ALL cycles via pagination
         try {
             console.log('🔄 Fetching ALL cycles...');
@@ -82,7 +65,7 @@ export async function POST(request: NextRequest) {
             console.log('🛌 Fetching ALL sleep data...');
             const sleepData = await whoopClient.getAllSleep(startDate);
             if (sleepData.length > 0) {
-                await dbService.upsertSleeps(sleepData); // No cycle mapping - let it be null
+                await dbService.upsertSleeps(sleepData);
                 results.newSleep = sleepData.length;
                 console.log(`✅ Collected ${sleepData.length} sleep records`);
             }
@@ -92,10 +75,12 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Get ALL recovery data via collection endpoint
+        // Recovery data contains both cycle_id and sleep_id, establishing the relationship
         try {
             console.log('❤️‍🩹 Fetching ALL recovery data (with relationship mapping)...');
             const recoveryData = await whoopClient.getAllRecovery(startDate);
             if (recoveryData.length > 0) {
+                // This will also update the relationships between cycles and sleep
                 const { newRecoveryCount, errors } = await dbService.upsertRecoveries(recoveryData);
                 results.newRecovery = newRecoveryCount;
                 results.errors.push(...errors);
