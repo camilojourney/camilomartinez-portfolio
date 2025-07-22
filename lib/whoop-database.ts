@@ -65,7 +65,7 @@ export class WhoopDatabaseService {
                 total_slow_wave_sleep_time_milli, total_rem_sleep_time_milli, disturbance_count
             )
             VALUES (
-                ${sleep.id}, ${sleep.v1_id || null}, ${sleep.user_id}, ${cycleId || null}, 
+                ${sleep.id}, ${sleep.v1_id || null}, ${sleep.user_id}, ${cycleId || null},
                 ${sleep.start}, ${sleep.end}, ${sleep.timezone_offset}, ${sleep.nap}, ${sleep.score_state},
                 ${hasScore && sleep.score ? sleep.score.sleep_performance_percentage : null},
                 ${hasScore && sleep.score ? sleep.score.respiratory_rate : null},

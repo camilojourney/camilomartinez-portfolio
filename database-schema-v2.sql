@@ -37,7 +37,7 @@ CREATE TABLE whoop_sleep (
     id VARCHAR(36) PRIMARY KEY, -- UUID in v2
     activity_v1_id BIGINT, -- v1 ID for backwards compatibility
     user_id BIGINT REFERENCES whoop_users(id) ON DELETE CASCADE,
-    cycle_id BIGINT REFERENCES whoop_cycles(id) ON DELETE CASCADE,
+    cycle_id BIGINT REFERENCES whoop_cycles(id) ON DELETE SET NULL, -- Made optional with SET NULL
     start_time TIMESTAMPTZ,
     end_time TIMESTAMPTZ,
     timezone_offset VARCHAR(10),
