@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 
 interface ActivityHeatmapProps {
     data: Array<{
-        start_time: string;
-        strain: number;
+        formatted_date: string;
+        strain: number | string;
     }>;
 }
 
@@ -50,59 +50,47 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
         return 'Exceptional Performance';
     };
 
-    // Generate last 365 days for the selected year
+    // Process the data for calendar display
     const generateCalendarData = (): DayData[] => {
-        const days: DayData[] = [];
-        const currentYear = new Date().getFullYear();
-        const isCurrentYear = selectedYear === currentYear;
+        console.log('Raw data received:', data);
 
-        // For current year: show last 365 days ending today
-        // For previous years: show full year (Jan 1 to Dec 31)
-        const endDate = isCurrentYear ? new Date() : new Date(selectedYear, 11, 31); // Dec 31 of selected year
-        const startDate = new Date(endDate);
-        startDate.setDate(startDate.getDate() - 364); // 365 days total
-
-        // Create a map of cycle strain data by date, accumulating strain for multiple cycles per day
-        const strainMap = new Map<string, number>();
-
-        // Filter data for the selected year
+        // Filter data for the selected year and create calendar data
         const yearData = data.filter(cycle => {
-            const cycleDate = new Date(cycle.start_time);
+            // Add timezone offset to ensure consistent date handling
+            const cycleDate = new Date(cycle.formatted_date);
+            console.log('Processing date:', cycle.formatted_date, 'as:', cycleDate.toISOString());
             return cycleDate.getFullYear() === selectedYear;
         });
 
+        // Convert to map for accumulating strain values per day
+        const strainMap = new Map<string, number>();
         yearData.forEach(cycle => {
-            const date = new Date(cycle.start_time).toISOString().split('T')[0];
             const strainValue = typeof cycle.strain === 'number' ? cycle.strain : parseFloat(cycle.strain) || 0;
-
-            // Accumulate strain values for the same day (instead of overwriting)
-            const existingStrain = strainMap.get(date) || 0;
-            strainMap.set(date, existingStrain + strainValue);
+            const existingStrain = strainMap.get(cycle.formatted_date) || 0;
+            strainMap.set(cycle.formatted_date, existingStrain + strainValue);
         });
 
-        // Generate 365 days for the selected year
-        for (let i = 364; i >= 0; i--) {
-            const date = new Date(endDate);
-            date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
-
-            const strain = strainMap.get(dateStr) || 0;
-
-            days.push({
-                date: dateStr,
-                strain,
-                count: strain > 0 ? 1 : 0
+        // Sort dates to ensure chronological order
+        const sortedDates = Array.from(strainMap.entries())
+            .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+            .map(([date, strain]) => {
+                console.log('Processing date for display:', date);
+                return {
+                    date,
+                    strain,
+                    count: strain > 0 ? 1 : 0
+                };
             });
-        }
 
-        return days;
+        console.log('Calendar data:', sortedDates);
+        return sortedDates;
     };
 
     // Get available years from data
     const getAvailableYears = (): number[] => {
         const years = new Set<number>();
         data.forEach(cycle => {
-            const year = new Date(cycle.start_time).getFullYear();
+            const year = new Date(cycle.formatted_date).getFullYear();
             years.add(year);
         });
         return Array.from(years).sort((a, b) => b - a); // Most recent first
@@ -113,9 +101,14 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
         const weeks: DayData[][] = [];
         let currentWeek: DayData[] = [];
 
+        // Debug log to see the days we're organizing
+        console.log('Organizing days:', days);
+
         // Add empty cells for the first week if it doesn't start on Sunday
-        const firstDay = new Date(days[0].date);
+        const firstDay = new Date(days[0].date + 'T00:00:00Z');
+        console.log('First day being organized:', days[0].date, 'parsed as:', firstDay.toISOString());
         const firstDayOfWeek = firstDay.getDay();
+        console.log('First day of week calculation:', firstDayOfWeek);
 
         for (let i = 0; i < firstDayOfWeek; i++) {
             currentWeek.push({
@@ -237,7 +230,7 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
                         const firstDayWithDate = week.find(day => day.date);
                         if (!firstDayWithDate) return <div key={weekIndex} className="w-3"></div>;
 
-                        const date = new Date(firstDayWithDate.date);
+                        const date = new Date(firstDayWithDate.date + 'T00:00:00');
                         const isFirstWeekOfMonth = date.getDate() <= 7;
 
                         return (
@@ -293,7 +286,7 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
                     >
                         <div className="bg-black/95 backdrop-blur-sm border-2 border-green-400 rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
                             <div className="text-white text-sm font-medium mb-2">
-                                {new Date(hoveredDay.date).toLocaleDateString('en-US', {
+                                {new Date(hoveredDay.date + 'T00:00:00').toLocaleDateString('en-US', {
                                     weekday: 'short',
                                     month: 'short',
                                     day: 'numeric',

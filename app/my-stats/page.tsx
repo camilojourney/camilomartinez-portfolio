@@ -6,12 +6,18 @@ import { StrainVsRecoveryChart } from '../../components/StrainVsRecoveryChart';
 async function getStrainData() {
     try {
         const result = await sql`
-            SELECT start_time, strain
+            SELECT
+                TO_CHAR(start_time, 'YYYY-MM-DD') AS formatted_date,
+                strain
             FROM whoop_cycles
             WHERE strain IS NOT NULL
             ORDER BY start_time DESC
         `;
-        return result.rows as Array<{ start_time: string; strain: number }>;
+        console.log('Strain Data from DB:', result.rows);
+        return result.rows as Array<{
+            formatted_date: string;
+            strain: number | string;
+        }>;
     } catch (error) {
         console.error('Error fetching strain data:', error);
         return [];
