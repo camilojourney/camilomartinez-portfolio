@@ -131,10 +131,7 @@ export class WhoopDatabaseService {
 
     // Workout operations
     private async upsertWorkout(workout: WhoopWorkout) {
-        if (!workout.score) {
-            console.warn(`Skipping workout ${workout.id} - no score data`);
-            return;
-        }
+        // Store all workouts, even those without scores
         return sql`
             INSERT INTO whoop_workouts (
                 id, activity_v1_id, user_id, start_time, end_time, timezone_offset, sport_id, sport_name,
@@ -146,13 +143,13 @@ export class WhoopDatabaseService {
             VALUES (
                 ${workout.id}, ${workout.v1_id || null}, ${workout.user_id}, ${workout.start}, ${workout.end},
                 ${workout.timezone_offset}, ${workout.sport_id}, ${workout.sport_name || null}, ${workout.score_state},
-                ${workout.score.strain || null}, ${workout.score.average_heart_rate || null},
-                ${workout.score.max_heart_rate || null}, ${workout.score.kilojoule || null},
-                ${workout.score.distance_meter || null}, ${workout.score.altitude_gain_meter || null},
-                ${workout.score.altitude_change_meter || null}, ${workout.score.zone_duration?.zone_zero_milli || null},
-                ${workout.score.zone_duration?.zone_one_milli || null}, ${workout.score.zone_duration?.zone_two_milli || null},
-                ${workout.score.zone_duration?.zone_three_milli || null}, ${workout.score.zone_duration?.zone_four_milli || null},
-                ${workout.score.zone_duration?.zone_five_milli || null}
+                ${workout.score?.strain || null}, ${workout.score?.average_heart_rate || null},
+                ${workout.score?.max_heart_rate || null}, ${workout.score?.kilojoule || null},
+                ${workout.score?.distance_meter || null}, ${workout.score?.altitude_gain_meter || null},
+                ${workout.score?.altitude_change_meter || null}, ${workout.score?.zone_duration?.zone_zero_milli || null},
+                ${workout.score?.zone_duration?.zone_one_milli || null}, ${workout.score?.zone_duration?.zone_two_milli || null},
+                ${workout.score?.zone_duration?.zone_three_milli || null}, ${workout.score?.zone_duration?.zone_four_milli || null},
+                ${workout.score?.zone_duration?.zone_five_milli || null}
             )
             ON CONFLICT (id)
             DO UPDATE SET
@@ -275,27 +272,27 @@ export class WhoopDatabaseService {
         `;
         return result.rows[0]?.latest_date ? new Date(result.rows[0].latest_date) : null;
     }
-    
+
     // Method to update the cycle_id in sleep records using the recovery data
     async updateSleepCycleRelationships(recoveries: WhoopRecovery[]): Promise<void> {
         console.log(`Updating cycle relationships for ${recoveries.length} recovery records...`);
-        
+
         // Process in batches to avoid overwhelming the database
         const batchSize = 50;
         for (let i = 0; i < recoveries.length; i += batchSize) {
             const batch = recoveries.slice(i, i + batchSize);
-            
+
             // Filter out records with missing sleep_id or cycle_id
             const validRecords = batch.filter(r => r.sleep_id && r.cycle_id);
-            
+
             if (validRecords.length === 0) continue;
-            
+
             // Build an array of objects for the update operation
             const updateData = validRecords.map(r => ({
                 sleep_id: r.sleep_id,
                 cycle_id: r.cycle_id
             }));
-            
+
             // Update each relationship
             try {
                 for (const data of updateData) {
