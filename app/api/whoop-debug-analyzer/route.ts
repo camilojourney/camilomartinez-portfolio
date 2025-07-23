@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '../../../lib/auth';
 import { WhoopV2Client } from '../../../lib/whoop-client';
+import { WhoopUser } from '../../../types/whoop';
 
 export async function POST(request: NextRequest) {
     const session = await auth();
@@ -12,7 +13,14 @@ export async function POST(request: NextRequest) {
         console.log('🔍 DEBUG: Starting WHOOP API analysis...');
 
         const whoopClient = new WhoopV2Client(session.accessToken);
-        const results = {
+        const results: {
+            user: WhoopUser | null;
+            cycleAnalysis: Record<string, any>;
+            sleepAnalysis: Record<string, any>;
+            recoveryAnalysis: Record<string, any>;
+            workoutAnalysis: Record<string, any>;
+            apiEndpointTests: Record<string, any>;
+        } = {
             user: null,
             cycleAnalysis: {},
             sleepAnalysis: {},
