@@ -25,7 +25,7 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
         if (strain === 0) return 'bg-gray-900'; // No activity
         if (strain < 3) return 'bg-green-900/30'; // Very light recovery
         if (strain < 6) return 'bg-green-800/50'; // Rest day
-        if (strain < 8) return 'bg-green-700/60'; // Light activity
+        if (strain < 8) return 'bg-green-700/60'; // Light activity2q
         if (strain < 10) return 'bg-green-600/70'; // Moderate activity
         if (strain < 12) return 'bg-green-500/80'; // Good training
         if (strain < 14) return 'bg-green-400/90'; // Solid training

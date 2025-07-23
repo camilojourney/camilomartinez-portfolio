@@ -41,12 +41,17 @@ export async function GET(request: Request) {
         const dbService = new WhoopDatabaseService();
 
         // Fetch all types of data in parallel
-        const [cycles, sleep, recovery, workouts] = await Promise.all([
+        const [allCycles, sleep, recovery, workouts] = await Promise.all([
             whoopClient.getAllCycles(fortyEightHoursAgo.toISOString(), now.toISOString()),
             whoopClient.getAllSleep(fortyEightHoursAgo.toISOString(), now.toISOString()),
             whoopClient.getAllRecovery(fortyEightHoursAgo.toISOString(), now.toISOString()),
             whoopClient.getAllWorkouts(fortyEightHoursAgo.toISOString(), now.toISOString())
         ]);
+
+        // Filter out incomplete cycles (where end is null)
+        const cycles = allCycles.filter(cycle => cycle.end !== null);
+        const incompleteCount = allCycles.length - cycles.length;
+        console.log(`[DATA-FETCH] Filtered out ${incompleteCount} incomplete cycles from ${allCycles.length} total cycles`);
 
         // Store the data
         await Promise.all([
