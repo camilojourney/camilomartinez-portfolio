@@ -93,7 +93,7 @@ export interface WhoopWorkout {
     sport_id: number;
     sport_name?: string; // Add sport_name field from API
     score_state: string;
-    score: {
+    score?: {
         strain: number;
         average_heart_rate: number;
         max_heart_rate: number;
@@ -193,17 +193,17 @@ export interface DbWorkout {
     timezone_offset: string;
     sport_id: number;
     score_state: string;
-    strain: number;
-    average_heart_rate: number;
-    max_heart_rate: number;
-    kilojoule: number;
-    distance_meter: number;
-    altitude_gain_meter: number;
-    altitude_change_meter: number;
-    zone_zero_milli: number;
-    zone_one_milli: number;
-    zone_two_milli: number;
-    zone_three_milli: number;
-    zone_four_milli: number;
-    zone_five_milli: number;
+    strain?: number;
+    average_heart_rate?: number;
+    max_heart_rate?: number;
+    kilojoule?: number;
+    distance_meter?: number;
+    altitude_gain_meter?: number;
+    altitude_change_meter?: number;
+    zone_zero_milli?: number;
+    zone_one_milli?: number;
+    zone_two_milli?: number;
+    zone_three_milli?: number;
+    zone_four_milli?: number;
+    zone_five_milli?: number;
 }

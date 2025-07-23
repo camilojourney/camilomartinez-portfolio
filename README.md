@@ -6,6 +6,7 @@ A premium, interactive portfolio showcasing expertise in AI development, data an
 
 - **Interactive Chatbot**: An AI-powered "About Me" section with natural conversation flow
 - **Live WHOOP Integration**: Real-time fitness data visualization with OAuth 2.0 authentication
+- **Activity Heatmap**: GitHub-style visualization of daily training intensity and consistency
 - **Automated Data Sync**: Daily automatic WHOOP data collection at 2:00 PM UTC
 - **Project Showcase**: Detailed case studies with professional project presentations
 - **Premium UI/UX**: Apple 2025-inspired "liquid glass" design system
@@ -29,8 +30,11 @@ A premium, interactive portfolio showcasing expertise in AI development, data an
 - Dynamic project detail pages with comprehensive case studies
 - Real-time chat interface with glassmorphism UI
 - WHOOP API integration with OAuth 2.0 authentication
+- Training consistency tracking with GitHub-style heatmap
+- Year-over-year fitness data comparison
 - Automatic daily data synchronization (2:00 PM UTC)
-- Personal fitness analytics with data visualization
+- Personal fitness analytics with advanced data visualization
+- Intelligent strain tracking with categorized intensity levels
 - Responsive design with smooth animations and transitions
 - Professional typography using Geist font
 - Advanced CSS with backdrop filters and glass morphism effects

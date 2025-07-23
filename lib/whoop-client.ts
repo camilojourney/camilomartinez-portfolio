@@ -118,19 +118,30 @@ export class WhoopV2Client {
 
         do {
             pageCount++;
+            // Always set start and end to ensure cycle pagination works
             const params = new URLSearchParams({ limit: String(WHOOP_PAGE_LIMIT) });
-            if (start) params.append('start', start);
-            if (end) params.append('end', end);
+            // Use provided start or default to Unix epoch
+            const startParam = start || new Date(0).toISOString();
+            params.append('start', startParam);
+            // Use provided end or default to current time
+            const endParam = end || new Date().toISOString();
+            params.append('end', endParam);
+            // Log full query parameters for debugging
+            console.log(`[DEBUG] Params for ${endpoint}: start=${startParam}, end=${endParam}, limit=${WHOOP_PAGE_LIMIT}`);
             if (nextToken) params.append('nextToken', nextToken);
 
             const response = await this.makeRequest<{ records: T[], next_token?: string }>(`${endpoint}?${params.toString()}`);
 
             // --- Enhanced Debug Logs ---
             console.log(`[DEBUG] Page ${pageCount} for ${endpoint} | Records received: ${response.records?.length || 0}`);
-            if (response.next_token) {
-                console.log(`[DEBUG] next_token found: ${response.next_token}`);
+            // Support both snake_case and camelCase pagination tokens
+            const tokenSnake = (response as any).next_token;
+            const tokenCamel = (response as any).nextToken;
+            const token = tokenSnake ?? tokenCamel;
+            if (token) {
+                console.log(`[DEBUG] Pagination token found: ${token}`);
             } else {
-                console.log(`[DEBUG] No next_token found. Ending pagination for ${endpoint}.`);
+                console.log(`[DEBUG] No pagination token found. Ending pagination for ${endpoint}.`);
             }
             // --- End Enhanced Debug Logs ---
 
@@ -138,7 +149,7 @@ export class WhoopV2Client {
                 allRecords.push(...response.records);
             }
 
-            nextToken = response.next_token;
+            nextToken = token;
 
             if (pageCount > 500) {
                 console.warn(`🚨 WARNING: Breaking pagination loop for ${endpoint} after 500 pages`);
@@ -163,44 +174,6 @@ export class WhoopV2Client {
     }
 
     async getAllCycles(start?: string, end?: string): Promise<WhoopCycle[]> {
-        const allCycles: WhoopCycle[] = [];
-        let nextToken: string | undefined;
-        let localEnd = end;
-        let pageCount = 0;
-        do {
-            pageCount++;
-            const params = new URLSearchParams({ limit: String(WHOOP_PAGE_LIMIT) });
-            if (start) params.append('start', start);
-            if (localEnd) params.append('end', localEnd);
-            if (nextToken) params.append('nextToken', nextToken);
-
-            console.log(`[DEBUG] Page ${pageCount} for /cycle | Params: ${params.toString()}`);
-            const response = await this.makeRequest<{ records: WhoopCycle[]; next_token?: string }>(
-                `/cycle?${params.toString()}`
-            );
-            const records = response.records || [];
-            console.log(`[DEBUG] Records received: ${records.length}`);
-
-            if (records.length > 0) {
-                allCycles.push(...records);
-            }
-
-            if (response.next_token) {
-                console.log(`[DEBUG] next_token found: ${response.next_token}`);
-                nextToken = response.next_token;
-            } else if (records.length === WHOOP_PAGE_LIMIT) {
-                // No next_token but full page: use time-based pagination fallback
-                const earliest = records.reduce((min, r) => (r.start < min ? r.start : min), records[0].start);
-                localEnd = new Date(new Date(earliest).getTime() - 1).toISOString();
-                console.log(`[DEBUG] No next_token; fallback end set to ${localEnd}`);
-                nextToken = undefined;
-            } else {
-                console.log(`[DEBUG] No next_token and fewer than page limit; ending pagination for /cycle.`);
-                break;
-            }
-        } while (true);
-
-        console.log(`[DEBUG] Finished pagination for /cycle. Total pages: ${pageCount}, Total records: ${allCycles.length}`);
-        return allCycles;
+        return this.paginatedGet<WhoopCycle>('/cycle', start, end);
     }
 }

@@ -1,0 +1,24 @@
+/**
+ * WHOOP API V2 Data Collector
+ *
+ * Collection Strategy:
+ * 1. Cycles: Two-phase collection
+ *    a) Try paginated /cycle endpoint (limited to 25 records)
+ *    b) Use recovery data to identify & fetch missing cycles via /cycle/{id}
+ *
+ * 2. Sleep & Recovery: Use paginated collection endpoints
+ *    - /activity/sleep for all sleep records
+ *    - /recovery for all recovery records (also serves as relationship mapping)
+ *
+ * 3. Workouts: Use paginated /activity/workout endpoint
+ *
+ * 4. Relationship Mapping:
+ *    - Recovery records contain both cycle_id and sleep_id
+ *    - Used to update sleep-cycle relationships in the database
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '../../../lib/auth';
+import { WhoopV2Client } from '../../../lib/whoop-client';
+import { WhoopDatabaseService } from '../../../lib/whoop-database';
+import { WhoopCycle } from '../../../types/whoop';

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
         console.log(`📅 Collection mode: ${mode}, Start date: ${startDate || 'ALL HISTORY'}`);
 
-        // IMPROVED COLLECTION STRATEGY: Use collection endpoints with relationship mapping
+        // COLLECTION STRATEGY: Use collection endpoints only (no individual cycle queries)
 
         // 1. Get ALL cycles via pagination
         try {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
             console.log('🛌 Fetching ALL sleep data...');
             const sleepData = await whoopClient.getAllSleep(startDate);
             if (sleepData.length > 0) {
-                await dbService.upsertSleeps(sleepData);
+                await dbService.upsertSleeps(sleepData); // No cycle mapping - let it be null
                 results.newSleep = sleepData.length;
                 console.log(`✅ Collected ${sleepData.length} sleep records`);
             }
@@ -75,21 +75,14 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Get ALL recovery data via collection endpoint
-        // Recovery data contains both cycle_id and sleep_id, establishing the relationship
         try {
-            console.log('❤️‍🩹 Fetching ALL recovery data (with relationship mapping)...');
+            console.log('❤️‍🩹 Fetching ALL recovery data...');
             const recoveryData = await whoopClient.getAllRecovery(startDate);
             if (recoveryData.length > 0) {
-                // This will also update the relationships between cycles and sleep
                 const { newRecoveryCount, errors } = await dbService.upsertRecoveries(recoveryData);
                 results.newRecovery = newRecoveryCount;
                 results.errors.push(...errors);
                 console.log(`✅ Collected ${newRecoveryCount} recovery records`);
-
-                // Now update the cycle_id in sleep records using the recovery data
-                console.log('🔄 Updating relationships between cycles and sleep...');
-                await dbService.updateSleepCycleRelationships(recoveryData);
-                console.log('✅ Relationships updated successfully');
             }
         } catch (error) {
             console.error('❌ Recovery failed:', error);
