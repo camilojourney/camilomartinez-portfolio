@@ -1,1 +1,12 @@
-{}
+{
+    "crons": [
+        {
+            "path": "/api/cron/daily-data-fetch",
+            "schedule": "0 15 * * *"
+        },
+        {
+            "path": "/api/cron/daily-whoop-sync",
+            "schedule": "30 15 * * *"
+        }
+    ]
+}

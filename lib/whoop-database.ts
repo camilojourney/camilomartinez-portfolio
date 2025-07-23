@@ -52,7 +52,7 @@ export class WhoopDatabaseService {
     }
 
     // Sleep operations
-    private async upsertSleep(sleep: WhoopSleep, cycleId?: number) {
+    async upsertSleep(sleep: WhoopSleep, cycleId?: number) {
         const hasScore = sleep.score && sleep.score_state === 'SCORED';
         const stageSum = hasScore && sleep.score ? sleep.score.stage_summary : null;
 
@@ -101,7 +101,7 @@ export class WhoopDatabaseService {
     }
 
     // Recovery operations
-    private async upsertRecovery(recovery: WhoopRecovery) {
+    async upsertRecovery(recovery: WhoopRecovery) {
         if (!recovery.score) {
             console.warn(`Skipping recovery for cycle ${recovery.cycle_id} - no score data`);
             return;
@@ -130,7 +130,7 @@ export class WhoopDatabaseService {
     }
 
     // Workout operations
-    private async upsertWorkout(workout: WhoopWorkout) {
+    async upsertWorkout(workout: WhoopWorkout) {
         // Store all workouts, even those without scores
         return sql`
             INSERT INTO whoop_workouts (

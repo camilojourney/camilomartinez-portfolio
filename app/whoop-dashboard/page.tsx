@@ -28,12 +28,34 @@ export default function WhoopDashboard() {
     const [dailyResult, setDailyResult] = useState<CollectionStats | null>(null);
     const [debugInfo, setDebugInfo] = useState<any>(null);
     const [syncStatus, setSyncStatus] = useState<any>(null);
+    const [permanentToken, setPermanentToken] = useState<string | null>(null);
     const [loading, setLoading] = useState({
         historical: false,
         daily: false,
         debug: false,
         syncStatus: false
     });
+    
+    // Capture the token when the session is available
+    useEffect(() => {
+        if (session?.accessToken) {
+            setPermanentToken(session.accessToken);
+            // Store in localStorage for persistence
+            localStorage.setItem('whoopPermanentToken', session.accessToken);
+            
+            // You can also send it to your backend to store it
+            fetch('/api/update-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: session.accessToken,
+                    userId: "${process.env.WHOOP_USER_ID_TO_SYNC}"
+                })
+            });
+        }
+    }, [session?.accessToken]);
 
     // Auto-refresh debug info and sync status every 30 seconds when authenticated
     useEffect(() => {
