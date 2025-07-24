@@ -30,7 +30,9 @@ A premium, interactive portfolio showcasing expertise in AI development, data an
 - Dynamic project detail pages with comprehensive case studies
 - Real-time chat interface with glassmorphism UI
 - WHOOP API integration with OAuth 2.0 authentication
-- Training consistency tracking with GitHub-style heatmap
+- **Training consistency tracking with GitHub-style heatmap
+- **Training distribution analysis** with activity breakdown by sport type
+- **Strain-recovery correlation analysis** with trend line visualization
 - Year-over-year fitness data comparison
 - Automatic daily data synchronization (2:00 PM UTC)
 - Personal fitness analytics with advanced data visualization

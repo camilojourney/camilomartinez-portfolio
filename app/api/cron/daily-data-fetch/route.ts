@@ -67,12 +67,8 @@ export async function POST(request: Request) {
 
         // Filter data for completed records within our date range
         const filteredCycles = cycleData.filter(cycle => {
-            if (!cycle.end) return false;
-            const startDate = new Date(cycle.start);
             const endDate = new Date(cycle.end);
-            // Include cycles that started in our range OR ended in our range
-            return (startDate >= startTwoDaysAgo && startDate <= endOfYesterday) ||
-                   (endDate >= startTwoDaysAgo && endDate <= endOfYesterday);
+            return endDate <= endOfYesterday;
         });
 
         const filteredSleep = sleepRecords.filter(item => {
@@ -130,18 +126,14 @@ export async function POST(request: Request) {
             - Workouts: ${filteredWorkouts.length}
         `);
 
-        // Format response to match what the dashboard expects
         return NextResponse.json({
             success: true,
-            user: userProfile,
-            newCycles: filteredCycles.length,
-            newSleep: filteredSleep.length,
-            newRecovery: filteredRecovery.length,
-            newWorkouts: filteredWorkouts.length,
-            totalCycles: filteredCycles.length,
-            totalSleep: filteredSleep.length,
-            totalRecovery: filteredRecovery.length,
-            totalWorkouts: filteredWorkouts.length,
+            data: {
+                cycles: filteredCycles.length,
+                sleep: filteredSleep.length,
+                recovery: filteredRecovery.length,
+                workouts: filteredWorkouts.length
+            },
             timestamp: new Date().toISOString()
         });
 
