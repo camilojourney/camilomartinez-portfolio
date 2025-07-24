@@ -2,6 +2,7 @@ import { sql } from '@vercel/postgres';
 import LiquidPage from '../components/liquid-page';
 import { ActivityHeatmap } from '../../components/ActivityHeatmap';
 import { StrainVsRecoveryChart } from '../../components/StrainVsRecoveryChart';
+import { ActivityDistributionChart } from '../../components/ActivityDistributionChart';
 
 async function getStrainData() {
     try {
@@ -28,19 +29,27 @@ async function getStrainRecoveryData() {
     try {
         const result = await sql`
             SELECT
-                c.start_time::date as cycle_date,
-                c.strain,
-                r.recovery_score
-            FROM whoop_cycles c
-            INNER JOIN whoop_recovery r ON c.id = r.cycle_id
-            WHERE c.strain IS NOT NULL
-                AND r.recovery_score IS NOT NULL
-                AND r.recovery_score > 0
-                AND c.strain > 0
-            ORDER BY c.start_time DESC
+                c1.start_time::date as strain_date,
+                c1.strain,
+                r2.recovery_score
+            FROM whoop_cycles c1
+            -- Join with the next day's recovery score
+            INNER JOIN whoop_recovery r2 ON
+                -- Match recovery records that occurred after this cycle
+                r2.cycle_id IN (
+                    SELECT c2.id
+                    FROM whoop_cycles c2
+                    WHERE c2.start_time::date = (c1.start_time::date + interval '1 day')
+                )
+            WHERE
+                c1.strain IS NOT NULL
+                AND c1.strain > 0
+                AND r2.recovery_score IS NOT NULL
+                AND r2.recovery_score > 0
+            ORDER BY c1.start_time DESC
         `;
         return result.rows as Array<{
-            cycle_date: string;
+            strain_date: string;
             strain: number;
             recovery_score: number;
         }>;
@@ -50,27 +59,64 @@ async function getStrainRecoveryData() {
     }
 }
 
+async function getWorkoutData() {
+    try {
+        const result = await sql`
+            SELECT
+                id,
+                sport_name,
+                start_time,
+                end_time
+            FROM whoop_workouts
+            WHERE
+                start_time >= DATE_TRUNC('year', CURRENT_DATE)
+                AND end_time > start_time  -- Ensure valid duration
+                AND (
+                    sport_name = 'weightlifting'
+                    OR sport_name = 'weightlifting_msk'
+                    OR sport_name = 'running'
+                    OR sport_name = 'boxing'
+                )
+            ORDER BY start_time ASC
+        `;
+
+        if (result.rows.length > 0) {
+            // Explicitly cast the result rows to the expected type
+            return result.rows.map(row => ({
+                id: row.id as string,
+                sport_name: row.sport_name as string,
+                start_time: row.start_time as string,
+                end_time: row.end_time as string
+            }));
+        }
+
+        // If no data found, return empty array
+        console.log('No workout data found');
+        return [];
+    } catch (error) {
+        console.error('Error fetching workout data:', error);
+        return []; // Return empty array on error
+    }
+}
+
 export default async function MyStats() {
     const strainData = await getStrainData();
     const strainRecoveryData = await getStrainRecoveryData();
+    const workoutData = await getWorkoutData();
 
     return (
         <LiquidPage backgroundVariant="purple">
             <div className="max-w-7xl w-full">
-                {/* Hero Section - Data Storytelling Introduction */}
+                {/* Hero Section - Simple Introduction */}
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-6xl font-extralight tracking-tight text-white drop-shadow-lg mb-6">
-                        Personal Performance Dashboard
+                        My Fitness Journey
                     </h1>
                     <div className="w-32 h-px bg-gradient-to-r from-transparent via-purple-400/60 to-transparent mx-auto mb-8"></div>
                     <div className="max-w-4xl mx-auto">
-                        <p className="text-xl text-purple-300/90 font-light tracking-wide leading-relaxed mb-6">
-                            A data-driven story of athletic commitment and personal optimization
-                        </p>
                         <p className="text-lg text-white/70 font-light leading-relaxed">
-                            Each visualization below answers a specific question about my training patterns,
-                            recovery trends, and performance insights—demonstrating both technical prowess
-                            and meaningful data interpretation.
+                            Tracking my daily activity and recovery to build better habits and understand my body.
+                            Here's what the data says about my fitness journey so far.
                         </p>
                     </div>
                 </div>
@@ -90,42 +136,59 @@ export default async function MyStats() {
                     </div>
                 ) : (
                     <>
-                        {/* Tier 1: The Essential Showcase - Annual Strain Heatmap */}
+                        {/* Consistency Question */}
                         <div className="mb-16">
                             <div className="mb-8 text-center">
                                 <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-full px-6 py-3 mb-4">
                                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                    <span className="text-green-300 font-medium text-sm tracking-wide">TIER 1: ESSENTIAL SHOWCASE</span>
+                                    <span className="text-green-300 font-medium text-sm tracking-wide">Am I consistent with my workouts?</span>
                                 </div>
                                 <h2 className="text-2xl font-light text-white/90 mb-3">
-                                    "How consistent is my training dedication?"
+                                    My Commitment: Consistency Over Intensity
                                 </h2>
                                 <p className="text-white/60 font-light text-lg max-w-3xl mx-auto leading-relaxed">
-                                    This heatmap demonstrates long-term commitment to fitness—a visual proof of work ethic
-                                    that's instantly recognizable to recruiters and speaks to character beyond technical skills.
+                                    My goal is to achieve a daily Strain score of at least 10. This calendar tracks my commitment to building a strong foundation of health through daily, sustainable effort.
                                 </p>
                             </div>
                             <ActivityHeatmap data={strainData} />
                         </div>
 
-                        {/* Tier 1: Advanced Analytics - Strain vs Recovery Correlation */}
+                        {/* Recovery Question */}
+                        {/* Recovery Question */}
                         <div className="mb-16">
                             <div className="mb-8 text-center">
                                 <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-6 py-3 mb-4">
                                     <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
-                                    <span className="text-cyan-300 font-medium text-sm tracking-wide">TIER 1: PERFORMANCE ANALYTICS</span>
+                                    <span className="text-cyan-300 font-medium text-sm tracking-wide">How does today's workout affect tomorrow's recovery?</span>
                                 </div>
                                 <h2 className="text-2xl font-light text-white/90 mb-3">
-                                    "How does my daily effort impact my body's ability to recover?"
+                                    The strain-recovery relationship
                                 </h2>
                                 <p className="text-white/60 font-light text-lg max-w-3xl mx-auto leading-relaxed">
-                                    This scatter plot reveals the fundamental relationship between training intensity and recovery capacity,
-                                    with trend line analysis demonstrating data science capabilities beyond simple visualization.
+                                    This chart shows how my training effort today impacts my body's recovery score the next morning,
+                                    helping me find the right balance between pushing my limits and proper recovery.
                                 </p>
                             </div>
                             <StrainVsRecoveryChart data={strainRecoveryData} />
                         </div>
 
+                        {/* Activity Distribution */}
+                        <div className="mb-16">
+                            <div className="mb-8 text-center">
+                                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 border border-purple-400/30 rounded-full px-6 py-3 mb-4">
+                                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                                    <span className="text-purple-300 font-medium text-sm tracking-wide">How do I distribute my training time?</span>
+                                </div>
+                                <h2 className="text-2xl font-light text-white/90 mb-3">
+                                    Training Hours by Sport Type
+                                </h2>
+                                <p className="text-white/60 font-light text-lg max-w-3xl mx-auto leading-relaxed">
+                                    This visualization shows how I distribute my training hours across different sports,
+                                    helping me maintain balance in my fitness routine and track my time investment.
+                                </p>
+                            </div>
+                            <ActivityDistributionChart data={workoutData} />
+                        </div>
                     </>
                 )}
             </div>
