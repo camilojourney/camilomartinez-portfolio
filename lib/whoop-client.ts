@@ -18,7 +18,18 @@ export class WhoopV2Client {
     private dailyResetTime = Date.now() + (24 * 60 * 60 * 1000); // 24 hours from now
 
     constructor(accessToken: string) {
+        if (!accessToken) {
+            throw new Error('Access token is required');
+        }
         this.accessToken = accessToken;
+    }
+
+    // Update access token - useful when token is refreshed
+    updateAccessToken(newToken: string) {
+        if (!newToken) {
+            throw new Error('New access token is required');
+        }
+        this.accessToken = newToken;
     }
 
     private async delay(ms: number): Promise<void> {

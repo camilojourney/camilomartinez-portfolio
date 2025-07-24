@@ -36,6 +36,19 @@ export default function WhoopDashboard() {
         syncStatus: false
     });
 
+    const [sessionStatus, setSessionStatus] = useState(null);
+
+    // Check session status
+    const checkSessionStatus = async () => {
+        try {
+            const response = await fetch('/api/debug-session');
+            const status = await response.json();
+            setSessionStatus(status);
+        } catch (error) {
+            console.error('Failed to check session status:', error);
+        }
+    };
+
     // Capture the token when the session is available
     useEffect(() => {
         if (session?.accessToken) {
@@ -102,12 +115,12 @@ export default function WhoopDashboard() {
         setDailyResult(null);
 
         try {
-            const response = await fetch('/api/whoop-collector-v2', {
+            const response = await fetch('/api/cron/daily-data-fetch', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    mode: 'daily'
-                })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-cron-secret': 'whoop_daily_sync_2024_secure_key_x7mQ9pR3nF8vK2jL',
+                },
             });
 
             const result = await response.json();

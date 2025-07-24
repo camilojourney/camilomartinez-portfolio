@@ -3,79 +3,145 @@ import { sql } from '../../../../lib/db';
 import { WhoopV2Client } from '../../../../lib/whoop-client';
 import { WhoopDatabaseService } from '../../../../lib/whoop-database';
 
-// Function to get the access token from environment variables
-function getWhoopAccessToken() {
-    // First try to get the token from environment
-    const token = process.env.WHOOP_ACCESS_TOKEN;
-    if (!token) {
-        throw new Error('WHOOP_ACCESS_TOKEN environment variable not found. Please sign in to WHOOP to get a new token.');
-    }
-    return token;
-}
+import { auth } from '../../../../lib/auth';
 
-// The GET handler should be at the top level, not nested inside getWhoopAccessToken
-export async function GET(request: Request) {
+export async function POST(request: Request) {
     // Secure the endpoint
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const cronSecret = request.headers.get('x-cron-secret');
+    const expectedSecret = process.env.CRON_SECRET;
+
+    if (cronSecret !== expectedSecret) {
+        console.error('[DAILY-FETCH] Authorization failed');
         return new NextResponse('Unauthorized', { status: 401 });
     }
 
     try {
-        // Get the access token
-        const accessToken = await getWhoopAccessToken();
+        const session = await auth();
+        // Use stored token as fallback
+        const accessToken = session?.accessToken || process.env.WHOOP_ACCESS_TOKEN;
+
         if (!accessToken) {
-            throw new Error('No access token found for WHOOP user');
+            throw new Error('No access token found');
         }
 
-        // Initialize the WHOOP client
+        // Initialize clients
         const whoopClient = new WhoopV2Client(accessToken);
-
-        // Get current time and 48 hours ago
-        const now = new Date();
-        const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
-
-        console.log(`[DATA-FETCH] Fetching data from ${fortyEightHoursAgo.toISOString()} to ${now.toISOString()}`);
-
-        // Initialize database service
         const dbService = new WhoopDatabaseService();
 
-        // Fetch all types of data in parallel
-        const [allCycles, sleep, recovery, workouts] = await Promise.all([
-            whoopClient.getAllCycles(fortyEightHoursAgo.toISOString(), now.toISOString()),
-            whoopClient.getAllSleep(fortyEightHoursAgo.toISOString(), now.toISOString()),
-            whoopClient.getAllRecovery(fortyEightHoursAgo.toISOString(), now.toISOString()),
-            whoopClient.getAllWorkouts(fortyEightHoursAgo.toISOString(), now.toISOString())
+        // Get user profile first
+        const userProfile = await whoopClient.getUserProfile();
+        await dbService.upsertUser(userProfile);
+
+        const results = {
+            user: userProfile,
+            newCycles: 0,
+            newSleep: 0,
+            newRecovery: 0,
+            newWorkouts: 0
+        };
+
+        // Set up date range: from start of 2 days ago until end of yesterday
+        const now = new Date();
+        const startTwoDaysAgo = new Date(now);
+        startTwoDaysAgo.setDate(now.getDate() - 2);
+        startTwoDaysAgo.setHours(0, 0, 0, 0);
+
+        const endOfYesterday = new Date(now);
+        endOfYesterday.setDate(now.getDate() - 1);
+        endOfYesterday.setHours(23, 59, 59, 999);
+
+        console.log(`[DAILY-FETCH] Collecting data from ${startTwoDaysAgo.toISOString()} to ${endOfYesterday.toISOString()}`);
+
+        // First, get all data in parallel for the date range
+        const [recoveryRecords, sleepRecords, workoutRecords] = await Promise.all([
+            whoopClient.getAllRecovery(startTwoDaysAgo.toISOString(), endOfYesterday.toISOString()),
+            whoopClient.getAllSleep(startTwoDaysAgo.toISOString(), endOfYesterday.toISOString()),
+            whoopClient.getAllWorkouts(startTwoDaysAgo.toISOString(), endOfYesterday.toISOString())
         ]);
 
-        // Filter out incomplete cycles (where end is null)
-        const cycles = allCycles.filter(cycle => cycle.end !== null);
-        const incompleteCount = allCycles.length - cycles.length;
-        console.log(`[DATA-FETCH] Filtered out ${incompleteCount} incomplete cycles from ${allCycles.length} total cycles`);
+        // Extract cycle IDs from recovery records and fetch cycle data
+        const uniqueCycleIds = Array.from(new Set(recoveryRecords.map(r => r.cycle_id)));
+        const cycleData = (await Promise.all(
+            uniqueCycleIds.map(id => whoopClient.getCycleById(id).catch(() => null))
+        )).filter(c => c !== null);
 
-        // Store the data
+        // Filter data for completed records within our date range
+        const filteredCycles = cycleData.filter(cycle => {
+            if (!cycle.end) return false;
+            const startDate = new Date(cycle.start);
+            const endDate = new Date(cycle.end);
+            // Include cycles that started in our range OR ended in our range
+            return (startDate >= startTwoDaysAgo && startDate <= endOfYesterday) ||
+                   (endDate >= startTwoDaysAgo && endDate <= endOfYesterday);
+        });
+
+        const filteredSleep = sleepRecords.filter(item => {
+            if (!item.end) return false;
+            const endDate = new Date(item.end);
+            return endDate <= endOfYesterday;
+        });
+
+        const filteredRecovery = recoveryRecords.filter(item => {
+            const date = new Date(item.created_at);
+            return date >= startTwoDaysAgo && date <= endOfYesterday;
+        });
+
+        const filteredWorkouts = workoutRecords.filter(item => {
+            if (!item.end) return false;
+            const endDate = new Date(item.end);
+            return endDate <= endOfYesterday;
+        });
+
+        // Detailed logging of what's being filtered
+        console.log(`[DAILY-FETCH] Filtering results:
+            Cycles:
+            - Total fetched: ${cycleData.length}
+            - Complete & within range: ${filteredCycles.length}
+            - Excluded incomplete or current: ${cycleData.length - filteredCycles.length}
+
+            Sleep:
+            - Total fetched: ${sleepRecords.length}
+            - Complete & within range: ${filteredSleep.length}
+            - Excluded incomplete or current: ${sleepRecords.length - filteredSleep.length}
+
+            Recovery:
+            - Total fetched: ${recoveryRecords.length}
+            - Within range: ${filteredRecovery.length}
+            - Excluded current: ${recoveryRecords.length - filteredRecovery.length}
+
+            Workouts:
+            - Total fetched: ${workoutRecords.length}
+            - Complete & within range: ${filteredWorkouts.length}
+            - Excluded incomplete or current: ${workoutRecords.length - filteredWorkouts.length}
+        `);
+
+        // Store the filtered data
         await Promise.all([
-            dbService.upsertCycles(cycles),
-            dbService.upsertSleeps(sleep),
-            dbService.upsertRecoveries(recovery),
-            dbService.upsertWorkouts(workouts)
+            dbService.upsertCycles(filteredCycles),
+            dbService.upsertSleeps(filteredSleep),
+            dbService.upsertRecoveries(filteredRecovery),
+            dbService.upsertWorkouts(filteredWorkouts)
         ]);
 
-        console.log(`[DATA-FETCH] Successfully processed data:
-                    - Cycles: ${cycles.length}
-                    - Sleep: ${sleep.length}
-                    - Recovery: ${recovery.length}
-                    - Workouts: ${workouts.length}
-                `);
+        console.log(`[DAILY-FETCH] Successfully processed data:
+            - Cycles: ${filteredCycles.length}
+            - Sleep: ${filteredSleep.length}
+            - Recovery: ${filteredRecovery.length}
+            - Workouts: ${filteredWorkouts.length}
+        `);
 
+        // Format response to match what the dashboard expects
         return NextResponse.json({
             success: true,
-            data: {
-                cycles: cycles.length,
-                sleep: sleep.length,
-                recovery: recovery.length,
-                workouts: workouts.length
-            },
+            user: userProfile,
+            newCycles: filteredCycles.length,
+            newSleep: filteredSleep.length,
+            newRecovery: filteredRecovery.length,
+            newWorkouts: filteredWorkouts.length,
+            totalCycles: filteredCycles.length,
+            totalSleep: filteredSleep.length,
+            totalRecovery: filteredRecovery.length,
+            totalWorkouts: filteredWorkouts.length,
             timestamp: new Date().toISOString()
         });
 
