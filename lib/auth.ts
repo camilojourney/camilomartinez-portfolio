@@ -22,13 +22,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             authorization: {
                 url: "https://api.prod.whoop.com/oauth/oauth2/auth",
                 params: {
-                    scope: "read:recovery read:cycles read:sleep read:workout read:profile read:body_measurement",
+                    scope: "read:recovery read:cycles read:sleep read:workout read:profile read:body_measurement offline",
                     response_type: "code",
-                    access_type: "offline", // This is the key to getting a refresh token
+                    access_type: "offline",
                     prompt: "consent"       // Ensures the user is prompted for consent
                 },
             },
-            token: "https://api.prod.whoop.com/oauth/oauth2/token",
+            token: {
+                url: "https://api.prod.whoop.com/oauth/oauth2/token",
+                params: {
+                    grant_type: "authorization_code"
+                }
+            },
             userinfo: "https://api.prod.whoop.com/developer/v2/user/profile/basic",
             checks: ["state"],
             client: {
@@ -48,34 +53,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         signIn: '/signin',
     },
     callbacks: {
-        async jwt({ token, account }) {
+        async jwt({ token, account, trigger }) {
             // Initial sign in
             if (account) {
                 console.log('🔐 Initial sign in - storing tokens');
                 return {
+                    ...token,
                     accessToken: account.access_token,
                     refreshToken: account.refresh_token,
-                    expiresAt: account.expires_at,
-                    user: token,
+                    expiresAt: Math.floor(Date.now() / 1000 + (account.expires_in ?? 3600)),
                 };
             }
 
-            // Return previous token if it has not expired yet
-            if (Date.now() < (token.expiresAt as number) * 1000) {
+            // If there's no refresh token, there's nothing we can do
+            if (!token.refreshToken) {
+                console.warn('⚠️ No refresh token available');
                 return token;
             }
 
-            // Access token has expired, try to refresh it
-            console.log('🔄 Access token expired, attempting to refresh...');
-            if (!token.refreshToken) {
-                console.error('❌ No refresh token available.');
-                return { ...token, error: 'RefreshAccessTokenError' };
+            // Return previous token if it hasn't expired yet
+            // Add 5-minute buffer to prevent edge cases
+            const REFRESH_BUFFER = 300; // 5 minutes in seconds
+            if (token.expiresAt &&
+                typeof token.expiresAt === 'number' &&
+                Date.now() < (token.expiresAt - REFRESH_BUFFER) * 1000) {
+                return token;
             }
 
+            // Token has expired (or will soon), try to refresh it
             try {
+                console.log('🔄 Refreshing access token...');
                 const response = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
                     body: new URLSearchParams({
                         grant_type: 'refresh_token',
                         refresh_token: token.refreshToken as string,
@@ -87,8 +99,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const refreshedTokens = await response.json();
 
                 if (!response.ok) {
-                    console.error('❌ Token refresh failed:', refreshedTokens);
-                    throw refreshedTokens;
+                    throw new Error(refreshedTokens.error || 'Failed to refresh token');
                 }
 
                 console.log('✅ Token refreshed successfully');
@@ -96,20 +107,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     ...token,
                     accessToken: refreshedTokens.access_token,
                     refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
-                    expiresAt: Math.floor(Date.now() / 1000) + refreshedTokens.expires_in,
+                    expiresAt: Math.floor(Date.now() / 1000 + (refreshedTokens.expires_in ?? 3600)),
+                    error: undefined, // Clear any previous errors
                 };
-
             } catch (error) {
                 console.error('💥 Error refreshing access token:', error);
-                return { ...token, error: 'RefreshAccessTokenError' };
+                return {
+                    ...token,
+                    error: 'RefreshAccessTokenError',
+                };
             }
         },
         async session({ session, token }) {
-            session.accessToken = token.accessToken as string;
-            session.error = token.error as string | undefined;
-            // @ts-ignore
-            session.user = token.user;
-            return session;
+            return {
+                ...session,
+                accessToken: token.accessToken as string,
+                refreshToken: token.refreshToken as string,
+                expiresAt: token.expiresAt as number,
+                error: token.error as string | undefined,
+                user: token.user || session.user,
+            };
         },
     },
 })
