@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         const uniqueCycleIds = Array.from(new Set(recoveryRecords.map(r => r.cycle_id)));
         const cycleData = (await Promise.all(
             uniqueCycleIds.map(id => whoopClient.getCycleById(id).catch(() => null))
-        )).filter(c => c !== null);
+        )).filter((c): c is Exclude<typeof c, null> => c !== null);
 
         // Filter data for completed records within our date range
         const filteredCycles = cycleData.filter(cycle => {
