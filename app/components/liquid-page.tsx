@@ -3,8 +3,8 @@ import LiquidNav from './liquid-nav'
 import Footer from './footer'
 
 interface LiquidPageProps {
-    children: React.ReactNode
-    currentPage?: 'home' | 'blog' | 'contact' | 'about' | 'projects'
+    children?: any
+    currentPage?: 'home' | 'blog' | 'contact' | 'about' | 'projects' | 'tools'
     backgroundVariant?: 'default' | 'warm' | 'cool' | 'purple'
     className?: string
 }

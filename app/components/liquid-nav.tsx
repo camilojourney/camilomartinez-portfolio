@@ -1,7 +1,7 @@
 'use client'
 
 interface LiquidNavProps {
-    currentPage?: 'home' | 'blog' | 'projects' | 'contact' | 'about'
+    currentPage?: 'home' | 'blog' | 'projects' | 'contact' | 'about' | 'tools'
 }
 
 export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
@@ -15,6 +15,14 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                             }`}
                     >
                         home
+                        <div className="nav-indicator"></div>
+                    </a>
+                    <a
+                        href="/tools"
+                        className={`nav-item transition-all duration-300 relative ${currentPage === 'tools' ? 'text-white' : 'text-white/70 hover:text-white'
+                            }`}
+                    >
+                        tools
                         <div className="nav-indicator"></div>
                     </a>
                     <a

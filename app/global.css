@@ -88,6 +88,25 @@ html {
   @apply my-4 text-neutral-800 dark:text-neutral-200;
 }
 
+/* Force white text for Tools page prose */
+.tools-prose,
+.tools-prose h1,
+.tools-prose h2,
+.tools-prose h3,
+.tools-prose h4,
+.tools-prose h5,
+.tools-prose h6,
+.tools-prose p,
+.tools-prose li,
+.tools-prose blockquote,
+.tools-prose code,
+.tools-prose pre,
+.tools-prose table,
+.tools-prose th,
+.tools-prose td {
+  color: #ffffff !important;
+}
+
 .prose h1 {
   @apply text-4xl font-medium tracking-tight mt-6 mb-2;
 }
