@@ -141,6 +141,22 @@ export default function Footer() {
         {/* Divider with gradient */}
         <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-6"></div>
 
+        <div className="flex justify-center space-x-4 mb-4">
+          <a 
+            href="/privacy-policy" 
+            className="text-white/60 text-sm hover:text-white/90 transition-colors"
+          >
+            Privacy Policy
+          </a>
+          <span className="text-white/30">•</span>
+          <a 
+            href="/terms-of-service" 
+            className="text-white/60 text-sm hover:text-white/90 transition-colors"
+          >
+            Terms of Service
+          </a>
+        </div>
+
         <p className="text-center text-white/60 text-sm font-light">
           © {new Date().getFullYear()} Camilo Martinez. Built with Next.js 15.
         </p>
