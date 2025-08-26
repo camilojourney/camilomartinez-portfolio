@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Colors */
+    --background: 0 0% 98%; /* neutral-50 */
+    --foreground: 240 10% 3.9%; /* neutral-950 */
+    --card: 0 0% 100%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --accent: 240 5.9% 10%;
+
+    /* Typography */
+    --font-sans: "Inter", sans-serif;
+
+    /* Spacing & Radius */
+    --radius: 0.5rem;
+  }
+
+  /* Apply the base styles to the body */
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
