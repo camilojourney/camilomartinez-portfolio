@@ -158,13 +158,108 @@ export const cn = (...classes: string[]) => {
 }
 ```
 
-### Project Structure
+### Current Project Structure
 camilomartinez-portfolio/
-├── .next/
-├── .vscode/
+├── .github/
+│   └── instructions/
 ├── public/
-│   ├── images/
-│   └── favicon.ico
+│   └── bot.png
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── (main)/            # Main site pages
+│   │   │   └── page.tsx
+│   │   ├── about/             # About section
+│   │   │   ├── chat.tsx
+│   │   │   └── page.tsx
+│   │   ├── api/               # API Routes
+│   │   │   ├── auth/
+│   │   │   │   └── [...nextauth]/
+│   │   │   ├── chatbot/
+│   │   │   ├── cron/
+│   │   │   │   └── daily-data-fetch/
+│   │   │   ├── sync-status/
+│   │   │   ├── update-token/
+│   │   │   ├── view-data/
+│   │   │   ├── whoop/
+│   │   │   │   ├── auth/
+│   │   │   │   └── data/
+│   │   │   └── whoop-collector-v2/
+│   │   ├── blog/              # Blog section
+│   │   │   ├── posts/         # Blog content
+│   │   │   │   ├── spaces-vs-tabs.mdx
+│   │   │   │   ├── static-typing.mdx
+│   │   │   │   └── vim.mdx
+│   │   │   ├── [slug]/
+│   │   │   ├── page.tsx
+│   │   │   └── utils.ts
+│   │   ├── layout.tsx
+│   │   ├── not-found.tsx
+│   │   ├── page.tsx
+│   │   ├── robots.ts
+│   │   └── sitemap.ts
+│   ├── components/            # React components
+│   │   ├── charts/           # Data visualization
+│   │   ├── common/           # Common components
+│   │   │   ├── Button/
+│   │   │   ├── Input/
+│   │   │   └── Button.tsx
+│   │   ├── features/         # Feature components
+│   │   │   ├── auth/
+│   │   │   │   ├── AuthButtons.tsx
+│   │   │   │   └── AuthProvider.tsx
+│   │   │   ├── blog/
+│   │   │   │   ├── mdx.tsx
+│   │   │   │   └── posts.tsx
+│   │   │   ├── whoop/
+│   │   │   │   ├── ActivityDistributionChart.tsx
+│   │   │   │   ├── ActivityHeatmap.tsx
+│   │   │   │   ├── DataCollectionTools.tsx
+│   │   │   │   ├── RecoveryChart.tsx
+│   │   │   │   └── StrainVsRecoveryChart.tsx
+│   │   │   └── Chatbot.tsx
+│   │   ├── shared/           # Shared components
+│   │   │   ├── footer.tsx
+│   │   │   ├── liquid-background.tsx
+│   │   │   ├── liquid-nav.tsx
+│   │   │   └── liquid-page.tsx
+│   │   └── ui/               # UI components
+│   │       └── button.tsx
+│   ├── lib/                  # Core utilities
+│   │   ├── config/          # Configuration
+│   │   │   └── constants.ts
+│   │   ├── db/              # Database
+│   │   │   ├── db.ts
+│   │   │   └── whoop-database.ts
+│   │   ├── services/        # Services
+│   │   │   └── auth.ts
+│   │   ├── types/          # TypeScript types
+│   │   │   ├── next-auth.d.ts
+│   │   │   └── whoop.ts
+│   │   ├── utils/          # Utilities
+│   │   │   └── cn.ts
+│   │   ├── openai.ts       # OpenAI integration
+│   │   ├── whoop-client.ts # WHOOP API client
+│   │   └── whoop.ts        # WHOOP core logic
+│   ├── scripts/             # Build scripts
+│   │   ├── get-workout-data.js
+│   │   └── whoop-cli.js
+│   └── styles/              # Global styles
+│       ├── animations.css
+│       └── globals.css
+├── .env.example              # Environment template
+├── .eslintrc.json           # ESLint config
+├── .gitignore               # Git ignore rules
+├── README.md                # Documentation
+├── WHOOP_V2.md             # WHOOP integration docs
+├── jsconfig.json            # JavaScript config
+├── next-env.d.ts           # Next.js types
+├── next.config.mjs          # Next.js config
+├── package.json             # Dependencies
+├── pnpm-lock.yaml          # Lock file
+├── postcss.config.js        # PostCSS config
+├── tailwind.config.js       # Tailwind config
+├── tsconfig.json           # TypeScript config
+└── vercel.json            # Vercel config
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── (main)/            # Main site pages
