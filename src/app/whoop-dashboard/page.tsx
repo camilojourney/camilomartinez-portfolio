@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import LiquidPage from '../components/liquid-page';
+import LiquidPage from '@/components/layout/liquid-page';
 
 interface CollectionStats {
     user?: any;
