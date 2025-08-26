@@ -1,8 +1,13 @@
 {
-    "crons": [
-        {
-            "path": "/api/cron/daily-data-fetch",
-            "schedule": "0 15 * * *"
-        }
-    ]
+  "crons": [
+    { "path": "/api/cron/daily-whoop-sync", "schedule": "0 14 * * *" }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "portfolio-starter-kit-green-beta.vercel.app" }],
+      "destination": "https://camilomartinez.co/:path*",
+      "permanent": true
+    }
+  ]
 }
