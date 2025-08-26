@@ -54,6 +54,9 @@ export default function RootLayout({
         GeistMono.variable
       )}
     >
+      <head>
+        <link rel="canonical" href="https://camilomartinez.co" />
+      </head>
       <body className="antialiased font-sans">
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
