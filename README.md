@@ -2,6 +2,106 @@
 
 A premium, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 and featuring a unique glassmorphism design system.
 
+## 🏗 Project Structure
+
+The project follows a professional, scalable architecture designed for maintainability and clarity:
+
+```
+src/
+├── app/                    # Next.js app directory
+│   ├── api/               # API endpoints
+│   │   ├── auth/         # Authentication endpoints
+│   │   ├── cron/         # Automated tasks
+│   │   └── whoop/        # WHOOP integration endpoints
+│   └── (routes)/         # App router pages
+├── components/            # React components
+│   ├── common/           # Shared UI components
+│   │   ├── Button/
+│   │   └── Input/
+│   ├── features/         # Feature-specific components
+│   │   ├── auth/        # Authentication components
+│   │   ├── blog/        # Blog-related components
+│   │   └── whoop/       # WHOOP integration components
+│   ├── layout/          # Layout components
+│   │   ├── Footer/
+│   │   └── Navigation/
+│   └── charts/          # Data visualization components
+├── config/               # Configuration files
+│   ├── env.ts           # Environment configuration
+│   └── constants.ts     # Global constants
+├── lib/                 # Core utilities
+│   ├── api/            # API clients
+│   │   └── whoop/     # WHOOP API integration
+│   ├── db/            # Database utilities
+│   └── utils/         # Helper functions
+├── styles/             # Global styles and themes
+│   ├── globals.css
+│   └── theme.ts
+├── types/              # TypeScript type definitions
+│   ├── api/           # API types
+│   ├── db/            # Database models
+│   └── whoop/         # WHOOP-specific types
+├── hooks/             # Custom React hooks
+├── services/          # Business logic services
+│   ├── auth/         # Authentication services
+│   └── whoop/        # WHOOP integration services
+└── utils/            # Shared utility functions
+```
+
+### Directory Structure Explained
+
+#### `/src/app`
+The Next.js App Router directory containing all pages and API routes. Each page is a React Server Component by default.
+
+#### `/src/components`
+Organized into four main categories:
+- **common/**: Reusable UI components used across the application
+- **features/**: Components specific to major features (auth, blog, WHOOP)
+- **layout/**: Page layout components including navigation and footer
+- **charts/**: Data visualization components for the WHOOP integration
+
+#### `/src/config`
+Configuration files and constants:
+- Environment variables configuration
+- Global constants and settings
+- Feature flags and toggles
+
+#### `/src/lib`
+Core utilities and integrations:
+- **api/**: API client implementations
+- **db/**: Database utilities and query builders
+- **utils/**: Shared helper functions
+
+#### `/src/styles`
+Global styling configuration:
+- Global CSS and Tailwind configuration
+- Theme definitions and style constants
+- Shared style utilities
+
+#### `/src/types`
+TypeScript type definitions organized by domain:
+- **api/**: API request/response types
+- **db/**: Database model types
+- **whoop/**: WHOOP integration types
+
+#### `/src/hooks`
+Custom React hooks for shared component logic:
+- Data fetching hooks
+- UI state management hooks
+- Feature-specific hooks
+
+#### `/src/services`
+Business logic and data processing:
+- Authentication services
+- WHOOP data processing
+- Data transformation utilities
+
+#### `/src/utils`
+Shared utility functions:
+- Date formatting
+- Data validation
+- Common calculations
+
 ## 🚀 Features
 
 - **Interactive Chatbot**: An AI-powered "About Me" section with natural conversation flow
