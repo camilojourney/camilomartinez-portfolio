@@ -2,12 +2,51 @@
 
 A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system.
 
+🧠 The Philosophy: How to Think About This Architecture
+
+To become an expert in app architecture, it's less about memorizing folder names and more about understanding the mental model. This project is built on a core principle: separation of concerns. Every file and folder has a single, clear job.
+
+Think of the application like a well-organized restaurant:
+
+| Folder | Restaurant Analogy | Its Job |
+|--------|-------------------|---------|
+| src/app/ | The Menu & The Host 🗺️ | Defines what's available to the user (the URLs) and directs them to the right place. The file system is the menu. |
+| src/components/ | The LEGO Bricks 🧱 | Contains all the reusable building blocks. You build a button or a navigation bar once, then use it everywhere. This keeps the look and feel consistent and saves you from repeating code. |
+| src/lib/ | The Kitchen & The Pantry ⚙️ | This is the "engine room." It handles all the work that isn't directly visible to the user: fetching data from APIs, talking to the database, managing user authentication, and storing reusable logic. Components and pages should be simple; the complex work happens here. |
+| public/ | The Art on the Walls 🖼️ | Holds static assets like images and fonts. These are files that are served directly to the browser without any processing. |
+| Root Config Files | The Restaurant's Blueprints ⚙️ | These files (package.json, tailwind.config.ts, etc.) define the rules, tools, and settings for the entire project. You set them up once and rarely touch them. |
+
+## 🏗️ Architectural Deep Dive
+
+### 1. The src Directory: Your Code's Sanctuary
+All of your application's source code lives here. This creates a clean separation between your code and the project's configuration files.
+
+### 2. The app Directory: Where URLs are Born
+This is the most important folder in Next.js. It uses file-system-based routing.
+- Pages ((main)/): The (main) folder is a Route Group. It organizes all your user-facing pages without adding (main) to the URL.
+- APIs (api/): This is your backend. Each folder inside is a serverless function that your frontend can call.
+- Root Files (layout.tsx, not-found.tsx): These special files apply to every single page.
+
+### 3. The components Directory: A Hierarchy of Reusability
+Components are organized by their scope and complexity:
+- ui/: The most basic, "dumb" elements. Think of buttons, inputs, and cards.
+- shared/: More complex components used across many pages, like your site's header and footer.
+- features/: Large, self-contained components that handle a specific feature, like the Chatbot or ActivityHeatmap.
+
+### 4. The lib Directory: The Central Nervous System
+This is where you consolidate all non-React code to keep your components clean:
+- services/: Contains the "business logic" (e.g., WhoopService for WHOOP API)
+- db/: Handles all direct database communication
+- hooks/: Custom React Hooks for sharing client-side logic
+- types/: Defines the "shape" of your data using TypeScript
+- utils/: General-purpose helper functions
+
 ## ✨ Key Features
 
 - **AI Chatbot**: Interactive "About Me" with natural conversation
 - **WHOOP Integration**: Real-time fitness data with OAuth 2.0
 - **Activity Visualization**: GitHub-style training heatmap
-- **Project Showcase**: Dynamic case studies with MDX   ├── lib/              # Core utilities and business logic
+- **Project Showcase**: Dynamic case studies with MDX
    │   ├── config/         # App configuration
    │   │   └── constants.ts
    │   ├── db/            # Database utilities
