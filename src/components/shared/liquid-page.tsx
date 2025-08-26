@@ -1,6 +1,6 @@
-import LiquidBackground from './liquid-background'
-import LiquidNav from './liquid-nav'
-import Footer from './footer'
+import LiquidBackground from '@/components/shared/liquid-background'
+import LiquidNav from '@/components/shared/liquid-nav'
+import Footer from '@/components/shared/footer'
 
 interface LiquidPageProps {
     children?: any

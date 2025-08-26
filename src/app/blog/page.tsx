@@ -1,5 +1,5 @@
-import { BlogPosts } from 'app/components/posts'
-import LiquidPage from 'app/components/liquid-page'
+import { BlogPosts } from '@/components/features/blog/posts'
+import LiquidPage from '@/components/layout/liquid-page'
 
 export const metadata = {
   title: 'Blog',

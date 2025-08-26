@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { sql } from '../../../../lib/db';
-import { WhoopV2Client } from '../../../../lib/whoop-client';
-import { WhoopDatabaseService } from '../../../../lib/whoop-database';
-
-import { auth } from '../../../../lib/auth';
+import { sql } from '@/lib/db/db';
+import { WhoopV2Client } from '@/lib/api/whoop/whoop-client';
+import { WhoopDatabaseService } from '@/lib/db/whoop-database';
+import { auth } from '@/services/auth/auth';
 
 export async function POST(request: Request) {
     // Secure the endpoint

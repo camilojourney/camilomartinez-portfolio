@@ -1,108 +1,237 @@
-# Camilo Martinez - AI Developer Portfolio
+# Camilo Martinez - AI Developer Portfolio 🚀
 
-A premium, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 and featuring a unique glassmorphism design system.
+A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system.
 
-## 🏗 Project Structure
+## ✨ Key Features
 
-The project follows a professional, scalable architecture designed for maintainability and clarity:
+- **AI Chatbot**: Interactive "About Me" with natural conversation
+- **WHOOP Integration**: Real-time fitness data with OAuth 2.0
+- **Activity Visualization**: GitHub-style training heatmap
+- **Project Showcase**: Dynamic case studies with MDX   ├── lib/              # Core utilities and business logic
+   │   ├── config/         # App configuration
+   │   │   └── constants.ts
+   │   ├── db/            # Database utilities
+   │   │   ├── db.ts
+   │   │   └── whoop-database.ts
+   │   ├── hooks/         # Custom React hooks
+   │   ├── services/      # Business logic
+   │   │   ├── auth.ts
+   │   │   └── whoop.ts
+   │   ├── types/         # TypeScript types
+   │   │   ├── auth.d.ts
+   │   │   └── whoop.ts
+   │   ├── utils/         # Helper functions
+   │   │   └── cn.ts
+   │   ├── openai.ts      # AI integration
+   │   └── whoop.ts       # WHOOP client
+   ├── scripts/          # Build scriptsdern Design**: Apple 2025-inspired liquid glass UI
+- **Blog System**: Technical writing with syntax highlighting
+- **Performance**: SEO optimized with dynamic OG images
 
-```
-src/
-├── app/                    # Next.js app directory
-│   ├── api/               # API endpoints
-│   │   ├── auth/         # Authentication endpoints
-│   │   ├── cron/         # Automated tasks
-│   │   └── whoop/        # WHOOP integration endpoints
-│   └── (routes)/         # App router pages
-├── components/            # React components
-│   ├── common/           # Shared UI components
-│   │   ├── Button/
-│   │   └── Input/
-│   ├── features/         # Feature-specific components
-│   │   ├── auth/        # Authentication components
-│   │   ├── blog/        # Blog-related components
-│   │   └── whoop/       # WHOOP integration components
-│   ├── layout/          # Layout components
-│   │   ├── Footer/
-│   │   └── Navigation/
-│   └── charts/          # Data visualization components
-├── config/               # Configuration files
-│   ├── env.ts           # Environment configuration
-│   └── constants.ts     # Global constants
-├── lib/                 # Core utilities
-│   ├── api/            # API clients
-│   │   └── whoop/     # WHOOP API integration
-│   ├── db/            # Database utilities
-│   └── utils/         # Helper functions
-├── styles/             # Global styles and themes
-│   ├── globals.css
-│   └── theme.ts
-├── types/              # TypeScript type definitions
-│   ├── api/           # API types
-│   ├── db/            # Database models
-│   └── whoop/         # WHOOP-specific types
-├── hooks/             # Custom React hooks
-├── services/          # Business logic services
-│   ├── auth/         # Authentication services
-│   └── whoop/        # WHOOP integration services
-└── utils/            # Shared utility functions
-```
+## 🏗 Architecture Overview
+
+This portfolio follows a modern, scalable architecture using Next.js 15 App Router:
 
 ### Directory Structure Explained
 
-#### `/src/app`
-The Next.js App Router directory containing all pages and API routes. Each page is a React Server Component by default.
+#### 1. Root Directory Organization
+- `.next/`: Build output and caching
+- `public/`: Static assets (images, favicon)
+- `src/`: All application source code
+- Configuration files (`.env.example`, `tsconfig.json`, etc.)
 
-#### `/src/components`
-Organized into four main categories:
-- **common/**: Reusable UI components used across the application
-- **features/**: Components specific to major features (auth, blog, WHOOP)
-- **layout/**: Page layout components including navigation and footer
-- **charts/**: Data visualization components for the WHOOP integration
+#### 2. Source Directory (`src/`) 📁
+Main application code organized into logical sections:
 
-#### `/src/config`
-Configuration files and constants:
-- Environment variables configuration
-- Global constants and settings
-- Feature flags and toggles
+- `app/`: Next.js App Router (pages and API routes)
+- `components/`: React components by feature and reusability
+- `config/`: Application-wide configuration
+- `hooks/`: Custom React hooks
+- `lib/`: Core utilities and integrations
+- `scripts/`: Build and maintenance scripts
+- `services/`: Business logic layer
+- `styles/`: Global CSS and animations
+- `types/`: TypeScript type definitions
+- `utils/`: Helper functions
 
-#### `/src/lib`
-Core utilities and integrations:
-- **api/**: API client implementations
-- **db/**: Database utilities and query builders
-- **utils/**: Shared helper functions
+#### 2. App Router (`src/app/`) 🗺️
+File-system based routing with co-located components:
 
-#### `/src/styles`
-Global styling configuration:
-- Global CSS and Tailwind configuration
-- Theme definitions and style constants
-- Shared style utilities
+- `(main)/` - Main site pages (about, blog, etc.)
+- `api/` - Backend API routes
+- `auth/` - Authentication pages
+- `layout.tsx` - Root layout template
 
-#### `/src/types`
-TypeScript type definitions organized by domain:
-- **api/**: API request/response types
-- **db/**: Database model types
-- **whoop/**: WHOOP integration types
+#### 3. Components (`src/components/`) 🧱
+Organized by complexity and scope:
 
-#### `/src/hooks`
-Custom React hooks for shared component logic:
-- Data fetching hooks
-- UI state management hooks
-- Feature-specific hooks
+- `ui/` - Base UI elements (buttons, cards)
+  ```tsx
+  // button.tsx - Reusable button component
+  import { cva } from 'class-variance-authority';
+  
+  export const Button = ({ variant, ...props }) => {
+    return <button className={buttonVariants({ variant })} {...props} />;
+  };
+  ```
 
-#### `/src/services`
-Business logic and data processing:
-- Authentication services
-- WHOOP data processing
-- Data transformation utilities
+- `shared/` - Layout components
+  ```tsx
+  // liquid-page.tsx - Page wrapper with glass effect
+  export const LiquidPage = ({ children }) => {
+    return <div className="glass-morphism">{children}</div>;
+  };
+  ```
 
-#### `/src/utils`
-Shared utility functions:
-- Date formatting
-- Data validation
-- Common calculations
+- `features/` - Feature-specific components
+  ```tsx
+  // features/whoop/activity-heatmap.tsx
+  export const ActivityHeatmap = ({ data }) => {
+    return <HeatmapChart data={data} />;
+  };
+  ```
 
-## 🚀 Features
+#### 4. Core Logic (`src/lib/`) ⚙️
+All non-React code organized in a single library directory:
+
+```typescript
+// lib/services/whoop.ts - Business logic
+export class WhoopService {
+  async getActivityData() {
+    // Fetch and process WHOOP data
+  }
+}
+
+// lib/config/constants.ts - App configuration
+export const API_ENDPOINTS = {
+  whoop: '/api/whoop',
+  auth: '/api/auth'
+};
+
+// lib/hooks/useAuth.ts - Custom React hooks
+export const useAuth = () => {
+  // Authentication hook logic
+};
+
+// lib/types/whoop.ts - TypeScript types
+export interface WhoopActivity {
+  id: string;
+  type: ActivityType;
+  score: number;
+}
+
+// lib/utils/cn.ts - Helper functions
+export const cn = (...classes: string[]) => {
+  return classes.filter(Boolean).join(' ');
+};
+```
+
+#### 5. Types and Utilities (`src/types/`, `src/utils/`) �
+Type definitions and helper functions:
+
+```typescript
+// types/whoop.ts
+export interface WhoopActivity {
+  id: string;
+  type: 'workout' | 'recovery';
+  score: number;
+}
+
+// utils/cn.ts - className utility
+export const cn = (...classes: string[]) => {
+  return classes.filter(Boolean).join(' ');
+};
+```
+
+## 🛠 Technical Implementation
+
+### Key Technologies
+
+```json
+{
+  "framework": "Next.js 15 (App Router)",
+  "language": "TypeScript",
+  "styling": "Tailwind CSS v4",
+  "auth": "NextAuth.js + OAuth 2.0",
+  "database": "Vercel Postgres",
+  "deployment": "Vercel + Analytics"
+}
+```
+
+### Project Structure
+camilomartinez-portfolio/
+├── .next/
+├── .vscode/
+├── public/
+│   ├── images/
+│   └── favicon.ico
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── (main)/            # Main site pages
+│   │   │   ├── about/
+│   │   │   ├── blog/
+│   │   │   │   └── [slug]/
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── api/               # API Routes
+│   │   │   ├── chatbot/
+│   │   │   ├── whoop/
+│   │   │   │   ├── auth/
+│   │   │   │   └── data/
+│   │   │   ├── cron/
+│   │   │   │   └── daily-data-fetch/
+│   │   │   ├── sync-status/
+│   │   │   └── update-token/
+│   │   ├── auth/              # Auth pages
+│   │   ├── live-data/        # Real-time data views
+│   │   ├── my-stats/         # Analytics dashboard
+│   │   ├── privacy-policy/
+│   │   ├── projects/         # Project showcase
+│   │   ├── signin/           # Authentication
+│   │   ├── terms-of-service/
+│   │   ├── tools/            # Developer tools
+│   │   ├── whoop-dashboard/  # WHOOP management
+│   │   ├── layout.tsx        # Root layout
+│   │   ├── page.tsx         # Homepage
+│   │   └── globals.css      # Global styles
+│   ├── components/           # React components
+│   │   ├── features/        # Feature-specific
+│   │   │   ├── auth/
+│   │   │   ├── blog/
+│   │   │   ├── chatbot.tsx
+│   │   │   └── whoop/
+│   │   ├── shared/          # Shared layouts
+│   │   │   ├── footer.tsx
+│   │   │   ├── liquid-nav.tsx
+│   │   │   └── liquid-page.tsx
+│   │   └── ui/             # Base UI components
+│   │       ├── button.tsx
+│   │       └── card.tsx
+│   ├── config/             # App configuration
+│   │   └── constants.ts
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/              # Core utilities
+│   │   ├── openai.ts    # AI integration
+│   │   └── whoop.ts     # WHOOP client
+│   ├── scripts/         # Build/dev scripts
+│   ├── services/        # Business logic
+│   │   ├── auth/
+│   │   └── whoop/
+│   ├── styles/         # Additional styles
+│   │   └── globals.css
+│   ├── types/         # TypeScript types
+│   │   └── whoop.ts
+│   └── utils/        # Helper functions
+│       └── cn.ts     # className utilities
+├── .eslintrc.json
+├── .gitignore
+├── next.config.mjs
+├── package.json
+├── postcss.config.js
+├── tailwind.config.ts
+└── tsconfig.json
+
+
 
 - **Interactive Chatbot**: An AI-powered "About Me" section with natural conversation flow
 - **Live WHOOP Integration**: Real-time fitness data visualization with OAuth 2.0 authentication
@@ -114,57 +243,138 @@ Shared utility functions:
 - **Performance Optimized**: SEO optimized with dynamic OG images, sitemap, RSS feed
 - **Modern Tech Stack**: Next.js 15, TypeScript, Tailwind CSS, Vercel deployment
 
-## 🎯 Pages & Features
+## 📱 Features & Pages
 
-### Core Pages
-- **Home**: Professional landing with skills showcase and availability status
-- **Projects**: Interactive gallery with detailed case studies for each project
-- **About**: Features the innovative AI chatbot for interactive biography
-- **Blog**: Technical writing and insights with syntax highlighting
-- **Contact**: Professional contact form with social links
-- **Live Data**: Real-time WHOOP fitness data demo with OAuth integration
-- **WHOOP Dashboard**: Data collection management and analytics interface
-- **My Stats**: Personal performance analytics and data visualization
+### Main Pages
+```typescript
+// src/app/(main)/page.tsx - Homepage
+export default function Home() {
+  return (
+    <LiquidPage>
+      <Hero />
+      <SkillsShowcase />
+      <ProjectGrid />
+    </LiquidPage>
+  );
+}
 
-### Key Technical Features
-- Dynamic project detail pages with comprehensive case studies
-- Real-time chat interface with glassmorphism UI
-- WHOOP API integration with OAuth 2.0 authentication
-- **Training consistency tracking with GitHub-style heatmap
-- **Training distribution analysis** with activity breakdown by sport type
-- **Strain-recovery correlation analysis** with trend line visualization
-- Year-over-year fitness data comparison
-- Automatic daily data synchronization (2:00 PM UTC)
-- Personal fitness analytics with advanced data visualization
-- Intelligent strain tracking with categorized intensity levels
-- Responsive design with smooth animations and transitions
-- Professional typography using Geist font
-- Advanced CSS with backdrop filters and glass morphism effects
+// src/app/(main)/about/page.tsx - Interactive About
+export default function About() {
+  return <Chatbot initialMessage="Ask me anything!" />;
+}
 
-## 🛠 Technology Stack
+// src/app/whoop-dashboard/page.tsx - Data Dashboard
+export default function WhoopDashboard() {
+  return (
+    <div>
+      <ActivityHeatmap />
+      <RecoveryGraph />
+      <WorkoutStats />
+    </div>
+  );
+}
+```
 
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript for type safety
-- **Styling**: Tailwind CSS v4 with custom glassmorphism components
-- **Authentication**: NextAuth.js with OAuth 2.0 (WHOOP integration)
-- **Database**: Vercel Postgres for WHOOP data storage
-- **Content**: MDX for blog posts with syntax highlighting
-- **APIs**: WHOOP REST API v2 integration (fresh v2 setup - migrated from v1 before Oct 1, 2025 deadline)
-- **Automation**: Vercel Cron Jobs for daily data sync
-- **Deployment**: Vercel with Speed Insights and Web Analytics
-- **Performance**: Optimized images, SEO, and Core Web Vitals
+### API Routes
+```typescript
+// src/app/api/chatbot/route.ts - AI Chat Endpoint
+export async function POST(req: Request) {
+  const { message } = await req.json();
+  const response = await openai.chat.completions.create({
+    model: "gpt-4-turbo",
+    messages: [{ role: "user", content: message }]
+  });
+  return Response.json({ reply: response.choices[0].message });
+}
 
-## 🏃‍♂️ WHOOP Integration
+// src/app/api/whoop/data/route.ts - WHOOP Data
+export async function GET() {
+  const session = await auth();
+  if (!session?.accessToken) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const data = await whoopClient.getActivityData();
+  return Response.json(data);
+}
+```
 
-This portfolio features a comprehensive WHOOP fitness data integration that demonstrates real-world API integration, data visualization, and automated workflows.
+### Design Features
+- Liquid glass morphism with backdrop filters
+- Responsive layouts with Tailwind CSS
+- Smooth page transitions with Framer Motion
+- Dynamic OG images for social sharing
+- Geist font for modern typography
 
-### Features
-- **OAuth 2.0 Authentication** with WHOOP
-- **Automated Daily Sync** at 2:00 PM UTC using Vercel Cron Jobs
-- **Historical Data Backfill** for importing past records
-- **Real-time Analytics** with interactive charts and visualizations
-- **Production-ready Error Handling** and logging
-- **Clean API Architecture** with proper separation of concerns
+## � Getting Started
+
+### Prerequisites
+```bash
+node >= 18.0.0
+pnpm >= 8.0.0
+```
+
+### Installation
+```bash
+# Clone repository
+git clone https://github.com/camilojourney/camilomartinez-portfolio.git
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Start development server
+pnpm dev
+```
+
+### Environment Variables
+```bash
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_secret
+
+# WHOOP Integration
+WHOOP_CLIENT_ID=REPLACE_ME
+WHOOP_CLIENT_SECRET=REPLACE_ME
+
+# Database
+POSTGRES_URL=your_vercel_postgres_url
+
+# OpenAI (for chatbot)
+OPENAI_API_KEY=your_openai_key
+```
+
+## 🔄 Data Integration
+
+### WHOOP API Integration
+```typescript
+// src/lib/whoop.ts
+export class WhoopClient {
+  constructor(private accessToken: string) {}
+
+  async getWorkouts(startDate?: string) {
+    return this.fetch('/activity/workout', { start: startDate });
+  }
+
+  async getRecovery(startDate?: string) {
+    return this.fetch('/recovery', { start: startDate });
+  }
+}
+
+// src/app/api/cron/daily-data-fetch/route.ts
+export async function POST() {
+  const date = new Date();
+  await whoopClient.syncDailyData();
+  return Response.json({ success: true, syncedAt: date });
+}
+```
+
+### Automated Data Collection
+- Daily sync via Vercel Cron (2:00 PM UTC)
+- Historical data backfill capability
+- Error handling with automatic retries
+- Rate limiting and request optimization
 
 ### API Endpoints
 
@@ -265,33 +475,103 @@ vercel
 ## 📁 Project Structure
 
 ```
-/
-├── app/                          # Next.js 15 App Router
-│   ├── about/                    # AI chatbot page
-│   ├── api/                      # Clean API routes
-│   │   ├── auth/[...nextauth]/   # NextAuth.js OAuth configuration
-│   │   ├── whoop-collector/      # Historical data collection
-│   │   ├── whoop-collector-daily/# Daily data sync
-│   │   ├── view-data/           # Analytics data endpoint
-│   │   ├── sync-status/         # User sync status & recommendations
-│   │   └── cron/daily-whoop-sync/# Automated daily sync (Vercel Cron)
-│   ├── blog/                    # Blog system with MDX
-│   ├── components/              # Reusable UI components
-│   ├── contact/                 # Contact form
-│   ├── live-data/              # Public WHOOP data demo
-│   ├── my-stats/               # Personal analytics dashboard
-│   ├── projects/               # Project showcase
-│   ├── signin/                 # Authentication page
-│   └── whoop-dashboard/        # Data collection management
-├── components/                  # Chart and visualization components
-├── lib/                        # Core utilities and configurations
-│   ├── auth.ts                # NextAuth.js configuration
-│   ├── whoop-client.ts        # WHOOP API client
-│   ├── whoop-database.ts      # Database service layer
-│   └── whoop-sports.ts        # WHOOP sports activity mapping
+camilomartinez-portfolio/
+├── .next/                      # Next.js build output
+├── node_modules/               # Dependencies
 ├── public/                     # Static assets
-├── types/                      # TypeScript type definitions
-└── vercel.json                # Vercel configuration with cron jobs
+│   ├── images/                 # Image assets
+│   └── favicon.ico            # Site favicon
+├── src/                       # Application source code
+│   ├── app/                   # Next.js App Router
+│   │   ├── (main)/           # Main site pages
+│   │   │   ├── about/        # About page with AI chat
+│   │   │   ├── blog/         # Blog section
+│   │   │   │   ├── [slug]/   # Dynamic blog post pages
+│   │   │   │   └── page.tsx  # Blog listing
+│   │   │   ├── layout.tsx    # Main layout
+│   │   │   └── page.tsx      # Homepage
+│   │   ├── api/              # API Routes
+│   │   │   ├── auth/         # Authentication endpoints
+│   │   │   ├── chatbot/      # AI chat endpoints
+│   │   │   ├── cron/         # Automated tasks
+│   │   │   │   └── daily-data-fetch/
+│   │   │   ├── sync-status/  # Sync monitoring
+│   │   │   ├── update-token/ # Token management
+│   │   │   ├── view-data/    # Data retrieval
+│   │   │   └── whoop/        # WHOOP integration
+│   │   │       ├── auth/     # WHOOP OAuth
+│   │   │       └── data/     # WHOOP data handling
+│   │   ├── auth/             # Auth-related pages
+│   │   ├── blog/             # Blog system
+│   │   ├── contact/          # Contact form
+│   │   ├── live-data/        # Real-time data display
+│   │   ├── my-stats/         # Analytics dashboard
+│   │   ├── og/              # Open Graph images
+│   │   ├── privacy-policy/   # Legal pages
+│   │   ├── projects/        # Project showcase
+│   │   ├── rss/            # RSS feed
+│   │   ├── signin/         # Auth pages
+│   │   ├── terms-of-service/
+│   │   ├── tools/          # Developer tools
+│   │   ├── whoop-dashboard/# WHOOP management
+│   │   ├── layout.tsx      # Root layout
+│   │   ├── page.tsx        # Root page
+│   │   ├── not-found.tsx   # 404 page
+│   │   ├── robots.ts      # Robots configuration
+│   │   └── sitemap.ts     # Sitemap generation
+│   ├── components/        # React components
+│   │   ├── features/      # Feature-specific
+│   │   │   ├── auth/      # Auth components
+│   │   │   ├── blog/      # Blog components
+│   │   │   ├── chatbot/   # AI chat interface
+│   │   │   └── whoop/     # WHOOP visualizations
+│   │   ├── shared/        # Shared components
+│   │   │   ├── footer.tsx
+│   │   │   ├── liquid-nav.tsx
+│   │   │   ├── liquid-background.tsx
+│   │   │   └── liquid-page.tsx
+│   │   └── ui/           # Base UI components
+│   │       ├── button.tsx
+│   │       └── card.tsx
+│   ├── config/          # Configuration
+│   │   └── constants.ts # App constants
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/           # Core utilities
+│   │   ├── db/       # Database utilities
+│   │   │   ├── db.ts
+│   │   │   └── whoop-database.ts
+│   │   ├── openai.ts # AI integration
+│   │   └── whoop.ts  # WHOOP client
+│   ├── scripts/      # Build scripts
+│   │   ├── get-workout-data.js
+│   │   └── whoop-cli.js
+│   ├── services/    # Business logic
+│   │   └── auth/    # Auth services
+│   │       └── auth.ts
+│   ├── styles/     # Global styles
+│   │   ├── animations.css
+│   │   └── globals.css
+│   ├── types/      # TypeScript types
+│   │   ├── api/
+│   │   ├── auth/
+│   │   ├── db/
+│   │   └── whoop/
+│   └── utils/     # Helper functions
+│       └── cn.ts  # className utilities
+├── .env.example   # Environment variables template
+├── .eslintrc.json # ESLint configuration
+├── .gitignore    # Git ignore rules
+├── README.md     # Project documentation
+├── WHOOP_V2.md   # WHOOP integration docs
+├── jsconfig.json # JavaScript configuration
+├── next.config.mjs # Next.js configuration
+├── package.json   # Project dependencies
+├── pnpm-lock.yaml # Lock file
+├── postcss.config.js # PostCSS configuration
+├── tailwind.config.ts # Tailwind configuration
+├── tsconfig.json # TypeScript configuration
+└── vercel.json   # Vercel deployment config
+```
 ```
 
 ## 🔧 Technical Implementation

@@ -18,10 +18,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '../../../lib/auth';
-import { WhoopV2Client } from '../../../lib/whoop-client';
-import { WhoopDatabaseService } from '../../../lib/whoop-database';
-import { WhoopCycle } from '../../../types/whoop';
+import { auth } from '@/services/auth/auth';
+import { WhoopV2Client } from '@/lib/api/whoop/whoop-client';
+import { WhoopDatabaseService } from '@/lib/db/whoop-database';
+import { WhoopCycle } from '@/types/whoop/whoop';
 
 export async function POST(request: NextRequest) {
     const session = await auth();
