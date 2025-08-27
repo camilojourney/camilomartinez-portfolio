@@ -48,7 +48,8 @@ tmp/
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts
 
 # Backup files
 .backup/
+.vercel
+.env*.local

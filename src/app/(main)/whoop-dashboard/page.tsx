@@ -51,10 +51,11 @@ export default function WhoopDashboard() {
 
     // Capture the token when the session is available
     useEffect(() => {
-        if (session?.accessToken) {
-            setPermanentToken(session.accessToken);
+        const token = session?.accessToken;
+        if (token) {
+            setPermanentToken(token);
             // Store in localStorage for persistence
-            localStorage.setItem('whoopPermanentToken', session.accessToken);
+            localStorage.setItem('whoopPermanentToken', token);
 
             // You can also send it to your backend to store it
             fetch('/api/update-token', {

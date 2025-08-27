@@ -24,12 +24,14 @@ async function getWhoopData(accessToken: string): Promise<any> {
     }
 }
 
+import { Session } from "next-auth"
+
 export default async function LiveDataPage() {
     const session = await auth()
     let whoopData: any = null
     let dataError: string | null = null
 
-    if (session?.accessToken) {
+    if (session?.accessToken && !session.error) {
         whoopData = await getWhoopData(session.accessToken)
         if (whoopData?.error) {
             dataError = whoopData.error
