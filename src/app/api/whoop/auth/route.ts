@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/services/auth/auth';
+import { auth } from '@/lib/services/auth';
 
 export async function GET(request: NextRequest) {
     try {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             authenticated: true,
             user: session.user,
-            expiresAt: session.expiresAt
+            expires: session.expires
         });
     } catch (error) {
         console.error('Auth check error:', error);
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
             success: true,
             message: 'Authentication refreshed successfully',
             user: session.user,
-            expiresAt: session.expiresAt
+            expires: session.expires
         });
     } catch (error) {
         console.error('Auth refresh error:', error);

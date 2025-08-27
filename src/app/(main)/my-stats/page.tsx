@@ -1,8 +1,8 @@
 import { sql } from '@vercel/postgres';
-import LiquidPage from '../components/liquid-page';
-import { ActivityHeatmap } from '../../components/ActivityHeatmap';
-import { StrainVsRecoveryChart } from '../../components/StrainVsRecoveryChart';
-import { ActivityDistributionChart } from '../../components/ActivityDistributionChart';
+import LiquidPage from '@/components/shared/liquid-page';
+import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
+import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
+import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
 
 async function getStrainData() {
     try {

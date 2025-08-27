@@ -1,4 +1,4 @@
-import { type WhoopProfile, type WhoopCycle, type WhoopSleep, type WhoopRecovery, type WhoopWorkout } from '@/types/whoop';
+import type { WhoopProfile, WhoopCycle, WhoopSleep, WhoopRecovery, WhoopWorkout } from '@/types/whoop';
 
 export class WhoopV2Client {
     private readonly baseUrl = 'https://api.prod.whoop.com/developer/v2';

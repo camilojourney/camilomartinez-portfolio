@@ -1,6 +1,6 @@
 import { BlogPosts } from '@/components/features/blog/posts'
 import Link from 'next/link'
-import LiquidPage from '@/components/layout/liquid-page'
+import LiquidPage from '@/components/shared/liquid-page'
 
 export default function Page() {
   return (

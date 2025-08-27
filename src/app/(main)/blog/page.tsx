@@ -1,5 +1,5 @@
 import { BlogPosts } from '@/components/features/blog/posts'
-import LiquidPage from '@/components/layout/liquid-page'
+import LiquidPage from '@/components/shared/liquid-page'
 
 export const metadata = {
   title: 'Blog',

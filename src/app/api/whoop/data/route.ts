@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/services/auth/auth';
+import { auth } from '@/lib/services/auth';
 import { WhoopV2Client } from '@/lib/whoop';
 import { WhoopDatabaseService } from '@/lib/db/whoop-database';
 
@@ -28,7 +28,12 @@ export async function POST(request: NextRequest) {
         const results = await whoopClient.collectData(isDaily);
 
         // Store data in database
-        await dbService.storeCollectedData(results);
+        await Promise.all([
+            dbService.upsertCycles(results.cycles || []),
+            dbService.upsertSleeps(results.sleep || []),
+            dbService.upsertRecoveries(results.recovery || []),
+            dbService.upsertWorkouts(results.workouts || [])
+        ]);
 
         return NextResponse.json({
             success: true,

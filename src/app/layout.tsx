@@ -7,8 +7,8 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { baseUrl } from './sitemap'
 import AuthProvider from '@/components/features/auth/AuthProvider'
-import { Navbar } from '@/components/layout/nav'
-import Footer from '@/components/layout/footer'
+import LiquidNav from '@/components/shared/liquid-nav'
+import Footer from '@/components/shared/footer'
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -60,7 +60,7 @@ export default function RootLayout({
       <body className="antialiased font-sans">
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
-            <Navbar />
+            <LiquidNav />
             <main className="flex-1 w-full">
               {children}
             </main>

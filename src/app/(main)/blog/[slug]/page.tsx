@@ -1,29 +1,47 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from '@/components/features/blog/mdx'
-import { formatDate, getBlogPosts } from '@/app/blog/utils'
+import { formatDate, getBlogPosts } from '../utils'
 import { baseUrl } from '@/app/sitemap'
 
-export async function generateStaticParams() {
-  let posts = getBlogPosts()
+interface BlogPost {
+  slug: string;
+  metadata: {
+    title: string;
+    publishedAt: string;
+    summary?: string;
+    image?: string;
+  };
+  content: string;
+}
 
-  return posts.map((post) => ({
+interface PageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
+export async function generateStaticParams() {
+  const posts = getBlogPosts()
+  return posts.map((post: BlogPost) => ({
     slug: post.slug,
   }))
 }
 
-export function generateMetadata({ params }) {
-  let post = getBlogPosts().find((post) => post.slug === params.slug)
+export async function generateMetadata({ params }: PageProps) {
+  const resolvedParams = await params;
+  const post = getBlogPosts().find((post: BlogPost) => post.slug === resolvedParams.slug)
   if (!post) {
     return
   }
 
-  let {
+  const {
     title,
     publishedAt: publishedTime,
     summary: description,
     image,
   } = post.metadata
-  let ogImage = image
+
+  const ogImage = image
     ? image
     : `${baseUrl}/og?title=${encodeURIComponent(title)}`
 
@@ -51,8 +69,9 @@ export function generateMetadata({ params }) {
   }
 }
 
-export default function Blog({ params }) {
-  let post = getBlogPosts().find((post) => post.slug === params.slug)
+export default async function Blog({ params }: PageProps) {
+  const resolvedParams = await params;
+  const post = getBlogPosts().find((post: BlogPost) => post.slug === resolvedParams.slug)
 
   if (!post) {
     notFound()

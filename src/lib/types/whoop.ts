@@ -1,7 +1,7 @@
 // WHOOP V2 API Response Types
 
 export interface WhoopUser {
-    user_id: number;
+    user_id: string;
     email: string;
     first_name: string;
     last_name: string;
