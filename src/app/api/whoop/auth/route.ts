@@ -4,7 +4,9 @@ import { auth } from '@/lib/services/auth';
 export async function GET(request: NextRequest) {
     try {
         const session = await auth();
-        if (!session?.accessToken) {
+        const sessionWithToken = session as typeof session & { accessToken?: string };
+        
+        if (!sessionWithToken?.accessToken) {
             return NextResponse.json({
                 error: 'Not authenticated',
                 suggestion: 'Please sign in to WHOOP first'
@@ -13,8 +15,8 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             authenticated: true,
-            user: session.user,
-            expires: session.expires
+            user: sessionWithToken.user,
+            expires: sessionWithToken.expires
         });
     } catch (error) {
         console.error('Auth check error:', error);
@@ -28,7 +30,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const session = await auth();
-        if (!session?.accessToken) {
+        const sessionWithToken = session as typeof session & { accessToken?: string };
+        
+        if (!sessionWithToken?.accessToken) {
             return NextResponse.json({
                 error: 'Not authenticated',
                 suggestion: 'Please sign in to WHOOP first'
@@ -41,8 +45,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             message: 'Authentication refreshed successfully',
-            user: session.user,
-            expires: session.expires
+            user: sessionWithToken.user,
+            expires: sessionWithToken.expires
         });
     } catch (error) {
         console.error('Auth refresh error:', error);

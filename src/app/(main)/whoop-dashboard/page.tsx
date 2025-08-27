@@ -51,7 +51,8 @@ export default function WhoopDashboard() {
 
     // Capture the token when the session is available
     useEffect(() => {
-        const token = session?.accessToken;
+        const sessionWithToken = session as typeof session & { accessToken?: string }
+        const token = sessionWithToken?.accessToken;
         if (token) {
             setPermanentToken(token);
             // Store in localStorage for persistence
@@ -64,12 +65,12 @@ export default function WhoopDashboard() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    token: session.accessToken,
+                    token: sessionWithToken?.accessToken,
                     userId: "${process.env.WHOOP_USER_ID_TO_SYNC}"
                 })
             });
         }
-    }, [session?.accessToken]);
+    }, [session]);
 
     // Auto-refresh debug info and sync status every 30 seconds when authenticated
     useEffect(() => {

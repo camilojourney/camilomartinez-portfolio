@@ -16,8 +16,9 @@ export async function POST(request: Request) {
 
     try {
         const session = await auth();
+        const sessionWithToken = session as typeof session & { accessToken?: string };
         // Use stored token as fallback
-        const accessToken = session?.accessToken || process.env.WHOOP_ACCESS_TOKEN;
+        const accessToken = sessionWithToken?.accessToken || process.env.WHOOP_ACCESS_TOKEN;
 
         if (!accessToken) {
             throw new Error('No access token found');
