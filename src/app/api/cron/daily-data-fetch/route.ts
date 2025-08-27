@@ -111,29 +111,31 @@ export async function POST(request: Request) {
             - Excluded incomplete or current: ${workoutRecords.length - filteredWorkouts.length}
         `);
 
-        // Store the filtered data
-        await Promise.all([
+        // Store the filtered data and get actual insert counts
+        const [, , recoveryResult, ] = await Promise.all([
             dbService.upsertCycles(filteredCycles),
             dbService.upsertSleeps(filteredSleep),
             dbService.upsertRecoveries(filteredRecovery),
             dbService.upsertWorkouts(filteredWorkouts)
         ]);
 
+        const actualResults = {
+            newCycles: filteredCycles.length, // Note: DB doesn't track new vs existing for cycles
+            newSleep: filteredSleep.length,   // Note: DB doesn't track new vs existing for sleep
+            newRecovery: recoveryResult.newRecoveryCount,
+            newWorkouts: filteredWorkouts.length // Note: DB doesn't track new vs existing for workouts
+        };
+
         console.log(`[DAILY-FETCH] Successfully processed data:
-            - Cycles: ${filteredCycles.length}
-            - Sleep: ${filteredSleep.length}
-            - Recovery: ${filteredRecovery.length}
-            - Workouts: ${filteredWorkouts.length}
+            - Cycles: ${filteredCycles.length} processed
+            - Sleep: ${filteredSleep.length} processed  
+            - Recovery: ${filteredRecovery.length} processed, ${actualResults.newRecovery} new
+            - Workouts: ${filteredWorkouts.length} processed
         `);
 
         return NextResponse.json({
             success: true,
-            data: {
-                cycles: filteredCycles.length,
-                sleep: filteredSleep.length,
-                recovery: filteredRecovery.length,
-                workouts: filteredWorkouts.length
-            },
+            data: actualResults,
             timestamp: new Date().toISOString()
         });
 

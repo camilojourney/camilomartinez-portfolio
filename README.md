@@ -456,7 +456,7 @@ git clone https://github.com/camilojourney/camilomartinez-portfolio.git
 pnpm install
 
 # Set up environment variables
-cp .env.example .env.local
+cp .env.example .env
 
 # Start development server
 pnpm dev
@@ -580,7 +580,7 @@ pnpm install
 
 3. Set up environment variables:
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 # Add your environment variables
 ```
 
@@ -934,7 +934,7 @@ The "liquid glass" theme is implemented using:
 pnpm install
 
 # Set up environment variables
-cp .env.example .env.local
+cp .env.example .env
 
 # Run development server
 pnpm dev

@@ -8,10 +8,12 @@ interface WhoopProfile {
     last_name: string
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-    debug: process.env.NODE_ENV !== "production",
+export const { handlers, signIn, signOut, auth } = NextAuth({
+    debug: false, // Disable debug logging
     trustHost: true,
     secret: process.env.AUTH_SECRET,
+    // NextAuth will automatically use localhost:3000 in development
+    // and the deployment URL in production
     providers: [
         {
             id: "whoop",

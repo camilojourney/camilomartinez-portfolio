@@ -62,14 +62,18 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
     // Process the data for calendar display
     const generateCalendarData = (): DayData[] => {
         console.log('Raw data received:', data);
+        console.log('Selected year for filtering:', selectedYear);
+        console.log('Total data records:', data.length);
 
         // Filter data for the selected year and create calendar data
         const yearData = data.filter(cycle => {
             // Add timezone offset to ensure consistent date handling
-            const cycleDate = new Date(cycle.formatted_date);
-            console.log('Processing date:', cycle.formatted_date, 'as:', cycleDate.toISOString());
+            const cycleDate = new Date(cycle.formatted_date + 'T00:00:00');
+            console.log('Processing date:', cycle.formatted_date, 'as:', cycleDate.toISOString(), 'year:', cycleDate.getFullYear());
             return cycleDate.getFullYear() === selectedYear;
         });
+        
+        console.log('Filtered year data length:', yearData.length, 'for year:', selectedYear);
 
         // Convert to map for accumulating strain values per day
         const strainMap = new Map<string, number>();
@@ -107,56 +111,59 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
 
     // Organize days into weeks
     const organizeIntoWeeks = (days: DayData[]) => {
+        console.log('Organizing days:', days);
+        
+        if (days.length === 0) return [];
+        
+        // Create a map for quick lookup of existing days
+        const dayMap = new Map(days.map(day => [day.date, day]));
+        
+        // Get the date range we need to cover
+        const firstDate = new Date(days[0].date);
+        const lastDate = new Date(days[days.length - 1].date);
+        
+        // Start from the beginning of the first week (find the Sunday)
+        const startDate = new Date(firstDate);
+        startDate.setDate(startDate.getDate() - startDate.getDay()); // Go back to Sunday
+        
+        // End at the end of the last week (find the Saturday)
+        const endDate = new Date(lastDate);
+        endDate.setDate(endDate.getDate() + (6 - endDate.getDay())); // Go forward to Saturday
+        
+        console.log('Calendar will span from:', startDate.toISOString().split('T')[0], 'to:', endDate.toISOString().split('T')[0]);
+        
         const weeks: DayData[][] = [];
         let currentWeek: DayData[] = [];
-
-        // Debug log to see the days we're organizing
-        console.log('Organizing days:', days);
-
-        // Add empty cells for the first week if it doesn't start on Sunday
-        const firstDay = new Date(days[0].date + 'T00:00:00Z');
-        console.log('First day being organized:', days[0].date, 'parsed as:', firstDay.toISOString());
-        // Calculate day of week, then subtract 1 to shift everything up one position
-        // If it would go below 0 (Sunday → -1), wrap around to 6 (Saturday)
-        const firstDayOfWeek = (firstDay.getDay() + 6) % 7; // This shifts all days up by one position
-        console.log('First day of week calculation (after shift):', firstDayOfWeek);
-
-        for (let i = 0; i < firstDayOfWeek; i++) {
-            currentWeek.push({
-                date: '',
+        
+        // Generate every day from start to end
+        const currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            // Use existing data if available, otherwise create empty day
+            const dayData = dayMap.get(dateStr) || {
+                date: dateStr,
                 strain: 0,
                 count: 0
-            });
-        }
-
-        days.forEach((day, index) => {
-            // Shift each day one position up in the week
-            // This is done by calculating the day of week and placing it one position up
-            const dayDate = new Date(day.date + 'T00:00:00Z');
-            const dayOfWeek = dayDate.getDay();
-
-            // Place it in the current week
-            currentWeek.push(day);
-
-            // When we reach the end of a week (7 days), move to the next week
+            };
+            
+            currentWeek.push(dayData);
+            
+            // When we have 7 days, start a new week
             if (currentWeek.length === 7) {
                 weeks.push(currentWeek);
                 currentWeek = [];
             }
-        });
-
-        // Fill the last week if needed
-        while (currentWeek.length < 7) {
-            currentWeek.push({
-                date: '',
-                strain: 0,
-                count: 0
-            });
+            
+            currentDate.setDate(currentDate.getDate() + 1);
         }
+        
+        // Add any remaining days
         if (currentWeek.length > 0) {
             weeks.push(currentWeek);
         }
-
+        
+        console.log('Generated weeks:', weeks.length, 'with', weeks.reduce((total, week) => total + week.length, 0), 'total days');
         return weeks;
     };
 
@@ -334,7 +341,7 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
                                     key={`weekday-${index}`}
                                     className="w-6 h-3 flex items-center justify-start text-xs text-white/90 font-medium"
                                 >
-                                    {[1, 3, 5].includes(index) ? day : ''}
+                                    {day}
                                 </div>
                             ))}
                         </div>
@@ -346,11 +353,16 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
                                     {week.map((day, dayIndex) => (
                                         <div
                                             key={`${weekIndex}-${dayIndex}`}
-                                            className={`w-3 h-3 rounded-sm transition-all duration-200 hover:scale-125 hover:shadow-lg cursor-pointer ${day.date ? getStrainColor(day.strain) : 'bg-transparent'
-                                                } ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-green-400/60 shadow-green-400/30' : ''}`}
-                                            onMouseEnter={(e) => handleMouseEnter(day, e)}
+                                            className={`w-3 h-3 rounded-sm transition-all duration-200 hover:scale-125 hover:shadow-lg cursor-pointer ${
+                                                day.date && day.strain > 0 
+                                                    ? getStrainColor(day.strain) 
+                                                    : day.date 
+                                                        ? 'bg-gray-900/50' // Days with no activity (strain = 0)
+                                                        : 'bg-transparent'   // Days outside the data range
+                                            } ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-green-400/60 shadow-green-400/30' : ''}`}
+                                            onMouseEnter={(e) => day.date ? handleMouseEnter(day, e) : undefined}
                                             onMouseLeave={handleMouseLeave}
-                                            onClick={(e) => handleClick(day, e)}
+                                            onClick={(e) => day.date ? handleClick(day, e) : undefined}
                                             data-week={weekIndex}
                                             data-day={dayIndex}
                                         />
