@@ -116,7 +116,7 @@ The following React components handle data display:
 ## Development Notes
 
 ### Local Setup
-1. Copy `.env.example` to `.env.local`
+1. Copy `.env.example` to `16. In your `.env` file, add:`
 2. Add WHOOP API credentials
 3. Set up local PostgreSQL database
 4. Run migrations
