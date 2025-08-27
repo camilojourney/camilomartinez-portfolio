@@ -10,8 +10,11 @@ export async function POST(req: Request) {
   console.log("[CRON] Daily WHOOP sync started");
 
   try {
+    // Determine the base URL for the fetch
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    
     // Call the existing working daily-data-fetch endpoint
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/cron/daily-data-fetch`, {
+    const response = await fetch(`${baseUrl}/api/cron/daily-data-fetch`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
