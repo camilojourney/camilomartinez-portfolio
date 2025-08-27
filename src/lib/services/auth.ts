@@ -121,10 +121,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async session({ session, token }) {
             return {
                 ...session,
-                accessToken: token.accessToken as string,
-                refreshToken: token.refreshToken as string,
-                expiresAt: token.expiresAt as number,
-                error: token.error as string | undefined,
+                accessToken: token.accessToken,
+                refreshToken: token.refreshToken,
+                expiresAt: token.expiresAt,
+                error: token.error,
                 user: token.user || session.user,
             };
         },
