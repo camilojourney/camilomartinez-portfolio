@@ -606,106 +606,278 @@ vercel
 # Enable Vercel Postgres and configure database
 ```
 
-## 📁 Project Structure
+## 📁 Complete File Structure & Purpose
 
+### 🗂️ Root Directory
 ```
 camilomartinez-portfolio/
-├── .next/                      # Next.js build output
-├── node_modules/               # Dependencies
-├── public/                     # Static assets
-│   ├── images/                 # Image assets
-│   └── favicon.ico            # Site favicon
-├── src/                       # Application source code
-│   ├── app/                   # Next.js App Router
-│   │   ├── (main)/           # Main site pages
-│   │   │   ├── about/        # About page with AI chat
-│   │   │   ├── blog/         # Blog section
-│   │   │   │   ├── [slug]/   # Dynamic blog post pages
-│   │   │   │   └── page.tsx  # Blog listing
-│   │   │   ├── layout.tsx    # Main layout
-│   │   │   └── page.tsx      # Homepage
-│   │   ├── api/              # API Routes
-│   │   │   ├── auth/         # Authentication endpoints
-│   │   │   ├── chatbot/      # AI chat endpoints
-│   │   │   ├── cron/         # Automated tasks
-│   │   │   │   └── daily-data-fetch/
-│   │   │   ├── sync-status/  # Sync monitoring
-│   │   │   ├── update-token/ # Token management
-│   │   │   ├── view-data/    # Data retrieval
-│   │   │   └── whoop/        # WHOOP integration
-│   │   │       ├── auth/     # WHOOP OAuth
-│   │   │       └── data/     # WHOOP data handling
-│   │   ├── auth/             # Auth-related pages
-│   │   ├── blog/             # Blog system
-│   │   ├── contact/          # Contact form
-│   │   ├── live-data/        # Real-time data display
-│   │   ├── my-stats/         # Analytics dashboard
-│   │   ├── og/              # Open Graph images
-│   │   ├── privacy-policy/   # Legal pages
-│   │   ├── projects/        # Project showcase
-│   │   ├── rss/            # RSS feed
-│   │   ├── signin/         # Auth pages
-│   │   ├── terms-of-service/
-│   │   ├── tools/          # Developer tools
-│   │   ├── whoop-dashboard/# WHOOP management
-│   │   ├── layout.tsx      # Root layout
-│   │   ├── page.tsx        # Root page
-│   │   ├── not-found.tsx   # 404 page
-│   │   ├── robots.ts      # Robots configuration
-│   │   └── sitemap.ts     # Sitemap generation
-│   ├── components/        # React components
-│   │   ├── features/      # Feature-specific
-│   │   │   ├── auth/      # Auth components
-│   │   │   ├── blog/      # Blog components
-│   │   │   ├── chatbot/   # AI chat interface
-│   │   │   └── whoop/     # WHOOP visualizations
-│   │   ├── shared/        # Shared components
-│   │   │   ├── footer.tsx
-│   │   │   ├── liquid-nav.tsx
-│   │   │   ├── liquid-background.tsx
-│   │   │   └── liquid-page.tsx
-│   │   └── ui/           # Base UI components
-│   │       ├── button.tsx
-│   │       └── card.tsx
-│   ├── config/          # Configuration
-│   │   └── constants.ts # App constants
-│   ├── hooks/          # Custom React hooks
-│   ├── lib/           # Core utilities
-│   │   ├── db/       # Database utilities
-│   │   │   ├── db.ts
-│   │   │   └── whoop-database.ts
-│   │   ├── openai.ts # AI integration
-│   │   └── whoop.ts  # WHOOP client
-│   ├── scripts/      # Build scripts
-│   │   ├── get-workout-data.js
-│   │   └── whoop-cli.js
-│   ├── services/    # Business logic
-│   │   └── auth/    # Auth services
-│   │       └── auth.ts
-│   ├── styles/     # Global styles
-│   │   ├── animations.css
-│   │   └── globals.css
-│   ├── types/      # TypeScript types
-│   │   ├── api/
-│   │   ├── auth/
-│   │   ├── db/
-│   │   └── whoop/
-│   └── utils/     # Helper functions
-│       └── cn.ts  # className utilities
-├── .env.example   # Environment variables template
-├── .eslintrc.json # ESLint configuration
-├── .gitignore    # Git ignore rules
-├── README.md     # Project documentation
-├── WHOOP_V2.md   # WHOOP integration docs
-├── jsconfig.json # JavaScript configuration
-├── next.config.mjs # Next.js configuration
-├── package.json   # Project dependencies
-├── pnpm-lock.yaml # Lock file
-├── postcss.config.js # PostCSS configuration
-├── tailwind.config.ts # Tailwind configuration
-├── tsconfig.json # TypeScript configuration
-└── vercel.json   # Vercel deployment config
+├── .env                        # Environment variables (local, not tracked)
+├── .env.example               # Environment template for setup
+├── .gitignore                 # Git ignore rules
+├── .github/                   # GitHub configuration
+│   └── instructions/          # Development guidelines
+├── README.md                  # 📖 This documentation file
+├── WHOOP_V2.md               # 🏃‍♂️ WHOOP API integration guide
+├── jsconfig.json             # JavaScript project configuration
+├── next-env.d.ts             # Next.js TypeScript environment types
+├── package.json              # 📦 Project dependencies and scripts
+├── pnpm-lock.yaml           # 🔒 Dependency version lock file
+├── postcss.config.js         # PostCSS configuration for CSS processing
+├── tailwind.config.js        # 🎨 Tailwind CSS configuration
+├── tsconfig.json            # TypeScript compiler configuration
+└── vercel.json              # ⚡ Vercel deployment configuration
 ```
+
+### 🌍 Public Assets
+```
+public/
+└── bot.png                   # 🤖 Chatbot avatar image
+```
+
+### 🎯 Source Code (`src/`)
+
+#### 📱 App Router (`src/app/`)
+**Next.js 15 App Router with file-system routing**
+
+##### Main Pages (`src/app/(main)/`)
+```
+(main)/                       # 🏠 Route group (doesn't affect URL)
+├── page.tsx                 # 🏡 Homepage with hero section
+├── about/                   # 👤 About me section
+│   ├── page.tsx            # About page with AI chatbot
+│   └── chat.tsx            # Chat interface component
+├── blog/                   # 📝 Blog system
+│   ├── page.tsx           # Blog post listing
+│   ├── utils.ts           # Blog utilities (MDX processing)
+│   ├── [slug]/            # Dynamic blog routes
+│   │   └── page.tsx       # Individual blog post pages
+│   └── posts/             # Blog content (MDX files)
+│       ├── spaces-vs-tabs.mdx    # 🤔 Code formatting debate
+│       ├── static-typing.mdx     # 🔧 TypeScript benefits
+│       └── vim.mdx               # ⌨️  Vim editor guide
+├── contact/                # 📧 Contact form
+│   └── page.tsx
+├── live-data/              # 📊 Real-time WHOOP data demo
+│   └── page.tsx
+├── my-stats/               # 📈 Personal analytics dashboard
+│   └── page.tsx
+├── privacy-policy/         # 🛡️ Privacy policy page
+│   └── page.tsx
+├── projects/               # 💼 Project showcase
+│   ├── page.tsx           # Project listing
+│   └── [slug]/            # Dynamic project pages
+│       └── page.tsx
+├── signin/                 # 🔐 Authentication page
+│   └── page.tsx
+├── terms-of-service/       # 📜 Terms of service
+│   └── page.tsx
+├── tools/                  # 🛠️ Developer tools
+│   └── page.tsx
+└── whoop-dashboard/        # 🏃‍♂️ WHOOP data management
+    └── page.tsx
+```
+
+##### API Routes (`src/app/api/`)
+**Backend serverless functions**
+```
+api/                         # 🔌 API endpoints
+├── auth/                   # 🔑 Authentication
+│   └── [...nextauth]/      # NextAuth.js configuration
+│       └── route.ts
+├── chatbot/                # 🤖 AI chat endpoint
+│   └── route.ts           # OpenAI integration
+├── cron/                   # ⏰ Scheduled tasks
+│   ├── daily-data-fetch/   # Daily WHOOP sync
+│   │   └── route.ts
+│   └── daily-whoop-sync/   # Alternative sync method
+│       └── route.ts
+├── sync-status/            # 📊 Sync monitoring
+│   └── route.ts
+├── update-token/           # 🔄 Token refresh
+│   └── route.ts
+├── view-data/              # 📈 Data retrieval
+│   └── route.ts
+├── whoop/                  # 🏃‍♂️ WHOOP API integration
+│   ├── auth/               # OAuth authentication
+│   │   └── route.ts
+│   └── data/               # Data collection
+│       └── route.ts
+└── whoop-collector-v2/     # 🆕 Enhanced data collector
+    └── route.ts
+```
+
+##### Special App Files
+```
+├── auth/error/             # 🚨 Authentication error page
+│   └── page.tsx
+├── layout.tsx              # 🎨 Root layout template
+├── not-found.tsx          # 404 error page
+├── og/                    # 📷 Open Graph image generation
+│   └── route.tsx
+├── robots.ts              # 🤖 SEO robots configuration
+├── rss/                   # 📡 RSS feed generation
+│   └── route.ts
+└── sitemap.ts            # 🗺️ SEO sitemap generation
+```
+
+#### 🧱 Components (`src/components/`)
+**Reusable React components organized by scope**
+
+##### UI Components (`src/components/ui/`)
+```
+ui/                         # 🎨 Base design system components
+└── button.tsx             # Reusable button with variants
+```
+
+##### Common Components (`src/components/common/`)
+```
+common/                     # 🔄 Commonly used components
+├── Button.tsx             # Alternative button implementation
+├── Button/                # Button variations (if needed)
+└── Input/                 # Input field components (if needed)
+```
+
+##### Shared Layout Components (`src/components/shared/`)
+```
+shared/                     # 🏗️ Layout and navigation
+├── footer.tsx             # Site footer
+├── liquid-background.tsx   # Animated liquid background
+├── liquid-nav.tsx         # Navigation with glass morphism
+└── liquid-page.tsx        # Page wrapper with liquid effects
+```
+
+##### Feature Components (`src/components/features/`)
+**Complex, feature-specific components**
+```
+features/                   # 🎯 Feature-specific components
+├── Chatbot.tsx            # 🤖 AI chat interface
+├── auth/                  # 🔐 Authentication components
+│   ├── AuthButtons.tsx    # Sign in/out buttons
+│   └── AuthProvider.tsx   # Auth context provider
+├── blog/                  # 📝 Blog components
+│   ├── mdx.tsx           # MDX content renderer
+│   └── posts.tsx         # Blog post components
+└── whoop/                # 🏃‍♂️ WHOOP data visualizations
+    ├── ActivityDistributionChart.tsx  # Activity breakdown
+    ├── ActivityHeatmap.tsx           # GitHub-style heatmap
+    ├── DataCollectionTools.tsx       # Data management tools
+    ├── RecoveryChart.tsx            # Recovery trends
+    └── StrainVsRecoveryChart.tsx     # Correlation analysis
+```
+
+#### ⚙️ Core Logic (`src/lib/`)
+**Non-React business logic and utilities**
+
+##### Configuration (`src/lib/config/`)
+```
+config/
+└── constants.ts           # 🔧 App-wide constants and settings
+```
+
+##### Database (`src/lib/db/`)
+```
+db/                        # 🗄️ Database layer
+├── db.ts                 # Vercel Postgres connection
+└── whoop-database.ts     # WHOOP data operations
+```
+
+##### Services (`src/lib/services/`)
+```
+services/                  # 🛠️ Business logic layer
+└── auth.ts               # Authentication service
+```
+
+##### Utilities (`src/lib/utils/`)
+```
+utils/                     # 🔧 Helper functions
+└── cn.ts                 # className merging utility
+```
+
+##### External Integrations
+```
+├── openai.ts             # 🤖 OpenAI API client
+├── whoop.ts              # 🏃‍♂️ WHOOP V2 API client (main)
+└── whoop-client.ts       # 🏃‍♂️ WHOOP client wrapper
+```
+
+#### 🎭 Types (`src/types/`)
+**TypeScript type definitions**
+```
+types/                     # 📝 Type definitions
+├── next-auth.d.ts        # NextAuth session types
+└── whoop.ts              # WHOOP API response types
+```
+
+#### 🎨 Styles (`src/styles/`)
+**Global CSS and animations**
+```
+styles/                    # 🎨 Global styling
+├── animations.css         # Custom animations
+└── globals.css           # Global styles and CSS variables
+```
+
+#### 📜 Scripts (`src/scripts/`)
+**Build and utility scripts**
+```
+scripts/                   # 🔧 Utility scripts
+├── get-workout-data.js    # Data export utility
+└── whoop-cli.js          # CLI tool for WHOOP data
+```
+
+### 📋 File Purpose Guide
+
+#### 🔍 **Core Functionality**
+- **`src/app/layout.tsx`** - Root layout with navigation and providers
+- **`src/app/(main)/page.tsx`** - Homepage with hero section and project highlights
+- **`src/components/features/Chatbot.tsx`** - AI-powered "About Me" chat interface
+- **`src/lib/openai.ts`** - OpenAI integration for chatbot functionality
+
+#### 🏃‍♂️ **WHOOP Integration**
+- **`src/lib/whoop.ts`** - Main WHOOP API V2 client with data collection
+- **`src/lib/db/whoop-database.ts`** - Database operations for WHOOP data
+- **`src/app/api/whoop-collector-v2/route.ts`** - Enhanced data collection endpoint
+- **`src/components/features/whoop/ActivityHeatmap.tsx`** - GitHub-style activity visualization
+
+#### 🎨 **Design System**
+- **`src/components/shared/liquid-*.tsx`** - Liquid glass design components
+- **`tailwind.config.js`** - Tailwind CSS configuration with custom colors
+- **`src/styles/globals.css`** - CSS variables and global styles
+- **`src/styles/animations.css`** - Custom animations for liquid effects
+
+#### 📝 **Content Management**
+- **`src/app/(main)/blog/`** - MDX-based blog system
+- **`src/app/(main)/projects/`** - Dynamic project showcase
+- **`src/app/api/chatbot/route.ts`** - AI chat backend
+
+#### 🔐 **Authentication & Security**
+- **`src/app/api/auth/[...nextauth]/route.ts`** - NextAuth configuration
+- **`src/lib/services/auth.ts`** - Auth utilities and session management
+- **`src/types/next-auth.d.ts`** - Extended NextAuth types
+
+#### 📊 **Analytics & SEO**
+- **`src/app/sitemap.ts`** - Dynamic sitemap generation
+- **`src/app/robots.ts`** - SEO robots configuration
+- **`src/app/rss/route.ts`** - RSS feed for blog posts
+- **`src/app/og/route.tsx`** - Dynamic Open Graph images
+
+#### ⚙️ **Configuration**
+- **`package.json`** - Dependencies and scripts
+- **`tsconfig.json`** - TypeScript compiler settings
+- **`vercel.json`** - Deployment configuration
+- **`.env.example`** - Environment variable template
+
+### 🎯 **Key Features by File**
+
+| File | Primary Purpose | Key Features |
+|------|----------------|--------------|
+| `src/app/(main)/page.tsx` | Homepage | Hero section, skills showcase, project highlights |
+| `src/components/features/Chatbot.tsx` | AI Chat | OpenAI integration, conversational about section |
+| `src/lib/whoop.ts` | WHOOP API | Data collection, OAuth, rate limiting |
+| `src/components/features/whoop/ActivityHeatmap.tsx` | Data Viz | GitHub-style heatmap, activity tracking |
+| `src/app/api/whoop-collector-v2/route.ts` | Data Collection | Automated sync, error handling, batch processing |
+| `src/components/shared/liquid-page.tsx` | Design System | Glass morphism, responsive layouts |
+| `src/app/(main)/blog/[slug]/page.tsx` | Blog System | MDX rendering, syntax highlighting, SEO |
+| `src/lib/db/whoop-database.ts` | Database | CRUD operations, relationship mapping |
 ```
 
 ## 🔧 Technical Implementation
