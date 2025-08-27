@@ -1,4 +1,4 @@
-import { auth } from "@/lib/services/auth"
+import { auth } from "@/lib/auth"
 import { AuthButtons } from "@/components/features/auth/AuthButtons"
 import { RecoveryChart } from "@/components/features/whoop/RecoveryChart"
 import LiquidPage from '@/components/shared/liquid-page'

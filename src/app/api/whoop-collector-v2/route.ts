@@ -18,7 +18,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/services/auth';
+import { auth } from '@/lib/auth';
 import { WhoopV2Client } from '@/lib/whoop';
 import { WhoopDatabaseService } from '@/lib/db/whoop-database';
 import { WhoopCycle } from '@/types/whoop';

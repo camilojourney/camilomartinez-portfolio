@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/services/auth';
+import { auth } from '@/lib/auth';
 import { writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 
