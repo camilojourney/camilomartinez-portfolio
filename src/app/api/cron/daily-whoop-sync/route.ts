@@ -1,38 +1,32 @@
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const auth = req.headers.get("authorization") || "";
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Use the same header format as the working daily-data-fetch endpoint
+  const cronSecret = req.headers.get('x-cron-secret');
+  if (cronSecret !== process.env.CRON_SECRET) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
   console.log("[CRON] Daily WHOOP sync started");
 
   try {
-    // Use the enhanced whoop-collector-v2 with daily mode
-    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/whoop-collector-v2`, {
+    // Call the existing working daily-data-fetch endpoint
+    const response = await fetch(`${process.env.NEXTAUTH_URL}/api/cron/daily-data-fetch`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.CRON_SECRET}`
-      },
-      body: JSON.stringify({ mode: "daily" })
+        "x-cron-secret": process.env.CRON_SECRET!
+      }
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Enhanced collector failed with status: ${response.status} - ${errorText}`);
+      throw new Error(`Daily sync failed with status: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     
-    console.log("[CRON] Daily sync completed successfully:", {
-      cycles: data.newCycles,
-      sleep: data.newSleep, 
-      recovery: data.newRecovery,
-      workouts: data.newWorkouts,
-      errors: data.errors?.length || 0
-    });
+    console.log("[CRON] Daily sync completed successfully:", data);
 
     return NextResponse.json({ 
       ok: true, 
