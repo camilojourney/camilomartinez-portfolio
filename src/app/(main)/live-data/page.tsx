@@ -31,8 +31,11 @@ export default async function LiveDataPage() {
     let whoopData: any = null
     let dataError: string | null = null
 
-    if (session?.accessToken && !session.error) {
-        whoopData = await getWhoopData(session.accessToken)
+    // Cast session to include accessToken property
+    const sessionWithToken = session as typeof session & { accessToken?: string; error?: string }
+    
+    if (sessionWithToken?.accessToken && !sessionWithToken.error) {
+        whoopData = await getWhoopData(sessionWithToken.accessToken)
         if (whoopData?.error) {
             dataError = whoopData.error
             whoopData = null

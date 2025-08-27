@@ -53,3 +53,8 @@ tmp/
 .backup/
 .vercel
 .env*.local
+
+# .gitignore
+.env
+.env.*
+!.env.example   # keep a template (no secrets) in git

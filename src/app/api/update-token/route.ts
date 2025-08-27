@@ -7,8 +7,9 @@ export async function POST() {
     try {
         // Get the current session with potentially refreshed token
         const session = await auth();
+        const sessionWithToken = session as typeof session & { accessToken?: string };
 
-        if (!session?.accessToken) {
+        if (!sessionWithToken?.accessToken) {
             return NextResponse.json({
                 error: 'Not authenticated or no access token available',
                 suggestion: 'Sign in to WHOOP first'
@@ -20,7 +21,7 @@ export async function POST() {
         let envContent = readFileSync(envPath, 'utf8');
 
         // Update or add the WHOOP_ACCESS_TOKEN
-        const tokenLine = `WHOOP_ACCESS_TOKEN=${session.accessToken}`;
+        const tokenLine = `WHOOP_ACCESS_TOKEN=${sessionWithToken.accessToken}`;
 
         if (envContent.includes('WHOOP_ACCESS_TOKEN=')) {
             // Replace existing token
@@ -36,8 +37,8 @@ export async function POST() {
         return NextResponse.json({
             success: true,
             message: 'Environment token updated successfully',
-            tokenExpires: session.expires,
-            user: session.user?.name,
+            tokenExpires: sessionWithToken.expires,
+            user: sessionWithToken.user?.name,
             lastUpdated: new Date().toISOString()
         });
 

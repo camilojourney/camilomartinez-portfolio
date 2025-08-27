@@ -5,7 +5,9 @@ import { WhoopDatabaseService } from '@/lib/db/whoop-database';
 
 export async function POST(request: NextRequest) {
     const session = await auth();
-    if (!session?.accessToken) {
+    const sessionWithToken = session as typeof session & { accessToken?: string };
+    
+    if (!sessionWithToken?.accessToken) {
         return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -17,7 +19,7 @@ export async function POST(request: NextRequest) {
         console.log(`🔧 Running ${mode} collection with OPTIMIZED strategy`);
 
         // Initialize clients
-        const whoopClient = new WhoopV2Client(session.accessToken);
+        const whoopClient = new WhoopV2Client(sessionWithToken.accessToken);
         const dbService = new WhoopDatabaseService();
 
         // Get user profile first

@@ -28,8 +28,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const resolvedParams = await params;
-  const post = getBlogPosts().find((post: BlogPost) => post.slug === resolvedParams.slug)
+  const { slug } = await params
+  const post = getBlogPosts().find((post: BlogPost) => post.slug === slug)
   if (!post) {
     return
   }
@@ -70,8 +70,8 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function Blog({ params }: PageProps) {
-  const resolvedParams = await params;
-  const post = getBlogPosts().find((post: BlogPost) => post.slug === resolvedParams.slug)
+  const { slug } = await params
+  const post = getBlogPosts().find((post: BlogPost) => post.slug === slug)
 
   if (!post) {
     notFound()
