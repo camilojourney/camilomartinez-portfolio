@@ -34,14 +34,28 @@ export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
         );
     }
 
-    // Process data to calculate hours per sport per month
+    interface MonthlyData {
+    name: string;
+    Weightlifting: number;
+    Running: number;
+    Boxing: number;
+}
+
+interface YearlyTotals {
+    Weightlifting: number;
+    Running: number;
+    Boxing: number;
+}
+
+// Process data to calculate hours per sport per month
     const processedData = useMemo(() => {
         // Initialize empty data structure
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const sportCategories = ['Weightlifting', 'Running', 'Boxing'];
+        const sportCategories = ['Weightlifting', 'Running', 'Boxing'] as const;
+        type SportCategory = typeof sportCategories[number];
 
         // Initialize the monthly data with zeros
-        const monthlyData = months.map(month => ({
+        const monthlyData: MonthlyData[] = months.map(month => ({
             name: month,
             Weightlifting: 0,
             Running: 0,
@@ -49,7 +63,7 @@ export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
         }));
 
         // Initialize yearly totals
-        const yearlyTotals = {
+        const yearlyTotals: YearlyTotals = {
             Weightlifting: 0,
             Running: 0,
             Boxing: 0
@@ -66,14 +80,19 @@ export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
             const monthIndex = start.getMonth();
 
             // Determine sport category
-            let sportCategory;
-            if (workout.sport_name.toLowerCase() === 'weightlifting' || workout.sport_name.toLowerCase() === 'weightlifting_msk') {
+            // Convert sport name to category
+            const sportName = workout.sport_name.toLowerCase();
+            let sportCategory: keyof YearlyTotals | undefined;
+
+            if (sportName === 'weightlifting' || sportName === 'weightlifting_msk') {
                 sportCategory = 'Weightlifting';
-            } else if (workout.sport_name.toLowerCase() === 'running') {
+            } else if (sportName === 'running') {
                 sportCategory = 'Running';
-            } else if (workout.sport_name.toLowerCase() === 'boxing') {
+            } else if (sportName === 'boxing') {
                 sportCategory = 'Boxing';
-            } else {
+            }
+
+            if (!sportCategory) {
                 return; // Skip other sports
             }
 

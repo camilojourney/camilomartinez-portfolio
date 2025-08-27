@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db/db';
-import { WhoopV2Client } from '@/lib/api/whoop/whoop-client';
+import { WhoopV2Client } from '@/lib/whoop';
 import { WhoopDatabaseService } from '@/lib/db/whoop-database';
-import { auth } from '@/services/auth/auth';
+import { auth } from '@/lib/services/auth';
 
 export async function POST(request: Request) {
     // Secure the endpoint
@@ -53,19 +53,19 @@ export async function POST(request: Request) {
 
         // First, get all data in parallel for the date range
         const [recoveryRecords, sleepRecords, workoutRecords] = await Promise.all([
-            whoopClient.getAllRecovery(startTwoDaysAgo.toISOString(), endOfYesterday.toISOString()),
-            whoopClient.getAllSleep(startTwoDaysAgo.toISOString(), endOfYesterday.toISOString()),
-            whoopClient.getAllWorkouts(startTwoDaysAgo.toISOString(), endOfYesterday.toISOString())
+            whoopClient.getAllRecovery(startTwoDaysAgo.toISOString()),
+            whoopClient.getAllSleep(startTwoDaysAgo.toISOString()),
+            whoopClient.getAllWorkouts(startTwoDaysAgo.toISOString())
         ]);
 
         // Extract cycle IDs from recovery records and fetch cycle data
         const uniqueCycleIds = Array.from(new Set(recoveryRecords.map(r => r.cycle_id)));
         const cycleData = (await Promise.all(
             uniqueCycleIds.map(id => whoopClient.getCycleById(id).catch(() => null))
-        )).filter((c): c is Exclude<typeof c, null> => c !== null);
+        )).filter((c: any): c is Exclude<typeof c, null> => c !== null);
 
         // Filter data for completed records within our date range
-        const filteredCycles = cycleData.filter(cycle => {
+        const filteredCycles = cycleData.filter((cycle: { end: string }) => {
             const endDate = new Date(cycle.end);
             return endDate <= endOfYesterday;
         });

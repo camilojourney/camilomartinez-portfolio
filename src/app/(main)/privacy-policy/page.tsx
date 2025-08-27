@@ -1,6 +1,6 @@
 'use client'
 
-import LiquidPage from 'app/components/liquid-page'
+import LiquidPage from '@/components/shared/liquid-page'
 
 export default function PrivacyPolicyPage() {
   return (

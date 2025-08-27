@@ -18,10 +18,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/services/auth/auth';
-import { WhoopV2Client } from '@/lib/api/whoop/whoop-client';
+import { auth } from '@/lib/services/auth';
+import { WhoopV2Client } from '@/lib/whoop';
 import { WhoopDatabaseService } from '@/lib/db/whoop-database';
-import { WhoopCycle } from '@/types/whoop/whoop';
+import { WhoopCycle } from '@/lib/types/whoop';
 
 export async function POST(request: NextRequest) {
     const session = await auth();
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
                 // Log some example workout IDs for investigation if needed
                 if (categorizedWorkouts.noScore.length > 0) {
                     console.log('Example workouts without scores:');
-                    categorizedWorkouts.noScore.slice(0, 3).forEach(w => {
+                    categorizedWorkouts.noScore.slice(0, 3).forEach((w: { id: string | number; sport_name?: string; sport_id?: string; start: string }) => {
                         console.log(`  - ID: ${w.id}, Sport: ${w.sport_name || w.sport_id}, Time: ${w.start}`);
                     });
                 }

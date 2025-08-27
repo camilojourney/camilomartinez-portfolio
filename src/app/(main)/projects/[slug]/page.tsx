@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import LiquidPage from 'app/components/liquid-page'
+import LiquidPage from '@/components/shared/liquid-page'
 
 // Project data structure
 interface ProjectData {

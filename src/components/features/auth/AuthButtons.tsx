@@ -1,4 +1,4 @@
-import { auth, signIn, signOut } from "../../lib/auth"
+import { auth, signIn, signOut } from "@/lib/services/auth"
 
 export async function AuthButtons() {
     const session = await auth()

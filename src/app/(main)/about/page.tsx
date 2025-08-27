@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react'
-import LiquidPage from 'app/components/liquid-page'
+import LiquidPage from '@/components/shared/liquid-page'
 import Chat from './chat'
 
 export default function AboutPage() {

@@ -1,7 +1,7 @@
-import { auth } from "../../lib/auth"
-import { AuthButtons } from "app/components/AuthButtons"
-import { RecoveryChart } from "app/components/RecoveryChart"
-import LiquidPage from 'app/components/liquid-page'
+import { auth } from "@/lib/services/auth"
+import { AuthButtons } from "@/components/features/auth/AuthButtons"
+import { RecoveryChart } from "@/components/features/whoop/RecoveryChart"
+import LiquidPage from '@/components/shared/liquid-page'
 
 async function getWhoopData(accessToken: string): Promise<any> {
     try {

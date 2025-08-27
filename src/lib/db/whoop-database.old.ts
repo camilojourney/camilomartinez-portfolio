@@ -1,19 +1,19 @@
 import { sql } from './db';
-import {
-    WhoopUser,
+import type {
+    WhoopProfile,
     WhoopCycle,
     WhoopSleep,
     WhoopRecovery,
     WhoopWorkout
-} from '../types/whoop';
+} from '@/types/whoop';
 
 export class WhoopDatabaseService {
-
     // User operations
-    async upsertUser(user: WhoopUser): Promise<void> {
+    async upsertUser(user: WhoopProfile): Promise<void> {
+        const userId = parseInt(user.user_id, 10);
         await sql`
             INSERT INTO whoop_users (id, email, first_name, last_name)
-            VALUES (${user.user_id}, ${user.email}, ${user.first_name}, ${user.last_name})
+            VALUES (${userId}, ${user.email}, ${user.first_name}, ${user.last_name})
             ON CONFLICT (id)
             DO UPDATE SET
                 email = EXCLUDED.email,
@@ -23,12 +23,12 @@ export class WhoopDatabaseService {
     }
 
     // Cycle operations
-    async upsertCycle(cycle: WhoopCycle) {
+    async upsertCycle(cycle: WhoopCycle): Promise<void> {
         if (!cycle.score) {
             console.warn(`Skipping cycle ${cycle.id} due to missing score data.`);
             return;
         }
-        return sql`
+        await sql`
             INSERT INTO whoop_cycles (
                 id, user_id, start_time, end_time, timezone_offset,
                 score_state, strain, kilojoule, average_heart_rate, max_heart_rate
@@ -49,10 +49,9 @@ export class WhoopDatabaseService {
                 average_heart_rate = EXCLUDED.average_heart_rate,
                 max_heart_rate = EXCLUDED.max_heart_rate;
         `;
-    }
 
     // Sleep operations
-    async upsertSleep(sleep: WhoopSleep, cycleId?: number) {
+    async upsertSleep(sleep: WhoopSleep, cycleId?: number): Promise<void> {
         const hasScore = sleep.score && sleep.score_state === 'SCORED';
         const stageSum = hasScore && sleep.score ? sleep.score.stage_summary : null;
 
@@ -101,7 +100,7 @@ export class WhoopDatabaseService {
     }
 
     // Recovery operations
-    async upsertRecovery(recovery: WhoopRecovery) {
+    async upsertRecovery(recovery: WhoopRecovery): Promise<void> {
         if (!recovery.score) {
             console.warn(`Skipping recovery for cycle ${recovery.cycle_id} - no score data`);
             return;

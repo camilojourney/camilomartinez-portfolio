@@ -56,6 +56,9 @@ importers:
       next-mdx-remote:
         specifier: ^4.4.1
         version: 4.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      openai:
+        specifier: ^5.15.0
+        version: 5.15.0(ws@8.18.3(bufferutil@4.0.9))
       pg:
         specifier: ^8.11.3
         version: 8.16.3
@@ -1048,6 +1051,18 @@ packages:
 
   obuf@1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
+
+  openai@5.15.0:
+    resolution: {integrity: sha512-kcUdws8K/A8m02I+IqFBwO51gS+87GP89yWEufGbzEi8anBz4FB/bti2QxaJdGwwY4mwJGzx85XO7TuL/Tpu1w==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
 
   parse-entities@4.0.2:
     resolution: {integrity: sha512-GG2AQYWoLgL877gQIKeRPGO1xF9+eG1ujIb5soS5gPvLQ1y2o8FL90w2QWNdf9I361Mpp7726c+lj3U0qK1uGw==}
@@ -2386,6 +2401,10 @@ snapshots:
   oauth4webapi@3.5.3: {}
 
   obuf@1.1.2: {}
+
+  openai@5.15.0(ws@8.18.3(bufferutil@4.0.9)):
+    optionalDependencies:
+      ws: 8.18.3(bufferutil@4.0.9)
 
   parse-entities@4.0.2:
     dependencies:

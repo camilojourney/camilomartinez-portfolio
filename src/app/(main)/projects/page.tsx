@@ -1,6 +1,6 @@
 "use client"
 
-import LiquidPage from '@/components/layout/liquid-page'
+import LiquidPage from '@/components/shared/liquid-page'
 import Link from 'next/link'
 
 interface ProjectCardProps {
