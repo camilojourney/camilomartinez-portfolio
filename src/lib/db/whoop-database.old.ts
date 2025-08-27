@@ -5,7 +5,7 @@ import type {
     WhoopSleep,
     WhoopRecovery,
     WhoopWorkout
-} from '@/types/whoop';
+} from '@/lib/types/whoop';
 
 export class WhoopDatabaseService {
     // User operations
