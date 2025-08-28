@@ -13,15 +13,15 @@ import Footer from '@/components/shared/footer'
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Next.js Portfolio Starter',
-    template: '%s | Next.js Portfolio Starter',
+    default: 'Camilo Martinez | AI Developer',
+    template: '%s | Camilo Martinez',
   },
-  description: 'This is my portfolio.',
+  description: 'A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development.',
   openGraph: {
-    title: 'My Portfolio',
-    description: 'This is my portfolio.',
+    title: 'Camilo Martinez | AI Developer',
+    description: 'A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development.',
     url: baseUrl,
-    siteName: 'My Portfolio',
+    siteName: 'Camilo Martinez Portfolio',
     locale: 'en_US',
     type: 'website',
   },
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
 }
 
-import { cn } from '@/lib/utils/cn'
+import { cn } from '@/lib/utils'
 
 export default function RootLayout({
   children,
@@ -57,7 +57,7 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href="https://camilomartinez.co" />
       </head>
-      <body className="antialiased font-sans">
+      <body className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}>
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
             <LiquidNav />
