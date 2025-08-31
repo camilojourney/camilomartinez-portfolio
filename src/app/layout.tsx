@@ -60,7 +60,6 @@ export default function RootLayout({
       <body className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}>
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
-            <LiquidNav />
             <main className="flex-1 w-full">
               {children}
             </main>
