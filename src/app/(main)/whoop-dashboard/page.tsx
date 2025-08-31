@@ -28,14 +28,12 @@ export default function WhoopDashboard() {
     const [dailyResult, setDailyResult] = useState<CollectionStats | null>(null);
     const [debugInfo, setDebugInfo] = useState<any>(null);
     const [syncStatus, setSyncStatus] = useState<any>(null);
-    const [auditResult, setAuditResult] = useState<any>(null);
     const [permanentToken, setPermanentToken] = useState<string | null>(null);
     const [loading, setLoading] = useState({
         historical: false,
         daily: false,
         debug: false,
-        syncStatus: false,
-        audit: false
+        syncStatus: false
     });
 
     const [sessionStatus, setSessionStatus] = useState(null);
@@ -127,23 +125,6 @@ export default function WhoopDashboard() {
         }
 
         setLoading(prev => ({ ...prev, daily: false }));
-    };
-
-    const runDataAudit = async () => {
-        setLoading(prev => ({ ...prev, audit: true }));
-        setAuditResult(null);
-
-        try {
-            const response = await fetch('/api/data-audit');
-            const result = await response.json();
-            setAuditResult(result);
-        } catch (error) {
-            setAuditResult({
-                error: 'Failed to run data audit: ' + (error instanceof Error ? error.message : 'Unknown error')
-            });
-        }
-
-        setLoading(prev => ({ ...prev, audit: false }));
     };
 
     const getDebugInfo = async () => {
@@ -624,20 +605,6 @@ export default function WhoopDashboard() {
                                     Quick Actions
                                 </h3>
                                 <div className="flex flex-wrap gap-4">
-                                    <button
-                                        onClick={runDataAudit}
-                                        disabled={loading.audit}
-                                        className="liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 text-white font-light py-3 px-6 rounded-2xl hover:from-purple-400/30 hover:to-pink-400/30 hover:border-purple-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                                    >
-                                        {loading.audit ? (
-                                            <span className="flex items-center gap-2">
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                Auditing...
-                                            </span>
-                                        ) : (
-                                            '🔍 Audit Database'
-                                        )}
-                                    </button>
                                     <a
                                         href="/my-stats"
                                         className="liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white font-light py-3 px-6 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/25"
@@ -646,120 +613,6 @@ export default function WhoopDashboard() {
                                     </a>
                                 </div>
                             </div>
-
-                            {/* Data Audit Results */}
-                            {auditResult && (
-                                <div className="mt-8 liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8">
-                                    <h3 className="text-2xl font-light text-white mb-6 flex items-center gap-3">
-                                        <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                                        Database Audit Results
-                                    </h3>
-
-                                    {auditResult.error ? (
-                                        <div className="text-red-400 p-4 backdrop-blur-xl bg-red-500/[0.1] border border-red-400/[0.2] rounded-2xl">
-                                            <p>{auditResult.error}</p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-6">
-                                            {/* Data Summary */}
-                                            <div className="grid md:grid-cols-4 gap-4">
-                                                <div className="backdrop-blur-xl bg-blue-500/[0.1] border border-blue-400/[0.2] rounded-2xl p-4">
-                                                    <h4 className="font-medium text-blue-300 mb-2">Cycles</h4>
-                                                    <p className="text-white text-2xl font-light">{auditResult.summary?.totals?.cycles || 0}</p>
-                                                    <p className="text-white/60 text-xs">
-                                                        {auditResult.summary?.dateRanges?.cycles?.earliest ? 
-                                                            `${new Date(auditResult.summary.dateRanges.cycles.earliest).toLocaleDateString()} - ${new Date(auditResult.summary.dateRanges.cycles.latest).toLocaleDateString()}` : 
-                                                            'No data'
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="backdrop-blur-xl bg-purple-500/[0.1] border border-purple-400/[0.2] rounded-2xl p-4">
-                                                    <h4 className="font-medium text-purple-300 mb-2">Sleep</h4>
-                                                    <p className="text-white text-2xl font-light">{auditResult.summary?.totals?.sleep || 0}</p>
-                                                    <p className="text-white/60 text-xs">
-                                                        {auditResult.summary?.dateRanges?.sleep?.earliest ? 
-                                                            `${new Date(auditResult.summary.dateRanges.sleep.earliest).toLocaleDateString()} - ${new Date(auditResult.summary.dateRanges.sleep.latest).toLocaleDateString()}` : 
-                                                            'No data'
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="backdrop-blur-xl bg-orange-500/[0.1] border border-orange-400/[0.2] rounded-2xl p-4">
-                                                    <h4 className="font-medium text-orange-300 mb-2">Recovery</h4>
-                                                    <p className="text-white text-2xl font-light">{auditResult.summary?.totals?.recovery || 0}</p>
-                                                    <p className="text-white/60 text-xs">
-                                                        {auditResult.summary?.dateRanges?.recovery?.earliest ? 
-                                                            `${new Date(auditResult.summary.dateRanges.recovery.earliest).toLocaleDateString()} - ${new Date(auditResult.summary.dateRanges.recovery.latest).toLocaleDateString()}` : 
-                                                            'No data'
-                                                        }
-                                                    </p>
-                                                </div>
-                                                <div className="backdrop-blur-xl bg-red-500/[0.1] border border-red-400/[0.2] rounded-2xl p-4">
-                                                    <h4 className="font-medium text-red-300 mb-2">Workouts</h4>
-                                                    <p className="text-white text-2xl font-light">{auditResult.summary?.totals?.workouts || 0}</p>
-                                                    <p className="text-white/60 text-xs">
-                                                        {auditResult.summary?.dateRanges?.workouts?.earliest ? 
-                                                            `${new Date(auditResult.summary.dateRanges.workouts.earliest).toLocaleDateString()} - ${new Date(auditResult.summary.dateRanges.workouts.latest).toLocaleDateString()}` : 
-                                                            'No data'
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            {/* Gap Analysis */}
-                                            {auditResult.recommendations?.needsGapFilling && (
-                                                <div className="backdrop-blur-xl bg-yellow-500/[0.1] border border-yellow-400/[0.2] rounded-2xl p-6">
-                                                    <h4 className="font-medium text-yellow-300 mb-3 flex items-center gap-2">
-                                                        ⚠️ Data Gaps Detected
-                                                    </h4>
-                                                    <p className="text-white/80 mb-4">
-                                                        Found {auditResult.recommendations.missingDaysCount} days with missing data in the last 30 days.
-                                                    </p>
-                                                    <div className="grid md:grid-cols-3 gap-4 text-sm">
-                                                        <div>
-                                                            <p className="text-yellow-300 font-medium mb-2">Missing Cycle Days</p>
-                                                            <p className="text-white/60">{auditResult.missingDates?.cycles?.length || 0} days</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-yellow-300 font-medium mb-2">Missing Sleep Days</p>
-                                                            <p className="text-white/60">{auditResult.missingDates?.sleep?.length || 0} days</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-yellow-300 font-medium mb-2">Missing Recovery Days</p>
-                                                            <p className="text-white/60">{auditResult.missingDates?.recovery?.length || 0} days</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Recent Data */}
-                                            <div className="grid md:grid-cols-2 gap-6">
-                                                <div className="backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl p-4">
-                                                    <h4 className="font-medium text-white mb-3">Recent Cycles</h4>
-                                                    <div className="space-y-2 text-sm">
-                                                        {auditResult.summary?.recent?.cycles?.slice(0, 5).map((cycle: any, i: number) => (
-                                                            <div key={i} className="flex justify-between text-white/70">
-                                                                <span>{cycle.start_time}</span>
-                                                                <span>Strain: {cycle.strain}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl p-4">
-                                                    <h4 className="font-medium text-white mb-3">Recent Recovery</h4>
-                                                    <div className="space-y-2 text-sm">
-                                                        {auditResult.summary?.recent?.recovery?.slice(0, 5).map((recovery: any, i: number) => (
-                                                            <div key={i} className="flex justify-between text-white/70">
-                                                                <span>{recovery.created_at}</span>
-                                                                <span>Score: {recovery.recovery_score}%</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
                         </div>
                     </>
                 )}

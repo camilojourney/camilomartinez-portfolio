@@ -3,24 +3,59 @@ import { Card } from '@/components/ui/Card';
 import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
 import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
 import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
+import { MonthlyStrainChart } from '@/components/features/whoop/MonthlyStrainChart';
 
 async function getStrainData() {
     try {
         const result = await sql`
             SELECT
                 TO_CHAR(start_time, 'YYYY-MM-DD') AS formatted_date,
-                strain
+                strain::decimal as strain
             FROM whoop_cycles
             WHERE strain IS NOT NULL
             ORDER BY start_time DESC
         `;
-        console.log('Strain Data from DB:', result.rows);
-        return result.rows as Array<{
-            formatted_date: string;
-            strain: number | string;
-        }>;
+        
+        // Ensure proper data serialization for client components
+        const processedData = result.rows.map(row => ({
+            formatted_date: String(row.formatted_date),
+            strain: parseFloat(String(row.strain))
+        }));
+        
+        console.log('Strain Data from DB:', processedData.length, 'records');
+        console.log('Sample data:', processedData.slice(0, 3));
+        return processedData;
     } catch (error) {
         console.error('Error fetching strain data:', error);
+        return [];
+    }
+}
+
+async function getMonthlyStrainData() {
+    try {
+        const result = await sql`
+            SELECT
+                TO_CHAR(start_time, 'YYYY-MM') AS month,
+                AVG(strain::decimal) as average_strain,
+                COUNT(*) as days_count
+            FROM whoop_cycles
+            WHERE strain IS NOT NULL
+            GROUP BY TO_CHAR(start_time, 'YYYY-MM')
+            ORDER BY month DESC
+        `;
+        
+        // Ensure proper data serialization for client components
+        const processedData = result.rows.map(row => ({
+            month: String(row.month),
+            average_strain: parseFloat(String(row.average_strain)),
+            days_count: parseInt(String(row.days_count))
+        }));
+        
+        console.log('Monthly Strain Data from DB:', processedData.length, 'records');
+        console.log('Sample monthly data:', processedData.slice(0, 3));
+        return processedData;
+    } catch (error) {
+        console.error('Error fetching monthly strain data:', error);
         return [];
     }
 }
@@ -99,8 +134,9 @@ async function getWorkoutData() {
     }
 }
 
-export default async function MyStats() {
+export default async function MyDataPage() {
     const strainData = await getStrainData();
+    const monthlyStrainData = await getMonthlyStrainData();
     const strainRecoveryData = await getStrainRecoveryData();
     const workoutData = await getWorkoutData();
 
@@ -150,7 +186,7 @@ export default async function MyStats() {
                         </Card>
                     ) : (
                         <div className="space-y-20">
-                            {/* Consistency Component */}
+                            {/* Component 1: WHOOP Activity Heatmap */}
                             <Card className="p-8 border-white/10 hover:border-cyan-400/30 transition-all duration-300">
                                 <div className="mb-8 text-center">
                                     <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-6 py-3 mb-6">
@@ -158,47 +194,67 @@ export default async function MyStats() {
                                         <span className="text-cyan-300 font-semibold tracking-wide">Am I consistent with my workouts?</span>
                                     </div>
                                     <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                                        WHOOP Activity Heatmap
+                                        My Strain Journey
                                     </h2>
-                                    <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
-                                        Interactive visualization showing my workout consistency and intensity. Hover over any day to see detailed strain metrics.
-                                        <span className="block mt-2 text-cyan-400 font-semibold">Goal: Daily strain score of 10+</span>
-                                    </p>
+                                    <div className="space-y-4 text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-6">
+                                        <p>
+                                            <span className="text-cyan-400 font-semibold">The 10 Strain Challenge:</span> Every month, I set myself a goal to maintain an average strain of at least 10. But this isn't just about numbers—it's about keeping my body in motion and staying committed to daily movement.
+                                        </p>
+                                        <p>
+                                            A strain of 10 represents that sweet spot where I'm pushing my body enough to see progress, but not so hard that I burn out. It means I'm consistently challenging myself through workouts, runs, and active recovery. 
+                                            <span className="text-yellow-400 font-semibold"> The yellow dotted line shows this target</span>—my North Star for staying active.
+                                        </p>
+                                        <p>
+                                            <span className="text-green-400 font-semibold">Green dots</span> mark the months I hit my goal, while <span className="text-red-400 font-semibold">red dots</span> remind me when life got in the way. The heatmap below reveals the daily story—each square representing a day of effort, consistency, and the pursuit of movement.
+                                        </p>
+                                        <p className="text-cyan-400 font-semibold text-center">
+                                            Skills Demonstrated: React Visualization, Real-time Data Processing, SQL Aggregation, Goal Tracking
+                                        </p>
+                                    </div>
                                 </div>
+                                
+                                {/* Daily Heatmap */}
                                 <ActivityHeatmap data={strainData} />
+                                
+                                {/* Monthly Strain Average Chart - Below heatmap within strain journey */}
+                                <div className="mt-6">
+                                    <MonthlyStrainChart data={monthlyStrainData} />
+                                </div>
                             </Card>
 
-                            {/* Recovery Component */}
+                            {/* Component 2: The Astoria Conquest */}
                             <Card className="p-8 border-white/10 hover:border-green-400/30 transition-all duration-300">
                                 <div className="mb-8 text-center">
                                     <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-500/20 to-teal-500/20 border border-green-400/30 rounded-full px-6 py-3 mb-6">
                                         <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                        <span className="text-green-300 font-semibold tracking-wide">How does training impact recovery?</span>
+                                        <span className="text-green-300 font-semibold tracking-wide">How close am I to conquering Astoria?</span>
                                     </div>
                                     <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                                         The Astoria Conquest
                                     </h2>
                                     <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
-                                        Live geospatial goal tracking my mission to run every street in Astoria, Queens.
-                                        <span className="block mt-2 text-green-400 font-semibold">78% Complete • 45.2 miles remaining</span>
+                                        Live geospatial goal tracking my mission to run every street in Astoria, Queens. Interactive map with real-time progress updates.
+                                        <span className="block mt-2 text-green-400 font-semibold">Astoria Conquest: 78% Complete • 45.2 miles remaining</span>
+                                        <span className="block mt-1 text-green-300 text-sm">Skills: Geospatial Data Processing, Mapbox/Leaflet.js, Advanced API Integration</span>
                                     </p>
                                 </div>
                                 <StrainVsRecoveryChart data={strainRecoveryData} />
                             </Card>
 
-                            {/* Activity Distribution Component */}
+                            {/* Component 3: Other Key Charts */}
                             <Card className="p-8 border-white/10 hover:border-purple-400/30 transition-all duration-300">
                                 <div className="mb-8 text-center">
                                     <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full px-6 py-3 mb-6">
                                         <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
-                                        <span className="text-purple-300 font-semibold tracking-wide">How do I distribute training time?</span>
+                                        <span className="text-purple-300 font-semibold tracking-wide">How do I distribute my training time?</span>
                                     </div>
                                     <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                                         Training Analytics
                                     </h2>
                                     <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
                                         Time-series analysis showing training distribution across different sports and workout types.
-                                        <span className="block mt-2 text-purple-400 font-semibold">Data-driven training optimization</span>
+                                        <span className="block mt-2 text-purple-400 font-semibold">Sleep Performance vs. Daily Recovery • Workout Type Distribution</span>
+                                        <span className="block mt-1 text-purple-300 text-sm">Skills: Time-series Analysis, Data Storytelling, Advanced Visualizations</span>
                                     </p>
                                 </div>
                                 <ActivityDistributionChart data={workoutData} />

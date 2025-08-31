@@ -1,0 +1,13 @@
+
+> dev
+> next dev
+
+ ⚠ Port 3000 is in use, using available port 3001 instead.
+   ▲ Next.js 15.3.4
+   - Local:        http://localhost:3001
+   - Network:      http://10.255.42.106:3001
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1468ms
+[?25h
