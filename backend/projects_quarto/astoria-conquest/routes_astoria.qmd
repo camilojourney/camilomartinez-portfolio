@@ -1,0 +1,318 @@
+---
+title: "Astoria Conquest: A Runner's Data Project"
+author: "Your Name Here"
+format: 
+  html:
+    code-fold: true
+    toc: true
+    embed-resources: true
+editor: visual
+---
+
+## Astoria Conquest
+
+I've been living in Astoria for the past 2 years. I usually run around Roosevelt Island, which isn't far away from my house. One day, while exploring the area, I found out that there are a lot of good places to know in here. So, that's why I decided to run all of Astoria, 10 miles at a time.
+
+This project is simple but not easy: I want to run every street in Astoria, starting from my house and finishing at the gym, since I like to use the sauna after running.
+
+First, we need to know the boundaries for this challenge. For that, we'll go to the NYC OpenData portal and collect the data from the Neighborhood Tabulation Areas (NTAs). [NTA Link](https://data.cityofnewyork.us/City-Government/2020-Neighborhood-Tabulation-Areas-NTAs-/9nt8-h7nd/about_data).
+
+Second of all, we will use Strava to record all my runs. Every time I run, the data will be uploaded, and that way I will see how many miles I have left to cover.
+
+### Challenges
+
+The main challenge is the optimization of this project. Since I want to run at least 8-10 miles each time, but I also want to cover the area in as few runs as possible, we have an optimization problem to solve.
+
+Let's start by setting up the environment and importing the necessary libraries.
+
+```{python}
+#| label: setup
+#| include: false
+# This cell contains the primary imports for the analysis.
+import osmnx as ox
+import networkx as nx
+import matplotlib.pyplot as plt
+import geopandas as gpd
+import random
+import itertools
+
+print("Libraries imported successfully.")
+```
+
+## 1. Area of Interest
+
+The first step is to get the geographical boundary for Astoria, Queens. We can use the `osmnx` library to fetch this data directly from OpenStreetMap. This boundary will define the "game map" for our running challenge.
+
+```{python}
+#| label: get-boundary
+#| fig-cap: "Geographical boundary of Astoria, Queens, NY."
+# Define the place name
+place_name = "Astoria, Queens, New York, USA"
+
+# Get the boundary of the neighborhood
+print(f"Fetching boundary for {place_name}...")
+area = ox.geocode_to_gdf(place_name)
+
+# Project to a suitable CRS for distance calculations (in meters)
+area = ox.project_gdf(area)
+
+# Plot the area
+fig, ax = plt.subplots(figsize=(10, 10))
+area.plot(ax=ax)
+ax.set_title("Area of Interest: Astoria")
+ax.set_xlabel("Longitude")
+ax.set_ylabel("Latitude")
+plt.show()
+
+print("Boundary successfully downloaded and plotted.")
+```
+
+## 2. Download the Street Network of the Area
+
+Now that we have the boundary, we can download the complete street network for the area. `osmnx` makes this incredibly simple. We'll download a drivable street network, which is a good proxy for runnable streets.
+
+```{python}
+#| label: get-street-network
+# Download the street network within the specified polygon
+print("Downloading street network... (This may take a moment)")
+G = ox.graph_from_polygon(area.unary_union, network_type='drive')
+print("Network download complete.")
+
+# Project the graph
+G_proj = ox.project_graph(G)
+
+# Print some basic stats about the graph
+print(f"Number of nodes: {len(G.nodes)}")
+print(f"Number of edges: {len(G.edges)}")
+```
+
+## 3. Defining My Home and Gym Location
+
+Every run needs a start and an end point. I'll define my home coordinates as the starting point and my gym as the finishing point. We'll then find the closest nodes on our street network graph to these real-world coordinates.
+
+```{python}
+#| label: define-locations
+# Define coordinates for Home and Gym
+# Note: Replace with your actual coordinates
+home_coords = (40.765, -73.920)
+gym_coords = (40.775, -73.910)
+
+# Find the nearest network nodes to these locations
+home_node = ox.nearest_nodes(G, X=home_coords[1], Y=home_coords[0])
+gym_node = ox.nearest_nodes(G, X=gym_coords[1], Y=gym_coords[0])
+
+print(f"Home location (Lat, Lon): {home_coords}")
+print(f"Nearest network node for Home: {home_node}")
+print(f"Gym location (Lat, Lon): {gym_coords}")
+print(f"Nearest network node for Gym: {gym_node}")
+```
+
+## 4. Plotting the Area and My Main Points
+
+Let's plot the entire street network and highlight our start (Home) and end (Gym) nodes to make sure everything looks correct.
+
+```{python}
+#| label: visualize-key-points
+#| fig-cap: "Street network of Astoria with Home (start) and Gym (end) nodes highlighted."
+
+# Define colors for plotting
+node_color = 'lightgray'
+edge_color = 'gray'
+start_color = 'cyan'
+end_color = 'magenta'
+
+# Plot the graph
+fig, ax = ox.plot_graph(
+    G,
+    node_size=5,
+    edge_linewidth=0.5,
+    node_color=node_color,
+    edge_color=edge_color,
+    show=False,
+    close=False
+)
+
+# Highlight the home and gym nodes
+ax.scatter(G.nodes[home_node]['x'], G.nodes[home_node]['y'], c=start_color, s=100, label='Home', zorder=3)
+ax.scatter(G.nodes[gym_node]['x'], G.nodes[gym_node]['y'], c=end_color, s=100, label='Gym', zorder=3)
+
+ax.legend()
+ax.set_title("Astoria Street Network: Home to Gym")
+plt.show()
+```
+
+## 5. Generate Potential Running Routes
+
+This is the core of the project. We need to generate routes that start at the home node and end at the gym node, with a total distance between 8 and 10 miles (approximately 12,874 to 16,093 meters).
+
+### Algorithm Idea 1: Find All Simple Paths (Brute Force)
+
+My first idea was to find all possible simple paths (paths that don't repeat nodes) between home and the gym. Then, I would calculate the length of each path and keep only those that fall within my desired distance range.
+
+**Result:** This approach is computationally infeasible. A dense urban street network has an astronomical number of possible paths. The code below will likely run for an extremely long time, consume all available memory, and may crash the kernel. It is included for completeness but it is **not recommended to run it**.
+
+```{python}
+#| label: brute-force-paths
+#| eval: false
+
+# --- WARNING: THIS CODE IS EXTREMELY SLOW AND MEMORY-INTENSIVE ---
+# --- IT IS NOT RECOMMENDED TO RUN THIS CELL ---
+
+# 1. Define distance constraints in meters (8-10 miles)
+MIN_ROUTE_DISTANCE_M = 12874 
+MAX_ROUTE_DISTANCE_M = 16093
+
+# 2. Find all simple paths (computationally expensive!)
+print("Attempting to find all simple paths... This will take a very long time.")
+all_paths = list(nx.all_simple_paths(G, source=home_node, target=gym_node))
+print(f"Found {len(all_paths)} simple paths (before filtering).")
+
+
+# 3. Filter paths by distance
+valid_routes = []
+print("Filtering paths by distance...")
+for path in all_paths:
+    distance = nx.path_weight(G, path, weight='length')
+    if MIN_ROUTE_DISTANCE_M <= distance <= MAX_ROUTE_DISTANCE_M:
+        valid_routes.append(path)
+
+print(f"Found {len(valid_routes)} routes between {MIN_ROUTE_DISTANCE_M}m and {MAX_ROUTE_DISTANCE_M}m.")
+```
+
+### Algorithm Idea 2: Guided Random Walks
+
+Since the brute-force method failed, a more practical approach is to generate routes using a guided random walk. The idea is to start at the `home_node` and randomly "walk" from node to node until we hit a certain length, then find the shortest path from our current location to the `gym_node`.
+
+This won't cover every street systematically at first, but it will generate a large number of viable, interesting routes that meet the distance criteria.
+
+```{python}
+#| label: generate-random-routes
+# Define route constraints in miles
+MIN_ROUTE_DISTANCE = 8.0
+MAX_ROUTE_DISTANCE = 10.0
+METERS_TO_MILES = 0.000621371
+
+# Number of routes to attempt to generate
+NUM_ROUTES_TO_GENERATE = 500
+
+generated_runs = []
+
+def generate_random_route(graph, start_node, end_node, min_dist, max_dist):
+    """Generates a single random route."""
+    path = [start_node]
+    current_node = start_node
+    current_distance = 0
+
+    # Walk randomly for about 75-90% of the target minimum distance
+    target_walk_dist = random.uniform(0.75, 0.90) * (min_dist / METERS_TO_MILES)
+
+    while current_distance < target_walk_dist:
+        neighbors = list(graph.neighbors(current_node))
+        if not neighbors:
+            return None # Dead end
+
+        # Choose a random neighbor that is not already in the path to avoid small loops
+        possible_next_nodes = [n for n in neighbors if n not in path]
+        if not possible_next_nodes:
+            possible_next_nodes = neighbors # Allow backtracking if stuck
+            
+        next_node = random.choice(possible_next_nodes)
+        
+        # Add distance of the new edge
+        current_distance += graph[current_node][next_node][0]['length']
+        path.append(next_node)
+        current_node = next_node
+
+    # After the random walk, find the shortest path to the gym
+    try:
+        final_path_to_gym = nx.shortest_path(graph, source=current_node, target=end_node, weight='length')
+        full_path = path + final_path_to_gym[1:] # Append without duplicating the connection node
+        
+        # Calculate final distance
+        total_distance_meters = nx.path_weight(graph, full_path, weight='length')
+        total_distance_miles = total_distance_meters * METERS_TO_MILES
+        
+        if min_dist <= total_distance_miles <= max_dist:
+            return full_path, total_distance_miles
+    except (nx.NetworkXNoPath, nx.NodeNotFound):
+        return None # No path from the random walk's end to the gym
+    
+    return None
+
+print(f"Generating up to {NUM_ROUTES_TO_GENERATE} random routes...")
+
+for i in range(NUM_ROUTES_TO_GENERATE):
+    print(f"  Attempt {i+1}/{NUM_ROUTES_TO_GENERATE}...", end='\r')
+    result = generate_random_route(G, home_node, gym_node, MIN_ROUTE_DISTANCE, MAX_ROUTE_DISTANCE)
+    if result:
+        generated_runs.append(result)
+
+print(f"\nSuccessfully generated {len(generated_runs)} routes that meet the criteria.")
+```
+
+## 6. Analyze and Visualize Specific Route
+
+Now that we have a list of valid running routes, let's create a function to visualize any one of them. This will help in picking a run for the day.
+
+```{python}
+#| label: define-visualize-function
+
+def visualize_route(index, show_details=False):
+    """Plots a specific route from the generated_runs list."""
+    if not (0 <= index < len(generated_runs)):
+        print(f"Error: Index {index} is out of bounds. Please choose between 0 and {len(generated_runs)-1}.")
+        return
+
+    route_path, route_distance = generated_runs[index]
+
+    if show_details:
+        print(f"--- Details for Route {index} ---")
+        print(f"   • Total Distance: {route_distance:.2f} miles")
+        print(f"   • Number of nodes: {len(route_path)}")
+        print(f"   • Starts at: Node {route_path[0]} (Home area)")
+        print(f"   • Ends at: Node {route_path[-1]} (Gym area)")
+        
+        # Check if route meets constraints
+        if MIN_ROUTE_DISTANCE <= route_distance <= MAX_ROUTE_DISTANCE:
+            print(f"   ✅ Route meets distance constraints ({MIN_ROUTE_DISTANCE}-{MAX_ROUTE_DISTANCE} miles)")
+        else:
+            print(f"   ⚠️ Route outside target range ({MIN_ROUTE_DISTANCE}-{MAX_ROUTE_DISTANCE} miles)")
+
+    # Plot the route
+    fig, ax = ox.plot_graph_route(
+        G,
+        route_path,
+        route_color='cyan',
+        route_linewidth=4,
+        node_size=0,
+        show=False,
+        close=False
+    )
+    ax.set_title(f"Generated Run #{index} ({route_distance:.2f} miles)")
+    plt.show()
+```
+
+```{python}
+#| label: execute-visualize-function
+#| fig-cap: "Visualization of three sample running routes from the generated set."
+
+# Visualize the first few runs
+print("🗺️ Showing first 3 routes...")
+for i in range(min(3, len(generated_runs))):
+    print(f"\n{'='*60}")
+    visualize_route(i, show_details=True)
+    
+print(f"\n🏁 Total runs available: {len(generated_runs)}")
+print("💡 Call visualize_route(index) to see any specific run!")
+```
+
+## Next Steps
+
+This notebook successfully generates a variety of running routes that meet my criteria. The next steps for this project would be:
+
+1.  **Integrate Strava Data**: Connect to the Strava API to pull my actual run history.
+2.  **Track Coverage**: Compare my completed runs against the full Astoria street network (`G`) to calculate the percentage of streets I've covered.
+3.  **Prioritize Unrun Streets**: Modify the route generation algorithm to prioritize paths that include streets I haven't run on yet. This will turn it into a true "route optimization" system for covering the entire neighborhood.
+
+For now, I have a great tool to generate a new and interesting run every day!
+

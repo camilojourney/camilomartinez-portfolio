@@ -6,10 +6,24 @@ import { WhoopDatabaseService } from '@/lib/db/whoop-database';
 
 export async function POST(request: NextRequest) {
     const session = await auth();
-    const sessionWithToken = session as typeof session & { accessToken?: string };
+    const sessionWithToken = session as typeof session & { accessToken?: string; error?: string };
+    
+    // Check for session errors (like refresh token issues)
+    if (sessionWithToken?.error === 'RefreshAccessTokenError') {
+        console.warn('⚠️ Refresh token error detected - user needs to re-authenticate');
+        return NextResponse.json({ 
+            error: 'Authentication expired', 
+            message: 'Your WHOOP connection has expired. Please sign in again.',
+            requiresReauth: true 
+        }, { status: 401 });
+    }
     
     if (!sessionWithToken?.accessToken) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+        console.warn('⚠️ No access token available');
+        return NextResponse.json({ 
+            error: 'Not authenticated',
+            message: 'Please sign in with your WHOOP account to continue.'
+        }, { status: 401 });
     }
 
     try {

@@ -15,21 +15,37 @@ export async function POST(request: Request) {
     }
 
     try {
-        const session = await auth();
-        const sessionWithToken = session as typeof session & { accessToken?: string };
-        // Use stored token as fallback
-        const accessToken = sessionWithToken?.accessToken || process.env.WHOOP_ACCESS_TOKEN;
-
+        // For cron jobs, use environment token directly as primary source
+        let accessToken = process.env.WHOOP_ACCESS_TOKEN;
+        
+        // If no env token, try to get from session as fallback
         if (!accessToken) {
-            throw new Error('No access token found');
+            const session = await auth();
+            const sessionWithToken = session as typeof session & { accessToken?: string };
+            accessToken = sessionWithToken?.accessToken;
         }
 
-        // Initialize clients
+        if (!accessToken) {
+            throw new Error('No access token found - please ensure WHOOP_ACCESS_TOKEN is set or user is authenticated');
+        }
+
+        // Initialize clients with retry logic for expired tokens
         const whoopClient = new WhoopV2Client(accessToken);
         const dbService = new WhoopDatabaseService();
 
-        // Get user profile first
-        const userProfile = await whoopClient.getUserProfile();
+        // Test the token first with a simple call
+        let userProfile;
+        try {
+            userProfile = await whoopClient.getUserProfile();
+        } catch (error) {
+            console.error('[DAILY-FETCH] Token validation failed:', error);
+            // If token is invalid, try to handle the error gracefully
+            if (error instanceof Error && error.message.includes('401')) {
+                throw new Error('WHOOP access token has expired - please re-authenticate');
+            }
+            throw error;
+        }
+        
         await dbService.upsertUser(userProfile);
 
         const results = {

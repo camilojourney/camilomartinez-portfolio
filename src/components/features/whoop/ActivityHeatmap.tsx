@@ -7,6 +7,11 @@ interface ActivityHeatmapProps {
         formatted_date: string;
         strain: number | string;
     }>;
+    monthlyData?: Array<{
+        month: string; // Expects "YYYY-MM" format
+        average_strain: number;
+        days_count: number;
+    }>;
 }
 
 interface DayData {
@@ -15,36 +20,52 @@ interface DayData {
     count: number;
 }
 
-export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
+// State for the chart tooltip
+interface HoveredMonth {
+    monthName: string;
+    average_strain: number;
+    x: number;
+    y: number;
+}
+
+// Weekly strain datapoint used by the mini chart
+interface WeeklyStrainData {
+    weekIndex: number;
+    averageStrain: number;
+    firstDate: string; // YYYY-MM-DD
+    daysWithData: number;
+}
+
+export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const [hoveredDay, setHoveredDay] = useState<DayData | null>(null);
     const [hoveredCellRef, setHoveredCellRef] = useState<HTMLElement | null>(null);
-    // Add these new states for clicking/tapping
     const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
     const [selectedCellRef, setSelectedCellRef] = useState<HTMLElement | null>(null);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    // Add a state for the tooltip's dynamic transform style
     const [tooltipTransform, setTooltipTransform] = useState('translate(-50%, -100%)');
-    // Add a ref to get a direct reference to the tooltip DOM element
+    const [hoveredMonth, setHoveredMonth] = useState<HoveredMonth | null>(null);
+    const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+    
     const tooltipRef = React.useRef<HTMLDivElement>(null);
-    // Add this ref for the main component container
     const mainContainerRef = React.useRef<HTMLDivElement>(null);
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+    const calendarContainerRef = React.useRef<HTMLDivElement>(null);
 
-    // Get strain color based on value with more gradient steps
+    // Color and label utility functions (unchanged)
     const getStrainColor = (strain: number): string => {
-        if (strain === 0) return 'bg-gray-900'; // No activity
-        if (strain < 3) return 'bg-green-900/30'; // Very light recovery
-        if (strain < 6) return 'bg-green-800/50'; // Rest day
-    if (strain < 8) return 'bg-green-700/60'; // Light activity
-        if (strain < 10) return 'bg-green-600/70'; // Moderate activity
-        if (strain < 12) return 'bg-green-500/80'; // Good training
-        if (strain < 14) return 'bg-green-400/90'; // Solid training
-        if (strain < 16) return 'bg-green-400'; // High training
-        if (strain < 18) return 'bg-green-300'; // Very high training
-        if (strain < 20) return 'bg-green-200'; // Elite performance
-        return 'bg-green-100'; // Exceptional performance
+        if (strain === 0) return 'bg-gray-900';
+        if (strain < 3) return 'bg-green-900/30';
+        if (strain < 6) return 'bg-green-800/50';
+        if (strain < 8) return 'bg-green-700/60';
+        if (strain < 10) return 'bg-green-600/70';
+        if (strain < 12) return 'bg-green-500/80';
+        if (strain < 14) return 'bg-green-400/90';
+        if (strain < 16) return 'bg-green-400';
+        if (strain < 18) return 'bg-green-300';
+        if (strain < 20) return 'bg-green-200';
+        return 'bg-green-100';
     };
 
-    // Get strain intensity label with more detailed categories
     const getStrainLabel = (strain: number): string => {
         if (strain === 0) return 'No Activity';
         if (strain < 3) return 'Recovery Day';
@@ -58,212 +79,226 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
         if (strain < 20) return 'Elite Performance';
         return 'Exceptional Performance';
     };
-
-    // Process the data for calendar display
+    
+    // Data processing functions
     const generateCalendarData = (): DayData[] => {
-        console.log('Raw data received:', data);
-        console.log('Selected year for filtering:', selectedYear);
-        console.log('Total data records:', data.length);
-
-        // Filter data for the selected year and create calendar data
-        const yearData = data.filter(cycle => {
-            // Add timezone offset to ensure consistent date handling
-            const cycleDate = new Date(cycle.formatted_date + 'T00:00:00');
-            console.log('Processing date:', cycle.formatted_date, 'as:', cycleDate.toISOString(), 'year:', cycleDate.getFullYear());
-            return cycleDate.getFullYear() === selectedYear;
-        });
-        
-        console.log('Filtered year data length:', yearData.length, 'for year:', selectedYear);
-
-        // Convert to map for accumulating strain values per day
+        const yearData = data.filter(cycle => new Date(cycle.formatted_date + 'T00:00:00').getFullYear() === selectedYear);
         const strainMap = new Map<string, number>();
         yearData.forEach(cycle => {
             const strainValue = typeof cycle.strain === 'number' ? cycle.strain : parseFloat(cycle.strain) || 0;
-            const existingStrain = strainMap.get(cycle.formatted_date) || 0;
-            strainMap.set(cycle.formatted_date, existingStrain + strainValue);
+            strainMap.set(cycle.formatted_date, (strainMap.get(cycle.formatted_date) || 0) + strainValue);
         });
-
-        // Sort dates to ensure chronological order
-        const sortedDates = Array.from(strainMap.entries())
+        return Array.from(strainMap.entries())
             .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-            .map(([date, strain]) => {
-                console.log('Processing date for display:', date);
-                return {
-                    date,
-                    strain,
-                    count: strain > 0 ? 1 : 0
-                };
-            });
-
-        console.log('Calendar data:', sortedDates);
-        return sortedDates;
+            .map(([date, strain]) => ({ date, strain, count: strain > 0 ? 1 : 0 }));
     };
 
-    // Get available years from data
-    const getAvailableYears = (): number[] => {
-        const years = new Set<number>();
-        data.forEach(cycle => {
-            const year = new Date(cycle.formatted_date).getFullYear();
-            years.add(year);
-        });
-        return Array.from(years).sort((a, b) => b - a); // Most recent first
-    };
-
-    // Organize days into weeks
+    const getAvailableYears = (): number[] => Array.from(new Set(data.map(cycle => new Date(cycle.formatted_date).getFullYear()))).sort((a, b) => b - a);
+    
     const organizeIntoWeeks = (days: DayData[]) => {
-        console.log('Organizing days:', days);
-        
-        if (days.length === 0) return [];
-        
-        // Create a map for quick lookup of existing days
+        if (!selectedYear) return [];
         const dayMap = new Map(days.map(day => [day.date, day]));
-        
-        // Get the date range we need to cover
-        const firstDate = new Date(days[0].date);
-        const lastDate = new Date(days[days.length - 1].date);
-        
-        // Start from the beginning of the first week (find the Sunday)
-        const startDate = new Date(firstDate);
-        startDate.setDate(startDate.getDate() - startDate.getDay()); // Go back to Sunday
-        
-        // End at the end of the last week (find the Saturday)
-        const endDate = new Date(lastDate);
-        endDate.setDate(endDate.getDate() + (6 - endDate.getDay())); // Go forward to Saturday
-        
-        console.log('Calendar will span from:', startDate.toISOString().split('T')[0], 'to:', endDate.toISOString().split('T')[0]);
-        
+        const yearStartDate = new Date(selectedYear, 0, 1);
+        const calendarStartDate = new Date(yearStartDate);
+        calendarStartDate.setDate(calendarStartDate.getDate() - yearStartDate.getDay());
+        const calendarEndDate = new Date(new Date(selectedYear, 11, 31));
+        calendarEndDate.setDate(calendarEndDate.getDate() + (6 - calendarEndDate.getDay()));
         const weeks: DayData[][] = [];
         let currentWeek: DayData[] = [];
-        
-        // Generate every day from start to end
-        const currentDate = new Date(startDate);
-        while (currentDate <= endDate) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            
-            // Use existing data if available, otherwise create empty day
+        for (let day = new Date(calendarStartDate); day <= calendarEndDate; day.setDate(day.getDate() + 1)) {
+            const dateStr = day.toISOString().split('T')[0];
             const dayData = dayMap.get(dateStr) || {
-                date: dateStr,
+                date: day.getFullYear() === selectedYear ? dateStr : '',
                 strain: 0,
                 count: 0
             };
-            
             currentWeek.push(dayData);
-            
-            // When we have 7 days, start a new week
             if (currentWeek.length === 7) {
                 weeks.push(currentWeek);
                 currentWeek = [];
             }
-            
-            currentDate.setDate(currentDate.getDate() + 1);
         }
-        
-        // Add any remaining days
-        if (currentWeek.length > 0) {
-            weeks.push(currentWeek);
+        // Ensure consistent 53 weeks (or trim if slightly over in a leap year)
+        while (weeks.length < 53) {
+            weeks.push(Array(7).fill({ date: '', strain: 0, count: 0 }));
         }
-        
-        console.log('Generated weeks:', weeks.length, 'with', weeks.reduce((total, week) => total + week.length, 0), 'total days');
-        return weeks;
+        return weeks.slice(0, 53);
     };
 
     const calendarData = generateCalendarData();
     const weeks = organizeIntoWeeks(calendarData);
+
+    // *****************************************************************
+    // ***** WEEKLY STRAIN DATA CALCULATION *****
+    // *****************************************************************
+    const getWeeklyStrainData = (): WeeklyStrainData[] => {
+        return weeks.map((week, weekIndex) => {
+            const weekDays = week.filter(day => day.date && day.strain > 0);
+            if (weekDays.length === 0) return null;
+            
+            const totalStrain = weekDays.reduce((sum, day) => sum + day.strain, 0);
+            const averageStrain = totalStrain / weekDays.length;
+            
+            // Get the first valid date for reference
+            const firstDate = week.find(day => day.date)?.date;
+            if (!firstDate) return null;
+            
+            return {
+                weekIndex,
+                averageStrain,
+                firstDate,
+                daysWithData: weekDays.length
+            };
+        }).filter((week): week is WeeklyStrainData => week !== null);
+    };
+
+    // *****************************************************************
+    // ***** REVISED getMonthLabels TO SHOW ALL MONTHS *****
+    // *****************************************************************
+    const getMonthLabels = () => {
+        const labels = new Map<number, string>(); // weekIndex -> monthShortName
+        const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const seenMonths = new Set<number>(); // month index (0-11)
+
+        weeks.forEach((week, weekIndex) => {
+            // Find the first actual day in the week that belongs to the selected year
+            const firstValidDay = week.find(day => day.date && new Date(day.date).getFullYear() === selectedYear);
+
+            if (firstValidDay) {
+                const date = new Date(firstValidDay.date + 'T00:00:00');
+                const monthIndex = date.getMonth();
+
+                if (!seenMonths.has(monthIndex)) {
+                    // Check if the first day of the *month* itself falls within this week
+                    // This ensures we label at the true start of the month's appearance
+                    let dayOfMonth = date.getDate();
+                    if (dayOfMonth === 1 || weekIndex === 0) { // Label if it's the 1st or if it's the very first week (for Jan)
+                        labels.set(weekIndex, allMonths[monthIndex]);
+                        seenMonths.add(monthIndex);
+                    }
+                }
+            }
+        });
+
+        // Ensure all 12 months are represented by finding appropriate weeks
+        allMonths.forEach((monthName, monthIndex) => {
+            if (!seenMonths.has(monthIndex)) {
+                // Find a week that contains days from this month
+                const weekWithMonth = weeks.findIndex(week => {
+                    return week.some(day => {
+                        if (!day.date) return false;
+                        const date = new Date(day.date + 'T00:00:00');
+                        return date.getFullYear() === selectedYear && date.getMonth() === monthIndex;
+                    });
+                });
+                
+                if (weekWithMonth !== -1 && !labels.has(weekWithMonth)) {
+                    labels.set(weekWithMonth, monthName);
+                    seenMonths.add(monthIndex);
+                }
+            }
+        });
+
+        return labels;
+    };
+    
+    const monthLabels = getMonthLabels();
+    const weeklyStrainData: WeeklyStrainData[] = getWeeklyStrainData();
+
+    // Calculate stats
     const totalActiveDays = calendarData.filter(day => day.count > 0).length;
     const strainDays = calendarData.filter(day => day.strain > 0);
     const averageStrain = strainDays.length > 0 ? strainDays.reduce((sum, day) => sum + day.strain, 0) / strainDays.length : 0;
     const maxStrainDay = calendarData.reduce((max, day) => day.strain > max.strain ? day : max, { strain: 0, date: '', count: 0 });
     const availableYears = getAvailableYears();
 
-    const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
+    // Event Handlers
     const handleMouseEnter = (day: DayData, event: React.MouseEvent) => {
         if (day.date) {
             setHoveredDay(day);
-            setHoveredCellRef(event.target as HTMLElement);
+            const cell = event.target as HTMLElement;
+            const rect = cell.getBoundingClientRect();
+            // Set the position for the tooltip
+            setTooltipPosition({
+                x: rect.left + rect.width / 2, // Center of the square
+                y: rect.top, // Top of the square
+            });
         }
     };
-
+    
     const handleMouseLeave = () => {
         setHoveredDay(null);
         setHoveredCellRef(null);
+        // Clear the position on leave
+        setTooltipPosition(null);
     };
-
-    // Click handler for mobile devices
     const handleClick = (day: DayData, event: React.MouseEvent) => {
         if (day.date) {
-            // If clicking the currently selected day, deselect it (hide tooltip)
-            if (selectedDay?.date === day.date) {
-                setSelectedDay(null);
-                setSelectedCellRef(null);
-            } else {
-                // Otherwise, select the new day (show tooltip)
-                setSelectedDay(day);
-                setSelectedCellRef(event.target as HTMLElement);
-            }
+            setSelectedDay(prev => (prev?.date === day.date ? null : day));
+            setSelectedCellRef(prev => (prev === event.target ? null : event.target as HTMLElement));
         }
     };
 
-    // Reference to the scrollable container
-    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-    // Reference to the calendar container for tooltip positioning
-    const calendarContainerRef = React.useRef<HTMLDivElement>(null);
-
-    // UseLayoutEffect hook to detect and handle tooltip overflow
-    useLayoutEffect(() => {
-        // Determine which cell is active
-        const activeCellRef = selectedCellRef || hoveredCellRef;
-
-        // Check that all required elements exist
-        if (activeCellRef && tooltipRef.current && mainContainerRef.current) {
-
-            // THE FIX: Reset the transform to its default state first.
-            // This ensures our measurement starts from a clean, centered position.
-            setTooltipTransform('translate(-50%, -100%)');
-
-            // Use a timeout to ensure the above reset has rendered before we measure.
-            setTimeout(() => {
-                // Double-check refs still exist after the timeout
-                if (!tooltipRef.current || !mainContainerRef.current) return;
-
-                const tooltipRect = tooltipRef.current.getBoundingClientRect();
-                const mainContainerRect = mainContainerRef.current.getBoundingClientRect();
-                let xOffset = 0;
-
-                // Check for collision with the CONTAINER'S right edge
-                const rightOverflow = tooltipRect.right - mainContainerRect.right;
-                if (rightOverflow > 0) {
-                    xOffset = -(rightOverflow + 8); // Add 8px padding
-                }
-
-                // Check for collision with the CONTAINER'S left edge
-                const leftOverflow = mainContainerRect.left - tooltipRect.left;
-                if (leftOverflow > 0) {
-                    xOffset = leftOverflow + 8; // Add 8px padding
-                }
-
-                // Apply the final calculated position
-                setTooltipTransform(`translate(calc(-50% + ${xOffset}px), -100%)`);
-            }, 0); // A zero-delay is enough to wait for the next "paint" cycle
-        }
-    }, [selectedDay, hoveredDay]); // The dependencies are correct
-
-    // Effect to scroll to the rightmost position on initial render
+    // Effects for scrolling and tooltips
     React.useEffect(() => {
-        if (scrollContainerRef.current) {
-            // Scroll to the right end of the container
-            scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+        if (scrollContainerRef.current && weeks.length > 0) {
+            // Center the content horizontally
+            const container = scrollContainerRef.current;
+            const centerPosition = (container.scrollWidth - container.clientWidth) / 2;
+            container.scrollLeft = Math.max(0, centerPosition);
         }
-    }, []); // <-- THE FIX: An empty array runs this only once.
+    }, [weeks]);
+
+    // *****************************************************************
+    // ***** REVISED useLayoutEffect FOR HEATMAP TOOLTIP CENTERING *****
+    // *****************************************************************
+    useLayoutEffect(() => {
+        const activeCellRef = selectedCellRef || hoveredCellRef;
+        if (activeCellRef && tooltipRef.current && mainContainerRef.current && scrollContainerRef.current) {
+            const tooltipElement = tooltipRef.current;
+            const mainContainerRect = mainContainerRef.current.getBoundingClientRect();
+            const scrollContainerScrollLeft = scrollContainerRef.current.scrollLeft;
+            const activeCellRect = activeCellRef.getBoundingClientRect();
+
+            // Calculate tooltip's desired center position relative to the calendar's content
+            const targetLeft = activeCellRect.left + (activeCellRect.width / 2);
+            
+            // Initial positioning for measurement
+            tooltipElement.style.left = `${targetLeft}px`;
+            tooltipElement.style.top = `${activeCellRect.top}px`;
+            tooltipElement.style.transform = `translate(-50%, -100%)`; // Default vertical position
+
+            // A small timeout to allow initial render before measuring
+            setTimeout(() => {
+                if (!tooltipRef.current || !mainContainerRef.current) return;
+                const currentTooltipRect = tooltipRef.current.getBoundingClientRect();
+                
+                let xOffsetCorrection = 0;
+
+                // Check for collision with the mainContainer's right edge
+                const rightOverflow = currentTooltipRect.right - mainContainerRect.right;
+                if (rightOverflow > 0) {
+                    xOffsetCorrection = -(rightOverflow + 8); // Move left + padding
+                }
+
+                // Check for collision with the mainContainer's left edge
+                const leftOverflow = mainContainerRect.left - currentTooltipRect.left;
+                if (leftOverflow > 0) {
+                    xOffsetCorrection = leftOverflow + 8; // Move right + padding
+                }
+                
+                // Apply the final transform with any necessary horizontal corrections
+                setTooltipTransform(`translate(calc(-50% + ${xOffsetCorrection}px), -100%)`);
+            }, 0);
+        } else {
+            setTooltipTransform('translate(-50%, -100%)'); // Reset if no active cell
+        }
+    }, [selectedDay, hoveredDay, selectedCellRef, hoveredCellRef]);
+
 
     return (
         <div ref={mainContainerRef} className="liquid-glass-card relative backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8">
-            {/* Header */}
+            {/* Header, Year Selector, Stats Summary (Unchanged) */}
             <div className="mb-8">
                 <h2 className="text-3xl font-light text-white mb-3 flex items-center gap-3">
                     <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
@@ -272,108 +307,66 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
                 <p className="text-white/70 font-light text-lg leading-relaxed">
                     A month-by-month view of my fitness activities, with brighter green squares representing higher strain days (maximum: 21).
                 </p>
-
-                {/* Year Selector */}
-                <div className="mt-6 flex items-center justify-center">
-                    <div className="flex items-center gap-1 bg-white/[0.03] border border-white/[0.1] rounded-2xl p-2 backdrop-blur-sm">
-                        {availableYears.map((year) => (
-                            <button
-                                key={year}
-                                onClick={() => setSelectedYear(year)}
-                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedYear === year
-                                    ? 'bg-green-400 text-black shadow-lg shadow-green-400/20'
-                                    : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
-                                    }`}
-                            >
-                                {year}
-                            </button>
-                        ))}
-                        {availableYears.length === 0 && (
-                            <div className="px-4 py-2 text-white/50 text-sm">No data available</div>
-                        )}
-                    </div>
+            </div>
+            <div className="mt-6 mb-8 flex items-center justify-center">
+                <div className="flex items-center gap-1 bg-white/[0.03] p-2 rounded-2xl">
+                    {availableYears.map(year => (
+                        <button key={year} onClick={() => setSelectedYear(year)} className={`px-4 py-2 rounded-xl text-sm ${selectedYear === year ? 'bg-green-400 text-black' : 'text-white/70 hover:bg-white/5'}`}>
+                            {year}
+                        </button>
+                    ))}
                 </div>
             </div>
-
-            {/* Stats Summary */}
             <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="text-center">
-                    <div className="text-3xl font-light text-green-400 mb-1">{totalActiveDays}</div>
-                    <div className="text-white/60 text-sm font-light">Active Days</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-3xl font-light text-green-400 mb-1">{(averageStrain || 0).toFixed(1)}</div>
-                    <div className="text-white/60 text-sm font-light">Avg Strain</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-3xl font-light text-green-400 mb-1">{(maxStrainDay.strain || 0).toFixed(1)}</div>
-                    <div className="text-white/60 text-sm font-light">Peak Strain</div>
-                </div>
+                <div className="text-center"><div className="text-3xl font-light text-green-400">{totalActiveDays}</div><div className="text-white/60 text-sm">Active Days</div></div>
+                <div className="text-center"><div className="text-3xl font-light text-green-400">{(averageStrain || 0).toFixed(1)}</div><div className="text-white/60 text-sm">Avg Strain</div></div>
+                <div className="text-center"><div className="text-3xl font-light text-green-400">{(maxStrainDay.strain || 0).toFixed(1)}</div><div className="text-white/60 text-sm">Peak Strain</div></div>
             </div>
-
+            
             {/* Calendar */}
-            <div ref={calendarContainerRef} className="relative overflow-hidden" id="calendar-container">
-                {/* Scrollable container for the entire calendar */}
-                <div ref={scrollContainerRef} className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-green-400/30 scrollbar-track-white/5">
-                    {/* Month labels - properly aligned with calendar grid */}
-                    <div className="flex gap-1 mb-2 ml-[18px] min-w-max">
-                        {weeks.map((week, weekIndex) => {
-                            // Get the first day of this week that has a date
-                            const firstDayWithDate = week.find(day => day.date);
-                            if (!firstDayWithDate) return <div key={weekIndex} className="w-3"></div>;
-
-                            const date = new Date(firstDayWithDate.date + 'T00:00:00');
-                            const isFirstWeekOfMonth = date.getDate() <= 7;
-
-                            return (
-                                <div key={weekIndex} className="w-3 text-xs text-white/50 font-light text-center">
-                                    {isFirstWeekOfMonth ? months[date.getMonth()] : ''}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="flex gap-1 min-w-max">
-                        {/* Weekday labels */}
-                        <div className="flex flex-col gap-1 mr-3 sticky left-0 z-10 bg-purple-900/80 backdrop-blur-sm px-1.5 py-0.5 rounded-r-md shadow-lg">
-                            {weekdays.map((day, index) => (
-                                <div
-                                    key={`weekday-${index}`}
-                                    className="w-6 h-3 flex items-center justify-start text-xs text-white/90 font-medium"
-                                >
-                                    {day}
+            <div ref={calendarContainerRef} className="relative overflow-hidden">
+                <div ref={scrollContainerRef} className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-green-400/30">
+                    <div className="inline-block mx-auto">
+                        {/* Heatmap Month labels - NOW perfectly aligned */}
+                        <div className="flex gap-1 mb-2 ml-[3.25rem] min-w-max">
+                            {weeks.map((_, weekIndex) => (
+                                <div key={weekIndex} className="w-3 text-xs text-white/50 text-left">
+                                    {monthLabels.get(weekIndex) || ''}
                                 </div>
                             ))}
                         </div>
 
-                        {/* Calendar grid */}
                         <div className="flex gap-1 min-w-max">
-                            {weeks.map((week, weekIndex) => (
-                                <div key={weekIndex} className="flex flex-col gap-1">
-                                    {week.map((day, dayIndex) => (
-                                        <div
-                                            key={`${weekIndex}-${dayIndex}`}
-                                            className={`w-3 h-3 rounded-sm transition-all duration-200 hover:scale-125 hover:shadow-lg cursor-pointer ${
-                                                day.date && day.strain > 0 
-                                                    ? getStrainColor(day.strain) 
-                                                    : day.date 
-                                                        ? 'bg-gray-900/50' // Days with no activity (strain = 0)
-                                                        : 'bg-transparent'   // Days outside the data range
-                                            } ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-green-400/60 shadow-green-400/30' : ''}`}
-                                            onMouseEnter={(e) => day.date ? handleMouseEnter(day, e) : undefined}
-                                            onMouseLeave={handleMouseLeave}
-                                            onClick={(e) => day.date ? handleClick(day, e) : undefined}
-                                            data-week={weekIndex}
-                                            data-day={dayIndex}
-                                        />
-                                    ))}
-                                </div>
-                            ))}
+                            {/* Weekday labels */}
+                            <div className="flex flex-col gap-1 mr-3 sticky left-0 z-10 bg-slate-900/80 backdrop-blur-sm px-1.5 py-0.5 rounded-r-md shadow-lg">
+                                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                                    <div key={index} className="w-6 h-3 flex items-center text-xs text-white/90 font-medium">
+                                        {(index === 1 && 'Mon') || (index === 3 && 'Wed') || (index === 5 && 'Fri')}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Calendar grid */}
+                            <div className="flex gap-1 min-w-max">
+                                {weeks.map((week, weekIndex) => (
+                                    <div key={weekIndex} className="flex flex-col gap-1">
+                                        {week.map((day, dayIndex) => (
+                                            <div
+                                                key={`${weekIndex}-${dayIndex}`}
+                                                className={`w-3 h-3 rounded-sm transition-transform hover:scale-125 cursor-pointer ${day.date ? (day.strain > 0 ? getStrainColor(day.strain) : 'bg-gray-900/50') : 'bg-transparent'} ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-green-400' : ''}`}
+                                                onMouseEnter={e => handleMouseEnter(day, e)}
+                                                onMouseLeave={handleMouseLeave}
+                                                onClick={e => handleClick(day, e)}
+                                            />
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                {/* Legend with more gradient colors and tooltips */}
+                
+                {/* Legend */}
                 <div className="flex flex-col gap-2 mt-6 text-xs text-white/60">
                     <div className="flex items-center gap-3">
                         <span className="font-light">Less</span>
@@ -416,57 +409,147 @@ export function ActivityHeatmap({ data }: ActivityHeatmapProps) {
                     </div>
                     <div className="text-center text-xs text-white/40 italic">Hover over squares for strain level details (Maximum: 21)</div>
                 </div>
-            </div>
 
-            {/* Enhanced Tooltip - Now positioned correctly */}
-            {(() => {
-                // Prioritize the selected day (click) over the hovered day
-                const activeDay = selectedDay || hoveredDay;
-                const activeCellRef = selectedCellRef || hoveredCellRef;
+                {/* Weekly Strain Chart */}
+                {weeklyStrainData && weeklyStrainData.length > 0 && (
+                    <div className="mt-8">
+                        <div className="text-center mb-4">
+                            <h3 className="text-lg text-cyan-400">Weekly Average Strain: Chasing the 10 Goal ⚡</h3>
+                            <p className="text-sm text-white/60">
+                                Each dot represents my weekly average strain. Consistency above 10 means optimal fitness growth.
+                            </p>
+                        </div>
+                        
+                        {/* Scrollable chart container */}
+                        <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-green-400/30 scrollbar-track-white/5">
+                            <div className="inline-block min-w-full">
+                                <div className="h-32 relative min-w-max">
+                                    {/* Goal Line */}
+                                    <div className="absolute w-full border-t border-yellow-400/50 border-dashed" style={{ top: `${100 - (10 / 22) * 100}%`, left: '3.25rem', right: 0 }} />
+                                    
+                                    {/* Chart Data Points */}
+                                    <div className="absolute inset-0 flex gap-1 ml-[3.25rem] min-w-max">
+                                        {weeks.map((week, weekIndex) => {
+                                            const weekData = weeklyStrainData.find(data => data.weekIndex === weekIndex);
 
-                if (!activeDay || !activeCellRef || !calendarContainerRef.current) return null;
-
-                // Get the position of the calendar container itself
-                const calendarTop = calendarContainerRef.current.offsetTop;
-                const calendarLeft = calendarContainerRef.current.offsetLeft;
-
-                return (
-                    <div
-                        ref={tooltipRef}
-                        className="absolute pointer-events-none z-[9999]"
-                        style={{
-                            // NEW position calculation
-                            top: calendarTop + activeCellRef.offsetTop - 20,
-                            left: calendarLeft + activeCellRef.offsetLeft - (scrollContainerRef.current?.scrollLeft || 0) + (activeCellRef.offsetWidth / 2),
-                            transform: tooltipTransform,
-                        }}
-                    >
-                        <div className="bg-black/95 backdrop-blur-sm border-2 border-green-400 rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
-                            <div className="text-white text-sm font-medium mb-2">
-                                {new Date(activeDay.date + 'T00:00:00').toLocaleDateString('en-US', {
-                                    weekday: 'short',
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                })}
-                            </div>
-                            <div className="border-t border-gray-600 pt-2">
-                                {activeDay.strain > 0 ? (
-                                    <>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="text-gray-300 text-sm">Strain:</span>
-                                            <span className="text-green-400 text-lg font-bold">{activeDay.strain.toFixed(1)}</span>
+                                            return (
+                                                <div key={weekIndex} className="w-3 h-full relative">
+                                                    {weekData && (
+                                                        <div
+                                                            className="absolute w-2 h-2 rounded-full cursor-pointer transition-transform hover:scale-150"
+                                                            style={{
+                                                                top: `calc(${100 - (weekData.averageStrain / 22) * 100}%)`,
+                                                                left: '2px', // Centered in the 3px week column
+                                                                transform: 'translateY(-50%)',
+                                                                backgroundColor: weekData.averageStrain >= 10 ? 'rgb(34 197 94)' : 'rgb(239 68 68)'
+                                                            }}
+                                                            onMouseEnter={e => {
+                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                const startDate = new Date(weekData.firstDate + 'T00:00:00');
+                                                                const endDate = new Date(startDate);
+                                                                endDate.setDate(startDate.getDate() + 6);
+                                                                const weekLabel = `Week of ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                                                                setHoveredMonth({ 
+                                                                    monthName: weekLabel, 
+                                                                    average_strain: weekData.averageStrain, 
+                                                                    x: rect.left + rect.width / 2, 
+                                                                    y: rect.top 
+                                                                });
+                                                            }}
+                                                            onMouseLeave={() => setHoveredMonth(null)}
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                
+                                {/* Chart Month labels - Aligned with heatmap */}
+                                <div className="flex gap-1 mt-2 ml-[3.25rem] min-w-max">
+                                   {weeks.map((_, weekIndex) => (
+                                        <div key={weekIndex} className="w-3 text-xs text-white/50 text-left">
+                                            {monthLabels.get(weekIndex) || ''}
                                         </div>
-                                        <div className="text-green-300 text-xs font-medium">{getStrainLabel(activeDay.strain)}</div>
-                                    </>
-                                ) : (
-                                    <div className="text-gray-400 text-sm text-center">No Activity</div>
-                                )}
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
-                );
-            })()}
+                )}
+            </div>
+
+            {/* *************************************************************** */}
+            {/* ***** NEW, SIMPLIFIED & CORRECTED HEATMAP TOOLTIP ***** */}
+            {/* *************************************************************** */}
+            {hoveredDay && tooltipPosition && (
+                <div
+                    className="fixed pointer-events-none z-[9999]"
+                    style={{
+                        left: tooltipPosition.x,
+                        top: tooltipPosition.y,
+                        transform: 'translate(-50%, -300%)', // Center horizontally, move up
+                        transition: 'opacity 0.2s, transform 0.2s',
+                    }}
+                >
+                    <div className="bg-black/95 backdrop-blur-sm border-2 border-green-400 rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
+                        <div className="text-white text-sm font-medium mb-2">
+                            {new Date(hoveredDay.date + 'T00:00:00').toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                            })}
+                        </div>
+                        <div className="border-t border-gray-600 pt-2">
+                            {hoveredDay.strain > 0 ? (
+                                <>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-gray-300 text-sm">Strain:</span>
+                                        <span className="text-green-400 text-lg font-bold">{hoveredDay.strain.toFixed(1)}</span>
+                                    </div>
+                                    <div className="text-green-300 text-xs font-medium">{getStrainLabel(hoveredDay.strain)}</div>
+                                </>
+                            ) : (
+                                <div className="text-gray-400 text-sm text-center">No Activity</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Weekly Chart Tooltip */}
+            {hoveredMonth && (
+                <div
+                    className="fixed pointer-events-none z-[10000]"
+                    style={{
+                        left: hoveredMonth.x,
+                        top: hoveredMonth.y, // Keep the Y position from the hover event
+                        transform: 'translate(-150%, -180%)' // Move up more for visibility
+                    }}
+                >
+                    <div className="bg-black/95 backdrop-blur-sm border-2 border-yellow-400 rounded-lg p-3 shadow-2xl min-w-[160px]">
+                        <div className="text-white text-sm font-medium mb-1">
+                            {hoveredMonth.monthName}
+                        </div>
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-gray-300 text-sm">Average Strain:</span>
+                            <span className="text-yellow-400 text-lg font-bold">
+                                {hoveredMonth.average_strain.toFixed(1)}
+                            </span>
+                        </div>
+                        <div className="text-xs text-gray-400 border-t border-gray-600 pt-2">
+                            Goal: 10.0+ strain per week
+                        </div>
+                        <div className="text-xs mt-1">
+                            {hoveredMonth.average_strain >= 10 ? 
+                                <span className="text-green-400">🎯 Goal Achieved!</span> : 
+                                <span className="text-red-400">📈 Below Goal ({(10 - hoveredMonth.average_strain).toFixed(1)} short)</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
