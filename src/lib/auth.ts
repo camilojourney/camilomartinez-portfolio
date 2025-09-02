@@ -85,10 +85,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // Token has expired (or will soon), try to refresh it
             try {
                 console.log('🔄 Refreshing access token...');
+                console.log('🔍 Current token expires at:', new Date((token.expiresAt as number) * 1000).toISOString());
+                
                 const response = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json',
                     },
                     body: new URLSearchParams({
                         grant_type: 'refresh_token',
@@ -99,9 +102,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 });
 
                 const refreshedTokens = await response.json();
+                console.log('🔍 WHOOP refresh response status:', response.status);
+                console.log('🔍 WHOOP refresh response:', refreshedTokens);
 
                 if (!response.ok) {
-                    throw new Error(refreshedTokens.error || 'Failed to refresh token');
+                    console.error('💥 Token refresh failed:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        error: refreshedTokens.error,
+                        errorDescription: refreshedTokens.error_description,
+                    });
+                    
+                    // If refresh token is invalid, user needs to re-authenticate
+                    if (refreshedTokens.error === 'invalid_grant' || refreshedTokens.error === 'invalid_request') {
+                        console.warn('🚫 Refresh token invalid - user needs to re-authenticate');
+                        return {
+                            ...token,
+                            error: 'RefreshAccessTokenError',
+                            accessToken: undefined,
+                            refreshToken: undefined,
+                            expiresAt: undefined,
+                        };
+                    }
+                    
+                    throw new Error(refreshedTokens.error_description || refreshedTokens.error || 'Failed to refresh token');
                 }
 
                 console.log('✅ Token refreshed successfully');
@@ -121,6 +145,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
         },
         async session({ session, token }) {
+            // If there's a refresh token error, the user needs to re-authenticate
+            if (token.error === 'RefreshAccessTokenError') {
+                console.warn('⚠️ Session has refresh token error - access token may be invalid');
+            }
+            
             return {
                 ...session,
                 accessToken: token.accessToken,

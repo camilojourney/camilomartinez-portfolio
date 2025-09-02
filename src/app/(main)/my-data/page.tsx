@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/Card';
 import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
 import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
 import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
-import { MonthlyStrainChart } from '@/components/features/whoop/MonthlyStrainChart';
 
 async function getStrainData() {
     try {
@@ -213,13 +212,8 @@ export default async function MyDataPage() {
                                     </div>
                                 </div>
                                 
-                                {/* Daily Heatmap */}
-                                <ActivityHeatmap data={strainData} />
-                                
-                                {/* Monthly Strain Average Chart - Below heatmap within strain journey */}
-                                <div className="mt-6">
-                                    <MonthlyStrainChart data={monthlyStrainData} />
-                                </div>
+                                {/* Daily Heatmap with integrated Monthly Chart */}
+                                <ActivityHeatmap data={strainData} monthlyData={monthlyStrainData} />
                             </Card>
 
                             {/* Component 2: The Astoria Conquest */}
