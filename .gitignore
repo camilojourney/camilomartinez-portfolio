@@ -71,3 +71,4 @@ backend/projects_quarto/astoria-conquest/generated_routes/
 # Notebook caches and heavy artifacts
 backend/lab/cache/
 .venv/
+backend/lab/cache/
