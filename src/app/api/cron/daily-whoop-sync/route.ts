@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+function isAuthorized(req: Request): boolean {
+  const url = new URL(req.url);
+  const headerSecret = req.headers.get('x-cron-secret');
+  const querySecret = url.searchParams.get('secret') || url.searchParams.get('token');
+  const expected = process.env.CRON_SECRET;
+  return !!expected && (headerSecret === expected || querySecret === expected);
+}
+
+async function handleSync(req: Request) {
   // Verify cron secret for security
-  const cronSecret = req.headers.get('x-cron-secret');
-  if (cronSecret !== process.env.CRON_SECRET) {
-    console.error('[CRON] Invalid cron secret provided');
+  if (!isAuthorized(req)) {
+    console.error('[CRON] Invalid or missing cron secret');
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
@@ -23,7 +30,9 @@ export async function POST(req: Request) {
     console.log(`[CRON] Calling data fetch endpoint: ${fullUrl}/api/cron/daily-data-fetch`);
     
     // Call the existing working daily-data-fetch endpoint
-    const response = await fetch(`${fullUrl}/api/cron/daily-data-fetch`, {
+    const url = new URL(`${fullUrl}/api/cron/daily-data-fetch`);
+    url.searchParams.set('secret', process.env.CRON_SECRET!);
+    const response = await fetch(url.toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,4 +82,12 @@ export async function POST(req: Request) {
       message: "Daily WHOOP sync failed"
     }, { status: 500 });
   }
+}
+
+export async function POST(req: Request) {
+  return handleSync(req);
+}
+
+export async function GET(req: Request) {
+  return handleSync(req);
 }
