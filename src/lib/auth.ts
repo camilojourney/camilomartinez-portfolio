@@ -1,5 +1,7 @@
 import NextAuth from "next-auth"
 import { OAuthConfig } from "next-auth/providers"
+import { WhoopDatabaseService } from '@/lib/db/whoop-database'
+import { TokenRefreshService } from '@/lib/services/token-refresh-service'
 
 interface WhoopProfile {
     user_id: number
@@ -55,15 +57,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         signIn: '/signin',
     },
     callbacks: {
-        async jwt({ token, account, trigger }) {
-            // Initial sign in
+        async jwt({ token, account, profile, trigger }) {
+            // Initial sign in - store tokens in database
             if (account) {
-                console.log('🔐 Initial sign in - storing tokens');
+                console.log('🔐 Initial sign in - storing tokens in database and session');
+                
+                const expiresAt = new Date(Date.now() + (account.expires_in ?? 3600) * 1000);
+                const tokens = {
+                    accessToken: account.access_token!,
+                    refreshToken: account.refresh_token!,
+                    expiresAt,
+                };
+
+                // Store tokens in database if we have user profile
+                if (profile) {
+                    try {
+                        const dbService = new WhoopDatabaseService();
+                        await dbService.upsertUserWithTokens(profile as any, tokens);
+                        console.log('✅ Stored user tokens in database');
+                    } catch (error) {
+                        console.error('� Error storing tokens in database:', error);
+                    }
+                }
+
                 return {
                     ...token,
+                    user: profile || token.user,
                     accessToken: account.access_token,
                     refreshToken: account.refresh_token,
-                    expiresAt: Math.floor(Date.now() / 1000 + (account.expires_in ?? 3600)),
+                    expiresAt: Math.floor(expiresAt.getTime() / 1000),
                 };
             }
 
@@ -84,60 +106,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             // Token has expired (or will soon), try to refresh it
             try {
-                console.log('🔄 Refreshing access token...');
-                console.log('🔍 Current token expires at:', new Date((token.expiresAt as number) * 1000).toISOString());
+                console.log('🔄 Session token expired, refreshing via service...');
                 
-                const response = await fetch('https://api.prod.whoop.com/oauth/oauth2/token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Accept': 'application/json',
-                    },
-                    body: new URLSearchParams({
-                        grant_type: 'refresh_token',
-                        refresh_token: token.refreshToken as string,
-                        client_id: process.env.WHOOP_CLIENT_ID!,
-                        client_secret: process.env.WHOOP_CLIENT_SECRET!,
-                    }),
-                });
+                const tokenService = new TokenRefreshService();
+                const refreshedTokens = await tokenService.refreshWhoopToken(token.refreshToken as string);
 
-                const refreshedTokens = await response.json();
-                console.log('🔍 WHOOP refresh response status:', response.status);
-                console.log('🔍 WHOOP refresh response:', refreshedTokens);
-
-                if (!response.ok) {
-                    console.error('💥 Token refresh failed:', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        error: refreshedTokens.error,
-                        errorDescription: refreshedTokens.error_description,
-                    });
-                    
-                    // If refresh token is invalid, user needs to re-authenticate
-                    if (refreshedTokens.error === 'invalid_grant' || refreshedTokens.error === 'invalid_request') {
-                        console.warn('🚫 Refresh token invalid - user needs to re-authenticate');
-                        return {
-                            ...token,
-                            error: 'RefreshAccessTokenError',
-                            accessToken: undefined,
-                            refreshToken: undefined,
-                            expiresAt: undefined,
-                        };
+                // Update database with new tokens if we have user info
+                if (token.user) {
+                    try {
+                        const dbService = new WhoopDatabaseService();
+                        await dbService.upsertUserWithTokens(token.user as any, refreshedTokens);
+                        console.log('✅ Updated tokens in database');
+                    } catch (error) {
+                        console.error('💥 Error updating tokens in database:', error);
                     }
-                    
-                    throw new Error(refreshedTokens.error_description || refreshedTokens.error || 'Failed to refresh token');
                 }
 
-                console.log('✅ Token refreshed successfully');
+                console.log('✅ Session token refreshed successfully');
                 return {
                     ...token,
-                    accessToken: refreshedTokens.access_token,
-                    refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
-                    expiresAt: Math.floor(Date.now() / 1000 + (refreshedTokens.expires_in ?? 3600)),
+                    accessToken: refreshedTokens.accessToken,
+                    refreshToken: refreshedTokens.refreshToken,
+                    expiresAt: Math.floor(refreshedTokens.expiresAt.getTime() / 1000),
                     error: undefined, // Clear any previous errors
                 };
             } catch (error) {
-                console.error('💥 Error refreshing access token:', error);
+                console.error('💥 Error refreshing session token:', error);
                 return {
                     ...token,
                     error: 'RefreshAccessTokenError',
@@ -153,7 +147,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return {
                 ...session,
                 accessToken: token.accessToken,
-                refreshToken: token.refreshToken,
                 expiresAt: token.expiresAt,
                 error: token.error,
                 user: token.user || session.user,

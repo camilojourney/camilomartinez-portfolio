@@ -1,8 +1,84 @@
 # Camilo Martinez - AI Developer Portfolio 🚀
 
-A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system.
+A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system with automated WHOOP fitness data integration.
 
-🧠 The Philosophy: How to Think About This Architecture
+## 🏃‍♂️ WHOOP Integration & Automated Data Collection
+
+This portfolio features a sophisticated WHOOP fitness data integration system that automatically collects and displays real-time training data.
+
+### 🔄 **Automated Daily Data Collection**
+
+The system runs a **single daily cron job at 3 AM UTC** that:
+
+1. **🔄 Refreshes OAuth Tokens**: Automatically gets fresh WHOOP API tokens for all users
+2. **📊 Fetches Yesterday's Data**: Retrieves cycles, sleep, recovery, and workout data  
+3. **💾 Stores in Database**: Saves all data to PostgreSQL for analysis and visualization
+
+```javascript
+// Daily Workflow (3 AM UTC)
+STEP 1: Token Refresh
+├── Gets all users from database
+├── Calls WHOOP API to refresh expired tokens
+├── Updates database with fresh tokens
+└── Ensures API access for data collection
+
+STEP 2: Data Collection  
+├── Uses fresh tokens to call WHOOP APIs
+├── Fetches yesterday's complete dataset
+├── Includes: cycles, sleep, recovery, workouts
+└── Handles rate limiting and error recovery
+
+STEP 3: Data Storage
+├── Saves all data to PostgreSQL database
+├── Updates existing records or creates new ones
+└── Maintains data integrity and relationships
+```
+
+### 🏗️ **Token Management Architecture**
+
+```typescript
+// Database-Driven Token Storage
+whoop_users table:
+├── access_token (refreshed daily)
+├── refresh_token (long-lived)  
+├── token_expires_at (tracked automatically)
+└── updated_at (refresh timestamps)
+
+// No manual intervention required!
+```
+
+### 📅 **Cron Configuration (Vercel)**
+
+```json
+{
+  "crons": [
+    { 
+      "path": "/api/cron/daily-data-fetch", 
+      "schedule": "0 3 * * *",
+      "comment": "Daily WHOOP data fetch with token refresh"
+    }
+  ]
+}
+```
+
+### 🛡️ **Security & Authentication**
+
+- **OAuth 2.0**: Secure WHOOP authentication with `offline` scope
+- **Database Token Storage**: Encrypted tokens stored per user
+- **Automatic Refresh**: No manual token management required
+- **Cron Security**: Protected endpoints with secret authentication
+
+### 📊 **Data Visualization**
+
+The collected WHOOP data powers:
+- **Activity Heatmap**: GitHub-style training calendar
+- **Recovery Trends**: Sleep and recovery score analytics  
+- **Workout Analysis**: Training load and performance metrics
+- **Real-time Dashboards**: Live fitness data integration
+
+---
+
+## 🧠 The Philosophy: How to Think About This Architecture
 
 To become an expert in app architecture, it's less about memorizing folder names and more about understanding the mental model. This project is built on a core principle: separation of concerns. Every file and folder has a single, clear job.
 
@@ -35,8 +111,8 @@ Components are organized by their scope and complexity:
 
 ### 4. The lib Directory: The Central Nervous System
 This is where you consolidate all non-React code to keep your components clean:
-- services/: Contains the "business logic" (e.g., WhoopService for WHOOP API)
-- db/: Handles all direct database communication
+- services/: Contains the "business logic" and automated data collection (e.g., TokenRefreshService, WhoopDatabaseService)
+- db/: Handles all direct database communication and token storage
 - hooks/: Custom React Hooks for sharing client-side logic
 - types/: Defines the "shape" of your data using TypeScript
 - utils/: General-purpose helper functions
@@ -44,8 +120,8 @@ This is where you consolidate all non-React code to keep your components clean:
 ## ✨ Key Features
 
 - **AI Chatbot**: Interactive "About Me" with natural conversation
-- **WHOOP Integration**: Real-time fitness data with OAuth 2.0
-- **Activity Visualization**: GitHub-style training heatmap
+- **WHOOP Integration**: Automated daily fitness data collection with OAuth 2.0
+- **Activity Visualization**: GitHub-style training heatmap powered by real WHOOP data
 - **Project Showcase**: Dynamic case studies with MDX
    │   ├── config/         # App configuration
    │   │   └── constants.ts

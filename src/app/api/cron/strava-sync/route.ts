@@ -12,9 +12,18 @@ export async function POST(request: NextRequest) {
   try {
     // Verify cron secret to prevent unauthorized access
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const url = new URL(request.url);
+    const secret = url.searchParams.get('secret') || url.searchParams.get('token');
+    const expected = process.env.CRON_SECRET;
+    if (authHeader !== `Bearer ${expected}` && secret !== expected) {
       console.error('❌ Unauthorized cron request');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Dry run: validate wiring without heavy work
+    const dryRun = url.searchParams.get('dryRun') === 'true';
+    if (dryRun) {
+      return NextResponse.json({ ok: true, endpoint: 'strava-sync', dryRun: true, timestamp: new Date().toISOString() });
     }
 
     console.log('🚀 Starting Strava sync cron job...');

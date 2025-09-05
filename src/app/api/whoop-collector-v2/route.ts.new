@@ -2,15 +2,7 @@
  * WHOOP API V2 Data Collector
  *
  * Collection Strategy:
- * 1. Cycl        // Get fresh tokens for this specific user (force refresh for historical collection)
-        const freshTokens = await tokenService.getFreshTokensForUser(userId, true);
-        if (!freshTokens || !freshTokens.accessToken) {
-            return NextResponse.json({
-                success: false,
-                requiresReauth: true,
-                error: 'No valid access token available after refresh. Please re-authenticate.'
-            }, { status: 401 });
-        }o-phase collection
+ * 1. Cycles: Two-phase collection
  *    a) Try paginated collection endpoint (limited to 25 records)
  *    b) Use recovery data to identify & fetch missing cycles via /cycle/{id}
  *
@@ -33,17 +25,7 @@ import { TokenRefreshService } from '@/lib/services/token-refresh-service';
 import { sql } from '@/lib/db/db';
 import { WhoopCycle } from '@/types/whoop';
 
-// Authorization helper function (same as daily-fetch)
-function isAuthorized(req: Request): boolean {
-    const url = new URL(req.url);
-    const headerSecret = req.headers.get('x-cron-secret');
-    const querySecret = url.searchParams.get('secret') || url.searchParams.get('token');
-    const expected = process.env.CRON_SECRET;
-    return !!expected && (headerSecret === expected || querySecret === expected);
-}
-
 export async function POST(request: NextRequest) {
-    // Try session-based auth first (for logged-in users)
     const session = await auth();
     const sessionWithToken = session as typeof session & { accessToken?: string; error?: string };
     
@@ -57,19 +39,13 @@ export async function POST(request: NextRequest) {
         }, { status: 401 });
     }
     
-    // If no session, check for CRON_SECRET authorization (admin access)
-    const hasSession = !!sessionWithToken?.user?.id;
-    const hasCronAuth = isAuthorized(request);
-    
-    if (!hasSession && !hasCronAuth) {
-        console.warn('⚠️ No authenticated user or admin access available');
+    if (!sessionWithToken?.user?.id) {
+        console.warn('⚠️ No authenticated user available');
         return NextResponse.json({ 
             error: 'Not authenticated',
             message: 'Please sign in with your WHOOP account to continue.'
         }, { status: 401 });
     }
-    
-    console.log(`🔐 Authorization: ${hasSession ? 'User session' : 'Admin/CRON access'}`)
 
     try {
         const body = await request.json().catch(() => ({}));
@@ -82,87 +58,20 @@ export async function POST(request: NextRequest) {
         const dbService = new WhoopDatabaseService();
         const tokenService = new TokenRefreshService();
 
-        // STEP 1: Get user ID and fresh tokens (handle both session and admin auth)
+        // STEP 1: Get user from database and ensure fresh tokens
         console.log('🔄 Step 1: Getting user and refreshing tokens...');
+        const userId = parseInt(sessionWithToken.user.id);
         
-        let userId: number;
-        let freshTokens: any;
+        // Get fresh tokens for this specific user (force refresh for historical collection)
+        const freshTokens = await tokenService.getFreshTokensForUser(userId, true);
         
-        if (hasSession) {
-            // Session-based: Process specific user
-            const rawId = (sessionWithToken.user as any)?.user_id ?? (sessionWithToken.user as any)?.id;
-            userId = typeof rawId === 'number' ? rawId : parseInt(String(rawId), 10);
-            if (!userId || Number.isNaN(userId)) {
-                return NextResponse.json({
-                    success: false,
-                    error: 'Unable to resolve WHOOP user id from session',
-                    hint: 'Re-authenticate with WHOOP so we can store your profile id',
-                }, { status: 400 });
-            }
-            
-            console.log(`👤 Processing for session user ID: ${userId}`);
-            
-            // Get fresh tokens for this specific user (force refresh for historical collection)
-            freshTokens = await tokenService.getFreshTokensForUser(userId, true);
-            if (!freshTokens || !freshTokens.accessToken) {
-                throw new Error('No valid access token available after refresh - user needs to re-authenticate');
-            }
-        } else if (hasCronAuth) {
-            // Admin access: Get first available user (for now, can be extended to all users later)
-            console.log(`🔧 Admin access: Getting first available user`);
-            
-            // Refresh all user tokens first
-            const tokenRefreshResults = await tokenService.refreshAllUserTokens();
-            console.log(`Token refresh complete: ${tokenRefreshResults.successful} successful, ${tokenRefreshResults.failed} failed`);
-            
-            // Get all users with fresh tokens
-            const allUsers = await dbService.getAllUsersWithTokens();
-            console.log(`Found ${allUsers.length} users for processing`);
-            
-            if (allUsers.length === 0) {
-                return NextResponse.json({
-                    success: false,
-                    error: 'No users with tokens found in database. Users need to authenticate via OAuth flow first.'
-                }, { status: 400 });
-            }
-            
-            // Use first user for now (can be extended for all users)
-            const firstUser = allUsers[0];
-            userId = firstUser.id;
-            freshTokens = { 
-                accessToken: firstUser.access_token, 
-                refreshToken: firstUser.refresh_token 
-            };
-            
-            console.log(`👤 Processing for admin user ID: ${userId}`);
-            console.log(`🔍 Admin token debug:`, {
-                hasAccessToken: !!firstUser.access_token,
-                hasRefreshToken: !!firstUser.refresh_token,
-                accessTokenLength: firstUser.access_token?.length || 0,
-                refreshTokenLength: firstUser.refresh_token?.length || 0,
-                tokenExpiresAt: firstUser.token_expires_at
-            });
+        if (!freshTokens || !freshTokens.accessToken) {
+            throw new Error('No valid access token available after refresh - user needs to re-authenticate');
         }
 
         console.log('✅ Fresh tokens obtained for historical collection');
-        console.log('🔍 Debug token info:', { 
-            hasAccessToken: !!freshTokens?.accessToken, 
-            tokenLength: freshTokens?.accessToken?.length || 0,
-            authMethod: hasSession ? 'session' : 'admin' 
-        });
-
-        // Validate access token before proceeding
-        if (!freshTokens || !freshTokens.accessToken) {
-            return NextResponse.json({
-                success: false,
-                error: 'No valid access token available',
-                authMethod: hasSession ? 'session' : 'admin',
-                debug: { freshTokens: !!freshTokens, accessToken: !!freshTokens?.accessToken }
-            }, { status: 401 });
-        }
 
         // Initialize WHOOP client with fresh token
-        console.log(`🔧 Initializing WHOOP client with token (${freshTokens.accessToken.substring(0, 10)}...)`);
         const whoopClient = new WhoopV2Client(freshTokens.accessToken);
 
         // Get user profile first
@@ -175,10 +84,6 @@ export async function POST(request: NextRequest) {
             newSleep: 0,
             newRecovery: 0,
             newWorkouts: 0,
-            totalCycles: 0,
-            totalSleep: 0,
-            totalRecovery: 0,
-            totalWorkouts: 0,
             errors: [] as string[],
         };
 
@@ -230,7 +135,6 @@ export async function POST(request: NextRequest) {
                     });
                 
                 const { newRecoveryCount, errors } = await dbService.upsertRecoveries(recoveryData);
-                results.totalRecovery = recoveryData.length;
                 results.newRecovery = newRecoveryCount;
                 
                 if (errors.length > 0) {
@@ -276,9 +180,8 @@ export async function POST(request: NextRequest) {
                     });
                 
                 await dbService.upsertCycles(cycles);
-                results.totalCycles = cycles.length;
-                results.newCycles = cycles.length; // Note: First run will show all as new
-                console.log(`✅ Stored ${cycles.length} cycles processed (upsert handles duplicates)`);
+                results.newCycles = cycles.length;
+                console.log(`✅ Stored ${cycles.length} cycles (note: upsert doesn't track duplicates for cycles)`);
             }
 
             // Phase 2: Use recovery data to find and fetch any missing cycles
@@ -302,7 +205,6 @@ export async function POST(request: NextRequest) {
                         try {
                             const cycle = await whoopClient.getCycleById(cycleId);
                             await dbService.upsertCycles([cycle]);
-                            results.totalCycles++;
                             results.newCycles++;
                             successCount++;
                             success = true;
@@ -368,9 +270,8 @@ export async function POST(request: NextRequest) {
                     });
                 
                 await dbService.upsertSleeps(sleepData);
-                results.totalSleep = sleepData.length;
-                results.newSleep = sleepData.length; // Note: First run will show all as new
-                console.log(`✅ Stored ${sleepData.length} sleep records processed (upsert handles duplicates)`);
+                results.newSleep = sleepData.length;
+                console.log(`✅ Stored ${sleepData.length} sleep records (note: upsert doesn't track duplicates for sleep)`);
             } else {
                 console.log('ℹ️ No sleep data found for the specified date range');
             }
@@ -390,8 +291,7 @@ export async function POST(request: NextRequest) {
                 if (sleepData.length > 0) {
                     console.log(`📦 Retry retrieved ${sleepData.length} sleep records`);
                     await dbService.upsertSleeps(sleepData);
-                    results.totalSleep = sleepData.length;
-                    results.newSleep = sleepData.length; // Note: Retry showing total processed
+                    results.newSleep = sleepData.length;
                     console.log(`✅ Retry successful: Stored ${sleepData.length} sleep records`);
                 }
             } catch (retryError) {
@@ -444,8 +344,7 @@ export async function POST(request: NextRequest) {
                 const noScore = workouts.filter(w => !w.score);
 
                 await dbService.upsertWorkouts(workouts);
-                results.totalWorkouts = workouts.length;
-                results.newWorkouts = workouts.length; // Note: First run will show all as new
+                results.newWorkouts = workouts.length;
 
                 console.log(`✅ Stored ${workouts.length} workout records:`);
                 console.log(`   - ${complete.length} with complete data`);
@@ -471,15 +370,15 @@ export async function POST(request: NextRequest) {
         }
 
         // Final summary with clear totals
-        const totalRecords = results.totalRecovery + results.totalCycles + results.totalSleep + results.totalWorkouts;
+        const totalRecords = results.newCycles + results.newSleep + results.newRecovery + results.newWorkouts;
 
         console.log(`\n🎉 HISTORICAL COLLECTION COMPLETE!`);
         console.log(`======================================`);
         console.log(`📈 Data Summary:`);
-        console.log(`   • Recovery Records: ${results.totalRecovery} processed`);
-        console.log(`   • Cycle Records: ${results.totalCycles} processed`);
-        console.log(`   • Sleep Records: ${results.totalSleep} processed`);
-        console.log(`   • Workout Records: ${results.totalWorkouts} processed`);
+        console.log(`   • Recovery Records: ${results.newRecovery} processed`);
+        console.log(`   • Cycle Records: ${results.newCycles} processed`);
+        console.log(`   • Sleep Records: ${results.newSleep} processed`);
+        console.log(`   • Workout Records: ${results.newWorkouts} processed`);
         console.log(`======================================`);
         console.log(`📊 Total Records: ${totalRecords}`);
         
@@ -624,12 +523,6 @@ export async function POST(request: NextRequest) {
                 totalRecords,
                 errorCount: results.errors.length,
                 recordsByType: {
-                    cycles: results.totalCycles,
-                    sleep: results.totalSleep,
-                    recovery: results.totalRecovery,
-                    workouts: results.totalWorkouts
-                },
-                newRecordsByType: {
                     cycles: results.newCycles,
                     sleep: results.newSleep,
                     recovery: results.newRecovery,

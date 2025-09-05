@@ -6,29 +6,122 @@ import type {
     WhoopRecovery,
     WhoopWorkout
 } from '@/types/whoop';
+import type { WhoopTokens } from '@/lib/services/token-refresh-service';
 
 export class WhoopDatabaseService {
     // User operations
-    async upsertUser(user: WhoopProfile): Promise<void> {
+    async upsertUser(user: WhoopProfile, db = sql): Promise<void> {
         const userId = parseInt(user.user_id, 10);
-        await sql`
-            INSERT INTO whoop_users (id, email, first_name, last_name)
-            VALUES (${userId}, ${user.email}, ${user.first_name}, ${user.last_name})
+        await db`
+            INSERT INTO whoop_users (id, email, first_name, last_name, updated_at)
+            VALUES (${userId}, ${user.email}, ${user.first_name}, ${user.last_name}, NOW())
             ON CONFLICT (id)
             DO UPDATE SET
                 email = EXCLUDED.email,
                 first_name = EXCLUDED.first_name,
-                last_name = EXCLUDED.last_name;
+                last_name = EXCLUDED.last_name,
+                updated_at = NOW();
         `;
     }
 
+    // User operations with tokens
+    async upsertUserWithTokens(user: WhoopProfile, tokens?: WhoopTokens, db = sql): Promise<void> {
+        const userId = parseInt(user.user_id, 10);
+        
+        if (tokens) {
+            await db`
+                INSERT INTO whoop_users (
+                    id, email, first_name, last_name, 
+                    access_token, refresh_token, token_expires_at, updated_at
+                )
+                VALUES (
+                    ${userId}, ${user.email}, ${user.first_name}, ${user.last_name},
+                    ${tokens.accessToken}, ${tokens.refreshToken}, ${tokens.expiresAt.toISOString()}, NOW()
+                )
+                ON CONFLICT (id)
+                DO UPDATE SET
+                    email = EXCLUDED.email,
+                    first_name = EXCLUDED.first_name,
+                    last_name = EXCLUDED.last_name,
+                    access_token = EXCLUDED.access_token,
+                    refresh_token = EXCLUDED.refresh_token,
+                    token_expires_at = EXCLUDED.token_expires_at,
+                    updated_at = NOW();
+            `;
+        } else {
+            // Just update user info, preserve existing tokens
+            await this.upsertUser(user, db);
+        }
+    }
+
+    // Update tokens only (without profile requirement)
+    async updateUserTokens(userId: number, tokens: WhoopTokens, db = sql): Promise<void> {
+        await db`
+            UPDATE whoop_users 
+            SET 
+                access_token = ${tokens.accessToken},
+                refresh_token = ${tokens.refreshToken},
+                token_expires_at = ${tokens.expiresAt.toISOString()},
+                updated_at = NOW()
+            WHERE id = ${userId}
+        `;
+    }
+
+    // Get user tokens
+    async getUserTokens(userId: number, db = sql): Promise<WhoopTokens | null> {
+        const result = await db`
+            SELECT access_token, refresh_token, token_expires_at
+            FROM whoop_users 
+            WHERE id = ${userId} AND refresh_token IS NOT NULL
+        `;
+
+        if (result.rows.length === 0 || !result.rows[0].access_token) {
+            return null;
+        }
+
+        const row = result.rows[0];
+        return {
+            accessToken: row.access_token,
+            refreshToken: row.refresh_token,
+            expiresAt: new Date(row.token_expires_at),
+        };
+    }
+
+    // Get all users with tokens (for cron jobs) - use after token refresh
+    async getAllUsersWithTokens(db = sql): Promise<Array<{ 
+        id: number; 
+        email: string; 
+        first_name: string; 
+        last_name: string;
+        access_token?: string;
+        refresh_token?: string;
+        token_expires_at?: Date;
+    }>> {
+        const result = await db`
+            SELECT id, email, first_name, last_name, access_token, refresh_token, token_expires_at
+            FROM whoop_users 
+            WHERE refresh_token IS NOT NULL
+            ORDER BY id
+        `;
+
+        return result.rows.map(row => ({
+            id: row.id,
+            email: row.email,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            access_token: row.access_token,
+            refresh_token: row.refresh_token,
+            token_expires_at: row.token_expires_at ? new Date(row.token_expires_at) : undefined,
+        }));
+    }
+
     // Cycle operations
-    async upsertCycle(cycle: WhoopCycle): Promise<void> {
+    async upsertCycle(cycle: WhoopCycle, db = sql): Promise<void> {
         if (!cycle.score) {
             console.warn(`Skipping cycle ${cycle.id} due to missing score data.`);
             return;
         }
-        await sql`
+        await db`
             INSERT INTO whoop_cycles (
                 id, user_id, start_time, end_time, timezone_offset,
                 score_state, strain, kilojoule, average_heart_rate, max_heart_rate
@@ -52,11 +145,11 @@ export class WhoopDatabaseService {
     }
 
     // Sleep operations
-    async upsertSleep(sleep: WhoopSleep, cycleId?: number): Promise<void> {
+    async upsertSleep(sleep: WhoopSleep, cycleId?: number, db = sql): Promise<void> {
         const hasScore = sleep.score && sleep.score_state === 'SCORED';
         const stageSum = hasScore && sleep.score ? sleep.score.stage_summary : null;
 
-        await sql`
+        await db`
             INSERT INTO whoop_sleep (
                 id, activity_v1_id, user_id, cycle_id, start_time, end_time, timezone_offset,
                 nap, score_state, sleep_performance_percentage, respiratory_rate,
@@ -101,12 +194,12 @@ export class WhoopDatabaseService {
     }
 
     // Recovery operations
-    async upsertRecovery(recovery: WhoopRecovery): Promise<void> {
+    async upsertRecovery(recovery: WhoopRecovery, db = sql): Promise<void> {
         if (!recovery.score) {
             console.warn(`Skipping recovery for cycle ${recovery.cycle_id} - no score data`);
             return;
         }
-        await sql`
+        await db`
             INSERT INTO whoop_recovery (
                 cycle_id, sleep_id, user_id, score_state, recovery_score,
                 resting_heart_rate, hrv_rmssd_milli, spo2_percentage, skin_temp_celsius
@@ -130,8 +223,8 @@ export class WhoopDatabaseService {
     }
 
     // Workout operations
-    async upsertWorkout(workout: WhoopWorkout): Promise<void> {
-        await sql`
+    async upsertWorkout(workout: WhoopWorkout, db = sql): Promise<void> {
+        await db`
             INSERT INTO whoop_workouts (
                 id, activity_v1_id, user_id, start_time, end_time, timezone_offset, sport_id, sport_name,
                 score_state, strain, average_heart_rate, max_heart_rate, kilojoule,
@@ -176,86 +269,54 @@ export class WhoopDatabaseService {
     // Bulk operations for efficiency using transactions
     async upsertSleeps(sleeps: WhoopSleep[], cycleMap?: Map<string, number>): Promise<void> {
         if (sleeps.length === 0) return;
-        const db = await sql.connect();
-        try {
-            await db.query('BEGIN');
-            await Promise.all(sleeps.map(sleep => {
-                // Try to find cycle_id from the map if provided
-                const cycleId = cycleMap?.get(sleep.id);
-                return this.upsertSleep(sleep, cycleId);
-            }));
-            await db.query('COMMIT');
-        } catch (error) {
-            await db.query('ROLLBACK');
-            throw error;
-        } finally {
-            db.release();
+        // Process each sleep individually to avoid transaction complexity
+        for (const sleep of sleeps) {
+            // Try to find cycle_id from the map if provided
+            const cycleId = cycleMap?.get(sleep.id);
+            await this.upsertSleep(sleep, cycleId);
         }
     }
 
     async upsertCycles(cycles: WhoopCycle[]): Promise<void> {
         if (cycles.length === 0) return;
-        const db = await sql.connect();
-        try {
-            await db.query('BEGIN');
-            await Promise.all(cycles.map(cycle => this.upsertCycle(cycle)));
-            await db.query('COMMIT');
-        } catch (error) {
-            await db.query('ROLLBACK');
-            throw error;
-        } finally {
-            db.release();
+        // Process each cycle individually to avoid transaction complexity
+        for (const cycle of cycles) {
+            await this.upsertCycle(cycle);
         }
     }
 
     async upsertRecoveries(recoveries: WhoopRecovery[]): Promise<{ newRecoveryCount: number; errors: string[] }> {
         if (recoveries.length === 0) return { newRecoveryCount: 0, errors: [] };
-
-        const db = await sql.connect();
+        
+        let newCount = 0;
         const errors: string[] = [];
-        let newRecoveryCount = 0;
-
-        try {
-            await db.query('BEGIN');
-            for (const recovery of recoveries) {
-                try {
-                    await this.upsertRecovery(recovery);
-                    newRecoveryCount++;
-                } catch (error) {
-                    // This catches foreign key constraint errors if sleep_id doesn't exist
-                    const errorMessage = `Recovery for cycle ${recovery.cycle_id} failed, likely references a missing sleep_id: ${recovery.sleep_id}`;
-                    errors.push(errorMessage);
-                }
+        
+        // Process each recovery individually to avoid transaction complexity
+        for (const recovery of recoveries) {
+            try {
+                await this.upsertRecovery(recovery);
+                newCount++;
+            } catch (error) {
+                const errorMsg = `Recovery for cycle ${recovery.cycle_id} failed, likely references a missing sleep_id: ${recovery.sleep_id}`;
+                errors.push(errorMsg);
+                console.warn(errorMsg);
             }
-            await db.query('COMMIT');
-        } catch (error) {
-            await db.query('ROLLBACK');
-            // Add a general error message if the whole transaction fails
-            errors.push(`Database transaction failed: ${error instanceof Error ? error.message : String(error)}`);
-        } finally {
-            db.release();
         }
-        return { newRecoveryCount, errors };
+        
+        return { newRecoveryCount: newCount, errors };
     }
 
     async upsertWorkouts(workouts: WhoopWorkout[]): Promise<void> {
         if (workouts.length === 0) return;
-        const db = await sql.connect();
-        try {
-            await db.query('BEGIN');
-            await Promise.all(workouts.map(workout => this.upsertWorkout(workout)));
-            await db.query('COMMIT');
-        } catch (error) {
-            await db.query('ROLLBACK');
-            throw error;
-        } finally {
-            db.release();
+        // Process each workout individually to avoid transaction complexity
+        for (const workout of workouts) {
+            await this.upsertWorkout(workout);
         }
     }
 
     // Get latest data timestamps for incremental sync
-    async getLatestCycleDate(userId: number): Promise<Date | null> {
-        const result = await sql`
+    async getLatestCycleDate(userId: number, db = sql): Promise<Date | null> {
+        const result = await db`
             SELECT MAX(end_time) as latest_date
             FROM whoop_cycles
             WHERE user_id = ${userId};
@@ -263,8 +324,8 @@ export class WhoopDatabaseService {
         return result.rows[0]?.latest_date ? new Date(result.rows[0].latest_date) : null;
     }
 
-    async getLatestWorkoutDate(userId: number): Promise<Date | null> {
-        const result = await sql`
+    async getLatestWorkoutDate(userId: number, db = sql): Promise<Date | null> {
+        const result = await db`
             SELECT MAX(end_time) as latest_date
             FROM whoop_workouts
             WHERE user_id = ${userId};

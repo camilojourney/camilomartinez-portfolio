@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import LiquidPage from '@/components/shared/liquid-page';
 
+
 interface CollectionStats {
     user?: any;
     newCycles?: number;
@@ -41,8 +42,10 @@ export default function WhoopDashboard() {
     // Check session status
     const checkSessionStatus = async () => {
         try {
+            console.log('🔍 Checking session status...');
             const response = await fetch('/api/debug-session');
             const status = await response.json();
+            console.log('Session debug response:', status);
             setSessionStatus(status);
         } catch (error) {
             console.error('Failed to check session status:', error);
@@ -65,6 +68,7 @@ export default function WhoopDashboard() {
         if (session) {
             getDebugInfo();
             getSyncStatus();
+            checkSessionStatus(); // Add session status check
             const interval = setInterval(() => {
                 getDebugInfo();
                 getSyncStatus();
@@ -78,7 +82,12 @@ export default function WhoopDashboard() {
         setHistoricalResult(null);
 
         try {
-            const response = await fetch('/api/whoop-collector-v2', {
+            console.log('🚀 Starting historical collection...');
+            console.log('Session status:', !!session);
+            console.log('User info:', session?.user);
+            
+            // Use the admin endpoint that handles CRON_SECRET internally
+            const response = await fetch('/api/actions/historical-fetch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -86,12 +95,20 @@ export default function WhoopDashboard() {
                 })
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+            
             const result = await response.json();
-            setHistoricalResult(result);
+            console.log('API Response:', result);
+            
+            // Extract the actual data from the wrapper response
+            const actualResult = result?.data || result;
+            setHistoricalResult(actualResult);
 
             // Refresh debug info after collection
             setTimeout(getDebugInfo, 2000);
         } catch (error) {
+            console.error('Historical collection error:', error);
             setHistoricalResult({
                 errors: ['Failed to run historical collection: ' + (error instanceof Error ? error.message : 'Unknown error')]
             });
@@ -105,16 +122,10 @@ export default function WhoopDashboard() {
         setDailyResult(null);
 
         try {
-            const response = await fetch('/api/cron/daily-data-fetch', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-cron-secret': 'cron_secure_whoop_daily_fetch_2024_v2',
-                },
-            });
+            const response = await fetch('/api/actions/daily-fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
 
             const result = await response.json();
-            setDailyResult(result);
+            setDailyResult(result?.data || result);
 
             // Refresh debug info after collection
             setTimeout(getDebugInfo, 2000);
@@ -320,7 +331,12 @@ export default function WhoopDashboard() {
                                 </p>
 
                                 <button
-                                    onClick={runHistoricalCollection}
+                                    onClick={(e) => {
+                                        console.log('🖱️ Button clicked!', e);
+                                        console.log('Loading state:', loading.historical);
+                                        console.log('Session exists:', !!session);
+                                        runHistoricalCollection();
+                                    }}
                                     disabled={loading.historical}
                                     className="w-full group liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 text-white font-medium py-4 px-6 rounded-2xl hover:from-blue-400/30 hover:to-cyan-400/30 hover:border-blue-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                 >
@@ -339,6 +355,14 @@ export default function WhoopDashboard() {
                                     )}
                                 </button>
 
+                                {/* Debug button */}
+                                <button
+                                    onClick={checkSessionStatus}
+                                    className="w-full mt-3 liquid-glass-secondary backdrop-blur-xl bg-white/[0.04] border border-white/[0.15] text-white/90 font-medium py-2 px-4 rounded-xl hover:bg-white/[0.08] hover:border-white/[0.25] hover:text-white transition-all duration-300"
+                                >
+                                    🔍 Test Connection
+                                </button>
+
                                 {historicalResult && (
                                     <div className="mt-6 p-6 backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl">
                                         <h3 className="font-medium text-white mb-4">Historical Collection Results:</h3>
@@ -347,19 +371,19 @@ export default function WhoopDashboard() {
                                         <div className="text-green-400 space-y-3 font-light mb-6">
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Cycles: {historicalResult.newCycles || 0}
+                                                Cycles: {historicalResult.totalCycles || historicalResult.newCycles || 0} processed
                                             </p>
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Sleep Records: {historicalResult.newSleep || 0}
+                                                Sleep Records: {historicalResult.totalSleep || historicalResult.newSleep || 0} processed
                                             </p>
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Recovery Records: {historicalResult.newRecovery || 0}
+                                                Recovery Records: {historicalResult.totalRecovery || historicalResult.newRecovery || 0} processed
                                             </p>
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Workouts: {historicalResult.newWorkouts || 0}
+                                                Workouts: {historicalResult.totalWorkouts || historicalResult.newWorkouts || 0} processed
                                             </p>
                                         </div>
 
@@ -418,19 +442,19 @@ export default function WhoopDashboard() {
                                         <div className="text-green-400 space-y-3 font-light mb-6">
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Cycles: {dailyResult.newCycles || 0}
+                                                Cycles: {dailyResult.totalCycles || dailyResult.newCycles || 0} processed
                                             </p>
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Sleep Records: {dailyResult.newSleep || 0}
+                                                Sleep Records: {dailyResult.totalSleep || dailyResult.newSleep || 0} processed
                                             </p>
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Recovery Records: {dailyResult.newRecovery || 0}
+                                                Recovery Records: {dailyResult.totalRecovery || dailyResult.newRecovery || 0} processed
                                             </p>
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                                                New Workouts: {dailyResult.newWorkouts || 0}
+                                                Workouts: {dailyResult.totalWorkouts || dailyResult.newWorkouts || 0} processed
                                             </p>
                                         </div>
 
