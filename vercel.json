@@ -2,11 +2,11 @@
   "crons": [
     { 
       "path": "/api/cron/daily-data-fetch?secret=REDACTED_CRON_SECRET", 
-      "schedule": "0 3 * * *"
+      "schedule": "0 15 * * *"
     },
     {
       "path": "/api/cron/strava-sync?secret=REDACTED_CRON_SECRET",
-      "schedule": "15 3 * * *"
+      "schedule": "15 15 * * *"
     }
   ],
   "redirects": [
