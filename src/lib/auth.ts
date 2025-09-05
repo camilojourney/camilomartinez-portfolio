@@ -57,7 +57,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         signIn: '/signin',
     },
     callbacks: {
-        async jwt({ token, account, profile, trigger }) {
+        async jwt({ token, account, profile, trigger }): Promise<any> {
             // Initial sign in - store tokens in database
             if (account) {
                 console.log('🔐 Initial sign in - storing tokens in database and session');
