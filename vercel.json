@@ -2,13 +2,11 @@
   "crons": [
     { 
       "path": "/api/cron/daily-data-fetch?secret=REDACTED_CRON_SECRET", 
-      "schedule": "0 3 * * *",
-      "comment": "Daily WHOOP data fetch with token refresh at 3 AM UTC"
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/cron/strava-sync?secret=REDACTED_CRON_SECRET",
-      "schedule": "15 3 * * *",
-      "comment": "Daily Strava sync at 3:15 AM UTC"
+      "schedule": "15 3 * * *"
     }
   ],
   "redirects": [
