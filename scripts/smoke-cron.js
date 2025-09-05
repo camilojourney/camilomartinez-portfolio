@@ -3,7 +3,7 @@
 
 const fs = require('fs')
 
-const BASE = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+const BASE = process.env.NEXTAUTH_URL || 'https://www.camilomartinez.co'
 let SECRET = process.env.CRON_SECRET
 
 // Best-effort load from .env if not set
