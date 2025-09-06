@@ -199,13 +199,18 @@ async function processUserData(userId: number, accessToken: string, dbService: W
         Workouts: ${workoutRecords.length} fetched → ${filteredWorkouts.length} filtered
     `);
 
-    // Store the filtered data and get actual insert counts
-    const [, , recoveryResult, ] = await Promise.all([
-        dbService.upsertCycles(filteredCycles),
-        dbService.upsertSleeps(filteredSleep),
-        dbService.upsertRecoveries(filteredRecovery),
-        dbService.upsertWorkouts(filteredWorkouts)
-    ]);
+    // Store the filtered data SEQUENTIALLY to respect foreign key dependencies
+    // 1. Insert cycles first (no dependencies)
+    await dbService.upsertCycles(filteredCycles);
+    
+    // 2. Insert sleep data (recovery depends on this)
+    await dbService.upsertSleeps(filteredSleep);
+    
+    // 3. Insert workouts (no dependencies)  
+    await dbService.upsertWorkouts(filteredWorkouts);
+    
+    // 4. Insert recovery LAST (depends on sleep_id being available)
+    const recoveryResult = await dbService.upsertRecoveries(filteredRecovery);
 
     const actualResults = {
         newCycles: filteredCycles.length,
