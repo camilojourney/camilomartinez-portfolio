@@ -143,23 +143,38 @@ async function processUserData(userId: number, accessToken: string, dbService: W
         newWorkouts: 0
     };
 
-    // Set up date range: from start of 2 days ago until end of yesterday
+    // Set up date range: ONLY fetch prior 2 complete days (exclude today to avoid incomplete data)
     const now = new Date();
-    const startTwoDaysAgo = new Date(now);
-    startTwoDaysAgo.setDate(now.getDate() - 2);
-    startTwoDaysAgo.setHours(0, 0, 0, 0);
-
-    const endOfYesterday = new Date(now);
-    endOfYesterday.setDate(now.getDate() - 1);
+    
+    // Yesterday (complete day): start of yesterday to end of yesterday
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const startOfYesterday = new Date(yesterday);
+    startOfYesterday.setHours(0, 0, 0, 0);
+    const endOfYesterday = new Date(yesterday);
     endOfYesterday.setHours(23, 59, 59, 999);
+    
+    // Day before yesterday (complete day): 2 days ago full day
+    const dayBeforeYesterday = new Date(now);
+    dayBeforeYesterday.setDate(now.getDate() - 2);
+    const startOfDayBeforeYesterday = new Date(dayBeforeYesterday);
+    startOfDayBeforeYesterday.setHours(0, 0, 0, 0);
+    
+    // Fetch range: from start of 2 days ago to end of yesterday (excludes today)
+    const fetchStartDate = startOfDayBeforeYesterday;
+    const fetchEndDate = endOfYesterday;
 
-    console.log(`[DAILY-FETCH] User ${userId}: Collecting data from ${startTwoDaysAgo.toISOString()} to ${endOfYesterday.toISOString()}`);
+    console.log(`[DAILY-FETCH] User ${userId}: Fetching COMPLETE data only`);
+    console.log(`[DAILY-FETCH] Date range: ${fetchStartDate.toISOString()} to ${fetchEndDate.toISOString()}`);
+    console.log(`[DAILY-FETCH] Day before yesterday: ${dayBeforeYesterday.toDateString()}`);
+    console.log(`[DAILY-FETCH] Yesterday: ${yesterday.toDateString()}`);
+    console.log(`[DAILY-FETCH] Today (${now.toDateString()}) is EXCLUDED to avoid incomplete data`);
 
-    // First, get all data in parallel for the date range
+    // First, get all data in parallel for the date range (2 complete prior days only)
     const [recoveryRecords, sleepRecords, workoutRecords] = await Promise.all([
-        whoopClient.getAllRecovery(startTwoDaysAgo.toISOString()),
-        whoopClient.getAllSleep(startTwoDaysAgo.toISOString()),
-        whoopClient.getAllWorkouts(startTwoDaysAgo.toISOString())
+        whoopClient.getAllRecovery(fetchStartDate.toISOString()),
+        whoopClient.getAllSleep(fetchStartDate.toISOString()),
+        whoopClient.getAllWorkouts(fetchStartDate.toISOString())
     ]);
 
     // Extract cycle IDs from recovery records and fetch cycle data
@@ -168,27 +183,29 @@ async function processUserData(userId: number, accessToken: string, dbService: W
         uniqueCycleIds.map(id => whoopClient.getCycleById(id).catch(() => null))
     )).filter((c: any): c is Exclude<typeof c, null> => c !== null);
 
-    // Filter data for completed records within our date range
+    // Filter data for COMPLETED records within our 2-day range (must have end times)
     const filteredCycles = cycleData.filter((cycle: { end: string }) => {
+        if (!cycle.end) return false; // Skip cycles without end time
         const endDate = new Date(cycle.end);
-        return endDate <= endOfYesterday;
+        return endDate >= fetchStartDate && endDate <= fetchEndDate;
     });
 
     const filteredSleep = sleepRecords.filter(item => {
-        if (!item.end) return false;
+        if (!item.end) return false; // Skip sleep without end time  
         const endDate = new Date(item.end);
-        return endDate <= endOfYesterday;
+        return endDate >= fetchStartDate && endDate <= fetchEndDate;
     });
 
     const filteredRecovery = recoveryRecords.filter(item => {
+        if (!item.created_at) return false; // Skip recovery without created_at
         const date = new Date(item.created_at);
-        return date >= startTwoDaysAgo && date <= endOfYesterday;
+        return date >= fetchStartDate && date <= fetchEndDate;
     });
 
     const filteredWorkouts = workoutRecords.filter(item => {
-        if (!item.end) return false;
+        if (!item.end) return false; // Skip workouts without end time
         const endDate = new Date(item.end);
-        return endDate <= endOfYesterday;
+        return endDate >= fetchStartDate && endDate <= fetchEndDate;
     });
 
     // Detailed logging of what's being filtered
