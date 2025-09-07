@@ -2,6 +2,10 @@
 
 A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system with automated WHOOP fitness data integration.
 
+## 📚 **Complete API Documentation**
+
+📖 **[View Full API Documentation](./API-DOCUMENTATION.md)** - Comprehensive guide to all 12+ endpoints including authentication, parameters, examples, and testing commands.
+
 ## 🏃‍♂️ WHOOP Integration & Automated Data Collection
 
 This portfolio features a sophisticated WHOOP fitness data integration system that automatically collects and displays real-time training data with both automated maintenance and manual control capabilities.
