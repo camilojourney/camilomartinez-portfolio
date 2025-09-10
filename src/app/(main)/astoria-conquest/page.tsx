@@ -5,7 +5,9 @@
  */
 
 import { Metadata } from 'next';
-import LiquidPage from '@/components/shared/liquid-page';
+import LiquidNav from '@/components/shared/liquid-nav';
+import AstoriaBaseMap from '@/components/features/astoria-conquest/AstoriaBaseMap';
+import AstoriaConquestDemo from '@/components/features/astoria-conquest/AstoriaConquestDemo';
 // import { AstoriaRunMap } from '@/components/features/astoria-conquest/AstoriaRunMap';
 // import { ProgressDashboard } from '@/components/features/astoria-conquest/ProgressDashboard';
 import { AstoriaTrackerData } from '@/types/strava';
@@ -48,19 +50,31 @@ export default async function AstoriaConquestPage() {
   // If data fetch failed, show error state with sample data
   if (!data) {
     return (
-      <LiquidPage>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-          <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen relative overflow-hidden">
+        <LiquidNav currentPage="projects" />
+        {/* Animated Background */}
+        <div className="fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
+          <div className="absolute top-0 left-0 w-full h-full opacity-20">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
+          <div className="max-w-7xl mx-auto">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-light text-white mb-4">
-                🗺️ Astoria Conquest
+              <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight flex items-center justify-center gap-3">
+                <span>🗺️</span>
+                Astoria Conquest
               </h1>
-              <p className="text-xl text-white/70 max-w-2xl mx-auto">
+              <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
                 Running every street in Astoria, Queens
               </p>
             </div>
             
-            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 text-center">
+            <div className="backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-500 p-8 text-center">
               <h2 className="text-2xl font-light text-white mb-4">
                 🚧 Setting up the conquest...
               </h2>
@@ -87,23 +101,34 @@ export default async function AstoriaConquestPage() {
             </div>
           </div>
         </div>
-      </LiquidPage>
+      </div>
     );
   }
 
   return (
-    <LiquidPage>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen relative overflow-hidden">
+      <LiquidNav currentPage="projects" />
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
+        <div className="absolute top-0 left-0 w-full h-full opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
+        <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-light text-white mb-4 flex items-center justify-center gap-3">
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight flex items-center justify-center gap-3">
               <span>🗺️</span>
               Astoria Conquest
             </h1>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-6">
+            <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed mb-6">
               An ambitious quest to run every street in Astoria, Queens. 
-              Real-time progress tracking powered by Strava and geospatial analysis.
+              Real-time progress tracking powered by <span className="text-cyan-400 font-semibold">Strava</span> and <span className="text-blue-400 font-semibold">geospatial analysis</span>.
             </p>
             
             {/* Quick Stats Banner */}
@@ -132,88 +157,114 @@ export default async function AstoriaConquestPage() {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Map Section - Takes up 3 columns on large screens */}
-            <div className="lg:col-span-3">
-              <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-light text-white">
-                    Interactive Progress Map
-                  </h2>
-                  <div className="flex items-center gap-4 text-sm text-white/60">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span>Completed</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <span>Partial</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                      <span>Unvisited</span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* <AstoriaRunMap 
-                  allStreetsData={data.allStreetsGeoJSON}
-                  runData={data.runGeometriesGeoJSON}
-                /> */}
-                <div className="h-96 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="text-4xl mb-4">🗺️</div>
-                    <h3 className="text-xl font-medium mb-2">Interactive Map Coming Soon</h3>
-                    <p className="text-white/70">
-                      Map component will display Astoria streets with completion status
-                    </p>
-                  </div>
-                </div>
+          <div className="space-y-8">
+            {/* Interactive Demo Section */}
+            <AstoriaConquestDemo />
+          </div>
+
+          {/* Research & Analysis Section */}
+          <div className="mt-12">
+            <div className="backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-500 p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-medium text-white mb-4 flex items-center justify-center gap-3">
+                  <span>📊</span>
+                  Research & Methodology
+                </h3>
+                <p className="text-white/70 max-w-3xl mx-auto">
+                  Dive deep into the technical analysis, algorithms, and data science methodology 
+                  that powers this project. View the complete research process from data collection to route optimization.
+                </p>
               </div>
-            </div>
 
-            {/* Stats Sidebar - Takes up 1 column */}
-            <div className="lg:col-span-1">
-              {/* <ProgressDashboard stats={data.stats} /> */}
-              <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-6">
-                <h2 className="text-xl font-light text-white mb-6">
-                  📊 Progress Dashboard
-                </h2>
-                <div className="space-y-6">
-                  <div>
-                    <div className="text-3xl font-bold text-green-400 mb-1">
-                      {data.stats.completionPercentage.toFixed(1)}%
-                    </div>
-                    <div className="text-white/70 text-sm">Overall Progress</div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-xl font-semibold text-blue-400">
-                        {data.stats.completedStreets}
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Research Process */}
+                <div>
+                  <h4 className="text-lg font-medium text-white mb-4">🔬 Research Process</h4>
+                  <div className="space-y-3 text-sm text-white/80">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-blue-500/20 border border-blue-400/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-300 text-xs font-bold">1</span>
                       </div>
-                      <div className="text-white/60 text-xs">Completed</div>
-                    </div>
-                    <div>
-                      <div className="text-xl font-semibold text-gray-400">
-                        {data.stats.unvisitedStreets}
+                      <div>
+                        <strong>Data Collection & Processing</strong>
+                        <p className="text-white/60 text-xs mt-1">NYC street network analysis, Strava API integration</p>
                       </div>
-                      <div className="text-white/60 text-xs">Remaining</div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-purple-500/20 border border-purple-400/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-purple-300 text-xs font-bold">2</span>
+                      </div>
+                      <div>
+                        <strong>Graph Theory Application</strong>
+                        <p className="text-white/60 text-xs mt-1">Network optimization and route planning algorithms</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-green-500/20 border border-green-400/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-green-300 text-xs font-bold">3</span>
+                      </div>
+                      <div>
+                        <strong>Geospatial Analysis</strong>
+                        <p className="text-white/60 text-xs mt-1">PostGIS spatial operations and coverage calculations</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-orange-500/20 border border-orange-400/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-orange-300 text-xs font-bold">4</span>
+                      </div>
+                      <div>
+                        <strong>Optimization & Validation</strong>
+                        <p className="text-white/60 text-xs mt-1">Algorithm testing and real-world validation</p>
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <div>
-                    <div className="text-lg font-semibold text-purple-400">
-                      {(data.stats.completedDistanceMeters / 1609.34).toFixed(1)} mi
+                {/* Technical Report */}
+                <div>
+                  <h4 className="text-lg font-medium text-white mb-4">📋 Technical Analysis</h4>
+                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-6">
+                    <div className="text-center mb-4">
+                      <div className="text-3xl mb-3">📄</div>
+                      <h5 className="text-white font-medium mb-2">Complete Research Report</h5>
+                      <p className="text-white/60 text-sm mb-4">
+                        View the full technical analysis including code, visualizations, 
+                        and detailed methodology used in this project.
+                      </p>
                     </div>
-                    <div className="text-white/60 text-xs">Distance Completed</div>
-                  </div>
+                    
+                    <div className="space-y-3 text-sm text-white/70 mb-6">
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span>Interactive data visualizations</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span>Complete code documentation</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span>Algorithm explanations</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span>
+                        <span>Performance analysis</span>
+                      </div>
+                    </div>
 
-                  <div>
-                    <div className="text-lg font-semibold text-orange-400">
-                      {data.stats.totalRunsCount}
-                    </div>
-                    <div className="text-white/60 text-xs">Total Runs</div>
+                    <a
+                      href="/routes_astoria.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-center py-3 px-4 rounded-xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <span>📊 View Complete Analysis</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </div>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -222,7 +273,7 @@ export default async function AstoriaConquestPage() {
 
           {/* Footer Info */}
           <div className="mt-12 text-center">
-            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-2xl p-6">
+            <div className="backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-500 p-6">
               <h3 className="text-lg font-medium text-white mb-3">
                 How it works
               </h3>
@@ -248,6 +299,6 @@ export default async function AstoriaConquestPage() {
           </div>
         </div>
       </div>
-    </LiquidPage>
+    </div>
   );
 }

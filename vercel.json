@@ -5,8 +5,8 @@
       "schedule": "0 15 * * *"
     },
     {
-      "path": "/api/cron/strava-sync?secret=REDACTED_CRON_SECRET",
-      "schedule": "15 15 * * *"
+      "path": "/api/cron/strava-weekly-sync?secret=cron_secure_strava_weekly_sync_2024",
+      "schedule": "0 13 * * 1"
     }
   ],
   "redirects": [

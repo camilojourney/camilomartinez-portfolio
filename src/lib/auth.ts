@@ -104,7 +104,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 return token;
             }
 
-            // Token has expired (or will soon), try to refresh it
+                        // Token has expired (or will soon), try to refresh it
             try {
                 console.log('🔄 Session token expired, refreshing via service...');
                 
@@ -134,7 +134,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 console.error('💥 Error refreshing session token:', error);
                 return {
                     ...token,
-                    error: 'RefreshAccessTokenError',
+                    error: "RefreshAccessTokenError",
                 };
             }
         },

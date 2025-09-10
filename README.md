@@ -2,9 +2,16 @@
 
 A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system with automated WHOOP fitness data integration.
 
-## 📚 **Complete API Documentation**
+## � **Quick Navigation**
 
-📖 **[View Full API Documentation](./API-DOCUMENTATION.md)** - Comprehensive guide to all 12+ endpoints including authentication, parameters, examples, and testing commands.
+- 📖 **[Complete API Documentation](./docs/API-DOCUMENTATION.md)** - All endpoints and integration guides
+- 📚 **[Project Documentation](./docs/)** - Specifications, guides, and references
+- 🛠️ **[Development Scripts](./scripts/)** - Tools and utilities
+- 🔬 **[Research & Analysis](./research/)** - Data science work and experiments
+
+## �📚 **Complete API Documentation**
+
+📖 **[View Full API Documentation](./docs/API-DOCUMENTATION.md)** - Comprehensive guide to all 12+ endpoints including authentication, parameters, examples, and testing commands.
 
 ## 🏃‍♂️ WHOOP Integration & Automated Data Collection
 
@@ -495,8 +502,11 @@ camilomartinez-portfolio/
 ├── .eslintrc.json           # ESLint config
 ├── .gitignore               # Git ignore rules
 ├── README.md                # Documentation
-├── WHOOP_V2.md             # WHOOP integration docs
-├── jsconfig.json            # JavaScript config
+├── docs/                    # Project documentation
+│   ├── API-DOCUMENTATION.md
+│   ├── ASTORIA_CONQUEST.md
+│   ├── STRAVA_INTEGRATION_COMPLETE.md
+│   └── WHOOP_V2.md
 ├── next-env.d.ts           # Next.js types
 ├── next.config.mjs          # Next.js config
 ├── package.json             # Dependencies
@@ -822,9 +832,21 @@ camilomartinez-portfolio/
 ├── .gitignore                 # Git ignore rules
 ├── .github/                   # GitHub configuration
 │   └── instructions/          # Development guidelines
+├── docs/                      # � Project documentation
+│   ├── API-DOCUMENTATION.md   # Complete API reference
+│   ├── ASTORIA_CONQUEST.md    # Project specifications
+│   ├── STRAVA_INTEGRATION_COMPLETE.md # Strava integration guide
+│   └── WHOOP_V2.md           # 🏃‍♂️ WHOOP API integration guide
 ├── README.md                  # 📖 This documentation file
-├── WHOOP_V2.md               # 🏃‍♂️ WHOOP API integration guide
-├── jsconfig.json             # JavaScript project configuration
+├── research/                  # 🔬 Research & data science work
+│   ├── archive/               # Archived development files
+│   ├── lab/                   # Jupyter notebooks & experiments
+│   └── projects_quarto/       # Quarto-based analysis
+├── scripts/                   # 🛠️ Development & maintenance tools
+│   ├── data/                  # Data processing scripts
+│   ├── db/                    # Database operations
+│   ├── dev/                   # Development utilities
+│   └── testing/               # Test & validation scripts
 ├── next-env.d.ts             # Next.js TypeScript environment types
 ├── package.json              # 📦 Project dependencies and scripts
 ├── pnpm-lock.yaml           # 🔒 Dependency version lock file

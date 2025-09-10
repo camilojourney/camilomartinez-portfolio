@@ -46,28 +46,16 @@ tmp/
 # Vercel
 .vercel/
 
-# TypeScript
-*.tsbuildinfo
-
-# Backup files
-.backup/
-.vercel
-.env*.local
-
-# .gitignore
-.env
-.env.*
-!.env.example   # keep a template (no secrets) in git
-
-# Quarto / Notebooks
-**/.ipynb_checkpoints/
-**/.quarto/
-**/_freeze/
-**/_site/
-backend/projects_quarto/astoria-conquest/_site/
-backend/projects_quarto/astoria-conquest/_freeze/
-backend/projects_quarto/astoria-conquest/generated_routes/
-
-# Notebook caches and heavy artifacts
-backend/lab/cache/
+# Python virtual environments
 .venv/
+__pycache__/
+*.pyc
+
+# Research artifacts
+research/lab/cache/
+research/**/.ipynb_checkpoints/
+research/**/.quarto/
+research/**/_freeze/
+research/**/_site/
+research/**/astoria_running_routes
+

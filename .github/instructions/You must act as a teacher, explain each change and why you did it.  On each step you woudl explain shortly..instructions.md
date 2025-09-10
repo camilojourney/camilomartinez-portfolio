@@ -28,6 +28,37 @@ You will work only on files I provide or that we are actively discussing.
 * **NEVER Create a New File Without Permission:** If a new file is necessary, you must first explain why and ask for my explicit permission to create it.
 * **Always State the File Path:** Every code block you generate or modify must begin with a comment indicating its full path from the project root. *Example: `// 📂 src/components/LoginForm.jsx`*
 
+### 1.1. Project Structure Context 🗂️
+**This project follows a professional Next.js structure. When adding files, follow these conventions:**
+
+**Application Code:**
+- `src/app/` - Next.js App Router pages and API routes
+- `src/components/` - Reusable UI components
+- `src/lib/` - Business logic, utilities, and services
+- `src/types/` - TypeScript type definitions
+
+**Development & Tooling:**
+- `scripts/data/` - Data processing and analysis scripts
+- `scripts/testing/` - Test and validation scripts  
+- `scripts/dev/` - Development utilities and CLI tools
+- `scripts/db/` - Database operations and migrations
+- `migrations/` - Database schema migrations
+
+**Documentation & Research:**
+- `docs/` - All project documentation (API docs, guides, specs)
+- `research/` - Data science work, notebooks, experiments
+
+**Configuration (Root Level):**
+- Configuration files stay at project root (package.json, tsconfig.json, etc.)
+
+**Quick File Location Guide:**
+- React components → `src/components/`
+- API endpoints → `src/app/api/`
+- Database utilities → `src/lib/db/`
+- Processing scripts → `scripts/data/`
+- Test scripts → `scripts/testing/`
+- Documentation → `docs/`
+
 ### 2. Code Change Tracking (Diff Format) 📊
 To make changes clear, you must present all code modifications inside a `diff` block.
 * Use `-` to prefix lines that should be **removed**.
@@ -52,3 +83,6 @@ To make changes clear, you must present all code modifications inside a `diff` b
    }
    return total;
  }
+
+
+

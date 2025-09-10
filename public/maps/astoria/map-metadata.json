@@ -1,0 +1,36 @@
+{
+  "generated_at": "2025-09-10T16:18:27.897008",
+  "coordinate_system": "EPSG:4326",
+  "bounds": {
+    "south": 40.752137244755446,
+    "west": -73.93785811888885,
+    "north": 40.790945493781926,
+    "east": -73.8877298822487
+  },
+  "center": {
+    "lat": 40.77154136926869,
+    "lng": -73.91279400056878
+  },
+  "reference_points": {
+    "home": {
+      "lat": 40.755124137014725,
+      "lng": -73.92649719348772
+    },
+    "gym": {
+      "lat": 40.762049034238565,
+      "lng": -73.92476009837436
+    }
+  },
+  "stats": {
+    "total_nodes": 645,
+    "total_edges": 2250,
+    "neighborhoods": [
+      "Astoria (Central)",
+      "Queensbridge-Ravenswood-Dutch Kills",
+      "Old Astoria-Hallets Point",
+      "Astoria (East)-Woodside (North)",
+      "Astoria (North)-Ditmars-Steinway",
+      "Astoria Park"
+    ]
+  }
+}
