@@ -1,12 +1,11 @@
 // 📂 src/app/api/astoria-conquest/route.ts
 /**
  * Main data endpoint for the Astoria Conquest feature
- * Provides GeoJSON data and statistics for the interactive map
+ * Provides basic run data and statistics
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAstoriaStreetsGeoJSON, getRunsGeoJSON, getAstoriaStats, getDatabaseHealth } from '@/lib/db/strava-database';
-import { AstoriaTrackerData } from '@/types/strava';
+import { getAllRuns, getSimpleStats } from '@/lib/db/strava-database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,85 +17,50 @@ export async function GET(request: NextRequest) {
     const skipStats = searchParams.get('skipStats') === 'true'; // Default to false
     
     // Fetch data in parallel for better performance
-    const [streetsGeoJSON, runsGeoJSON, stats] = await Promise.all([
-      getAstoriaStreetsGeoJSON(),
-      includeRuns ? getRunsGeoJSON() : Promise.resolve({ type: 'FeatureCollection' as const, features: [] }),
-      skipStats ? Promise.resolve(null) : getAstoriaStats()
+    const [runs, stats] = await Promise.all([
+      includeRuns ? getAllRuns() : Promise.resolve([]),
+      skipStats ? Promise.resolve(null) : getSimpleStats()
     ]);
 
     // Prepare response data
-    const response: AstoriaTrackerData = {
-      allStreetsGeoJSON: streetsGeoJSON,
-      runGeometriesGeoJSON: runsGeoJSON,
+    const response = {
+      runs: runs,
       stats: stats || {
-        totalStreets: 0,
-        completedStreets: 0,
-        partialStreets: 0,
-        unvisitedStreets: 0,
-        completionPercentage: 0,
-        totalDistanceMeters: 0,
-        completedDistanceMeters: 0,
-        remainingDistanceMeters: 0,
-        totalRunsCount: 0,
-        totalRunningTimeSeconds: 0,
-        averageRunDistanceMeters: 0,
-        streetsCompletedThisMonth: 0,
-        monthlyProgressPercentage: 0,
+        totalRuns: 0,
+        totalDistance: 0,
+        totalDuration: 0,
+        avgPace: 0,
+        lastRunDate: null,
+        runFrequency: 0
+      },
+      metadata: {
+        dataType: 'astoria-conquest',
+        generatedAt: new Date().toISOString(),
+        runCount: runs.length,
+        source: 'strava-database'
       }
     };
 
-    // Add metadata for debugging
-    const metadata = {
-      streetsCount: streetsGeoJSON.features.length,
-      runsCount: runsGeoJSON.features.length,
-      dataFetchedAt: new Date().toISOString(),
-      queryParams: {
-        includeRuns,
-        skipStats
+    console.log(`✅ Astoria data fetched: ${runs.length} runs, stats included: ${!skipStats}`);
+    
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600' // 5min cache, 10min stale
       }
-    };
-
-    console.log('✅ Astoria Conquest data fetched successfully:', metadata);
-
-    return NextResponse.json({
-      ...response,
-      _metadata: metadata
     });
 
   } catch (error) {
-    console.error('❌ Error fetching Astoria Conquest data:', error);
+    console.error('❌ Error fetching Astoria data:', error);
     
     return NextResponse.json({
-      error: 'Failed to fetch Astoria Conquest data',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      error: 'Failed to fetch Astoria data',
+      message: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
-    }, { status: 500 });
-  }
-}
-
-/**
- * POST endpoint for manual data refresh (requires authentication)
- */
-export async function POST(request: NextRequest) {
-  try {
-    // This could be used for manual data refresh or admin operations
-    // For now, just return the database health status
-    
-    const dbHealth = await getDatabaseHealth();
-    
-    return NextResponse.json({
-      message: 'Astoria Conquest data refresh endpoint',
-      databaseHealth: dbHealth,
-      note: 'Use GET /api/astoria-conquest for data retrieval',
-      refreshedAt: new Date().toISOString()
+    }, { 
+      status: 500,
+      headers: {
+        'Cache-Control': 'no-cache' // Don't cache errors
+      }
     });
-
-  } catch (error) {
-    console.error('❌ Error in Astoria Conquest POST endpoint:', error);
-    
-    return NextResponse.json({
-      error: 'Failed to process request',
-      message: error instanceof Error ? error.message : 'Unknown error occurred'
-    }, { status: 500 });
   }
 }

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   }
 };
 
-async function getAstoriaConquestData(): Promise<AstoriaTrackerData | null> {
+async function getAstoriaConquestData(): Promise<any | null> {
   try {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/astoria-conquest`, {
@@ -135,23 +135,23 @@ export default async function AstoriaConquestPage() {
             <div className="inline-flex items-center gap-6 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3 text-white">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-400">
-                  {data.stats.completionPercentage.toFixed(1)}%
+                  {data.stats?.totalRuns || 0}
                 </div>
-                <div className="text-xs text-white/60">Complete</div>
+                <div className="text-xs text-white/60">Total Runs</div>
               </div>
               <div className="w-px h-8 bg-white/20"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-400">
-                  {data.stats.completedStreets}
+                  {Math.round((data.stats?.totalDistance || 0) / 1609.34)}
                 </div>
-                <div className="text-xs text-white/60">Streets</div>
+                <div className="text-xs text-white/60">Miles</div>
               </div>
               <div className="w-px h-8 bg-white/20"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-400">
-                  {(data.stats.completedDistanceMeters / 1609.34).toFixed(1)}
+                  {data.runs?.length || 0}
                 </div>
-                <div className="text-xs text-white/60">Miles</div>
+                <div className="text-xs text-white/60">Activities</div>
               </div>
             </div>
           </div>
