@@ -3,7 +3,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db:setup": "node scripts/db/setup-astoria-database.sql",
+    "db:migrate": "node scripts/db/run-strava-migration.js",
+    "data:load-streets": "node scripts/data/load-astoria-streets.js",
+    "data:analyze-sleep": "node scripts/data/analyze-sleep-data.js",
+    "data:get-workouts": "node scripts/data/get-workout-data.js",
+    "test:db-schema": "node scripts/testing/check-database-schema.js",
+    "test:strava": "node scripts/testing/test-strava-integration.js",
+    "test:whoop": "node scripts/testing/test-token-status.js",
+    "dev:whoop-cli": "node scripts/dev/whoop-cli.js",
+    "check:strava": "node scripts/testing/check-strava-setup.js",
+    "check:recent-data": "node scripts/testing/check-recent-data.js"
   },
   "dependencies": {
     "@mapbox/polyline": "^1.2.1",
@@ -18,6 +29,7 @@
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.2",
     "framer-motion": "^12.23.12",
     "geist": "1.2.2",
     "lucide-react": "^0.542.0",
