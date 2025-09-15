@@ -203,10 +203,87 @@ export async function POST(request: NextRequest) {
         console.log(`🎯 Target: Complete historical dataset - showing ALL data retrieved`);
         console.log(`⏱️  Real-time progress will be shown below...`);
 
-        // 1. Get ALL recovery data first (needed for cycle relationship mapping)
+        // Phase 1: Get ALL cycles data FIRST (foundational data structure)
+        try {
+            console.log('\n� Phase 1: Fetching cycles from WHOOP API...');
+            console.log('🔍 Retrieving complete cycle history...');
+            const cycleData = await whoopClient.getAllCycles(startDate);
+            
+            if (cycleData.length > 0) {
+                console.log(`📦 Retrieved ${cycleData.length} cycles from paginated API`);
+                
+                // Show complete date range
+                const dates = cycleData.map(c => new Date(c.start));
+                const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+                const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+                console.log(`📅 Cycle data spans: ${minDate.toISOString().split('T')[0]} to ${maxDate.toISOString().split('T')[0]}`);
+                
+                // Show ALL cycle records with dates and strain
+                console.log('📋 Complete cycle dataset:');
+                cycleData
+                    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+                    .forEach((c, index) => {
+                        const startDate = new Date(c.start).toISOString().split('T')[0];
+                        const endDate = new Date(c.end).toISOString().split('T')[0];
+                        const strain = c.score?.strain || 'N/A';
+                        console.log(`   ${String(index + 1).padStart(3, ' ')}. ${startDate} to ${endDate} - ID: ${c.id}, Strain: ${strain}`);
+                    });
+                
+                await dbService.upsertCycles(cycleData);
+                results.totalCycles = cycleData.length;
+                results.newCycles = cycleData.length; // Note: First run will show all as new
+                console.log(`✅ Stored ${cycleData.length} cycles processed (upsert handles duplicates)`);
+            } else {
+                console.log('ℹ️ No cycle data found for the specified date range');
+            }
+        } catch (error) {
+            console.error('❌ Cycle data collection failed:', error);
+            results.errors.push(`Cycles: ${error}`);
+        }
+
+        // Phase 2: Get ALL sleep data 
+        try {
+            console.log('\n� Phase 2: Fetching sleep data from WHOOP API...');
+            console.log('🔍 Retrieving complete sleep history...');
+            const sleepData = await whoopClient.getAllSleep(startDate);
+            
+            if (sleepData.length > 0) {
+                console.log(`📦 Retrieved ${sleepData.length} sleep records from API`);
+                
+                // Show complete date range
+                const dates = sleepData.map(s => new Date(s.start));
+                const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+                const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+                console.log(`📅 Sleep data spans: ${minDate.toISOString().split('T')[0]} to ${maxDate.toISOString().split('T')[0]}`);
+                
+                // Show ALL sleep records with dates and performance
+                console.log('📋 Complete sleep dataset:');
+                sleepData
+                    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+                    .forEach((s, index) => {
+                        const startDate = new Date(s.start).toISOString().split('T')[0];
+                        const endDate = new Date(s.end).toISOString().split('T')[0];
+                        const performance = s.score?.sleep_performance_percentage || 'N/A';
+                        const nap = s.nap ? ' (NAP)' : '';
+                        console.log(`   ${String(index + 1).padStart(3, ' ')}. ${startDate} to ${endDate} - ID: ${s.id}, Performance: ${performance}%${nap}`);
+                    });
+                
+                await dbService.upsertSleeps(sleepData);
+                results.totalSleep = sleepData.length;
+                results.newSleep = sleepData.length; // Note: First run will show all as new
+                console.log(`✅ Stored ${sleepData.length} sleep records processed (upsert handles duplicates)`);
+            } else {
+                console.log('ℹ️ No sleep data found for the specified date range');
+            }
+        } catch (error) {
+            console.error('❌ Sleep data collection failed:', error);
+            results.errors.push(`Sleep: ${error}`);
+        }
+
+        // Phase 3: Get ALL recovery data (now sleep data exists)
         let recoveryData;
         try {
-            console.log('\n📊 Phase 1: Fetching ALL recovery data from WHOOP API...');
+            console.log('\n📊 Phase 3: Fetching ALL recovery data from WHOOP API...');
             console.log('🔍 Retrieving complete recovery history...');
             recoveryData = await whoopClient.getAllRecovery(startDate);
             
@@ -248,101 +325,9 @@ export async function POST(request: NextRequest) {
             throw new Error('Recovery data collection failed - required for cycle mapping');
         }
 
-        // 2. Collect ALL cycles using two-phase strategy
-        let cycles: WhoopCycle[] = [];
+        // Phase 4: Get ALL workout data
         try {
-            console.log('\n🔄 Phase 2: Fetching cycles from WHOOP API...');
-            console.log('🔍 Retrieving complete cycle history...');
-            cycles = await whoopClient.getAllCycles(startDate);
-            
-            if (cycles.length > 0) {
-                console.log(`📦 Retrieved ${cycles.length} cycles from paginated API`);
-                
-                // Show complete date range
-                const dates = cycles.map(c => new Date(c.start));
-                const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
-                const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
-                console.log(`📅 Cycle data spans: ${minDate.toISOString().split('T')[0]} to ${maxDate.toISOString().split('T')[0]}`);
-                
-                // Show ALL cycle records with dates and strain
-                console.log('📋 Complete cycle dataset:');
-                cycles
-                    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
-                    .forEach((c, index) => {
-                        const startDate = new Date(c.start).toISOString().split('T')[0];
-                        const endDate = c.end ? new Date(c.end).toISOString().split('T')[0] : 'ongoing';
-                        const strain = c.score?.strain || 'N/A';
-                        console.log(`   ${String(index + 1).padStart(3, ' ')}. ${startDate} to ${endDate} - ID: ${c.id}, Strain: ${strain}`);
-                    });
-                
-                await dbService.upsertCycles(cycles);
-                results.totalCycles = cycles.length;
-                results.newCycles = cycles.length; // Note: First run will show all as new
-                console.log(`✅ Stored ${cycles.length} cycles processed (upsert handles duplicates)`);
-            }
-
-            // Phase 2: Use recovery data to find and fetch any missing cycles
-            const recoveredCycleIds = Array.from(new Set(recoveryData.map(r => r.cycle_id))) as number[];
-            const knownCycleIds = cycles.map(c => c.id);
-            const missingCycleIds = recoveredCycleIds.filter(id => !knownCycleIds.includes(id));
-
-            if (missingCycleIds.length > 0) {
-                console.log(`🔍 Phase 2b: Found ${missingCycleIds.length} additional cycle IDs from recovery data`);
-                console.log(`📦 Fetching individual cycles by ID...`);
-                
-                let successCount = 0;
-                let retryCount = 0;
-                const maxRetries = 3;
-
-                for (const cycleId of missingCycleIds) {
-                    let success = false;
-                    let attempts = 0;
-
-                    while (!success && attempts < maxRetries) {
-                        try {
-                            const cycle = await whoopClient.getCycleById(cycleId);
-                            await dbService.upsertCycles([cycle]);
-                            results.totalCycles++;
-                            results.newCycles++;
-                            successCount++;
-                            success = true;
-
-                            // Progress update every 10 cycles or key milestones
-                            if (successCount % 10 === 0 || successCount === missingCycleIds.length) {
-                                const progress = Math.round((successCount / missingCycleIds.length) * 100);
-                                console.log(`⚡ Progress: ${progress}% (${successCount}/${missingCycleIds.length} individual cycles fetched)`);
-                            }
-                        } catch (error) {
-                            attempts++;
-                            if (attempts === maxRetries) {
-                                console.error(`❌ Failed to fetch cycle ${cycleId} after ${maxRetries} attempts`);
-                                results.errors.push(`Cycle ${cycleId}: Failed after ${maxRetries} attempts`);
-                            } else {
-                                retryCount++;
-                                await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
-                            }
-                        }
-                    }
-                }
-
-                const failedCount = missingCycleIds.length - successCount;
-                console.log(`✅ Individual cycle fetching complete:`);
-                console.log(`   - Successfully fetched: ${successCount}/${missingCycleIds.length}`);
-                if (failedCount > 0) console.log(`   - Failed: ${failedCount}`);
-                if (retryCount > 0) console.log(`   - Total retries needed: ${retryCount}`);
-            } else {
-                console.log(`✅ All cycles already fetched via pagination - no additional cycles needed`);
-            }
-
-            console.log(`🎯 Total cycles processed: ${results.newCycles}`);
-        } catch (error) {
-            console.error('❌ Cycle collection failed:', error);
-            results.errors.push(`Cycles: ${error}`);
-        }
-
-        // 3. Get ALL sleep data via collection endpoint
-        try {
-            console.log('\n💤 Phase 3: Fetching sleep data from WHOOP API...');
+            console.log('\n🏋️ Phase 4: Fetching workout data from WHOOP API...');
             console.log('🔍 Retrieving complete sleep history...');
             const sleepData = await whoopClient.getAllSleep(startDate);
             

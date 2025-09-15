@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/Card';
 import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
 import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
 import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
+import { DailyFetchControl } from '@/components/features/whoop/DailyFetchControl';
 
 async function getStrainData() {
     try {
@@ -185,6 +186,9 @@ export default async function MyDataPage() {
                         </Card>
                     ) : (
                         <div className="space-y-20">
+                            {/* Daily Fetch Control - First Component */}
+                            <DailyFetchControl />
+
                             {/* Component 1: WHOOP Activity Heatmap */}
                             <Card className="p-8 border-white/10 hover:border-cyan-400/30 transition-all duration-300">
                                 <div className="mb-8 text-center">

@@ -34,10 +34,34 @@ This document provides comprehensive documentation of the fitness tracking datab
 ### 🔗 **Key Relationships**
 ```
 strava_users ← strava_runs
-whoop_users ← whoop_cycles ← whoop_sleep ← whoop_recovery
-whoop_users ← whoop_workouts
+
+whoop_users ← whoop_cycles ← whoop_recovery → whoop_sleep
+whoop_users ← whoop_workouts ← whoop_sleep (via v1_id)
+
+Recovery acts as the bridge between Cycles and Sleep due to WHOOP API v2 limitations.
 ```
 
+**Relationship Details:**
+- `whoop_recovery.cycle_id` → `whoop_cycles.id` (Recovery belongs to a Cycle)
+- `whoop_recovery.sleep_id` → `whoop_sleep.id` (Recovery analyzes a Sleep session)
+- `whoop_sleep.cycle_id` → `whoop_cycles.id` (Sleep belongs to a Cycle, populated via Recovery)
+- `whoop_sleep.v1_id` → `whoop_workouts.v1_id` (Sleep may be related to a Workout)
+- All tables → `whoop_users.id` (User ownership)
+
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Cycles    │    │   Recovery   │    │    Sleep    │
+│             │◄───┤              ├───►│             │
+│ id (PK)     │    │ cycle_id (FK)│    │ id (PK)     │
+└─────────────┘    │ sleep_id (FK)│    │ cycle_id    │
+                   └──────────────┘    │ v1_id (FK)  │
+                                       └─────────────┘
+                                              │
+                                              ▼
+                                       ┌─────────────┐
+                                       │  Workouts   │
+                                       │             │
+                                       │ v1_id (UK)  │
+                                       └─────────────┘
 ---
 
 ## Table Documentation
@@ -323,9 +347,19 @@ graph TD
     C[whoop_users] --> E[whoop_workouts]
     C[whoop_users] --> F[whoop_sleep]
     C[whoop_users] --> G[whoop_recovery]
-    D[whoop_cycles] --> F[whoop_sleep]
+    
+    %% WHOOP API v2 relationships
     D[whoop_cycles] --> G[whoop_recovery]
-    F[whoop_sleep] --> G[whoop_recovery]
+    G[whoop_recovery] --> F[whoop_sleep]
+    D[whoop_cycles] --> F[whoop_sleep]
+    E[whoop_workouts] -.-> F[whoop_sleep]
+    
+    %% Style recovery as bridge
+    G -.->|"populates cycle_id"| F
+    
+    style G fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    style D fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    style F fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
 ```
 
 ### 📊 **Data Collection Flow**
@@ -518,6 +552,25 @@ When generating embeddings for AI query understanding, use these comprehensive d
 | `whoop_workouts` | `zone_one_milli` | Time in heart rate zone 1 (60-70% max HR) in milliseconds. Base aerobic training zone. |
 | `whoop_workouts` | `zone_two_milli` | Time in heart rate zone 2 (70-80% max HR) in milliseconds. Aerobic base building zone. |
 | `whoop_workouts` | `zone_three_milli` | Time in heart rate zone 3 (80-90% max HR) in milliseconds. Aerobic power, tempo zone. |
+
+---
+
+## Recent Database Updates (September 2025)
+
+### ✅ **Fixed WHOOP v1_id Column Issue**
+- **Problem**: `column "v1_id" of relation "whoop_sleep" does not exist` error
+- **Solution**: Renamed `activity_v1_id` → `v1_id` in `whoop_sleep` table
+- **Migration**: `migrations/add_relationship_whoop_sleep_workouts.sql`
+
+### 🔗 **Enhanced Foreign Key Relationships**
+- **Added**: `whoop_sleep.v1_id` → `whoop_workouts.v1_id` (for workout-related sleep)
+- **Added**: `whoop_recovery.cycle_id` → `whoop_cycles.id` (ensures recovery integrity)
+- **Cleaned**: Orphaned `v1_id` references set to NULL to maintain data integrity
+
+### 📊 **Data Integrity Improvements**
+- **Unique constraint**: Added to `whoop_workouts.v1_id` for proper FK references
+- **Relationship validation**: All FK constraints now enforce proper WHOOP API data model
+- **Bridge pattern**: Recovery table confirmed as bridge between Cycles and Sleep (per WHOOP API design)
 | `whoop_workouts` | `zone_four_milli` | Time in heart rate zone 4 (90-95% max HR) in milliseconds. VO2 max, anaerobic threshold zone. |
 | `whoop_workouts` | `zone_five_milli` | Time in heart rate zone 5 (95-100% max HR) in milliseconds. Neuromuscular power, maximum effort zone. |
 | `whoop_workouts` | `distance_meters` | Distance covered during workout in meters. Convert to kilometers by dividing by 1000. Only applicable for distance-based sports. |

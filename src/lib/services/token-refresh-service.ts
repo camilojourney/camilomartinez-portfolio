@@ -48,7 +48,7 @@ export class TokenRefreshService {
                     refresh_token: refreshToken,
                     client_id: this.clientId,
                     client_secret: this.clientSecret,
-                    scope: 'offline read:recovery read:cycles read:sleep read:workout read:profile read:body_measurement'
+                    scope: 'read:recovery read:cycles read:sleep read:workout read:profile read:body_measurement offline'
                 }),
             });
 
