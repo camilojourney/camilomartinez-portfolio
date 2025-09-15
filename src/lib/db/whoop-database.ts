@@ -283,12 +283,12 @@ export class WhoopDatabaseService {
                 ${workout.score?.distance_meter ?? null},
                 ${workout.score?.altitude_gain_meter ?? null},
                 ${workout.score?.altitude_change_meter ?? null},
-                ${workout.score?.zone_duration?.zone_zero_milli ?? null},
-                ${workout.score?.zone_duration?.zone_one_milli ?? null},
-                ${workout.score?.zone_duration?.zone_two_milli ?? null},
-                ${workout.score?.zone_duration?.zone_three_milli ?? null},
-                ${workout.score?.zone_duration?.zone_four_milli ?? null},
-                ${workout.score?.zone_duration?.zone_five_milli ?? null},
+                ${workout.score?.zone_durations?.zone_zero_milli ?? null},
+                ${workout.score?.zone_durations?.zone_one_milli ?? null},
+                ${workout.score?.zone_durations?.zone_two_milli ?? null},
+                ${workout.score?.zone_durations?.zone_three_milli ?? null},
+                ${workout.score?.zone_durations?.zone_four_milli ?? null},
+                ${workout.score?.zone_durations?.zone_five_milli ?? null},
                 ${workout.created_at},
                 ${workout.updated_at}
             )

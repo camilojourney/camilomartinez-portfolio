@@ -92,21 +92,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // If there's no refresh token, there's nothing we can do
             if (!token.refreshToken) {
                 console.warn('⚠️ No refresh token available');
-                return token;
+                return {
+                    ...token,
+                    error: "RefreshAccessTokenError",
+                };
             }
 
-            // Return previous token if it hasn't expired yet
-            // Add 5-minute buffer to prevent edge cases
-            const REFRESH_BUFFER = 300; // 5 minutes in seconds
+            // Check token expiration with different buffers for different scenarios
+            // For regular page loads, only refresh if token is actually expired
+            // For critical operations, be more proactive
+            const MINIMAL_REFRESH_BUFFER = 60; // 1 minute for regular operations
+            const isTokenExpired = token.expiresAt &&
+                typeof token.expiresAt === 'number' &&
+                Date.now() >= (token.expiresAt - MINIMAL_REFRESH_BUFFER) * 1000;
+
+            // If token is still valid, return it
             if (token.expiresAt &&
                 typeof token.expiresAt === 'number' &&
-                Date.now() < (token.expiresAt - REFRESH_BUFFER) * 1000) {
+                !isTokenExpired) {
                 return token;
             }
 
-                        // Token has expired (or will soon), try to refresh it
+            // Token is expired or about to expire, try to refresh
             try {
-                console.log('🔄 Session token expired, refreshing via service...');
+                console.log('🔄 Token expired, attempting refresh...');
                 
                 const tokenService = new TokenRefreshService();
                 const refreshedTokens = await tokenService.refreshWhoopToken(token.refreshToken as string);
@@ -122,7 +131,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }
                 }
 
-                console.log('✅ Session token refreshed successfully');
+                console.log('✅ Token refresh successful');
                 return {
                     ...token,
                     accessToken: refreshedTokens.accessToken,
@@ -131,7 +140,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     error: undefined, // Clear any previous errors
                 };
             } catch (error) {
-                console.error('💥 Error refreshing session token:', error);
+                // Only log once per session to avoid spam
+                if (!token.error) {
+                    console.warn('⚠️ Please re-authenticate - visit /signin');
+                }
+                
+                // Return token with error flag
                 return {
                     ...token,
                     error: "RefreshAccessTokenError",

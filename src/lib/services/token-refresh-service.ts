@@ -54,12 +54,23 @@ export class TokenRefreshService {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error('💥 Token refresh failed:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    error: errorData.error,
-                    errorDescription: errorData.error_description,
-                });
+                
+                // Check if this is a common "invalid refresh token" error
+                const isInvalidRefreshToken = response.status === 400 && 
+                    (errorData.error === 'invalid_request' || errorData.error === 'invalid_grant');
+                
+                if (isInvalidRefreshToken) {
+                    // Less verbose logging for expected refresh token expiration
+                    console.warn('⚠️ Refresh token expired - re-authentication required');
+                } else {
+                    // Full error logging for unexpected issues
+                    console.error('💥 Token refresh failed:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        error: errorData.error,
+                        errorDescription: errorData.error_description,
+                    });
+                }
                 
                 throw new Error(
                     `Token refresh failed: ${response.status} ${response.statusText} - ${
@@ -80,7 +91,7 @@ export class TokenRefreshService {
                 expiresAt,
             };
         } catch (error) {
-            console.error('💥 Error refreshing WHOOP token:', error);
+            // Error already logged above based on error type
             throw error;
         }
     }

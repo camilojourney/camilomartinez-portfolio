@@ -115,7 +115,41 @@ export function DailyFetchControl() {
               </div>
 
               {result.error && (
-                <p className="text-sm mb-4">{result.error}</p>
+                <div className="space-y-3">
+                  <p className="text-sm mb-4">{result.error}</p>
+                  
+                  {/* Token refresh error guidance */}
+                  {(result.error.includes('Token refresh failed') || 
+                    result.error.includes('RefreshAccessTokenError') ||
+                    result.error.includes('invalid_request') ||
+                    result.error.includes('400 Bad Request')) && (
+                    <div className="p-4 bg-yellow-500/10 border border-yellow-400/20 rounded text-yellow-300 text-sm">
+                      <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <div>
+                          <strong className="block mb-2">WHOOP Token Expired</strong>
+                          <p className="mb-3">Your WHOOP authentication has expired. This is normal for security reasons.</p>
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => window.location.href = '/signin'}
+                              className="px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-400/30 rounded text-xs font-medium transition-colors"
+                            >
+                              Re-authenticate with WHOOP
+                            </button>
+                            <button 
+                              onClick={() => window.location.href = '/whoop-dashboard'}
+                              className="px-3 py-1.5 bg-gray-500/20 hover:bg-gray-500/30 border border-gray-400/30 rounded text-xs font-medium transition-colors"
+                            >
+                              Go to Dashboard
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
               {result.data && (
