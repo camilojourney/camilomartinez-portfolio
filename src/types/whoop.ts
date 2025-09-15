@@ -152,7 +152,7 @@ export interface DbCycle {
 
 export interface DbSleep {
     id: string; // Changed to string to store UUID from v2 API
-    activity_v1_id?: number; // Store v1 ID for backwards compatibility
+    v1_id?: number; // Store v1 ID for backwards compatibility
     user_id: number;
     cycle_id: number;
     start_time: string;
@@ -186,7 +186,7 @@ export interface DbRecovery {
 
 export interface DbWorkout {
     id: string; // Changed to string to store UUID from v2 API
-    activity_v1_id?: number; // Store v1 ID for backwards compatibility
+    v1_id?: number; // Store v1 ID for backwards compatibility
     user_id: number;
     start_time: string;
     end_time: string;

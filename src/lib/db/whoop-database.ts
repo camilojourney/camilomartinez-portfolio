@@ -124,12 +124,14 @@ export class WhoopDatabaseService {
         await db`
             INSERT INTO whoop_cycles (
                 id, user_id, start_time, end_time, timezone_offset,
-                score_state, strain, kilojoule, average_heart_rate, max_heart_rate
+                score_state, strain, kilojoule, average_heart_rate, max_heart_rate,
+                created_at, updated_at
             )
             VALUES (
                 ${cycle.id}, ${cycle.user_id}, ${cycle.start}, ${cycle.end},
                 ${cycle.timezone_offset}, ${cycle.score_state}, ${cycle.score.strain},
-                ${cycle.score.kilojoule}, ${cycle.score.average_heart_rate}, ${cycle.score.max_heart_rate}
+                ${cycle.score.kilojoule}, ${cycle.score.average_heart_rate}, ${cycle.score.max_heart_rate},
+                ${cycle.created_at}, ${cycle.updated_at}
             )
             ON CONFLICT (id)
             DO UPDATE SET
@@ -140,40 +142,62 @@ export class WhoopDatabaseService {
                 strain = EXCLUDED.strain,
                 kilojoule = EXCLUDED.kilojoule,
                 average_heart_rate = EXCLUDED.average_heart_rate,
-                max_heart_rate = EXCLUDED.max_heart_rate;
+                max_heart_rate = EXCLUDED.max_heart_rate,
+                updated_at = EXCLUDED.updated_at;
         `;
     }
 
     // Sleep operations
     async upsertSleep(sleep: WhoopSleep, cycleId?: number, db = sql): Promise<void> {
-        const hasScore = sleep.score && sleep.score_state === 'SCORED';
-        const stageSum = hasScore && sleep.score ? sleep.score.stage_summary : null;
+        const hasScore = sleep.score && sleep.score_state === "SCORED";
+        const stage = hasScore ? sleep.score?.stage_summary : null;
+        const needed = hasScore ? sleep.score?.sleep_needed : null;
 
         await db`
             INSERT INTO whoop_sleep (
-                id, activity_v1_id, user_id, cycle_id, start_time, end_time, timezone_offset,
-                nap, score_state, sleep_performance_percentage, respiratory_rate,
+                id, v1_id, user_id, cycle_id, start_time, end_time, timezone_offset,
+                nap, score_state,
+                sleep_performance_percentage, respiratory_rate,
                 sleep_consistency_percentage, sleep_efficiency_percentage,
-                total_in_bed_time_milli, total_awake_time_milli, total_light_sleep_time_milli,
-                total_slow_wave_sleep_time_milli, total_rem_sleep_time_milli, disturbance_count
+                total_in_bed_time_milli, total_awake_time_milli, total_no_data_time_milli,
+                total_light_sleep_time_milli, total_slow_wave_sleep_time_milli,
+                total_rem_sleep_time_milli, sleep_cycle_count, disturbance_count,
+                baseline_milli, need_from_sleep_debt_milli,
+                need_from_recent_strain_milli, need_from_recent_nap_milli,
+                created_at, updated_at
             )
             VALUES (
-                ${sleep.id}, ${sleep.v1_id || null}, ${sleep.user_id}, ${cycleId || null},
-                ${sleep.start}, ${sleep.end}, ${sleep.timezone_offset}, ${sleep.nap}, ${sleep.score_state},
-                ${hasScore && sleep.score ? sleep.score.sleep_performance_percentage : null},
-                ${hasScore && sleep.score ? sleep.score.respiratory_rate : null},
-                ${hasScore && sleep.score ? sleep.score.sleep_consistency_percentage : null},
-                ${hasScore && sleep.score ? sleep.score.sleep_efficiency_percentage : null},
-                ${stageSum ? stageSum.total_in_bed_time_milli : null},
-                ${stageSum ? stageSum.total_awake_time_milli : null},
-                ${stageSum ? stageSum.total_light_sleep_time_milli : null},
-                ${stageSum ? stageSum.total_slow_wave_sleep_time_milli : null},
-                ${stageSum ? stageSum.total_rem_sleep_time_milli : null},
-                ${stageSum ? stageSum.disturbance_count : null}
+                ${sleep.id},
+                ${sleep.v1_id ?? null},
+                ${sleep.user_id},
+                ${cycleId ?? null},
+                ${sleep.start},
+                ${sleep.end},
+                ${sleep.timezone_offset},
+                ${sleep.nap},
+                ${sleep.score_state},
+                ${hasScore ? sleep.score?.sleep_performance_percentage ?? null : null},
+                ${hasScore ? sleep.score?.respiratory_rate ?? null : null},
+                ${hasScore ? sleep.score?.sleep_consistency_percentage ?? null : null},
+                ${hasScore ? sleep.score?.sleep_efficiency_percentage ?? null : null},
+                ${stage?.total_in_bed_time_milli ?? null},
+                ${stage?.total_awake_time_milli ?? null},
+                ${stage?.total_no_data_time_milli ?? null},
+                ${stage?.total_light_sleep_time_milli ?? null},
+                ${stage?.total_slow_wave_sleep_time_milli ?? null},
+                ${stage?.total_rem_sleep_time_milli ?? null},
+                ${stage?.sleep_cycle_count ?? null},
+                ${stage?.disturbance_count ?? null},
+                ${needed?.baseline_milli ?? null},
+                ${needed?.need_from_sleep_debt_milli ?? null},
+                ${needed?.need_from_recent_strain_milli ?? null},
+                ${needed?.need_from_recent_nap_milli ?? null},
+                ${sleep.created_at},
+                ${sleep.updated_at}
             )
             ON CONFLICT (id)
             DO UPDATE SET
-                activity_v1_id = EXCLUDED.activity_v1_id,
+                v1_id = EXCLUDED.v1_id,
                 cycle_id = EXCLUDED.cycle_id,
                 start_time = EXCLUDED.start_time,
                 end_time = EXCLUDED.end_time,
@@ -186,10 +210,17 @@ export class WhoopDatabaseService {
                 sleep_efficiency_percentage = EXCLUDED.sleep_efficiency_percentage,
                 total_in_bed_time_milli = EXCLUDED.total_in_bed_time_milli,
                 total_awake_time_milli = EXCLUDED.total_awake_time_milli,
+                total_no_data_time_milli = EXCLUDED.total_no_data_time_milli,
                 total_light_sleep_time_milli = EXCLUDED.total_light_sleep_time_milli,
                 total_slow_wave_sleep_time_milli = EXCLUDED.total_slow_wave_sleep_time_milli,
                 total_rem_sleep_time_milli = EXCLUDED.total_rem_sleep_time_milli,
-                disturbance_count = EXCLUDED.disturbance_count;
+                sleep_cycle_count = EXCLUDED.sleep_cycle_count,
+                disturbance_count = EXCLUDED.disturbance_count,
+                baseline_milli = EXCLUDED.baseline_milli,
+                need_from_sleep_debt_milli = EXCLUDED.need_from_sleep_debt_milli,
+                need_from_recent_strain_milli = EXCLUDED.need_from_recent_strain_milli,
+                need_from_recent_nap_milli = EXCLUDED.need_from_recent_nap_milli,
+                updated_at = EXCLUDED.updated_at;
         `;
     }
 
@@ -202,13 +233,15 @@ export class WhoopDatabaseService {
         await db`
             INSERT INTO whoop_recovery (
                 cycle_id, sleep_id, user_id, score_state, recovery_score,
-                resting_heart_rate, hrv_rmssd_milli, spo2_percentage, skin_temp_celsius
+                resting_heart_rate, hrv_rmssd_milli, spo2_percentage, skin_temp_celsius,
+                created_at, updated_at
             )
             VALUES (
                 ${recovery.cycle_id}, ${recovery.sleep_id}, ${recovery.user_id},
                 ${recovery.score_state}, ${recovery.score.recovery_score || null},
                 ${recovery.score.resting_heart_rate || null}, ${recovery.score.hrv_rmssd_milli || null},
-                ${recovery.score.spo2_percentage || null}, ${recovery.score.skin_temp_celsius || null}
+                ${recovery.score.spo2_percentage || null}, ${recovery.score.skin_temp_celsius || null},
+                ${recovery.created_at}, ${recovery.updated_at}
             )
             ON CONFLICT (cycle_id)
             DO UPDATE SET
@@ -218,7 +251,8 @@ export class WhoopDatabaseService {
                 resting_heart_rate = EXCLUDED.resting_heart_rate,
                 hrv_rmssd_milli = EXCLUDED.hrv_rmssd_milli,
                 spo2_percentage = EXCLUDED.spo2_percentage,
-                skin_temp_celsius = EXCLUDED.skin_temp_celsius;
+                skin_temp_celsius = EXCLUDED.skin_temp_celsius,
+                updated_at = EXCLUDED.updated_at;
         `;
     }
 
@@ -226,25 +260,39 @@ export class WhoopDatabaseService {
     async upsertWorkout(workout: WhoopWorkout, db = sql): Promise<void> {
         await db`
             INSERT INTO whoop_workouts (
-                id, activity_v1_id, user_id, start_time, end_time, timezone_offset, sport_id, sport_name,
+                id, v1_id, user_id, start_time, end_time, timezone_offset, sport_id, sport_name,
                 score_state, strain, average_heart_rate, max_heart_rate, kilojoule,
                 distance_meter, altitude_gain_meter, altitude_change_meter,
                 zone_zero_milli, zone_one_milli, zone_two_milli, zone_three_milli,
-                zone_four_milli, zone_five_milli
+                zone_four_milli, zone_five_milli, created_at, updated_at
             )
             VALUES (
-                ${workout.id}, ${workout.v1_id || null}, ${workout.user_id}, ${workout.start}, ${workout.end},
-                ${workout.timezone_offset}, ${workout.sport_id}, ${workout.sport_name || null}, ${workout.score_state},
-                ${workout.score?.strain || null}, ${workout.score?.average_heart_rate || null},
-                ${workout.score?.max_heart_rate || null}, ${workout.score?.kilojoule || null},
-                ${workout.score?.distance_meter || null}, ${workout.score?.altitude_gain_meter || null},
-                ${workout.score?.altitude_change_meter || null}, ${workout.score?.zone_duration?.zone_zero_milli || null},
-                ${workout.score?.zone_duration?.zone_one_milli || null}, ${workout.score?.zone_duration?.zone_two_milli || null},
-                ${workout.score?.zone_duration?.zone_three_milli || null}, ${workout.score?.zone_duration?.zone_four_milli || null},
-                ${workout.score?.zone_duration?.zone_five_milli || null}
+                ${workout.id},
+                ${workout.v1_id ?? null},
+                ${workout.user_id},
+                ${workout.start},
+                ${workout.end},
+                ${workout.timezone_offset},
+                ${workout.sport_id},
+                ${workout.sport_name ?? null},
+                ${workout.score_state},
+                ${workout.score?.strain ?? null},
+                ${workout.score?.average_heart_rate ?? null},
+                ${workout.score?.max_heart_rate ?? null},
+                ${workout.score?.kilojoule ?? null},
+                ${workout.score?.distance_meter ?? null},
+                ${workout.score?.altitude_gain_meter ?? null},
+                ${workout.score?.altitude_change_meter ?? null},
+                ${workout.score?.zone_duration?.zone_zero_milli ?? null},
+                ${workout.score?.zone_duration?.zone_one_milli ?? null},
+                ${workout.score?.zone_duration?.zone_two_milli ?? null},
+                ${workout.score?.zone_duration?.zone_three_milli ?? null},
+                ${workout.score?.zone_duration?.zone_four_milli ?? null},
+                ${workout.score?.zone_duration?.zone_five_milli ?? null},
+                ${workout.created_at},
+                ${workout.updated_at}
             )
-            ON CONFLICT (id)
-            DO UPDATE SET
+            ON CONFLICT (id) DO UPDATE SET
                 start_time = EXCLUDED.start_time,
                 end_time = EXCLUDED.end_time,
                 timezone_offset = EXCLUDED.timezone_offset,
@@ -262,7 +310,8 @@ export class WhoopDatabaseService {
                 zone_two_milli = EXCLUDED.zone_two_milli,
                 zone_three_milli = EXCLUDED.zone_three_milli,
                 zone_four_milli = EXCLUDED.zone_four_milli,
-                zone_five_milli = EXCLUDED.zone_five_milli;
+                zone_five_milli = EXCLUDED.zone_five_milli,
+                updated_at = EXCLUDED.updated_at;
         `;
     }
 
