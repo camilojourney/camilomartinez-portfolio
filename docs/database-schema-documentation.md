@@ -9,13 +9,12 @@
 
 * **Strain**: A measure of cardiovascular load on a logarithmic scale of 0-21. This can be calculated for a full day (`whoop_cycles` = total daily strain) or for a specific activity (`whoop_workouts` = activity-specific strain that contributes to daily total).
 
-* **Recovery**: A percentage (0-100%) indicating your body's readiness to perform on a given day. It is calculated during your sleep and is based on metrics like HRV, RHR, and sleep quality. Recovery is tied to a specific cycle.
+* **Recovery**: A percentage (0-100%) indicating your body's readiness to perform on a given day. It is calculated during your sleep and is based on metrics like the resting heart rate (RHR), heart rate variability (HRV), and blood oxygen levels. Recovery is tied to a specific cycle. When you wake up in the morning, WHOOP calculates a Recovery score as a percentage between 0 - 100%. The higher the score, the more primed your body is to take on Strain that day.
 
 ## Overview
 
 This document provides comprehensive documentation of the fitness tracking database schema, including all tables, columns, relationships, and business context. This schema supports automated data collection from Strava (running activities) and WHOOP (health metrics) with a focus on performance analysis and health insights.
 
-**Recent Updates (September 15, 2025)**: Critical bug fixes implemented for WHOOP zone data mapping, foreign key constraints, and token refresh UX improvements. All heart rate zone data now saves correctly to the database.
 
 ## Database Structure Summary
 
@@ -25,7 +24,7 @@ This document provides comprehensive documentation of the fitness tracking datab
 - `strava_users` - Strava user profiles and API tokens
 - `whoop_users` - WHOOP user profiles and API tokens
 
-**Fitness Activities (2 tables)**
+**Fitness Activities (2 tables)** 
 - `strava_runs` - Running activities with GPS data
 - `whoop_workouts` - WHOOP workout sessions with heart rate zones
 
@@ -51,20 +50,37 @@ Recovery acts as the bridge between Cycles and Sleep due to WHOOP API v2 limitat
 - `whoop_sleep.v1_id` → `whoop_workouts.v1_id` (Sleep may be related to a Workout)
 - All tables → `whoop_users.id` (User ownership)
 
-┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│   Cycles    │    │   Recovery   │    │    Sleep    │
-│             │◄───┤              ├───►│             │
-│ id (PK)     │    │ cycle_id (FK)│    │ id (PK)     │
-└─────────────┘    │ sleep_id (FK)│    │ cycle_id    │
-                   └──────────────┘    │ v1_id (FK)  │
-                                       └─────────────┘
-                                              │
-                                              ▼
-                                       ┌─────────────┐
-                                       │  Workouts   │
-                                       │             │
-                                       │ v1_id (UK)  │
-                                       └─────────────┘
+```
+WHOOP API v2 Data Relationships
+═══════════════════════════════════════════════════════════════════
+
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   🔄 CYCLES     │     │  🔋 RECOVERY    │     │   🛌 SLEEP      │
+│                 │◄────┤                 ├────►│                 │
+│ id (PK)         │     │ cycle_id (FK)   │     │ id (PK)         │
+│ strain          │     │ sleep_id (FK)   │     │ cycle_id (FK)   │
+│ kilojoule       │     │ recovery_score  │     │ performance_%   │
+│ heart_rate      │     │ hrv_rmssd_milli │     │ v1_id (FK)      │
+└─────────────────┘     │ resting_hr      │     │ sleep_stages    │
+                        └─────────────────┘     └─────────────────┘
+                                                         │
+                                                         │ (optional)
+                                                         ▼
+                                                ┌─────────────────┐
+                                                │  🏋️ WORKOUTS   │
+                                                │                 │
+                                                │ v1_id (UK)      │
+                                                │ strain          │
+                                                │ sport_name      │
+                                                │ zone_*_milli    │
+                                                └─────────────────┘
+
+Key Relationships:
+• Recovery acts as bridge between Cycles ↔ Sleep (WHOOP API design)
+• Each Cycle has one Recovery score based on Sleep analysis
+• Sleep may optionally relate to Workouts via v1_id
+• All entities belong to a user (user_id FK not shown)
+```
 ---
 
 ## Table Documentation
@@ -461,6 +477,96 @@ FROM whoop_workouts
 WHERE user_id = ?
 GROUP BY sport_name
 ORDER BY high_intensity_percentage DESC;
+
+-- Cross-platform correlation: Strava runs with WHOOP workouts
+WITH strava AS (
+  SELECT
+    s.*,
+    s.start_date::date                    AS run_date,
+    EXTRACT(HOUR FROM s.start_date)::int  AS run_hour
+  FROM strava_runs AS s
+),
+whoop AS (
+  SELECT
+    w.*,
+    w.start_time::date                                    AS run_date,
+    EXTRACT(HOUR FROM w.start_time)::int                  AS run_hour
+  FROM whoop_workouts AS w
+)
+SELECT 
+  s.name as strava_name,
+  s.distance_meters/1000 as strava_km,
+  s.moving_time_seconds/60 as strava_minutes,
+  w.sport_name as whoop_sport,
+  w.strain as whoop_strain,
+  w.average_heart_rate,
+  w.max_heart_rate,
+  s.run_date,
+  s.run_hour
+FROM strava AS s
+JOIN whoop AS w 
+  ON s.run_date = w.run_date 
+  AND s.run_hour = w.run_hour
+ORDER BY w.run_date DESC;
+
+-- Professional approach: Query correlated activities from junction table
+SELECT 
+  sr.name as strava_name,
+  sr.distance_meters/1000 as strava_km,
+  TO_CHAR(sr.start_date, 'YYYY-MM-DD HH24:MI') as strava_start,
+  ww.sport_name as whoop_sport,
+  ww.strain as whoop_strain,
+  ww.average_heart_rate,
+  COALESCE(ww.distance_meters/1000, 0) as whoop_km,
+  TO_CHAR(ww.start_time, 'YYYY-MM-DD HH24:MI') as whoop_start,
+  ROUND(ac.correlation_confidence::numeric, 2) as confidence,
+  ac.correlation_method,
+  ac.time_diff_minutes
+FROM activity_correlations ac
+JOIN strava_runs sr ON ac.strava_run_id = sr.id
+JOIN whoop_workouts ww ON ac.whoop_workout_id = ww.id
+WHERE ac.user_id = ? AND ac.correlation_confidence >= 0.75
+ORDER BY sr.start_date DESC;
+```
+
+## 🔗 Cross-Platform Data Architecture
+
+### **Professional Activity Correlation System**
+
+For production systems, professionals use a **junction table approach** rather than real-time JOINs for cross-platform correlations:
+
+#### **Architecture Components:**
+
+1. **Junction Table**: `activity_correlations`
+   - Stores pre-computed relationships between Strava runs and WHOOP workouts
+   - Includes confidence scoring (0.0-1.0) and correlation method metadata
+   - Prevents duplicate correlations with unique constraints
+
+2. **ETL Process**: `scripts/data/run-correlation-etl.js`
+   - Runs daily after data sync (Strava + WHOOP)
+   - Uses multiple algorithms: datetime matching, distance correlation, confidence scoring
+   - Only processes new activities to avoid recomputation
+
+3. **Confidence Scoring**:
+   - **0.95+**: Near-perfect match (≤5min time diff + distance match)
+   - **0.85+**: High confidence (≤15min time diff)
+   - **0.75+**: Good confidence (≤60min time diff)
+   - **0.65+**: Acceptable correlation (≤120min time diff)
+
+#### **Benefits Over Real-time JOINs:**
+- **Performance**: Pre-computed relationships, no complex JOINs in queries
+- **Accuracy**: Multiple correlation algorithms with confidence scoring
+- **Flexibility**: Manual override capability for edge cases
+- **Scalability**: ETL approach handles growing data volumes efficiently
+- **Analytics**: Historical correlation patterns and method effectiveness tracking
+
+#### **Usage:**
+```bash
+# Process new correlations (run daily after data sync)
+node scripts/data/run-correlation-etl.js process
+
+# Query correlations for analysis
+node scripts/data/run-correlation-etl.js query 123
 ```
 
 ## Units and Data Formats Reference

@@ -96,6 +96,40 @@ async function main() {
     console.log(`❌ Users with failures: ${failedUsers}`);
     console.log(`⏱️  Total duration: ${duration} seconds`);
 
+    // Process cross-platform correlations if there were new activities
+    if (totalNewActivities > 0) {
+      console.log('\n🔗 Processing cross-platform activity correlations...');
+      try {
+        const { spawn } = require('child_process');
+        
+        // Run the correlation ETL with 7-day window for weekly sync
+        const correlationProcess = spawn('node', ['scripts/data/run-correlation-etl.mjs', 'process', '7'], {
+          stdio: 'inherit',
+          cwd: process.cwd()
+        });
+        
+        await new Promise((resolve, reject) => {
+          correlationProcess.on('close', (code) => {
+            if (code === 0) {
+              console.log('✅ Activity correlations processed successfully');
+              resolve();
+            } else {
+              console.log('⚠️  Activity correlation processing failed, but sync continues');
+              resolve(); // Don't fail the entire sync for correlation issues
+            }
+          });
+          correlationProcess.on('error', (error) => {
+            console.log('⚠️  Correlation process error (sync continues):', error.message);
+            resolve();
+          });
+        });
+      } catch (error) {
+        console.log('⚠️  Failed to run correlation processing (sync continues):', error.message);
+      }
+    } else {
+      console.log('\n🔗 Skipping correlation processing (no new activities)');
+    }
+
     // Show detailed results for users with new activities or errors
     const relevantResults = results.filter(r => r.totalActivities > 0 || r.errors.length > 0);
     
