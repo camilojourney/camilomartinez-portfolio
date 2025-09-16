@@ -1,4 +1,5 @@
 # Database Schema Documentation 📊
+*Last Updated: September 15, 2025 - Zone Data Fix Applied*
 
 ## Core Concepts
 
@@ -13,6 +14,8 @@
 ## Overview
 
 This document provides comprehensive documentation of the fitness tracking database schema, including all tables, columns, relationships, and business context. This schema supports automated data collection from Strava (running activities) and WHOOP (health metrics) with a focus on performance analysis and health insights.
+
+**Recent Updates (September 15, 2025)**: Critical bug fixes implemented for WHOOP zone data mapping, foreign key constraints, and token refresh UX improvements. All heart rate zone data now saves correctly to the database.
 
 ## Database Structure Summary
 
@@ -376,8 +379,9 @@ graph TD
    - Cycles (strain, heart rate)
    - Sleep (performance, stages)
    - Recovery (scores, HRV)
-   - Workouts (heart rate zones)
+   - Workouts (heart rate zones) ✅ **FIXED**: Zone data now properly mapped from API `zone_durations` to database
 3. Handle pending vs scored data states
+4. **Zone Data Flow**: WHOOP API v2 `zone_durations` → Database `zone_*_milli` columns
 
 ### 🔄 **Data State Management**
 
@@ -571,6 +575,39 @@ When generating embeddings for AI query understanding, use these comprehensive d
 - **Unique constraint**: Added to `whoop_workouts.v1_id` for proper FK references
 - **Relationship validation**: All FK constraints now enforce proper WHOOP API data model
 - **Bridge pattern**: Recovery table confirmed as bridge between Cycles and Sleep (per WHOOP API design)
+
+### 🔧 **Critical Bug Fixes (September 15, 2025)**
+
+#### **Zone Data Mapping Fix**
+- **Issue**: Heart rate zone data not saving to database due to API structure mismatch
+- **Root Cause**: Code expected `zone_duration` but WHOOP API v2 returns `zone_durations` (plural)
+- **Fix Applied**: 
+  - Updated `src/lib/db/whoop-database.ts` to use `zone_durations` (plural)
+  - Fixed TypeScript types in `src/types/whoop.ts` to match API response structure
+- **Impact**: All workout heart rate zone data now saves correctly
+- **Validation**: Production daily fetch confirmed zone data flowing properly
+
+#### **Foreign Key Constraint Resolution**
+- **Issue**: `whoop_sleep.v1_id` foreign key constraint blocking workout saves
+- **Root Cause**: WHOOP API v2 sleep/workout independence not reflected in database constraints
+- **Fix Applied**: Removed foreign key constraint from `whoop_sleep.v1_id` → `whoop_workouts.v1_id`
+- **Migration**: `migrations/fix_sleep_foreign_key_null.sql` - sets orphaned v1_id to NULL
+- **Impact**: Sleep records can now exist independently without requiring workout relationships
+
+#### **Token Refresh UX Improvements** 
+- **Issue**: Aggressive 30-minute proactive token refresh causing premature auth warnings
+- **Root Cause**: Token refresh triggered during routine page navigation vs actual expiration
+- **Fix Applied**:
+  - Reduced proactive refresh buffer from 30 minutes to 1 minute
+  - Implemented single-warning-per-session to prevent console spam
+  - Updated log messaging for clarity
+- **Impact**: Users only see authentication prompts when tokens are genuinely expired
+
+#### **Database Schema Validation**
+- **Zone Data Fields**: All `zone_*_milli` columns now properly populated with millisecond values
+- **Data Flow**: WHOOP API v2 → `zone_durations` → Database `zone_*_milli` columns ✅
+- **Heart Rate Zones**: Complete 6-zone distribution (0-5) now captured for training analysis
+
 | `whoop_workouts` | `zone_four_milli` | Time in heart rate zone 4 (90-95% max HR) in milliseconds. VO2 max, anaerobic threshold zone. |
 | `whoop_workouts` | `zone_five_milli` | Time in heart rate zone 5 (95-100% max HR) in milliseconds. Neuromuscular power, maximum effort zone. |
 | `whoop_workouts` | `distance_meters` | Distance covered during workout in meters. Convert to kilometers by dividing by 1000. Only applicable for distance-based sports. |
