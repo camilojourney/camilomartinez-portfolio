@@ -146,8 +146,8 @@ export interface DbCycle {
     score_state: string;
     strain: number;
     kilojoule: number;
-    average_heart_rate: number;
-    max_heart_rate: number;
+    avg_heart_rate_bpm: number;
+    max_heart_rate_bpm: number;
 }
 
 export interface DbSleep {
@@ -158,7 +158,7 @@ export interface DbSleep {
     start_time: string;
     end_time: string;
     timezone_offset: string;
-    nap: boolean;
+    is_nap: boolean;
     score_state: string;
     sleep_performance_percentage: number;
     respiratory_rate: number;
@@ -177,8 +177,8 @@ export interface DbRecovery {
     sleep_id: string; // Changed to string to match sleep UUID
     user_id: number;
     score_state: string;
-    recovery_score: number;
-    resting_heart_rate: number;
+    recovery_percentage: number;
+    resting_heart_rate_bpm: number;
     hrv_rmssd_milli: number;
     spo2_percentage: number;
     skin_temp_celsius: number;
@@ -194,16 +194,16 @@ export interface DbWorkout {
     sport_id: number;
     score_state: string;
     strain?: number;
-    average_heart_rate?: number;
-    max_heart_rate?: number;
+    avg_heart_rate_bpm?: number;
+    max_heart_rate_bpm?: number;
     kilojoule?: number;
-    distance_meter?: number;
+    distance_meters?: number;
     altitude_gain_meter?: number;
     altitude_change_meter?: number;
-    zone_zero_milli?: number;
-    zone_one_milli?: number;
-    zone_two_milli?: number;
-    zone_three_milli?: number;
-    zone_four_milli?: number;
-    zone_five_milli?: number;
+    hr_zone_0_ms?: number;
+    hr_zone_1_ms?: number;
+    hr_zone_2_ms?: number;
+    hr_zone_3_ms?: number;
+    hr_zone_4_ms?: number;
+    hr_zone_5_ms?: number;
 }

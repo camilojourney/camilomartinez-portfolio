@@ -28,6 +28,9 @@ This document provides comprehensive documentation of the fitness tracking datab
 - `strava_runs` - Running activities with GPS data
 - `whoop_workouts` - WHOOP workout sessions with heart rate zones
 
+**Cross-Platform Correlations (1 table)**
+- `activity_correlations` - Pre-computed relationships between Strava runs and WHOOP workouts
+
 **Health Metrics (3 tables)**
 - `whoop_cycles` - Daily strain and recovery cycles
 - `whoop_recovery` - Recovery scores and physiological metrics
@@ -35,20 +38,23 @@ This document provides comprehensive documentation of the fitness tracking datab
 
 ### 🔗 **Key Relationships**
 ```
-strava_users ← strava_runs
+strava_users ← strava_runs ← activity_correlations → whoop_workouts → whoop_users
 
 whoop_users ← whoop_cycles ← whoop_recovery → whoop_sleep
 whoop_users ← whoop_workouts ← whoop_sleep (via v1_id)
 
+Cross-Platform Bridge: activity_correlations connects Strava runs with WHOOP workouts using datetime matching.
 Recovery acts as the bridge between Cycles and Sleep due to WHOOP API v2 limitations.
 ```
 
 **Relationship Details:**
+- `activity_correlations.strava_run_id` → `strava_runs.id` (Cross-platform correlation)
+- `activity_correlations.whoop_workout_id` → `whoop_workouts.id` (Cross-platform correlation)
 - `whoop_recovery.cycle_id` → `whoop_cycles.id` (Recovery belongs to a Cycle)
 - `whoop_recovery.sleep_id` → `whoop_sleep.id` (Recovery analyzes a Sleep session)
 - `whoop_sleep.cycle_id` → `whoop_cycles.id` (Sleep belongs to a Cycle, populated via Recovery)
 - `whoop_sleep.v1_id` → `whoop_workouts.v1_id` (Sleep may be related to a Workout)
-- All tables → `whoop_users.id` (User ownership)
+- All tables → respective `users.id` (User ownership)
 
 ```
 WHOOP API v2 Data Relationships
@@ -595,6 +601,55 @@ node scripts/data/run-correlation-etl.js query 123
 - Scores/Percentages: 2 decimal places (`numeric(5,2)`)
 - High precision metrics: 6 decimal places (`numeric(8,6)`)
 
+---
+
+### 🔗 **ACTIVITY_CORRELATIONS** - Cross-Platform Activity Relationships
+**Purpose**: Junction table storing pre-computed relationships between Strava runs and WHOOP workouts  
+**Data Source**: ETL processing via correlation algorithms  
+**Update Frequency**: Weekly (Monday) + real-time during data sync  
+
+| Column | Type | Required | Units | Description |
+|--------|------|----------|-------|-------------|
+| `id` | bigserial | ✅ | - | Primary key, auto-increment |
+| `strava_run_id` | bigint | ✅ | - | Foreign key to strava_runs.id |
+| `whoop_workout_id` | varchar(36) | ✅ | - | Foreign key to whoop_workouts.id (UUID) |
+| `correlation_confidence` | numeric(3,2) | ✅ | 0.00-1.00 | Confidence score of the correlation match |
+| `correlation_method` | varchar(50) | ✅ | - | Algorithm used: datetime_match, datetime_distance_match, loose_datetime_match |
+| `time_diff_minutes` | integer | ❌ | minutes | Time difference between activity start times |
+| `distance_diff_meters` | integer | ❌ | meters | Distance difference (when both platforms have data) |
+| `created_at` | timestamptz | ✅ | UTC | When correlation was established |
+| `notes` | text | ❌ | - | Additional correlation metadata |
+
+**Business Context**: Enables cross-platform analysis by connecting the same physical activity recorded on both Strava (GPS tracking) and WHOOP (physiological monitoring). This allows queries combining route data with strain metrics, heart rate zones with pace analysis, and recovery impact with training load.
+
+**Data Patterns**:
+- High confidence correlations (0.90-1.00): Same activity with precise time matching
+- Medium confidence (0.70-0.89): Likely same activity with minor time differences  
+- Low confidence (0.50-0.69): Possible matches requiring manual review
+- Only correlations above 0.50 confidence are stored
+
+**Correlation Methods**:
+- `datetime_match`: Exact or near-exact start time matching (±1 hour)
+- `datetime_distance_match`: Time + distance validation when both available
+- `loose_datetime_match`: Broader time window for edge cases
+
+**Typical Query Patterns**:
+```sql
+-- Get Strava route with WHOOP strain data
+SELECT sr.name, sr.distance_meters, ww.strain, ww.avg_heart_rate 
+FROM strava_runs sr
+JOIN activity_correlations ac ON sr.id = ac.strava_run_id
+JOIN whoop_workouts ww ON ac.whoop_workout_id = ww.id
+WHERE ac.correlation_confidence >= 0.90;
+
+-- Find runs with high strain but low perceived effort
+SELECT sr.name, ww.strain, sr.perceived_effort_rating
+FROM strava_runs sr
+JOIN activity_correlations ac ON sr.id = ac.strava_run_id  
+JOIN whoop_workouts ww ON ac.whoop_workout_id = ww.id
+WHERE ww.strain > 15 AND sr.perceived_effort_rating < 3;
+```
+
 ## Embedding Generation Guidelines
 
 ### 📝 **Table Descriptions for Embeddings**
@@ -610,6 +665,8 @@ When generating embeddings for AI query understanding, use these comprehensive d
 **whoop_cycles**: "Daily strain cycles measuring physiological load on 0-21 scale, includes energy expenditure in kilojoules, average and max heart rate in BPM, cycle start and end times"
 
 **whoop_workouts**: "Individual workout sessions with sport type, strain contribution, heart rate zones 0-5 time distribution in milliseconds, distance in meters, altitude gain, and energy expenditure in kilojoules"
+
+**activity_correlations**: "Cross-platform junction table connecting Strava runs with WHOOP workouts for the same physical activity, includes confidence scores from 0.00 to 1.00, correlation methods like datetime_match, time differences in minutes, and distance differences in meters for comprehensive cross-platform analysis"
 
 ### 📊 **Column-Level Embedding Descriptions**
 
@@ -717,6 +774,15 @@ When generating embeddings for AI query understanding, use these comprehensive d
 | `whoop_workouts` | `zone_four_milli` | Time in heart rate zone 4 (90-95% max HR) in milliseconds. VO2 max, anaerobic threshold zone. |
 | `whoop_workouts` | `zone_five_milli` | Time in heart rate zone 5 (95-100% max HR) in milliseconds. Neuromuscular power, maximum effort zone. |
 | `whoop_workouts` | `distance_meters` | Distance covered during workout in meters. Convert to kilometers by dividing by 1000. Only applicable for distance-based sports. |
+
+#### Activity Correlations Table
+| Table | Column | Description for Embedding |
+|-------|---------|---------------------------|
+| `activity_correlations` | `correlation_confidence` | Confidence score from 0.00 to 1.00 indicating how certain this Strava run matches this WHOOP workout. Values above 0.90 are highly reliable, 0.70-0.89 are likely matches, below 0.70 may need review. Use to filter for reliable cross-platform data. |
+| `activity_correlations` | `correlation_method` | Algorithm used to establish the correlation: 'datetime_match' for time-based matching, 'datetime_distance_match' for time plus distance validation, 'loose_datetime_match' for broader time windows. Helps understand correlation reliability. |
+| `activity_correlations` | `time_diff_minutes` | Time difference in minutes between Strava run start and WHOOP workout start. Values near 0 indicate exact time matches. Negative values mean WHOOP started before Strava. |
+| `activity_correlations` | `strava_run_id` | Foreign key linking to the Strava run record. Use to JOIN with strava_runs table for GPS data, route information, perceived effort, and pace metrics. |
+| `activity_correlations` | `whoop_workout_id` | Foreign key linking to the WHOOP workout record. Use to JOIN with whoop_workouts table for strain data, heart rate zones, and physiological metrics. |
 
 ### 🎯 **Query Intent Categories**
 

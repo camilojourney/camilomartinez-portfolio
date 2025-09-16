@@ -2,8 +2,16 @@
 
 /**
  * Simple runner for the Activity Correlation ETL
- * Usage: node run-correlation-etl.js [process|query <userId>|create-table]
+ * Usage: node run-correlation-etl.mjs [process|query <userId>|create-table]
  */
+
+// Set up environment for Vercel Postgres
+import fs from 'fs';
+const envFile = fs.readFileSync('.env', 'utf8');
+const databaseUrl = envFile.match(/DATABASE_URL="([^"]+)"/)?.[1];
+if (databaseUrl && !process.env.POSTGRES_URL) {
+  process.env.POSTGRES_URL = databaseUrl;
+}
 
 import { sql } from '../../src/lib/db/db.ts';
 
@@ -55,9 +63,9 @@ class SimpleCorrelationETL {
         distance_diff_percent
       )
       SELECT 
-        s.user_id,
-        s.id as strava_run_id,
-        w.id as whoop_workout_id,
+        user_id,
+        strava_id as strava_run_id,
+        whoop_id as whoop_workout_id,
         CASE 
           WHEN time_diff <= 5 THEN 0.95
           WHEN time_diff <= 15 THEN 0.85
@@ -73,21 +81,31 @@ class SimpleCorrelationETL {
         distance_diff as distance_diff_percent
       FROM (
         SELECT 
-          s.*,
-          w.*,
+          s.user_id,
+          s.id as strava_id,
+          s.start_date,
+          s.distance_meters as strava_distance,
+          w.id as whoop_id,
+          w.start_time,
+          w.distance_meters as whoop_distance,
+          w.sport_name,
           ABS(EXTRACT(EPOCH FROM (s.start_date - w.start_time)) / 60) as time_diff,
           CASE 
-            WHEN s.distance_meters > 0 AND w.distance_meters > 0 
+            WHEN s.distance_meters > 0 AND w.distance_meters IS NOT NULL AND w.distance_meters > 0 
             THEN ABS((s.distance_meters - w.distance_meters) / s.distance_meters * 100)
             ELSE NULL 
           END as distance_diff
         FROM strava_runs s
-        CROSS JOIN whoop_workouts w
-        WHERE s.user_id = w.user_id
-          AND s.start_date >= NOW() - INTERVAL '${days} days'
+        JOIN whoop_workouts w ON s.start_date::date = w.start_time::date
+          AND (
+            EXTRACT(HOUR FROM s.start_date) = EXTRACT(HOUR FROM w.start_time)
+            OR ABS(EXTRACT(HOUR FROM s.start_date) - EXTRACT(HOUR FROM w.start_time)) = 1
+            OR (EXTRACT(HOUR FROM s.start_date) = 23 AND EXTRACT(HOUR FROM w.start_time) = 0)
+            OR (EXTRACT(HOUR FROM s.start_date) = 0 AND EXTRACT(HOUR FROM w.start_time) = 23)
+          )
+        WHERE s.start_date >= NOW() - INTERVAL '${days} days'
           AND w.start_time >= NOW() - INTERVAL '${days} days'
           AND w.sport_name ILIKE '%run%'
-          AND ABS(EXTRACT(EPOCH FROM (s.start_date - w.start_time)) / 60) <= 120
           AND NOT EXISTS (
             SELECT 1 FROM activity_correlations ac 
             WHERE ac.strava_run_id = s.id 

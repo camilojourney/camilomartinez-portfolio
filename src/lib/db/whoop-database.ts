@@ -124,7 +124,7 @@ export class WhoopDatabaseService {
         await db`
             INSERT INTO whoop_cycles (
                 id, user_id, start_time, end_time, timezone_offset,
-                score_state, strain, kilojoule, average_heart_rate, max_heart_rate,
+                score_state, strain, kilojoule, avg_heart_rate_bpm, max_heart_rate_bpm,
                 created_at, updated_at
             )
             VALUES (
@@ -141,8 +141,8 @@ export class WhoopDatabaseService {
                 score_state = EXCLUDED.score_state,
                 strain = EXCLUDED.strain,
                 kilojoule = EXCLUDED.kilojoule,
-                average_heart_rate = EXCLUDED.average_heart_rate,
-                max_heart_rate = EXCLUDED.max_heart_rate,
+                avg_heart_rate_bpm = EXCLUDED.avg_heart_rate_bpm,
+                max_heart_rate_bpm = EXCLUDED.max_heart_rate_bpm,
                 updated_at = EXCLUDED.updated_at;
         `;
     }
@@ -156,7 +156,7 @@ export class WhoopDatabaseService {
         await db`
             INSERT INTO whoop_sleep (
                 id, v1_id, user_id, cycle_id, start_time, end_time, timezone_offset,
-                nap, score_state,
+                is_nap, score_state,
                 sleep_performance_percentage, respiratory_rate,
                 sleep_consistency_percentage, sleep_efficiency_percentage,
                 total_in_bed_time_milli, total_awake_time_milli, total_no_data_time_milli,
@@ -202,7 +202,7 @@ export class WhoopDatabaseService {
                 start_time = EXCLUDED.start_time,
                 end_time = EXCLUDED.end_time,
                 timezone_offset = EXCLUDED.timezone_offset,
-                nap = EXCLUDED.nap,
+                is_nap = EXCLUDED.is_nap,
                 score_state = EXCLUDED.score_state,
                 sleep_performance_percentage = EXCLUDED.sleep_performance_percentage,
                 respiratory_rate = EXCLUDED.respiratory_rate,
@@ -232,8 +232,8 @@ export class WhoopDatabaseService {
         }
         await db`
             INSERT INTO whoop_recovery (
-                cycle_id, sleep_id, user_id, score_state, recovery_score,
-                resting_heart_rate, hrv_rmssd_milli, spo2_percentage, skin_temp_celsius,
+                cycle_id, sleep_id, user_id, score_state, recovery_percentage,
+                resting_heart_rate_bpm, hrv_rmssd_milli, spo2_percentage, skin_temp_celsius,
                 created_at, updated_at
             )
             VALUES (
@@ -247,8 +247,8 @@ export class WhoopDatabaseService {
             DO UPDATE SET
                 sleep_id = EXCLUDED.sleep_id,
                 score_state = EXCLUDED.score_state,
-                recovery_score = EXCLUDED.recovery_score,
-                resting_heart_rate = EXCLUDED.resting_heart_rate,
+                recovery_percentage = EXCLUDED.recovery_percentage,
+                resting_heart_rate_bpm = EXCLUDED.resting_heart_rate_bpm,
                 hrv_rmssd_milli = EXCLUDED.hrv_rmssd_milli,
                 spo2_percentage = EXCLUDED.spo2_percentage,
                 skin_temp_celsius = EXCLUDED.skin_temp_celsius,
@@ -261,10 +261,10 @@ export class WhoopDatabaseService {
         await db`
             INSERT INTO whoop_workouts (
                 id, v1_id, user_id, start_time, end_time, timezone_offset, sport_id, sport_name,
-                score_state, strain, average_heart_rate, max_heart_rate, kilojoule,
-                distance_meter, altitude_gain_meter, altitude_change_meter,
-                zone_zero_milli, zone_one_milli, zone_two_milli, zone_three_milli,
-                zone_four_milli, zone_five_milli, created_at, updated_at
+                score_state, strain, avg_heart_rate_bpm, max_heart_rate_bpm, kilojoule,
+                distance_meters, altitude_gain_meter, altitude_change_meter,
+                hr_zone_0_ms, hr_zone_1_ms, hr_zone_2_ms, hr_zone_3_ms,
+                hr_zone_4_ms, hr_zone_5_ms, created_at, updated_at
             )
             VALUES (
                 ${workout.id},
@@ -299,18 +299,18 @@ export class WhoopDatabaseService {
                 sport_name = EXCLUDED.sport_name,
                 score_state = EXCLUDED.score_state,
                 strain = EXCLUDED.strain,
-                average_heart_rate = EXCLUDED.average_heart_rate,
-                max_heart_rate = EXCLUDED.max_heart_rate,
+                avg_heart_rate_bpm = EXCLUDED.avg_heart_rate_bpm,
+                max_heart_rate_bpm = EXCLUDED.max_heart_rate_bpm,
                 kilojoule = EXCLUDED.kilojoule,
-                distance_meter = EXCLUDED.distance_meter,
+                distance_meters = EXCLUDED.distance_meters,
                 altitude_gain_meter = EXCLUDED.altitude_gain_meter,
                 altitude_change_meter = EXCLUDED.altitude_change_meter,
-                zone_zero_milli = EXCLUDED.zone_zero_milli,
-                zone_one_milli = EXCLUDED.zone_one_milli,
-                zone_two_milli = EXCLUDED.zone_two_milli,
-                zone_three_milli = EXCLUDED.zone_three_milli,
-                zone_four_milli = EXCLUDED.zone_four_milli,
-                zone_five_milli = EXCLUDED.zone_five_milli,
+                hr_zone_0_ms = EXCLUDED.hr_zone_0_ms,
+                hr_zone_1_ms = EXCLUDED.hr_zone_1_ms,
+                hr_zone_2_ms = EXCLUDED.hr_zone_2_ms,
+                hr_zone_3_ms = EXCLUDED.hr_zone_3_ms,
+                hr_zone_4_ms = EXCLUDED.hr_zone_4_ms,
+                hr_zone_5_ms = EXCLUDED.hr_zone_5_ms,
                 updated_at = EXCLUDED.updated_at;
         `;
     }
