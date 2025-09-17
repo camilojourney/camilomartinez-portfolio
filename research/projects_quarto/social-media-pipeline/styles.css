@@ -1,0 +1,241 @@
+/* Social Media Pipeline - Python Implementation Styles */
+/* Following the clean astoria-conquest design pattern */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #333;
+}
+
+/* Hero section for project title */
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px 30px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.hero-section h1 {
+  margin: 0;
+  font-size: 2.5em;
+  font-weight: 700;
+  color: white !important;
+  border: none !important;
+}
+
+.hero-section h3 {
+  margin: 10px 0 0 0;
+  font-size: 1.2em;
+  font-weight: 300;
+  opacity: 0.9;
+  color: white !important;
+}
+
+/* Clean headers */
+h1, h2, h3, h4, h5, h6 {
+  color: #2c3e50 !important;
+  background: none !important;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  padding: 0 !important;
+  border: none !important;
+}
+
+h1 {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+h2 {
+  border-left: 4px solid #667eea;
+  padding-left: 15px;
+  margin-left: -15px;
+}
+
+/* Override any theme-specific heading styles */
+.level2 h2, .anchored {
+  background: none !important;
+  color: #2c3e50 !important;
+  padding-left: 15px !important;
+}
+
+/* Code styling for Python */
+pre {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid #667eea;
+  border-radius: 4px;
+  padding: 15px;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 14px;
+}
+
+code {
+  background: #f1f3f4;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  color: #d73a49;
+}
+
+/* Python-specific code highlighting */
+.sourceCode .kw { color: #d73a49; font-weight: bold; } /* Keywords */
+.sourceCode .dt { color: #005cc5; } /* Data types */
+.sourceCode .st { color: #032f62; } /* Strings */
+.sourceCode .co { color: #6a737d; font-style: italic; } /* Comments */
+.sourceCode .fu { color: #6f42c1; } /* Functions */
+
+/* Clean tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+/* Better spacing for lists */
+ul, ol {
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+/* Special styling for code output blocks */
+.cell-output {
+  display: block !important;
+  visibility: visible !important;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid #28a745;
+  border-radius: 4px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.cell-output-stdout pre {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cell-output-error {
+  background: #fff5f5 !important;
+  border-left-color: #dc3545 !important;
+  color: #721c24 !important;
+}
+
+/* Success/info blocks */
+.callout-note {
+  border-left: 4px solid #0dcaf0;
+  background-color: #f0fcff;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.callout-tip {
+  border-left: 4px solid #198754;
+  background-color: #f0fff4;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.callout-warning {
+  border-left: 4px solid #ffc107;
+  background-color: #fffbf0;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+/* Images and visualizations */
+img {
+  max-width: 100%;
+  height: auto;
+  margin: 20px 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Navigation and links */
+a {
+  color: #667eea;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-bottom 0.2s ease;
+}
+
+a:hover {
+  border-bottom: 1px solid #667eea;
+}
+
+/* Tech stack badges */
+.tech-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  margin: 2px;
+  font-weight: 500;
+}
+
+/* Performance metrics tables */
+.metrics-table {
+  font-size: 0.9em;
+}
+
+.metrics-table th {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  .hero-section {
+    padding: 30px 20px;
+  }
+  
+  .hero-section h1 {
+    font-size: 2em;
+  }
+  
+  pre {
+    font-size: 12px;
+    padding: 10px;
+  }
+  
+  table {
+    font-size: 0.85em;
+  }
+}

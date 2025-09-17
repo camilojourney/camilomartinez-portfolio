@@ -1,0 +1,19 @@
+# Social Media Pipeline - Python Implementation
+
+cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+env/
+venv/
+ENV/
+.env
+.DS_Store
+*.log

@@ -24,8 +24,9 @@ This document provides comprehensive documentation of the fitness tracking datab
 - `strava_users` - Strava user profiles and API tokens
 - `whoop_users` - WHOOP user profiles and API tokens
 
-**Fitness Activities (2 tables)** 
-- `strava_runs` - Running activities with GPS data
+**Fitness Activities (3 tables)** 
+- `strava_runs` - Running activities with GPS data and enhanced metrics
+- `strava_run_splits` - Detailed kilometer/mile pace splits for training analysis
 - `whoop_workouts` - WHOOP workout sessions with heart rate zones
 
 **Cross-Platform Correlations (1 table)**
@@ -134,33 +135,118 @@ Key Relationships:
 | `id` | bigint | ✅ | - | Primary key, Strava activity ID |
 | `user_id` | bigint | ❌ | - | Foreign key to strava_users.id |
 | `name` | varchar(255) | ❌ | - | Activity name (e.g., "Morning Run") |
-| `sport_type` | varchar(50) | ❌ | - | Activity type: "Run" |
-| `start_date` | timestamptz | ❌ | UTC | Activity start timestamp |d
+| `sport_type` | varchar(50) | ❌ | - | Activity type: "Run", "TrailRun", "Treadmill" |
+| `start_date` | timestamptz | ❌ | UTC | Activity start timestamp |
+| `start_date_local` | timestamp | ❌ | Local | Activity start in user's local timezone |
+| `utc_offset_seconds` | integer | ❌ | seconds | Timezone offset from UTC |
 | `distance_meters` | double precision | ❌ | meters | Total distance covered |
+| `elapsed_time_seconds` | integer | ❌ | seconds | Total elapsed time including stops |
+| `average_speed_mps` | numeric | ❌ | m/s | Average speed in meters per second |
+| `max_speed_mps` | numeric | ❌ | m/s | Maximum speed in meters per second |
+| `total_elevation_gain` | numeric | ❌ | meters | Total elevation gained during activity |
+| `elev_high` | numeric | ❌ | meters | Highest elevation point |
+| `elev_low` | numeric | ❌ | meters | Lowest elevation point |
+| `suffer_score` | numeric | ❌ | 0-100+ | Strava's proprietary effort metric |
+| `perceived_exertion` | integer | ❌ | 1-10 | User's subjective effort rating |
+| `start_latlng` | point | ❌ | lat,lng | Starting coordinates as PostgreSQL POINT |
+| `end_latlng` | point | ❌ | lat,lng | Ending coordinates as PostgreSQL POINT |
 | `summary_polyline` | text | ❌ | - | Encoded GPS polyline (low resolution) |
 | `detailed_polyline` | text | ❌ | - | Encoded GPS polyline (high resolution) |
+| `private_note` | text | ❌ | - | User's private notes about the activity |
 | `created_at` | timestamptz | ❌ | UTC | Record creation timestamp |
 | `updated_at` | timestamptz | ❌ | UTC | Last update timestamp |
 
-**Business Context**: Core running data for performance analysis, route tracking, and progress monitoring. GPS polylines enable route visualization and analysis.
+**Business Context**: Core running data for performance analysis, route tracking, and progress monitoring. GPS polylines enable route visualization and analysis. Enhanced with detailed speed metrics, elevation data, coordinates, and subjective effort ratings for comprehensive training analysis.
 
 **Data Patterns**:
-- ~94 historical activities imported
-- New activities added weekly
+- ~18 enhanced activities with real-time API integration
+- New activities added with enhanced data collection
 - Distance typically 1-25 km for recreational runners
-- Polylines can be decoded for mapping applications
+- Coordinates stored as native PostgreSQL POINT type
+- Suffer scores correlate with training intensity
+- Perceived exertion provides subjective effort context
 
 **Common Queries**:
 ```sql
--- Monthly running summary
+-- Monthly running summary with enhanced metrics
 SELECT DATE_TRUNC('month', start_date) as month, 
        COUNT(*) as runs, 
-       SUM(distance_meters)/1000 as total_km
+       SUM(distance_meters)/1000 as total_km,
+       AVG(average_speed_mps * 3.6) as avg_speed_kmh,
+       AVG(suffer_score) as avg_suffer_score
 FROM strava_runs WHERE user_id = ? GROUP BY month;
 
--- Average pace by route
-SELECT name, AVG(distance_meters) as avg_distance
-FROM strava_runs WHERE sport_type = 'Run' GROUP BY name;
+-- Performance analysis with coordinates
+SELECT name, 
+       distance_meters/1000 as km,
+       average_speed_mps * 3.6 as speed_kmh,
+       start_latlng[0] as start_lat, start_latlng[1] as start_lng,
+       suffer_score, perceived_exertion
+FROM strava_runs WHERE sport_type = 'Run' ORDER BY start_date DESC;
+
+-- Route clustering by start coordinates
+SELECT name, start_latlng, 
+       ST_Distance(start_latlng, ST_Point(-73.9442, 40.7580)) * 111320 as distance_from_astoria_meters
+FROM strava_runs ORDER BY distance_from_astoria_meters;
+```
+
+---
+
+### 🏃‍♂️ **STRAVA_RUN_SPLITS** - Detailed Pace Splits
+**Purpose**: Stores kilometer/mile split data for detailed pace analysis  
+**Data Source**: Strava Activities API (splits array)  
+**Update Frequency**: Real-time with enhanced data collection  
+
+| Column | Type | Required | Units | Description |
+|--------|------|----------|-------|-------------|
+| `id` | bigserial | ✅ | - | Primary key, auto-increment |
+| `strava_run_id` | bigint | ✅ | - | Foreign key to strava_runs.id |
+| `split_type` | text | ✅ | - | Split type: "metric" (km) or "standard" (mile) |
+| `split_number` | integer | ✅ | - | Split sequence number (1, 2, 3...) |
+| `distance_meters` | numeric | ✅ | meters | Split distance (1000m or 1609.34m) |
+| `elapsed_time_seconds` | integer | ✅ | seconds | Total time including stops for this split |
+| `moving_time_seconds` | integer | ✅ | seconds | Active movement time for this split |
+| `elevation_difference_meters` | numeric | ❌ | meters | Net elevation change for this split |
+| `average_speed_mps` | numeric | ✅ | m/s | Average speed for this split |
+| `average_grade_adjusted_speed` | numeric | ❌ | m/s | Speed adjusted for elevation grade |
+| `pace_zone` | integer | ❌ | 1-5 | Pace intensity zone for this split |
+
+**Business Context**: Enables detailed pace analysis, training zone monitoring, and performance consistency evaluation. Critical for interval training analysis and identifying race pacing strategies.
+
+**Data Patterns**:
+- Multiple splits per run (typically 1 per km/mile)
+- Metric splits (1000m) more common for international users
+- Standard splits (1609.34m) for US users
+- Pace zones help identify training intensity distribution
+- 110+ splits currently stored across enhanced activities
+
+**Common Split Analysis Queries**:
+```sql
+-- Pace progression analysis
+SELECT split_number, 
+       average_speed_mps * 3.6 as speed_kmh,
+       elapsed_time_seconds / 60.0 as pace_per_km_minutes
+FROM strava_run_splits 
+WHERE strava_run_id = ? AND split_type = 'metric'
+ORDER BY split_number;
+
+-- Negative split detection (getting faster)
+WITH split_halves AS (
+  SELECT strava_run_id,
+         CASE WHEN split_number <= MAX(split_number) OVER (PARTITION BY strava_run_id) / 2.0 
+              THEN 'first_half' ELSE 'second_half' END as half,
+         AVG(average_speed_mps) OVER (PARTITION BY strava_run_id, 
+              CASE WHEN split_number <= MAX(split_number) OVER (PARTITION BY strava_run_id) / 2.0 
+                   THEN 'first_half' ELSE 'second_half' END) as avg_speed
+  FROM strava_run_splits WHERE split_type = 'metric'
+)
+SELECT sr.name,
+       (sh2.avg_speed - sh1.avg_speed) * 3.6 as speed_improvement_kmh,
+       CASE WHEN sh2.avg_speed > sh1.avg_speed 
+            THEN 'Negative Split' ELSE 'Positive Split' END as split_type
+FROM strava_runs sr
+JOIN split_halves sh1 ON sr.id = sh1.strava_run_id AND sh1.half = 'first_half'
+JOIN split_halves sh2 ON sr.id = sh2.strava_run_id AND sh2.half = 'second_half';
 ```
 
 ---
@@ -206,8 +292,8 @@ FROM strava_runs WHERE sport_type = 'Run' GROUP BY name;
 | `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
 | `strain` | numeric(8,6) | ❌ | 0-21 scale | Daily strain score |
 | `kilojoule` | numeric(12,4) | ❌ | kJ | Energy expenditure |
-| `average_heart_rate` | integer | ❌ | BPM | Average heart rate for cycle |
-| `max_heart_rate` | integer | ❌ | BPM | Maximum heart rate for cycle |
+| `avg_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Average heart rate for cycle |
+| `max_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Maximum heart rate for cycle |
 
 **Business Context**: Daily load measurement for recovery planning and overtraining prevention. This table contains the **total daily strain** for an entire 24-hour cycle - the cumulative cardiovascular load from all activities and daily life. Strain scores guide training intensity decisions and contribute to recovery calculations.
 
@@ -238,17 +324,17 @@ FROM strava_runs WHERE sport_type = 'Run' GROUP BY name;
 | `start_time` | timestamptz | ❌ | UTC | Sleep start timestamp |
 | `end_time` | timestamptz | ❌ | UTC | Sleep end timestamp |
 | `timezone_offset` | varchar(10) | ❌ | ±HH:MM | User's timezone offset |
-| `nap` | boolean | ❌ | - | True if nap, false if overnight sleep |
+| `is_nap` | boolean | ❌ | - | True if nap, false if overnight sleep |
 | `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
 | `sleep_performance_percentage` | numeric(5,2) | ❌ | 0-100% | Overall sleep performance score |
 | `respiratory_rate` | numeric(5,2) | ❌ | breaths/min | Average respiratory rate |
 | `sleep_consistency_percentage` | numeric(5,2) | ❌ | 0-100% | Sleep schedule consistency |
 | `sleep_efficiency_percentage` | numeric(5,2) | ❌ | 0-100% | Time asleep vs time in bed |
-| `total_in_bed_time_milli` | bigint | ❌ | milliseconds | Total time in bed |
-| `total_awake_time_milli` | bigint | ❌ | milliseconds | Time awake during sleep period |
-| `total_light_sleep_time_milli` | bigint | ❌ | milliseconds | Light sleep duration |
-| `total_slow_wave_sleep_time_milli` | bigint | ❌ | milliseconds | Deep sleep duration |
-| `total_rem_sleep_time_milli` | bigint | ❌ | milliseconds | REM sleep duration |
+| `total_in_bed_time_ms` | bigint | ❌ | milliseconds | Total time in bed |
+| `total_awake_time_ms` | bigint | ❌ | milliseconds | Time awake during sleep period |
+| `total_light_sleep_time_ms` | bigint | ❌ | milliseconds | Light sleep duration |
+| `total_slow_wave_sleep_time_ms` | bigint | ❌ | milliseconds | Deep sleep duration |
+| `total_rem_sleep_time_ms` | bigint | ❌ | milliseconds | REM sleep duration |
 | `disturbance_count` | integer | ❌ | count | Number of sleep disturbances |
 
 **Business Context**: Critical sleep data for recovery optimization and performance correlation. Sleep quality directly impacts training readiness and recovery scores.
@@ -262,8 +348,8 @@ FROM strava_runs WHERE sport_type = 'Run' GROUP BY name;
 **Time Conversions**:
 ```sql
 -- Convert milliseconds to hours
-SELECT total_in_bed_time_milli / 3600000.0 as hours_in_bed,
-       total_light_sleep_time_milli / 3600000.0 as hours_light_sleep
+SELECT total_in_bed_time_ms / 3600000.0 as hours_in_bed,
+       total_light_sleep_time_ms / 3600000.0 as hours_light_sleep
 FROM whoop_sleep;
 ```
 
@@ -284,9 +370,9 @@ FROM whoop_sleep;
 | `sleep_id` | varchar(36) | ❌ | - | Foreign key to whoop_sleep.id |
 | `user_id` | bigint | ❌ | - | Foreign key to whoop_users.id |
 | `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
-| `recovery_score` | numeric(5,2) | ❌ | 0-100% | Overall recovery percentage |
-| `resting_heart_rate` | numeric(5,2) | ❌ | BPM | Resting heart rate during sleep |
-| `hrv_rmssd_milli` | numeric(8,4) | ❌ | milliseconds | Heart rate variability (RMSSD) |
+| `recovery_percentage` | numeric(5,2) | ❌ | 0-100% | Overall recovery percentage |
+| `resting_heart_rate_bpm` | numeric(5,2) | ❌ | BPM | Resting heart rate during sleep |
+| `hrv_rmssd_ms` | numeric(8,4) | ❌ | milliseconds | Heart rate variability (RMSSD) |
 | `spo2_percentage` | numeric(5,2) | ❌ | 0-100% | Blood oxygen saturation |
 | `skin_temp_celsius` | numeric(4,2) | ❌ | °C | Skin temperature deviation |
 
@@ -327,18 +413,18 @@ FROM whoop_sleep;
 | `sport_name` | varchar(100) | ❌ | - | Human-readable sport name |
 | `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
 | `strain` | numeric(8,6) | ❌ | 0-21 scale | Workout strain contribution |
-| `average_heart_rate` | integer | ❌ | BPM | Average heart rate during workout |
-| `max_heart_rate` | integer | ❌ | BPM | Maximum heart rate during workout |
+| `avg_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Average heart rate during workout |
+| `max_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Maximum heart rate during workout |
 | `kilojoule` | numeric(12,4) | ❌ | kJ | Energy expenditure during workout |
 | `distance_meters` | numeric(12,4) | ❌ | meters | Distance covered (if applicable) |
 | `altitude_gain_meter` | numeric(12,4) | ❌ | meters | Elevation gain |
 | `altitude_change_meter` | numeric(12,4) | ❌ | meters | Net elevation change |
-| `zone_zero_milli` | bigint | ❌ | milliseconds | Time in zone 0 (50-60% max HR) |
-| `zone_one_milli` | bigint | ❌ | milliseconds | Time in zone 1 (60-70% max HR) |
-| `zone_two_milli` | bigint | ❌ | milliseconds | Time in zone 2 (70-80% max HR) |
-| `zone_three_milli` | bigint | ❌ | milliseconds | Time in zone 3 (80-90% max HR) |
-| `zone_four_milli` | bigint | ❌ | milliseconds | Time in zone 4 (90-95% max HR) |
-| `zone_five_milli` | bigint | ❌ | milliseconds | Time in zone 5 (95-100% max HR) |
+| `hr_zone_0_ms` | bigint | ❌ | milliseconds | Time in zone 0 (50-60% max HR) |
+| `hr_zone_1_ms` | bigint | ❌ | milliseconds | Time in zone 1 (60-70% max HR) |
+| `hr_zone_2_ms` | bigint | ❌ | milliseconds | Time in zone 2 (70-80% max HR) |
+| `hr_zone_3_ms` | bigint | ❌ | milliseconds | Time in zone 3 (80-90% max HR) |
+| `hr_zone_4_ms` | bigint | ❌ | milliseconds | Time in zone 4 (90-95% max HR) |
+| `hr_zone_5_ms` | bigint | ❌ | milliseconds | Time in zone 5 (95-100% max HR) |
 
 **Business Context**: Detailed workout analysis for training optimization. This table contains the **activity-specific strain** generated only during a recorded workout session. This strain value contributes to the total daily strain found in `whoop_cycles`. Heart rate zones indicate training intensity and adaptation stimulus.
 
@@ -437,8 +523,8 @@ ORDER BY month;
 SELECT 
     sr.start_date::date as run_date,
     sr.distance_meters/1000 as km,
-    wr.recovery_score,
-    wr.resting_heart_rate
+    wr.recovery_percentage,
+    wr.resting_heart_rate_bpm
 FROM strava_runs sr
 JOIN whoop_recovery wr ON sr.start_date::date = (
     SELECT start_time::date FROM whoop_cycles WHERE id = wr.cycle_id
@@ -449,11 +535,11 @@ ORDER BY sr.start_date;
 -- Sleep Quality Impact on Training
 SELECT 
     ws.sleep_performance_percentage,
-    ws.total_in_bed_time_milli / 3600000.0 as hours_sleep,
+    ws.total_in_bed_time_ms / 3600000.0 as hours_sleep,
     AVG(ww.strain) as avg_workout_strain
 FROM whoop_sleep ws
 JOIN whoop_workouts ww ON DATE(ws.start_time) = DATE(ww.start_time)
-WHERE ws.nap = false
+WHERE ws.is_nap = false
 GROUP BY ws.id, ws.sleep_performance_percentage, hours_sleep
 ORDER BY ws.sleep_performance_percentage;
 ```
@@ -465,7 +551,7 @@ ORDER BY ws.sleep_performance_percentage;
 SELECT 
     DATE_TRUNC('week', wc.start_time) as week,
     AVG(wr.recovery_percentage) as avg_recovery,
-    AVG(wr.hrv_rmssd_milli) as avg_hrv,
+    AVG(wr.hrv_rmssd_ms) as avg_hrv,
     AVG(wr.resting_heart_rate_bpm) as avg_rhr
 FROM whoop_recovery wr
 JOIN whoop_cycles wc ON wr.cycle_id = wc.id
@@ -476,9 +562,9 @@ ORDER BY week;
 -- Heart rate zone distribution
 SELECT 
     sport_name,
-    AVG((zone_three_milli + zone_four_milli + zone_five_milli) / 
-        (zone_zero_milli + zone_one_milli + zone_two_milli + 
-         zone_three_milli + zone_four_milli + zone_five_milli)::float * 100) as high_intensity_percentage
+    AVG((hr_zone_3_ms + hr_zone_4_ms + hr_zone_5_ms) / 
+        (hr_zone_0_ms + hr_zone_1_ms + hr_zone_2_ms + 
+         hr_zone_3_ms + hr_zone_4_ms + hr_zone_5_ms)::float * 100) as high_intensity_percentage
 FROM whoop_workouts
 WHERE user_id = ?
 GROUP BY sport_name
@@ -505,8 +591,8 @@ SELECT
   s.moving_time_seconds/60 as strava_minutes,
   w.sport_name as whoop_sport,
   w.strain as whoop_strain,
-  w.average_heart_rate,
-  w.max_heart_rate,
+  ww.avg_heart_rate_bpm,
+  ww.max_heart_rate_bpm,
   s.run_date,
   s.run_hour
 FROM strava AS s
@@ -666,6 +752,8 @@ When generating embeddings for AI query understanding, use these comprehensive d
 
 **whoop_workouts**: "Individual workout sessions with sport type, strain contribution, heart rate zones 0-5 time distribution in milliseconds, distance in meters, altitude gain, and energy expenditure in kilojoules"
 
+**strava_run_splits**: "Detailed kilometer and mile pace splits for training analysis including split number, distance, elapsed time, moving time, average speed in meters per second, elevation difference, and pace zones for comprehensive pacing strategy evaluation"
+
 **activity_correlations**: "Cross-platform junction table connecting Strava runs with WHOOP workouts for the same physical activity, includes confidence scores from 0.00 to 1.00, correlation methods like datetime_match, time differences in minutes, and distance differences in meters for comprehensive cross-platform analysis"
 
 ### 📊 **Column-Level Embedding Descriptions**
@@ -675,9 +763,9 @@ When generating embeddings for AI query understanding, use these comprehensive d
 #### WHOOP Recovery Table
 | Table | Column | Description for Embedding |
 |-------|---------|---------------------------|
-| `whoop_recovery` | `recovery_score` | The overall recovery percentage from 0-100. Higher is better. Green zone is above 66%, yellow 34-66%, red below 34%. Use this to find how 'recovered' or 'ready' a user is. |
-| `whoop_recovery` | `hrv_rmssd_milli` | Heart Rate Variability HRV in milliseconds. A key indicator of nervous system recovery and autonomic balance. Higher values typically indicate better recovery. |
-| `whoop_recovery` | `resting_heart_rate` | Resting Heart Rate RHR in beats per minute, measured during sleep. Lower values generally indicate better cardiovascular fitness and recovery. |
+| `whoop_recovery` | `recovery_percentage` | The overall recovery percentage from 0-100. Higher is better. Green zone is above 66%, yellow 34-66%, red below 34%. Use this to find how 'recovered' or 'ready' a user is. |
+| `whoop_recovery` | `hrv_rmssd_ms` | Heart Rate Variability HRV in milliseconds. A key indicator of nervous system recovery and autonomic balance. Higher values typically indicate better recovery. |
+| `whoop_recovery` | `resting_heart_rate_bpm` | Resting Heart Rate RHR in beats per minute, measured during sleep. Lower values generally indicate better cardiovascular fitness and recovery. |
 | `whoop_recovery` | `spo2_percentage` | Blood oxygen saturation percentage, typically 95-100% for healthy individuals. Lower values may indicate respiratory issues. |
 | `whoop_recovery` | `skin_temp_celsius` | Skin temperature deviation in Celsius from user's baseline. Can indicate illness, stress, or environmental factors. |
 
@@ -688,19 +776,35 @@ When generating embeddings for AI query understanding, use these comprehensive d
 | `strava_runs` | `sport_type` | Type of running activity: 'Run' for road running, 'TrailRun' for trail running, 'Treadmill' for indoor running. Use to filter activity types. |
 | `strava_runs` | `start_date` | When the run started in UTC timestamp. Use for date-based filtering, trends, and time-based analysis. |
 | `strava_runs` | `summary_polyline` | Encoded GPS polyline for route visualization. Low resolution but sufficient for route mapping and analysis. |
-| `strava_runs` | `detailed_polyline` | High resolution encoded GPS polyline for detailed route analysis and precise mapping. |
+| `strava_runs` | `suffer_score` | Strava's proprietary effort metric from 0-100+. Higher values indicate greater training stress and effort. Use for training load analysis and recovery planning. |
+| `strava_runs` | `perceived_exertion` | User's subjective effort rating from 1-10 scale (1=very easy, 10=maximum effort). Provides context for how hard the activity felt regardless of objective metrics. |
+| `strava_runs` | `start_latlng` | Starting coordinates as PostgreSQL POINT type. Access latitude with start_latlng[0] and longitude with start_latlng[1]. Use for route analysis and location-based queries. |
+| `strava_runs` | `end_latlng` | Ending coordinates as PostgreSQL POINT type. Access latitude with end_latlng[0] and longitude with end_latlng[1]. Use for route analysis and destination pattern identification. |
+| `strava_runs` | `average_speed_mps` | Average speed in meters per second. Multiply by 3.6 to convert to km/h or by 2.237 to convert to mph. Use for pace and performance analysis. |
+| `strava_runs` | `total_elevation_gain` | Total elevation gained during activity in meters. Critical for understanding route difficulty and training stress from climbs. |
+
+#### Strava Run Splits Table
+| Table | Column | Description for Embedding |
+|-------|---------|---------------------------|
+| `strava_run_splits` | `split_number` | Sequential split number (1, 2, 3, etc.) representing order within the run. Use for analyzing pace progression and identifying fastest/slowest segments. |
+| `strava_run_splits` | `split_type` | Type of split measurement: 'metric' for kilometer splits (1000m) or 'standard' for mile splits (1609.34m). Use to filter for consistent split analysis. |
+| `strava_run_splits` | `average_speed_mps` | Average speed for this split in meters per second. Convert to pace by calculating 1000/speed for minutes per kilometer. Critical for pace analysis and training zones. |
+| `strava_run_splits` | `elapsed_time_seconds` | Total time for this split in seconds including any stops. Compare with moving_time_seconds to identify rest periods during the split. |
+| `strava_run_splits` | `moving_time_seconds` | Active movement time for this split in seconds excluding stops. Use for pure pace analysis without rest time influence. |
+| `strava_run_splits` | `elevation_difference_meters` | Net elevation change for this split in meters. Positive values indicate uphill, negative downhill. Critical for understanding pace variations due to terrain. |
+| `strava_run_splits` | `pace_zone` | Training intensity zone (1-5) for this split based on pace. Zone 1=recovery, Zone 2=aerobic base, Zone 3=tempo, Zone 4=threshold, Zone 5=VO2 max. |
 
 #### WHOOP Sleep Table
 | Table | Column | Description for Embedding |
 |-------|---------|---------------------------|
 | `whoop_sleep` | `sleep_performance_percentage` | Overall sleep performance score 0-100%. Higher is better. Use for sleep quality queries and performance correlation. |
-| `whoop_sleep` | `total_in_bed_time_milli` | Total time in bed in milliseconds. Convert to hours by dividing by 3600000. Includes time awake in bed. |
-| `whoop_sleep` | `total_light_sleep_time_milli` | Light sleep duration in milliseconds. Typically 45-55% of total sleep. Convert to hours or minutes as needed. |
-| `whoop_sleep` | `total_slow_wave_sleep_time_milli` | Deep sleep duration in milliseconds. Critical for physical recovery. Typically 15-20% of total sleep. |
-| `whoop_sleep` | `total_rem_sleep_time_milli` | REM sleep duration in milliseconds. Important for mental recovery and memory. Typically 20-25% of total sleep. |
+| `whoop_sleep` | `total_in_bed_time_ms` | Total time in bed in milliseconds. Convert to hours by dividing by 3600000. Includes time awake in bed. |
+| `whoop_sleep` | `total_light_sleep_time_ms` | Light sleep duration in milliseconds. Typically 45-55% of total sleep. Convert to hours or minutes as needed. |
+| `whoop_sleep` | `total_slow_wave_sleep_time_ms` | Deep sleep duration in milliseconds. Critical for physical recovery. Typically 15-20% of total sleep. |
+| `whoop_sleep` | `total_rem_sleep_time_ms` | REM sleep duration in milliseconds. Important for mental recovery and memory. Typically 20-25% of total sleep. |
 | `whoop_sleep` | `sleep_efficiency_percentage` | Percentage of time in bed actually spent sleeping. 85-95% is typical for healthy adults. |
 | `whoop_sleep` | `disturbance_count` | Number of times sleep was disturbed. Lower is better for sleep quality. |
-| `whoop_sleep` | `nap` | Boolean indicating if this is a nap (true) or overnight sleep (false). Use to filter main sleep vs naps. |
+| `whoop_sleep` | `is_nap` | Boolean indicating if this is a nap (true) or overnight sleep (false). Use to filter main sleep vs naps. |
 
 #### WHOOP Cycles Table
 | Table | Column | Description for Embedding |
@@ -724,52 +828,44 @@ When generating embeddings for AI query understanding, use these comprehensive d
 
 ## Recent Database Updates (September 2025)
 
-### ✅ **Fixed WHOOP v1_id Column Issue**
-- **Problem**: `column "v1_id" of relation "whoop_sleep" does not exist` error
-- **Solution**: Renamed `activity_v1_id` → `v1_id` in `whoop_sleep` table
-- **Migration**: `migrations/add_relationship_whoop_sleep_workouts.sql`
+### 🚀 **Enhanced Strava Data Collection (September 17, 2025)**
+- **New Table**: Added `strava_run_splits` for detailed kilometer/mile pace analysis
+- **Enhanced Fields**: Added coordinates (`start_latlng`, `end_latlng` as PostgreSQL POINT), speed metrics, elevation data, suffer scores to `strava_runs`
+- **Real-time Integration**: Implemented enhanced data collection with `fetch-real-enhanced-data.js` as main production script
+- **Data Volume**: 18 activities with enhanced data, 110+ splits properly normalized
 
-### 🔗 **Enhanced Foreign Key Relationships**
-- **Added**: `whoop_sleep.v1_id` → `whoop_workouts.v1_id` (for workout-related sleep)
-- **Added**: `whoop_recovery.cycle_id` → `whoop_cycles.id` (ensures recovery integrity)
-- **Cleaned**: Orphaned `v1_id` references set to NULL to maintain data integrity
+### 🔗 **Cross-Platform Activity Correlations**
+- **Junction Table**: Added `activity_correlations` for professional cross-platform analysis
+- **Confidence Scoring**: Implemented 0.00-1.00 confidence scoring with multiple correlation methods
+- **ETL Process**: Added automated correlation processing via `run-correlation-etl.js`
+- **Method Support**: datetime_match, datetime_distance_match, loose_datetime_match algorithms
 
-### 📊 **Data Integrity Improvements**
-- **Unique constraint**: Added to `whoop_workouts.v1_id` for proper FK references
-- **Relationship validation**: All FK constraints now enforce proper WHOOP API data model
-- **Bridge pattern**: Recovery table confirmed as bridge between Cycles and Sleep (per WHOOP API design)
+### 📊 **Database Schema Standardization**
+- **Column Naming**: Standardized all heart rate columns to `*_bpm` format
+- **Time Fields**: Unified all duration fields to `*_ms` (milliseconds) format
+- **Coordinates**: Native PostgreSQL POINT type for optimal geographic queries
+- **Relationships**: Proper foreign key constraints enforcing WHOOP API v2 data model
 
-### 🔧 **Critical Bug Fixes (September 15, 2025)**
+### 🎯 **Current Data Inventory (September 17, 2025)**
 
-#### **Zone Data Mapping Fix**
-- **Issue**: Heart rate zone data not saving to database due to API structure mismatch
-- **Root Cause**: Code expected `zone_duration` but WHOOP API v2 returns `zone_durations` (plural)
-- **Fix Applied**: 
-  - Updated `src/lib/db/whoop-database.ts` to use `zone_durations` (plural)
-  - Fixed TypeScript types in `src/types/whoop.ts` to match API response structure
-- **Impact**: All workout heart rate zone data now saves correctly
-- **Validation**: Production daily fetch confirmed zone data flowing properly
+#### **Tables Summary (9 tables total)**
+- **Authentication**: `strava_users`, `whoop_users` (2 tables)
+- **Fitness Activities**: `strava_runs`, `strava_run_splits`, `whoop_workouts` (3 tables)
+- **Health Metrics**: `whoop_cycles`, `whoop_recovery`, `whoop_sleep` (3 tables)
+- **Cross-Platform**: `activity_correlations` (1 table)
 
-#### **Foreign Key Constraint Resolution**
-- **Issue**: `whoop_sleep.v1_id` foreign key constraint blocking workout saves
-- **Root Cause**: WHOOP API v2 sleep/workout independence not reflected in database constraints
-- **Fix Applied**: Removed foreign key constraint from `whoop_sleep.v1_id` → `whoop_workouts.v1_id`
-- **Migration**: `migrations/fix_sleep_foreign_key_null.sql` - sets orphaned v1_id to NULL
-- **Impact**: Sleep records can now exist independently without requiring workout relationships
+#### **Data Volume**
+- **Strava**: 18 enhanced activities with full metrics and coordinates
+- **Splits**: 110+ pace splits for detailed training analysis
+- **WHOOP**: Complete physiological data with heart rate zones properly populated
+- **Correlations**: Cross-platform activity matching with confidence scoring
 
-#### **Token Refresh UX Improvements** 
-- **Issue**: Aggressive 30-minute proactive token refresh causing premature auth warnings
-- **Root Cause**: Token refresh triggered during routine page navigation vs actual expiration
-- **Fix Applied**:
-  - Reduced proactive refresh buffer from 30 minutes to 1 minute
-  - Implemented single-warning-per-session to prevent console spam
-  - Updated log messaging for clarity
-- **Impact**: Users only see authentication prompts when tokens are genuinely expired
-
-#### **Database Schema Validation**
-- **Zone Data Fields**: All `zone_*_milli` columns now properly populated with millisecond values
-- **Data Flow**: WHOOP API v2 → `zone_durations` → Database `zone_*_milli` columns ✅
-- **Heart Rate Zones**: Complete 6-zone distribution (0-5) now captured for training analysis
+#### **Schema Validation**
+All tables match production database schema exactly:
+- Column names standardized (`*_bpm`, `*_ms` formats)
+- PostgreSQL POINT coordinates for geographic queries
+- Proper foreign key relationships enforcing data integrity
+- Enhanced fields fully populated via real-time API integration
 
 | `whoop_workouts` | `zone_four_milli` | Time in heart rate zone 4 (90-95% max HR) in milliseconds. VO2 max, anaerobic threshold zone. |
 | `whoop_workouts` | `zone_five_milli` | Time in heart rate zone 5 (95-100% max HR) in milliseconds. Neuromuscular power, maximum effort zone. |
@@ -794,4 +890,6 @@ When generating embeddings for AI query understanding, use these comprehensive d
 
 ---
 
-**✅ Schema Documentation Complete - Ready for Embedding Generation**
+**✅ Schema Documentation Complete - Updated September 17, 2025**
+
+This documentation now accurately reflects the current production database schema with all enhanced fields, proper column names, and complete table relationships. Ready for embedding generation and AI query understanding.

@@ -5,15 +5,21 @@ This folder contains all development and maintenance scripts organized by functi
 ## 📁 Folder Structure
 
 ### `data/` - Data Processing & Analysis
+- `activity-correlation-etl.ts` - ETL process for cross-platform activity correlations
 - `analyze-sleep-data.js` - Sleep data analysis from WHOOP
+- `fetch-real-enhanced-data.js` - **Main enhanced Strava data fetcher with real API calls**
+- `generate-astoria-base-map.py` - Generate Astoria map visualization
+- `get-workout-data.js` - WHOOP workout data extraction
+- `load-astoria-streets.js` - Load Astoria street data into database
+- `refresh-strava-tokens.js` - Automatic Strava token refresh system
+- `run-correlation-etl.js` - Execute activity correlation ETL process
 - `simple-historical-import.js` - Historical data import from WHOOP
 - `simple-strava-historical.js` - Historical Strava data import
 - `strava-historical-import.js` - Complete Strava historical import
 - `strava-setup-complete.js` - Strava integration setup
 - `strava-sync-status.js` - Check Strava sync status
 - `strava-weekly-sync.js` - Weekly Strava data sync
-- `load-astoria-streets.js` - Load Astoria street data into database
-- `generate-astoria-base-map.py` - Generate Astoria map visualization
+- `test-strava-sync.js` - Test Strava synchronization
 
 ### `testing/` - Test & Validation Scripts
 - `check-cron-health.js` - Monitor cron job health and execution
@@ -29,24 +35,15 @@ This folder contains all development and maintenance scripts organized by functi
 - `test-token-status.js` - Check WHOOP token status
 
 ### `dev/` - Development Utilities
-- `debug-token-values.js` - Debug authentication tokens
-- `manual-token-store.js` - Manually store tokens
-- `store-env-token.js` - Store environment tokens
 - `whoop-cli.js` - WHOOP command-line interface
 
 ### `db/` - Database Operations
+- `apply-migration.js` - Apply database migrations with validation
 - `check-vector-support.js` - Verify vector extension support
 - `enable-vector-support.js` - Enable PostgreSQL vector extension
-- `fix-column-naming.js` - Fix database column naming issues
 - `get-database-schema.js` - Export complete database schema
-- `migrate-add-tokens.js` - Add token fields to database
-- `run-migration.js` - Run general database migrations
-- `run-recovery-cycles-migration.js` - Run WHOOP recovery cycles migration
-- `run-relationship-migration.js` - Run WHOOP relationship migration
-- `run-strava-migration.js` - Run Strava database migration
 - `run-strava-migrations.js` - Run all Strava migrations
 - `setup-astoria-database.sql` - Initial database setup
-- `setup-user-tokens.js` - Setup user token tables
 
 ## 🚀 Usage
 
@@ -56,6 +53,9 @@ This folder contains all development and maintenance scripts organized by functi
 # Check system health
 node scripts/testing/check-cron-health.js
 node scripts/testing/check-recent-data.js
+
+# Enhanced data fetching (MAIN PRODUCTION SCRIPT)
+node scripts/data/fetch-real-enhanced-data.js
 
 # Monitor integrations
 node scripts/data/strava-sync-status.js
@@ -68,6 +68,9 @@ node scripts/testing/check-database-schema.js
 # Historical data imports
 node scripts/data/simple-historical-import.js
 node scripts/data/strava-historical-import.js
+
+# Activity correlation ETL
+node scripts/data/run-correlation-etl.js
 ```
 
 ### Testing & Debugging
@@ -90,8 +93,7 @@ node scripts/testing/test-data-insertion.js
 node scripts/dev/whoop-cli.js
 
 # Database migrations
-node scripts/db/run-migration.js
-node scripts/db/setup-user-tokens.js
+node scripts/db/apply-migration.js
 ```
 
 ## 📝 Notes
@@ -104,6 +106,8 @@ node scripts/db/setup-user-tokens.js
 
 ## 🔧 Recent Updates (September 2025)
 
-- **Cleaned up:** Removed temporary debugging scripts from zone data fix
-- **Organized:** Kept only production-useful utilities
-- **Updated:** Added cron health monitoring and token extraction tools
+- **Enhanced Data Collection:** Added `fetch-real-enhanced-data.js` as main production script for Strava data with coordinates, splits, and enhanced metrics
+- **Script Organization:** Reorganized scripts into logical categories (data/, testing/, db/, dev/)
+- **Cleaned up:** Removed obsolete debugging scripts and temporary files
+- **Activity Correlations:** Added ETL process for cross-platform activity matching
+- **Updated:** Added cron health monitoring and enhanced token management tools

@@ -186,8 +186,8 @@ export const stravaUserService = new StravaUserService();
  */
 
 /**
- * Insert or update a Strava run in the database
- * Uses the correct schema: id, user_id, detailed_polyline, etc.
+ * Insert or update a Strava run in the database with ENHANCED DATA
+ * Handles all enhanced fields: performance metrics, coordinates, splits, etc.
  */
 export async function upsertStravaRun(activity: StravaActivity, userId: number, detailedPolyline?: string): Promise<void> {
   try {
@@ -197,28 +197,27 @@ export async function upsertStravaRun(activity: StravaActivity, userId: number, 
     }
 
     // Use detailed polyline if provided, otherwise fall back to summary
-    const polylineToStore = detailedPolyline || activity.map.summary_polyline;
+    const polylineToStore = detailedPolyline || activity.map.polyline || activity.map.summary_polyline;
     
+    // Enhanced upsert with ALL enhanced fields (matching actual schema)
     await sql`
       INSERT INTO strava_runs (
-        id,
-        user_id,
-        name,
-        sport_type,
-        start_date,
-        distance_meters,
-        summary_polyline,
-        detailed_polyline,
-        created_at
+        id, user_id, name, sport_type, start_date, distance_meters,
+        summary_polyline, detailed_polyline,
+        elapsed_time_seconds, start_date_local, utc_offset_seconds,
+        average_speed_mps, max_speed_mps, total_elevation_gain,
+        elev_high, elev_low, suffer_score, perceived_exertion,
+        private_note, created_at
       ) VALUES (
-        ${activity.id},
-        ${userId},
-        ${activity.name},
-        ${activity.type},
-        ${activity.start_date},
-        ${activity.distance},
-        ${activity.map.summary_polyline},
-        ${polylineToStore}
+        ${activity.id}, ${userId}, ${activity.name}, ${activity.type || activity.sport_type || 'Run'},
+        ${activity.start_date}, ${activity.distance},
+        ${activity.map.summary_polyline}, ${polylineToStore},
+        ${activity.elapsed_time || null}, ${activity.start_date_local || null}, ${activity.utc_offset || null},
+        ${activity.average_speed || null}, ${activity.max_speed || null},
+        ${activity.total_elevation_gain || null}, ${activity.elev_high || null},
+        ${activity.elev_low || null}, ${activity.suffer_score || null},
+        ${activity.perceived_exertion || null}, ${activity.private_note || null},
+        NOW()
       )
       ON CONFLICT (id) 
       DO UPDATE SET
@@ -227,13 +226,84 @@ export async function upsertStravaRun(activity: StravaActivity, userId: number, 
         start_date = EXCLUDED.start_date,
         distance_meters = EXCLUDED.distance_meters,
         summary_polyline = EXCLUDED.summary_polyline,
-        detailed_polyline = EXCLUDED.detailed_polyline
+        detailed_polyline = EXCLUDED.detailed_polyline,
+        elapsed_time_seconds = EXCLUDED.elapsed_time_seconds,
+        start_date_local = EXCLUDED.start_date_local,
+        utc_offset_seconds = EXCLUDED.utc_offset_seconds,
+        average_speed_mps = EXCLUDED.average_speed_mps,
+        max_speed_mps = EXCLUDED.max_speed_mps,
+        total_elevation_gain = EXCLUDED.total_elevation_gain,
+        elev_high = EXCLUDED.elev_high,
+        elev_low = EXCLUDED.elev_low,
+        suffer_score = EXCLUDED.suffer_score,
+        perceived_exertion = EXCLUDED.perceived_exertion,
+        private_note = EXCLUDED.private_note,
+        updated_at = NOW()
     `;
 
-    console.log(`✅ Upserted run: ${activity.name} (${(activity.distance / 1000).toFixed(2)}km)`);
+    // Handle splits data in normalized table
+    await upsertStravaSplits(activity.id, activity.splits_metric, activity.splits_standard);
+
+    console.log(`✅ Enhanced upsert: ${activity.name} (${(activity.distance / 1000).toFixed(2)}km) with performance data`);
   } catch (error) {
     console.error(`❌ Error upserting run ${activity.id}:`, error);
     throw error;
+  }
+}
+
+/**
+ * Upsert splits data into the normalized strava_run_splits table
+ * Handles both metric and standard splits from Strava API
+ */
+export async function upsertStravaSplits(runId: number, splitsMetric?: any[], splitsStandard?: any[]): Promise<void> {
+  try {
+    // Clear existing splits for this run first
+    await sql`DELETE FROM strava_run_splits WHERE strava_run_id = ${runId}`;
+
+    // Insert metric splits
+    if (splitsMetric && splitsMetric.length > 0) {
+      for (const [index, split] of splitsMetric.entries()) {
+        await sql`
+          INSERT INTO strava_run_splits (
+            strava_run_id, split_type, split_number,
+            distance_meters, elapsed_time_seconds, moving_time_seconds,
+            elevation_difference_meters, average_speed_mps, 
+            average_grade_adjusted_speed, pace_zone
+          ) VALUES (
+            ${runId}, 'metric', ${index + 1},
+            ${split.distance || 0}, ${split.elapsed_time || 0}, ${split.moving_time || split.elapsed_time || 0},
+            ${split.elevation_difference || null}, ${split.average_speed || null},
+            ${split.average_grade_adjusted_speed || null}, ${split.pace_zone || null}
+          )
+        `;
+      }
+    }
+
+    // Insert standard splits
+    if (splitsStandard && splitsStandard.length > 0) {
+      for (const [index, split] of splitsStandard.entries()) {
+        await sql`
+          INSERT INTO strava_run_splits (
+            strava_run_id, split_type, split_number,
+            distance_meters, elapsed_time_seconds, moving_time_seconds,
+            elevation_difference_meters, average_speed_mps,
+            average_grade_adjusted_speed, pace_zone
+          ) VALUES (
+            ${runId}, 'standard', ${index + 1},
+            ${split.distance || 0}, ${split.elapsed_time || 0}, ${split.moving_time || split.elapsed_time || 0},
+            ${split.elevation_difference || null}, ${split.average_speed || null},
+            ${split.average_grade_adjusted_speed || null}, ${split.pace_zone || null}
+          )
+        `;
+      }
+    }
+
+    if (splitsMetric?.length || splitsStandard?.length) {
+      console.log(`📊 Upserted ${splitsMetric?.length || 0} metric + ${splitsStandard?.length || 0} standard splits for run ${runId}`);
+    }
+  } catch (error) {
+    console.error(`❌ Error upserting splits for run ${runId}:`, error);
+    // Don't throw here - we don't want splits errors to prevent the main run data from being saved
   }
 }
 
