@@ -3,6 +3,14 @@
  * Extract complete database schema for embedding creation
  */
 
+// Set up environment for Vercel Postgres
+import fs from 'fs';
+const envFile = fs.readFileSync('.env', 'utf8');
+const databaseUrl = envFile.match(/DATABASE_URL="([^"]+)"/)?.[1];
+if (databaseUrl && !process.env.POSTGRES_URL) {
+  process.env.POSTGRES_URL = databaseUrl;
+}
+
 import { sql } from '../../src/lib/db/db.ts';
 
 async function getDatabaseSchema() {
@@ -10,12 +18,14 @@ async function getDatabaseSchema() {
         console.log('🔍 Extracting complete database schema...\n');
 
         // Get all tables
-        const tables = await sql`
+        const tablesResult = await sql`
             SELECT table_name 
             FROM information_schema.tables 
             WHERE table_schema = 'public' 
             ORDER BY table_name
         `;
+        
+        const tables = tablesResult.rows;
 
         const schema = {
             database: 'neondb',
@@ -27,7 +37,7 @@ async function getDatabaseSchema() {
             console.log(`📋 Analyzing table: ${tableName}`);
 
             // Get columns with detailed info
-            const columns = await sql`
+            const columnsResult = await sql`
                 SELECT 
                     column_name,
                     data_type,
@@ -41,9 +51,10 @@ async function getDatabaseSchema() {
                 AND table_name = ${tableName}
                 ORDER BY ordinal_position
             `;
+            const columns = columnsResult.rows;
 
             // Get constraints
-            const constraints = await sql`
+            const constraintsResult = await sql`
                 SELECT 
                     tc.constraint_name,
                     tc.constraint_type,
@@ -58,9 +69,10 @@ async function getDatabaseSchema() {
                 WHERE tc.table_schema = 'public'
                 AND tc.table_name = ${tableName}
             `;
+            const constraints = constraintsResult.rows;
 
             // Get indexes
-            const indexes = await sql`
+            const indexesResult = await sql`
                 SELECT 
                     i.relname AS index_name,
                     a.attname AS column_name,
@@ -74,6 +86,7 @@ async function getDatabaseSchema() {
                 AND t.relkind = 'r'
                 ORDER BY i.relname, a.attname
             `;
+            const indexes = indexesResult.rows;
 
             schema.tables[tableName] = {
                 columns: columns.map(col => ({
@@ -102,7 +115,7 @@ async function getDatabaseSchema() {
         }
 
         // Get table relationships
-        const relationships = await sql`
+        const relationshipsResult = await sql`
             SELECT 
                 tc.table_name,
                 kcu.column_name,
@@ -118,7 +131,7 @@ async function getDatabaseSchema() {
             AND tc.table_schema = 'public'
         `;
 
-        schema.relationships = relationships;
+        schema.relationships = relationshipsResult.rows;
 
         // Output formatted schema
         console.log('\n📊 COMPLETE DATABASE SCHEMA:\n');

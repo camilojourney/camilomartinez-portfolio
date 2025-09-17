@@ -464,9 +464,9 @@ ORDER BY ws.sleep_performance_percentage;
 -- Weekly recovery trends
 SELECT 
     DATE_TRUNC('week', wc.start_time) as week,
-    AVG(wr.recovery_score) as avg_recovery,
+    AVG(wr.recovery_percentage) as avg_recovery,
     AVG(wr.hrv_rmssd_milli) as avg_hrv,
-    AVG(wr.resting_heart_rate) as avg_rhr
+    AVG(wr.resting_heart_rate_bpm) as avg_rhr
 FROM whoop_recovery wr
 JOIN whoop_cycles wc ON wr.cycle_id = wc.id
 WHERE wr.user_id = ?

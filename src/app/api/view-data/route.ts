@@ -20,7 +20,7 @@ export async function GET() {
         `;
 
         const recentRecovery = await sql`
-            SELECT cycle_id, recovery_score
+            SELECT cycle_id, recovery_percentage
             FROM whoop_recovery
             ORDER BY cycle_id DESC
             LIMIT 10;

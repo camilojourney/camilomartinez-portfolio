@@ -37,20 +37,20 @@ export interface WhoopSleep {
     score_state: string;
     score?: {
         stage_summary?: {
-            total_in_bed_time_milli?: number;
-            total_awake_time_milli?: number;
-            total_no_data_time_milli?: number;
-            total_light_sleep_time_milli?: number;
-            total_slow_wave_sleep_time_milli?: number;
-            total_rem_sleep_time_milli?: number;
+            total_in_bed_time_ms?: number;
+            total_awake_time_ms?: number;
+            total_no_data_time_ms?: number;
+            total_light_sleep_time_ms?: number;
+            total_slow_wave_sleep_time_ms?: number;
+            total_rem_sleep_time_ms?: number;
             sleep_cycle_count?: number;
             disturbance_count?: number;
         };
         sleep_needed?: {
-            baseline_milli?: number;
-            need_from_sleep_debt_milli?: number;
-            need_from_recent_strain_milli?: number;
-            need_from_recent_nap_milli?: number;
+            baseline_ms?: number;
+            need_from_sleep_debt_ms?: number;
+            need_from_recent_strain_ms?: number;
+            need_from_recent_nap_ms?: number;
         };
         respiratory_rate?: number;
         sleep_performance_percentage?: number;
@@ -70,7 +70,7 @@ export interface WhoopRecovery {
         user_calibrating: boolean;
         recovery_score: number;
         resting_heart_rate: number;
-        hrv_rmssd_milli: number;
+        hrv_rmssd_ms: number;
         spo2_percentage?: number;
         skin_temp_celsius?: number;
     };
@@ -164,11 +164,11 @@ export interface DbSleep {
     respiratory_rate: number;
     sleep_consistency_percentage: number;
     sleep_efficiency_percentage: number;
-    total_in_bed_time_milli: number;
-    total_awake_time_milli: number;
-    total_light_sleep_time_milli: number;
-    total_slow_wave_sleep_time_milli: number;
-    total_rem_sleep_time_milli: number;
+    total_in_bed_time_ms: number;
+    total_awake_time_ms: number;
+    total_light_sleep_time_ms: number;
+    total_slow_wave_sleep_time_ms: number;
+    total_rem_sleep_time_ms: number;
     disturbance_count: number;
 }
 
@@ -179,7 +179,7 @@ export interface DbRecovery {
     score_state: string;
     recovery_percentage: number;
     resting_heart_rate_bpm: number;
-    hrv_rmssd_milli: number;
+    hrv_rmssd_ms: number;
     spo2_percentage: number;
     skin_temp_celsius: number;
 }

@@ -24,7 +24,7 @@ interface RecoveryRecord {
         user_calibrating: boolean
         recovery_score: number
         resting_heart_rate: number
-        hrv_rmssd_milli: number
+        hrv_rmssd_ms: number
     }
 }
 
@@ -37,7 +37,7 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
     const chartData = data.map(item => ({
         date: formatDate(item.created_at),
         recovery: item.score.recovery_score,
-        hrv: item.score.hrv_rmssd_milli,
+        hrv: item.score.hrv_rmssd_ms,
         rhr: item.score.resting_heart_rate,
     })).reverse() // reverse to show oldest to newest
 

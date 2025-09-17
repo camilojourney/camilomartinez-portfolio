@@ -126,7 +126,7 @@ async function testDataInsertion() {
                     await sql`
                         INSERT INTO whoop_recovery (
                             cycle_id, sleep_id, user_id, score_state,
-                            recovery_score, resting_heart_rate, hrv_rmssd_milli,
+                            recovery_score, resting_heart_rate, hrv_rmssd_ms,
                             spo2_percentage, skin_temp_celsius
                         )
                         VALUES (
@@ -144,7 +144,7 @@ async function testDataInsertion() {
                             score_state = EXCLUDED.score_state,
                             recovery_score = EXCLUDED.recovery_score,
                             resting_heart_rate = EXCLUDED.resting_heart_rate,
-                            hrv_rmssd_milli = EXCLUDED.hrv_rmssd_milli,
+                            hrv_rmssd_ms = EXCLUDED.hrv_rmssd_ms,
                             spo2_percentage = EXCLUDED.spo2_percentage,
                             skin_temp_celsius = EXCLUDED.skin_temp_celsius
                     `;

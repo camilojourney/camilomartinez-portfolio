@@ -6,7 +6,7 @@ interface StrainVsRecoveryProps {
     data: Array<{
         strain_date: string;
         strain: number;
-        recovery_score: number;
+        recovery_score: number; // Keep as recovery_score to match the database result alias
     }>;
 }
 

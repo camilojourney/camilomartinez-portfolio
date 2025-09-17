@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import LiquidPage from '@/components/shared/liquid-page';
+import LiquidNav from '@/components/shared/liquid-nav';
 
 
 interface CollectionStats {
@@ -15,6 +15,9 @@ interface CollectionStats {
     totalSleep?: number;
     totalRecovery?: number;
     totalWorkouts?: number;
+    totalUsers?: number;
+    successfulUsers?: number;
+    failedUsers?: number;
     errors?: string[];
     progress?: {
         current: number;
@@ -125,7 +128,31 @@ export default function WhoopDashboard() {
             const response = await fetch('/api/actions/daily-fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
 
             const result = await response.json();
-            setDailyResult(result?.data || result);
+            
+            // Extract the data from the API response structure
+            const apiData = result?.data || result;
+            
+            // Transform the userResults array into a single summary object for display
+            let transformedResult = {
+                totalUsers: apiData.totalUsers || 0,
+                successfulUsers: apiData.successfulUsers || 0,
+                failedUsers: apiData.failedUsers || 0,
+                newCycles: 0,
+                newSleep: 0, 
+                newRecovery: 0,
+                newWorkouts: 0,
+                errors: apiData.errors || []
+            };
+            
+            // Sum up all the user results
+            if (apiData.userResults && Array.isArray(apiData.userResults)) {
+                transformedResult.newCycles = apiData.userResults.reduce((sum: number, user: any) => sum + (user.newCycles || 0), 0);
+                transformedResult.newSleep = apiData.userResults.reduce((sum: number, user: any) => sum + (user.newSleep || 0), 0);
+                transformedResult.newRecovery = apiData.userResults.reduce((sum: number, user: any) => sum + (user.newRecovery || 0), 0);
+                transformedResult.newWorkouts = apiData.userResults.reduce((sum: number, user: any) => sum + (user.newWorkouts || 0), 0);
+            }
+            
+            setDailyResult(transformedResult);
 
             // Refresh debug info after collection
             setTimeout(getDebugInfo, 2000);
@@ -203,28 +230,52 @@ export default function WhoopDashboard() {
 
     if (status === 'loading') {
         return (
-            <LiquidPage backgroundVariant="purple">
-                <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-12 max-w-md text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-                    <p className="text-white/80 font-light">Loading...</p>
+            <div className="min-h-screen relative overflow-hidden">
+                <LiquidNav currentPage="my-data" />
+                {/* Animated Background */}
+                <div className="fixed inset-0 -z-10">
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
+                    <div className="absolute top-0 left-0 w-full h-full opacity-20">
+                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+                    </div>
                 </div>
-            </LiquidPage>
+
+                {/* Main Content */}
+                <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
+                    <div className="max-w-md mx-auto text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+                        <p className="text-white/80 font-light">Loading...</p>
+                    </div>
+                </div>
+            </div>
         );
     }
 
     return (
-        <LiquidPage backgroundVariant="purple">
-            <div className="max-w-7xl w-full">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-6xl font-extralight tracking-tight text-white drop-shadow-lg mb-4">
-                        WHOOP Analytics
-                    </h1>
-                    <div className="w-24 h-px bg-gradient-to-r from-transparent via-purple-400/60 to-transparent mx-auto mb-6"></div>
-                    <p className="text-xl text-purple-300/90 font-light tracking-wide">
-                        Data Collection & Monitoring Dashboard
-                    </p>
+        <div className="min-h-screen relative overflow-hidden">
+            <LiquidNav currentPage="my-data" />
+            {/* Animated Background */}
+            <div className="fixed inset-0 -z-10">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
+                <div className="absolute top-0 left-0 w-full h-full opacity-20">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
                 </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
+                <div className="max-w-7xl mx-auto">
+                    {/* Header */}
+                    <div className="text-center mb-20">
+                        <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
+                            WHOOP Analytics
+                        </h1>
+                        <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-12">
+                            Data Collection & Monitoring Dashboard
+                        </p>
+                    </div>
 
                 {/* Authentication Section */}
                 <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 mb-8">
@@ -438,7 +489,23 @@ export default function WhoopDashboard() {
                                     <div className="mt-6 p-6 backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl">
                                         <h3 className="font-medium text-white mb-4">Daily Collection Results:</h3>
 
-                                        {/* Always show success metrics */}
+                                        {/* Summary information */}
+                                        {(dailyResult.totalUsers || dailyResult.successfulUsers || dailyResult.failedUsers) && (
+                                            <div className="text-cyan-400 space-y-2 font-light mb-6 pb-4 border-b border-white/10">
+                                                <p className="flex items-center gap-3">
+                                                    <span className="w-2 h-2 bg-cyan-400 rounded-full"></span>
+                                                    Users processed: {dailyResult.successfulUsers || 0} of {dailyResult.totalUsers || 0}
+                                                </p>
+                                                {(dailyResult.failedUsers || 0) > 0 && (
+                                                    <p className="flex items-center gap-3 text-yellow-400">
+                                                        <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
+                                                        Failed users: {dailyResult.failedUsers}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Data collection metrics */}
                                         <div className="text-green-400 space-y-3 font-light mb-6">
                                             <p className="flex items-center gap-3">
                                                 <span className="w-2 h-2 bg-green-400 rounded-full"></span>
@@ -640,7 +707,8 @@ export default function WhoopDashboard() {
                         </div>
                     </>
                 )}
+                </div>
             </div>
-        </LiquidPage>
+        </div>
     );
 }

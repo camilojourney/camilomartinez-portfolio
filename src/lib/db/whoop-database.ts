@@ -159,11 +159,11 @@ export class WhoopDatabaseService {
                 is_nap, score_state,
                 sleep_performance_percentage, respiratory_rate,
                 sleep_consistency_percentage, sleep_efficiency_percentage,
-                total_in_bed_time_milli, total_awake_time_milli, total_no_data_time_milli,
-                total_light_sleep_time_milli, total_slow_wave_sleep_time_milli,
-                total_rem_sleep_time_milli, sleep_cycle_count, disturbance_count,
-                baseline_milli, need_from_sleep_debt_milli,
-                need_from_recent_strain_milli, need_from_recent_nap_milli,
+                total_in_bed_time_ms, total_awake_time_ms, total_no_data_time_ms,
+                total_light_sleep_time_ms, total_slow_wave_sleep_time_ms,
+                total_rem_sleep_time_ms, sleep_cycle_count, disturbance_count,
+                baseline_ms, need_from_sleep_debt_ms,
+                need_from_recent_strain_ms, need_from_recent_nap_ms,
                 created_at, updated_at
             )
             VALUES (
@@ -180,18 +180,18 @@ export class WhoopDatabaseService {
                 ${hasScore ? sleep.score?.respiratory_rate ?? null : null},
                 ${hasScore ? sleep.score?.sleep_consistency_percentage ?? null : null},
                 ${hasScore ? sleep.score?.sleep_efficiency_percentage ?? null : null},
-                ${stage?.total_in_bed_time_milli ?? null},
-                ${stage?.total_awake_time_milli ?? null},
-                ${stage?.total_no_data_time_milli ?? null},
-                ${stage?.total_light_sleep_time_milli ?? null},
-                ${stage?.total_slow_wave_sleep_time_milli ?? null},
-                ${stage?.total_rem_sleep_time_milli ?? null},
+                ${stage?.total_in_bed_time_ms ?? null},
+                ${stage?.total_awake_time_ms ?? null},
+                ${stage?.total_no_data_time_ms ?? null},
+                ${stage?.total_light_sleep_time_ms ?? null},
+                ${stage?.total_slow_wave_sleep_time_ms ?? null},
+                ${stage?.total_rem_sleep_time_ms ?? null},
                 ${stage?.sleep_cycle_count ?? null},
                 ${stage?.disturbance_count ?? null},
-                ${needed?.baseline_milli ?? null},
-                ${needed?.need_from_sleep_debt_milli ?? null},
-                ${needed?.need_from_recent_strain_milli ?? null},
-                ${needed?.need_from_recent_nap_milli ?? null},
+                ${needed?.baseline_ms ?? null},
+                ${needed?.need_from_sleep_debt_ms ?? null},
+                ${needed?.need_from_recent_strain_ms ?? null},
+                ${needed?.need_from_recent_nap_ms ?? null},
                 ${sleep.created_at},
                 ${sleep.updated_at}
             )
@@ -208,18 +208,18 @@ export class WhoopDatabaseService {
                 respiratory_rate = EXCLUDED.respiratory_rate,
                 sleep_consistency_percentage = EXCLUDED.sleep_consistency_percentage,
                 sleep_efficiency_percentage = EXCLUDED.sleep_efficiency_percentage,
-                total_in_bed_time_milli = EXCLUDED.total_in_bed_time_milli,
-                total_awake_time_milli = EXCLUDED.total_awake_time_milli,
-                total_no_data_time_milli = EXCLUDED.total_no_data_time_milli,
-                total_light_sleep_time_milli = EXCLUDED.total_light_sleep_time_milli,
-                total_slow_wave_sleep_time_milli = EXCLUDED.total_slow_wave_sleep_time_milli,
-                total_rem_sleep_time_milli = EXCLUDED.total_rem_sleep_time_milli,
+                total_in_bed_time_ms = EXCLUDED.total_in_bed_time_ms,
+                total_awake_time_ms = EXCLUDED.total_awake_time_ms,
+                total_no_data_time_ms = EXCLUDED.total_no_data_time_ms,
+                total_light_sleep_time_ms = EXCLUDED.total_light_sleep_time_ms,
+                total_slow_wave_sleep_time_ms = EXCLUDED.total_slow_wave_sleep_time_ms,
+                total_rem_sleep_time_ms = EXCLUDED.total_rem_sleep_time_ms,
                 sleep_cycle_count = EXCLUDED.sleep_cycle_count,
                 disturbance_count = EXCLUDED.disturbance_count,
-                baseline_milli = EXCLUDED.baseline_milli,
-                need_from_sleep_debt_milli = EXCLUDED.need_from_sleep_debt_milli,
-                need_from_recent_strain_milli = EXCLUDED.need_from_recent_strain_milli,
-                need_from_recent_nap_milli = EXCLUDED.need_from_recent_nap_milli,
+                baseline_ms = EXCLUDED.baseline_ms,
+                need_from_sleep_debt_ms = EXCLUDED.need_from_sleep_debt_ms,
+                need_from_recent_strain_ms = EXCLUDED.need_from_recent_strain_ms,
+                need_from_recent_nap_ms = EXCLUDED.need_from_recent_nap_ms,
                 updated_at = EXCLUDED.updated_at;
         `;
     }
@@ -233,13 +233,13 @@ export class WhoopDatabaseService {
         await db`
             INSERT INTO whoop_recovery (
                 cycle_id, sleep_id, user_id, score_state, recovery_percentage,
-                resting_heart_rate_bpm, hrv_rmssd_milli, spo2_percentage, skin_temp_celsius,
+                resting_heart_rate_bpm, hrv_rmssd_ms, spo2_percentage, skin_temp_celsius,
                 created_at, updated_at
             )
             VALUES (
                 ${recovery.cycle_id}, ${recovery.sleep_id}, ${recovery.user_id},
                 ${recovery.score_state}, ${recovery.score.recovery_score || null},
-                ${recovery.score.resting_heart_rate || null}, ${recovery.score.hrv_rmssd_milli || null},
+                ${recovery.score.resting_heart_rate || null}, ${recovery.score.hrv_rmssd_ms || null},
                 ${recovery.score.spo2_percentage || null}, ${recovery.score.skin_temp_celsius || null},
                 ${recovery.created_at}, ${recovery.updated_at}
             )
@@ -249,7 +249,7 @@ export class WhoopDatabaseService {
                 score_state = EXCLUDED.score_state,
                 recovery_percentage = EXCLUDED.recovery_percentage,
                 resting_heart_rate_bpm = EXCLUDED.resting_heart_rate_bpm,
-                hrv_rmssd_milli = EXCLUDED.hrv_rmssd_milli,
+                hrv_rmssd_ms = EXCLUDED.hrv_rmssd_ms,
                 spo2_percentage = EXCLUDED.spo2_percentage,
                 skin_temp_celsius = EXCLUDED.skin_temp_celsius,
                 updated_at = EXCLUDED.updated_at;

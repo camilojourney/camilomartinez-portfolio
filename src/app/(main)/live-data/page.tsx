@@ -113,7 +113,7 @@ export default async function LiveDataPage() {
                                     <span className="text-blue-300 font-medium text-sm">Avg HRV</span>
                                 </div>
                                 <div className="text-2xl font-bold text-white mb-1">
-                                    {Math.round(whoopData.records.reduce((sum: number, record: any) => sum + (record.score.hrv_rmssd_milli || 0), 0) / whoopData.records.length) || 'N/A'} ms
+                                    {Math.round(whoopData.records.reduce((sum: number, record: any) => sum + (record.score.hrv_rmssd_ms || 0), 0) / whoopData.records.length) || 'N/A'} ms
                                 </div>
                                 <div className="text-white/60 text-sm">7-day average</div>
                             </div>

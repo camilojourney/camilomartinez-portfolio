@@ -184,12 +184,6 @@ async function processUserData(userId: number, accessToken: string, dbService: W
     )).filter((c: any): c is Exclude<typeof c, null> => c !== null);
 
     // Filter data for COMPLETED records within our 2-day range (must have end times)
-    const filteredCycles = cycleData.filter((cycle: { end: string }) => {
-        if (!cycle.end) return false; // Skip cycles without end time
-        const endDate = new Date(cycle.end);
-        return endDate >= fetchStartDate && endDate <= fetchEndDate;
-    });
-
     const filteredSleep = sleepRecords.filter(item => {
         if (!item.end) return false; // Skip sleep without end time  
         const endDate = new Date(item.end);
@@ -198,8 +192,20 @@ async function processUserData(userId: number, accessToken: string, dbService: W
 
     const filteredRecovery = recoveryRecords.filter(item => {
         if (!item.created_at) return false; // Skip recovery without created_at
-        const date = new Date(item.created_at);
-        return date >= fetchStartDate && date <= fetchEndDate;
+        const createdDate = new Date(item.created_at);
+        return createdDate >= fetchStartDate && createdDate <= fetchEndDate;
+    });
+
+    // Get cycle IDs referenced by filtered recovery records to ensure we include all needed cycles
+    const recoveryCycleIds = new Set(filteredRecovery.map(recovery => recovery.cycle_id).filter(Boolean));
+    
+    // Filter cycles: include cycles that end in our window OR are referenced by recovery in our window
+    const filteredCycles = cycleData.filter((cycle: { end: string, id: string }) => {
+        if (!cycle.end) return false; // Skip cycles without end time
+        const endDate = new Date(cycle.end);
+        const isInDateRange = endDate >= fetchStartDate && endDate <= fetchEndDate;
+        const isReferencedByRecovery = recoveryCycleIds.has(parseInt(cycle.id));
+        return isInDateRange || isReferencedByRecovery; // Include if in range OR referenced by recovery
     });
 
     const filteredWorkouts = workoutRecords.filter(item => {

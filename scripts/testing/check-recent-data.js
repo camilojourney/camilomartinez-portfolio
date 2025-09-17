@@ -45,14 +45,14 @@ async function checkRecentData() {
         // Check whoop_recovery (no created_at, so check all recent)
         console.log('\n🔄 RECENT RECOVERY:');
         const recovery = await sql`
-            SELECT cycle_id, recovery_score 
+            SELECT cycle_id, recovery_percentage 
             FROM whoop_recovery 
             ORDER BY cycle_id DESC
             LIMIT 5
         `;
         console.log(`Found ${recovery.rows.length} recovery records (latest)`);
         recovery.rows.forEach(row => {
-            console.log(`  Recovery for cycle ${row.cycle_id}: score ${row.recovery_score}`);
+            console.log(`  Recovery for cycle ${row.cycle_id}: score ${row.recovery_percentage}`);
         });
         
         // Check whoop_workouts for recent data

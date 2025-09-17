@@ -66,7 +66,7 @@ async function getStrainRecoveryData() {
             SELECT
                 c1.start_time::date as strain_date,
                 c1.strain,
-                r2.recovery_score
+                r2.recovery_percentage as recovery_score
             FROM whoop_cycles c1
             -- Join with the next day's recovery score
             INNER JOIN whoop_recovery r2 ON
@@ -79,8 +79,8 @@ async function getStrainRecoveryData() {
             WHERE
                 c1.strain IS NOT NULL
                 AND c1.strain > 0
-                AND r2.recovery_score IS NOT NULL
-                AND r2.recovery_score > 0
+                AND r2.recovery_percentage IS NOT NULL
+                AND r2.recovery_percentage > 0
             ORDER BY c1.start_time DESC
         `;
         return result.rows as Array<{
