@@ -34,6 +34,7 @@ export interface StravaActivity {
   map: {
     id: string;
     summary_polyline: string;
+    polyline?: string; // Detailed polyline when available
     resource_state: number;
   };
   trainer: boolean;
@@ -77,9 +78,11 @@ export interface StravaActivity {
   highlighted_kudosers?: StravaAthleteSummary[];
   device_name?: string;
   embed_token?: string;
+  private_note?: string; // Private notes about the activity
   segment_leaderboard_opt_out: boolean;
   leaderboard_opt_out: boolean;
   type: 'Run' | 'Ride' | 'Swim' | 'Hike' | 'Walk' | 'AlpineSki' | 'BackcountrySki' | 'Canoeing' | 'Crossfit' | 'EBikeRide' | 'Elliptical' | 'Golf' | 'Handcycle' | 'HighIntensityIntervalTraining' | 'Hockey' | 'IceSkate' | 'InlineSkate' | 'Kayaking' | 'Kitesurf' | 'NordicSki' | 'RockClimbing' | 'RollerSki' | 'Rowing' | 'Sail' | 'Skateboard' | 'Snowboard' | 'Snowshoe' | 'Soccer' | 'StairStepper' | 'StandUpPaddling' | 'Surfing' | 'Tennis' | 'TrailRun' | 'Velomobile' | 'VirtualRide' | 'VirtualRun' | 'WeightTraining' | 'Wheelchair' | 'Windsurf' | 'Workout' | 'Yoga';
+  sport_type?: string; // Alternative field name sometimes used by Strava API
 }
 
 export interface StravaSegmentEffort {
@@ -112,6 +115,7 @@ export interface StravaSplit {
   moving_time: number;
   split: number;
   average_speed: number;
+  average_grade_adjusted_speed?: number; // Grade-adjusted speed
   pace_zone: number;
 }
 
