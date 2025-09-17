@@ -68,7 +68,8 @@ export default function Home() {
                 </div>
               </Card>
             </a>            {/* The Astoria Conquest */}
-            <Card className="group hover:scale-[1.02] hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-300 cursor-pointer border-white/10 hover:border-green-400/50">
+            <a href="/astoria-conquest" className="block">
+              <Card className="group hover:scale-[1.02] hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-300 cursor-pointer border-white/10 hover:border-green-400/50">
               <div className="p-8 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <div className="w-14 h-14 bg-gradient-to-r from-green-400 to-teal-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -100,9 +101,11 @@ export default function Home() {
                 </div>
               </div>
             </Card>
+            </a>
 
             {/* AI Content Engine */}
-            <Card className="group hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 cursor-pointer border-white/10 hover:border-purple-400/50">
+            <a href="/tools" className="block">
+              <Card className="group hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 cursor-pointer border-white/10 hover:border-purple-400/50">
               <div className="p-8 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <div className="w-14 h-14 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -133,6 +136,7 @@ export default function Home() {
                 </div>
               </div>
             </Card>
+            </a>
           </div>
         </div>
         

@@ -16,6 +16,7 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
         { href: '/projects', label: 'projects', key: 'projects' },
         { href: '/blog', label: 'blog', key: 'blog' },
         { href: '/about', label: 'about', key: 'about' },
+        { href: '/tools', label: 'tools', key: 'tools' },
         { href: '/contact', label: 'contact', key: 'contact' },
     ]
 

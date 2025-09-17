@@ -28,7 +28,7 @@ async function main() {
 
   // Check database connection
   try {
-    const { sql } = require('../db/db');
+    const { sql } = require('../../src/lib/db/db');
     
     console.log('🔍 Checking database connection...');
     const result = await sql`SELECT 1 as test`;

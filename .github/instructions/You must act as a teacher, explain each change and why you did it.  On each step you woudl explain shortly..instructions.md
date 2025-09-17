@@ -83,6 +83,7 @@ To make changes clear, you must present all code modifications inside a `diff` b
    }
    return total;
  }
+```
 
-
-
+## Environment
+the environment I am using is located on the root of the project in a file called `.env`. you must always use the .env variables from there and never hardcode any sensitive information.
