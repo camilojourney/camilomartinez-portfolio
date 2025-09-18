@@ -153,6 +153,26 @@ export class WhoopDatabaseService {
         const stage = hasScore ? sleep.score?.stage_summary : null;
         const needed = hasScore ? sleep.score?.sleep_needed : null;
 
+        // Map API field names (_milli) to database field names (_ms)
+        // The API returns fields like "total_in_bed_time_milli" but our database expects "total_in_bed_time_ms"
+        const stageData = stage ? {
+            total_in_bed_time_ms: (stage as any)?.total_in_bed_time_milli ?? stage?.total_in_bed_time_ms,
+            total_awake_time_ms: (stage as any)?.total_awake_time_milli ?? stage?.total_awake_time_ms,
+            total_no_data_time_ms: (stage as any)?.total_no_data_time_milli ?? stage?.total_no_data_time_ms,
+            total_light_sleep_time_ms: (stage as any)?.total_light_sleep_time_milli ?? stage?.total_light_sleep_time_ms,
+            total_slow_wave_sleep_time_ms: (stage as any)?.total_slow_wave_sleep_time_milli ?? stage?.total_slow_wave_sleep_time_ms,
+            total_rem_sleep_time_ms: (stage as any)?.total_rem_sleep_time_milli ?? stage?.total_rem_sleep_time_ms,
+            sleep_cycle_count: stage?.sleep_cycle_count,
+            disturbance_count: stage?.disturbance_count
+        } : null;
+
+        const neededData = needed ? {
+            baseline_ms: (needed as any)?.baseline_milli ?? needed?.baseline_ms,
+            need_from_sleep_debt_ms: (needed as any)?.need_from_sleep_debt_milli ?? needed?.need_from_sleep_debt_ms,
+            need_from_recent_strain_ms: (needed as any)?.need_from_recent_strain_milli ?? needed?.need_from_recent_strain_ms,
+            need_from_recent_nap_ms: (needed as any)?.need_from_recent_nap_milli ?? needed?.need_from_recent_nap_ms
+        } : null;
+
         await db`
             INSERT INTO whoop_sleep (
                 id, v1_id, user_id, cycle_id, start_time, end_time, timezone_offset,
@@ -180,18 +200,18 @@ export class WhoopDatabaseService {
                 ${hasScore ? sleep.score?.respiratory_rate ?? null : null},
                 ${hasScore ? sleep.score?.sleep_consistency_percentage ?? null : null},
                 ${hasScore ? sleep.score?.sleep_efficiency_percentage ?? null : null},
-                ${stage?.total_in_bed_time_ms ?? null},
-                ${stage?.total_awake_time_ms ?? null},
-                ${stage?.total_no_data_time_ms ?? null},
-                ${stage?.total_light_sleep_time_ms ?? null},
-                ${stage?.total_slow_wave_sleep_time_ms ?? null},
-                ${stage?.total_rem_sleep_time_ms ?? null},
-                ${stage?.sleep_cycle_count ?? null},
-                ${stage?.disturbance_count ?? null},
-                ${needed?.baseline_ms ?? null},
-                ${needed?.need_from_sleep_debt_ms ?? null},
-                ${needed?.need_from_recent_strain_ms ?? null},
-                ${needed?.need_from_recent_nap_ms ?? null},
+                ${stageData?.total_in_bed_time_ms ?? null},
+                ${stageData?.total_awake_time_ms ?? null},
+                ${stageData?.total_no_data_time_ms ?? null},
+                ${stageData?.total_light_sleep_time_ms ?? null},
+                ${stageData?.total_slow_wave_sleep_time_ms ?? null},
+                ${stageData?.total_rem_sleep_time_ms ?? null},
+                ${stageData?.sleep_cycle_count ?? null},
+                ${stageData?.disturbance_count ?? null},
+                ${neededData?.baseline_ms ?? null},
+                ${neededData?.need_from_sleep_debt_ms ?? null},
+                ${neededData?.need_from_recent_strain_ms ?? null},
+                ${neededData?.need_from_recent_nap_ms ?? null},
                 ${sleep.created_at},
                 ${sleep.updated_at}
             )
