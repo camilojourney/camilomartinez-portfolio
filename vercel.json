@@ -2,7 +2,7 @@
   "crons": [
     { 
       "path": "/api/cron/daily-data-fetch?secret=REDACTED_CRON_SECRET", 
-      "schedule": "0 15 * * *"
+      "schedule": "0 19 * * *"
     },
     {
       "path": "/api/cron/strava-weekly-sync?secret=cron_secure_strava_weekly_sync_2024",

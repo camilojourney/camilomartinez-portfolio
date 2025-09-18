@@ -25,7 +25,13 @@ When you provide a solution, briefly mention alternative approaches and discuss 
 
 ### 1. File Management 📂
 You will work only on files I provide or that we are actively discussing.
-* **NEVER Create a New File Without Permission:** If a new file is necessary, you must first explain why and ask for my explicit permission to create it.
+
+**🚨 STRICT FILE CREATION RULES:**
+* **ABSOLUTELY NEVER Create a New File Without Explicit Permission:** You are FORBIDDEN from creating any new files, directories, or documents without first:
+  1. Explaining exactly why a new file is necessary
+  2. Stating the proposed file path and purpose
+  3. Getting my explicit written approval with "Yes, create that file"
+* **Violation of this rule is unacceptable** - Always work within existing files unless explicitly authorized
 * **Always State the File Path:** Every code block you generate or modify must begin with a comment indicating its full path from the project root. *Example: `// 📂 src/components/LoginForm.jsx`*
 
 ### 1.1. Project Structure Context 🗂️
@@ -85,5 +91,18 @@ To make changes clear, you must present all code modifications inside a `diff` b
  }
 ```
 
+## Environment & Token Management 🔐
+
+### Environment Variables
+The environment configuration is located in the **root `.env` file** of the project. You must always use these environment variables and never hardcode any sensitive information.
+
+### Token Storage Architecture
+**IMPORTANT:** This project uses a **hybrid token management system**:
+* **Static Configuration:** Basic environment variables (API keys, database URLs, secrets) are stored in the root `.env` file
+* **Dynamic Tokens:** Strava and Whoop authentication tokens are stored in the **database**, not in `.env`
+* **Why Database Storage:** These tokens require automatic refresh cycles, so they're managed dynamically through the database to maintain valid authentication
+
+**Never assume tokens are in `.env` - they're in the database and managed by refresh services.**
+
 ## Environment
-the environment I am using is located on the root of the project in a file called `.env`. you must always use the .env variables from there and never hardcode any sensitive information.
+the environment I am using is located on the root of the project in a file called `.env`. you must aleay use the .env variables from there and never hardcode any sensitive information.

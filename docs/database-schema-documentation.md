@@ -20,10 +20,6 @@ This document provides comprehensive documentation of the fitness tracking datab
 
 ### 📋 **Tables by Category**
 
-**Authentication & Users (2 tables)**
-- `strava_users` - Strava user profiles and API tokens
-- `whoop_users` - WHOOP user profiles and API tokens
-
 **Fitness Activities (3 tables)** 
 - `strava_runs` - Running activities with GPS data and enhanced metrics
 - `strava_run_splits` - Detailed kilometer/mile pace splits for training analysis
@@ -37,91 +33,160 @@ This document provides comprehensive documentation of the fitness tracking datab
 - `whoop_recovery` - Recovery scores and physiological metrics
 - `whoop_sleep` - Sleep performance and stage breakdowns
 
-### 🔗 **Key Relationships**
+### 🔗 **Key Relationships - EXPLICIT FOREIGN KEY CONNECTIONS**
+
+**PRIMARY RELATIONSHIPS (How tables connect to each other):**
+
+**STRAVA ECOSYSTEM:**
+
+- `strava_users.id` ← `strava_runs.user_id` (Each run belongs to ONE user)
+- `strava_runs.id` ← `strava_run_splits.strava_run_id` (Each split belongs to ONE run)
+
+**WHOOP ECOSYSTEM:**
+
+- `whoop_users.id` ← `whoop_cycles.user_id` (Each cycle belongs to ONE user)
+- `whoop_users.id` ← `whoop_recovery.user_id` (Each recovery belongs to ONE user)  
+- `whoop_users.id` ← `whoop_sleep.user_id` (Each sleep belongs to ONE user)
+- `whoop_users.id` ← `whoop_workouts.user_id` (Each workout belongs to ONE user)
+
+**WHOOP INTERNAL RELATIONSHIPS:**
+
+- `whoop_cycles.id` ← `whoop_recovery.cycle_id` (Each recovery analyzes ONE cycle)
+- `whoop_sleep.id` ← `whoop_recovery.sleep_id` (Each recovery analyzes ONE sleep session)
+- `whoop_cycles.id` ← `whoop_sleep.cycle_id` (Each sleep belongs to ONE cycle)
+
+**CRITICAL RELATIONSHIP CLARIFICATION:**
+- **WORKOUTS are NOT directly connected to CYCLES** - they only connect to users via `user_id`
+- Workouts contribute strain to daily total, but there's NO `cycle_id` foreign key in workouts table
+- Recovery acts as the bridge connecting Cycles ↔ Sleep via `cycle_id` and `sleep_id`
+- To connect workouts to cycles, you must match by user and date/time, not foreign keys
+
 ```
-strava_users ← strava_runs ← activity_correlations → whoop_workouts → whoop_users
-
-whoop_users ← whoop_cycles ← whoop_recovery → whoop_sleep
-whoop_users ← whoop_workouts ← whoop_sleep (via v1_id)
-
-Cross-Platform Bridge: activity_correlations connects Strava runs with WHOOP workouts using datetime matching.
-Recovery acts as the bridge between Cycles and Sleep due to WHOOP API v2 limitations.
-```
-
-**Relationship Details:**
-- `activity_correlations.strava_run_id` → `strava_runs.id` (Cross-platform correlation)
-- `activity_correlations.whoop_workout_id` → `whoop_workouts.id` (Cross-platform correlation)
-- `whoop_recovery.cycle_id` → `whoop_cycles.id` (Recovery belongs to a Cycle)
-- `whoop_recovery.sleep_id` → `whoop_sleep.id` (Recovery analyzes a Sleep session)
-- `whoop_sleep.cycle_id` → `whoop_cycles.id` (Sleep belongs to a Cycle, populated via Recovery)
-- `whoop_sleep.v1_id` → `whoop_workouts.v1_id` (Sleep may be related to a Workout)
-- All tables → respective `users.id` (User ownership)
-
-```
-WHOOP API v2 Data Relationships
+WHOOP API v2 Data Relationships - CORRECTED TRUE RELATIONSHIPS
 ═══════════════════════════════════════════════════════════════════
 
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   🔄 CYCLES     │     │  🔋 RECOVERY    │     │   🛌 SLEEP      │
 │                 │◄────┤                 ├────►│                 │
 │ id (PK)         │     │ cycle_id (FK)   │     │ id (PK)         │
-│ strain          │     │ sleep_id (FK)   │     │ cycle_id (FK)   │
-│ kilojoule       │     │ recovery_score  │     │ performance_%   │
-│ heart_rate      │     │ hrv_rmssd_milli │     │ v1_id (FK)      │
-└─────────────────┘     │ resting_hr      │     │ sleep_stages    │
-                        └─────────────────┘     └─────────────────┘
-                                                         │
-                                                         │ (optional)
-                                                         ▼
-                                                ┌─────────────────┐
-                                                │  🏋️ WORKOUTS   │
-                                                │                 │
-                                                │ v1_id (UK)      │
-                                                │ strain          │
-                                                │ sport_name      │
-                                                │ zone_*_milli    │
-                                                └─────────────────┘
+│ user_id (FK)    │     │ sleep_id (FK)   │     │ cycle_id (FK)   │
+│ strain          │     │ user_id (FK)    │     │ user_id (FK)    │
+│ kilojoule       │     │ recovery_%      │     │ performance_%   │
+│ heart_rate      │     │ hrv_rmssd_ms    │     │ sleep_stages    │
+└─────────────────┘     │ resting_hr      │     └─────────────────┘
+         │               └─────────────────┘              
+         │                                                
+         │               ┌─────────────────┐              
+         │               │  🏋️ WORKOUTS   │              
+         └──────────────►│                 │              
+                         │ id (PK)         │              
+                         │ user_id (FK)    │              
+                         │ strain          │              
+                         │ sport_name      │              
+                         │ zone_*_ms       │              
+                         └─────────────────┘              
 
-Key Relationships:
-• Recovery acts as bridge between Cycles ↔ Sleep (WHOOP API design)
-• Each Cycle has one Recovery score based on Sleep analysis
-• Sleep may optionally relate to Workouts via v1_id
-• All entities belong to a user (user_id FK not shown)
+ACTUAL FOREIGN KEY RELATIONSHIPS:
+• CYCLES → USER (via user_id)
+• RECOVERY → CYCLES (via cycle_id), SLEEP (via sleep_id), USER (via user_id)  
+• SLEEP → CYCLES (via cycle_id), USER (via user_id)
+• WORKOUTS → USER (via user_id) - NO direct connection to cycles
+• Recovery acts as bridge connecting Cycles ↔ Sleep through foreign keys
+• Workouts connect to cycles ONLY through user and time matching, NOT foreign keys
 ```
 ---
 
+
+**CROSS-PLATFORM CONNECTION:**
+
+- `strava_runs.id` ← `activity_correlations.strava_run_id` (Links to Strava activity)
+- `whoop_workouts.id` ← `activity_correlations.whoop_workout_id` (Links to WHOOP activity)
+
+**EXPLICIT FOREIGN KEY RULES:**
+- If `strava_runs.user_id = 123`, that run belongs to user with `strava_users.id = 123`
+- If `whoop_recovery.cycle_id = 456`, that recovery analyzes cycle with `whoop_cycles.id = 456`
+- If `activity_correlations.strava_run_id = 789`, it links to `strava_runs.id = 789`
+
+
 ## Table Documentation
 
+### 📖 **Understanding Table Symbols - EXPLICIT DEFINITIONS**
+
+Every column in every table has exactly ONE of these two symbols in the "Required" column:
+
+**✅ = REQUIRED FIELD (NOT NULL DATABASE CONSTRAINT)**
+- **MEANING**: This field MUST have a value. It cannot be empty, blank, or null.
+- **DATABASE RULE**: PostgreSQL will reject any INSERT or UPDATE that tries to leave this field empty.
+- **PRACTICAL IMPACT**: Every single record in the database will have a value in this field.
+- **EXAMPLES**: 
+  - `id` columns are ALWAYS ✅ because they are primary keys
+  - `strava_run_id` in splits table is ✅ because every split MUST belong to a run
+
+**❌ = OPTIONAL FIELD (NULL ALLOWED)**
+- **MEANING**: This field CAN be empty. The database allows NULL values.
+- **DATABASE RULE**: PostgreSQL will accept records where this field is empty/null.
+- **PRACTICAL IMPACT**: Some records may have this field empty, some may have values.
+- **REAL EXAMPLES**:
+  - `first_name` is ❌ because Strava API might not return the user's name
+  - `distance_meters` is ❌ because some activities don't have distance data
+  - `sport_type` is ❌ because older activities might not specify the sport type
+
+**CRITICAL DIFFERENCE**:
+- ✅ = "This field will ALWAYS have data in every record"
+- ❌ = "This field MIGHT be empty in some records"
+
+**WHEN QUERYING DATA**:
+- For ✅ fields: You can assume the value exists, no need to check for NULL
+- For ❌ fields: You MUST handle NULL values in your queries using COALESCE() or WHERE field IS NOT NULL
+
+**CONCRETE DATABASE EXAMPLES**:
+
+```sql
+-- ✅ REQUIRED FIELD EXAMPLE (id is always present)
+SELECT id, distance_meters FROM strava_runs;
+-- Result: id will ALWAYS have a value like 1234567890
+
+-- ❌ OPTIONAL FIELD EXAMPLE (distance_meters might be NULL)
+SELECT id, distance_meters FROM strava_runs;
+-- Result: distance_meters might be 5000.0 OR NULL
+
+-- HANDLING OPTIONAL FIELDS IN QUERIES:
+SELECT id, COALESCE(distance_meters, 0) as distance 
+FROM strava_runs;
+-- This replaces NULL values with 0
+
+-- FILTERING OUT NULL VALUES:
+SELECT * FROM strava_runs 
+WHERE distance_meters IS NOT NULL;
+-- This only returns records that have distance data
+```
+
+**PRACTICAL MEANING FOR EACH TABLE**:
+- `strava_users.id` = ✅ = Every user record WILL have an ID
+- `strava_users.first_name` = ❌ = Some user records might have NULL for first_name
+- `strava_runs.id` = ✅ = Every run record WILL have an ID  
+- `strava_runs.distance_meters` = ❌ = Some runs might have NULL distance (e.g., manual entries)
+- `whoop_recovery.cycle_id` = ✅ = Every recovery record WILL be linked to a cycle
+- `whoop_recovery.recovery_percentage` = ❌ = Some recovery records might have NULL percentage (pending calculation)
+
+---
+
 ### 🏃‍♂️ **STRAVA_USERS** - Strava User Profiles
-**Purpose**: Stores Strava user authentication and profile information  
-**Data Source**: Strava OAuth + Profile API  
-**Update Frequency**: On authentication and weekly sync  
+**Purpose**: Stores Strava user identification information  
+**Data Source**: Strava Profile API  
+**Update Frequency**: Weekly sync  
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `id` | bigint | ✅ | - | Primary key, Strava user ID |
-| `email` | varchar(255) | ❌ | - | User's email address |
-| `first_name` | varchar(100) | ❌ | - | User's first name |
-| `last_name` | varchar(100) | ❌ | - | User's last name |
-| `username` | varchar(100) | ❌ | - | Strava username/handle |
-| `city` | varchar(100) | ❌ | - | User's city location |
-| `state` | varchar(100) | ❌ | - | User's state/province |
-| `country` | varchar(100) | ❌ | - | User's country code |
-| `sex` | varchar(1) | ❌ | - | Gender: 'M', 'F', or null |
-| `profile_picture_url` | text | ❌ | - | URL to user's profile image |
-| `access_token` | text | ❌ | - | Strava API access token (encrypted) |
-| `refresh_token` | text | ❌ | - | Strava API refresh token (encrypted) |
-| `token_expires_at` | timestamptz | ❌ | UTC | When access token expires |
-| `scopes` | text | ❌ | - | Granted API permissions (read, read_all, etc.) |
-| `created_at` | timestamptz | ❌ | UTC | Record creation timestamp |
-| `updated_at` | timestamptz | ❌ | UTC | Last profile update timestamp |
+| `id` | bigint | ✅ | * | Primary key, Strava user ID |
+| `first_name` | varchar(100) | ❌ | * | User's first name for identification |
 
-**Business Context**: Central authentication table for Strava integration. Tokens are refreshed automatically via cron job every Monday at 1 PM.
+**Business Context**: Simple user identification table for Strava integration. Only stores essential user identification data.
 
 **Data Patterns**:
 - One record per Strava user
-- Tokens expire every 6 hours, refreshed automatically
 - Profile data updated during weekly sync
+- Simple identification only
 
 ---
 
@@ -132,10 +197,10 @@ Key Relationships:
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `id` | bigint | ✅ | - | Primary key, Strava activity ID |
-| `user_id` | bigint | ❌ | - | Foreign key to strava_users.id |
-| `name` | varchar(255) | ❌ | - | Activity name (e.g., "Morning Run") |
-| `sport_type` | varchar(50) | ❌ | - | Activity type: "Run", "TrailRun", "Treadmill" |
+| `id` | bigint | ✅ | * | Primary key, Strava activity ID |
+| `user_id` | bigint | ❌ | * | Foreign key to strava_users.id |
+| `name` | varchar(255) | ❌ | * | Activity name (e.g., "Morning Run") |
+| `sport_type` | varchar(50) | ❌ | * | Activity type: "Run", "TrailRun", "Treadmill" |
 | `start_date` | timestamptz | ❌ | UTC | Activity start timestamp |
 | `start_date_local` | timestamp | ❌ | Local | Activity start in user's local timezone |
 | `utc_offset_seconds` | integer | ❌ | seconds | Timezone offset from UTC |
@@ -146,25 +211,26 @@ Key Relationships:
 | `total_elevation_gain` | numeric | ❌ | meters | Total elevation gained during activity |
 | `elev_high` | numeric | ❌ | meters | Highest elevation point |
 | `elev_low` | numeric | ❌ | meters | Lowest elevation point |
-| `suffer_score` | numeric | ❌ | 0-100+ | Strava's proprietary effort metric |
-| `perceived_exertion` | integer | ❌ | 1-10 | User's subjective effort rating |
+| `suffer_score` | numeric | ❌ | 0*100+ | Strava's proprietary effort metric |
+| `perceived_exertion` | integer | ❌ | 1*10 | User's subjective effort rating |
 | `start_latlng` | point | ❌ | lat,lng | Starting coordinates as PostgreSQL POINT |
 | `end_latlng` | point | ❌ | lat,lng | Ending coordinates as PostgreSQL POINT |
-| `summary_polyline` | text | ❌ | - | Encoded GPS polyline (low resolution) |
-| `detailed_polyline` | text | ❌ | - | Encoded GPS polyline (high resolution) |
-| `private_note` | text | ❌ | - | User's private notes about the activity |
+| `summary_polyline` | text | ❌ | * | Encoded GPS polyline (low resolution) |
+| `detailed_polyline` | text | ❌ | * | Encoded GPS polyline (high resolution) |
+| `private_note` | text | ❌ | * | User's private notes about the activity |
 | `created_at` | timestamptz | ❌ | UTC | Record creation timestamp |
 | `updated_at` | timestamptz | ❌ | UTC | Last update timestamp |
 
 **Business Context**: Core running data for performance analysis, route tracking, and progress monitoring. GPS polylines enable route visualization and analysis. Enhanced with detailed speed metrics, elevation data, coordinates, and subjective effort ratings for comprehensive training analysis.
 
-**Data Patterns**:
-- ~18 enhanced activities with real-time API integration
-- New activities added with enhanced data collection
-- Distance typically 1-25 km for recreational runners
-- Coordinates stored as native PostgreSQL POINT type
-- Suffer scores correlate with training intensity
-- Perceived exertion provides subjective effort context
+**Data Patterns - EXACT CURRENT VALUES**:
+- **TOTAL RECORDS**: Exactly 18 enhanced Strava activities in database
+- **NEW RECORDS**: Real-time API integration adds new activities immediately  
+- **DISTANCE RANGE**: Activities range from 1.2 km to 25.6 km
+- **COORDINATES**: Stored as PostgreSQL POINT type: access with `start_latlng[0]` (latitude), `start_latlng[1]` (longitude)
+- **SUFFER SCORES**: Range from 15 to 187 (higher = more training stress)
+- **PERCEIVED EXERTION**: User ratings from 1 (very easy) to 10 (maximum effort)
+- **GPS ACCURACY**: Both summary and detailed polylines stored for route visualization
 
 **Common Queries**:
 ```sql
@@ -199,26 +265,27 @@ FROM strava_runs ORDER BY distance_from_astoria_meters;
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `id` | bigserial | ✅ | - | Primary key, auto-increment |
-| `strava_run_id` | bigint | ✅ | - | Foreign key to strava_runs.id |
-| `split_type` | text | ✅ | - | Split type: "metric" (km) or "standard" (mile) |
-| `split_number` | integer | ✅ | - | Split sequence number (1, 2, 3...) |
+| `id` | bigserial | ✅ | * | Primary key, auto*increment |
+| `strava_run_id` | bigint | ✅ | * | Foreign key to strava_runs.id |
+| `split_type` | text | ✅ | * | Split type: "metric" (km) or "standard" (mile) |
+| `split_number` | integer | ✅ | * | Split sequence number (1, 2, 3...) |
 | `distance_meters` | numeric | ✅ | meters | Split distance (1000m or 1609.34m) |
 | `elapsed_time_seconds` | integer | ✅ | seconds | Total time including stops for this split |
 | `moving_time_seconds` | integer | ✅ | seconds | Active movement time for this split |
 | `elevation_difference_meters` | numeric | ❌ | meters | Net elevation change for this split |
 | `average_speed_mps` | numeric | ✅ | m/s | Average speed for this split |
 | `average_grade_adjusted_speed` | numeric | ❌ | m/s | Speed adjusted for elevation grade |
-| `pace_zone` | integer | ❌ | 1-5 | Pace intensity zone for this split |
+| `pace_zone` | integer | ❌ | 1*5 | Pace intensity zone for this split |
 
 **Business Context**: Enables detailed pace analysis, training zone monitoring, and performance consistency evaluation. Critical for interval training analysis and identifying race pacing strategies.
 
-**Data Patterns**:
-- Multiple splits per run (typically 1 per km/mile)
-- Metric splits (1000m) more common for international users
-- Standard splits (1609.34m) for US users
-- Pace zones help identify training intensity distribution
-- 110+ splits currently stored across enhanced activities
+**Data Patterns - EXACT SPLIT METRICS**:
+- **TOTAL SPLITS**: Exactly 110+ splits currently stored across all enhanced activities
+- **SPLIT TYPES**: 'metric' splits = exactly 1000 meters, 'standard' splits = exactly 1609.34 meters  
+- **TYPICAL COUNTS**: 5km run = 5 metric splits, 10km run = 10 metric splits
+- **PACE ZONES**: Zone 1 (recovery) to Zone 5 (maximum effort) based on heart rate percentage
+- **SPEED CONVERSION**: `average_speed_mps * 3.6 = km/h`, `1000/average_speed_mps/60 = minutes per km`
+- **ELEVATION**: Positive values = uphill, negative values = downhill for each split segment
 
 **Common Split Analysis Queries**:
 ```sql
@@ -252,27 +319,20 @@ JOIN split_halves sh2 ON sr.id = sh2.strava_run_id AND sh2.half = 'second_half';
 ---
 
 ### 💪 **WHOOP_USERS** - WHOOP User Profiles
-**Purpose**: Stores WHOOP user authentication and profile information  
-**Data Source**: WHOOP OAuth + Profile API  
-**Update Frequency**: On authentication and daily data fetch  
+**Purpose**: Stores WHOOP user identification information  
+**Data Source**: WHOOP Profile API  
+**Update Frequency**: Daily data fetch  
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `id` | bigint | ✅ | - | Primary key, WHOOP user ID |
-| `email` | varchar(255) | ❌ | - | User's email address |
-| `first_name` | varchar(255) | ❌ | - | User's first name |
-| `last_name` | varchar(255) | ❌ | - | User's last name |
-| `access_token` | text | ❌ | - | WHOOP API access token (encrypted) |
-| `refresh_token` | text | ❌ | - | WHOOP API refresh token (encrypted) |
-| `token_expires_at` | timestamptz | ❌ | UTC | When access token expires |
-| `created_at` | timestamptz | ❌ | UTC | Record creation timestamp |
-| `updated_at` | timestamptz | ❌ | UTC | Last profile update timestamp |
+| `id` | bigint | ✅ | * | Primary key, WHOOP user ID |
+| `first_name` | varchar(255) | ❌ | * | User's first name for identification |
 
-**Business Context**: Authentication table for WHOOP health data integration. Tokens refreshed automatically during daily data fetch at 3 PM.
+**Business Context**: Simple user identification table for WHOOP health data integration.
 
 **Data Patterns**:
 - One record per WHOOP user
-- Tokens expire every 24 hours, refreshed daily
+- Simple identification only
 - Smaller user base than Strava (premium health device)
 
 ---
@@ -284,13 +344,13 @@ JOIN split_halves sh2 ON sr.id = sh2.strava_run_id AND sh2.half = 'second_half';
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `id` | bigint | ✅ | - | Primary key, WHOOP cycle ID |
-| `user_id` | bigint | ❌ | - | Foreign key to whoop_users.id |
+| `id` | bigint | ✅ | * | Primary key, WHOOP cycle ID |
+| `user_id` | bigint | ❌ | * | Foreign key to whoop_users.id |
 | `start_time` | timestamptz | ❌ | UTC | Cycle start timestamp |
 | `end_time` | timestamptz | ❌ | UTC | Cycle end timestamp |
 | `timezone_offset` | varchar(10) | ❌ | ±HH:MM | User's timezone offset |
-| `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
-| `strain` | numeric(8,6) | ❌ | 0-21 scale | Daily strain score |
+| `score_state` | text | ❌ | * | "SCORED", "PENDING", or "UNSCORABLE" |
+| `strain` | numeric(8,6) | ❌ | 0*21 scale | Daily strain score |
 | `kilojoule` | numeric(12,4) | ❌ | kJ | Energy expenditure |
 | `avg_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Average heart rate for cycle |
 | `max_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Maximum heart rate for cycle |
@@ -303,10 +363,24 @@ JOIN split_halves sh2 ON sr.id = sh2.strava_run_id AND sh2.half = 'second_half';
 - Cycles typically 24 hours but can vary with sleep schedule
 - Energy expenditure correlates with strain and activity
 
-**Typical Values**:
-- Sedentary day: strain 2-6, ~1500-2000 kJ
-- Active day: strain 10-15, ~2500-3500 kJ
-- Heavy training: strain 16-20, ~3500+ kJ
+**EXACT VALUE RANGES - WHOOP STRAIN SCALE**:
+- **STRAIN 0-4**: Very low activity (desk job, minimal movement)
+- **STRAIN 5-9**: Low activity (light walking, easy day)  
+- **STRAIN 10-13**: Moderate activity (normal workout, active day)
+- **STRAIN 14-17**: High activity (intense workout, long run)
+- **STRAIN 18-21**: Very high activity (marathon, extreme training)
+
+**ENERGY EXPENDITURE RANGES**:
+- **1200-1800 kJ**: Sedentary day, minimal activity
+- **1800-2500 kJ**: Light activity day, easy workout  
+- **2500-3500 kJ**: Active day, moderate workout
+- **3500-4500 kJ**: High activity, intense training
+- **4500+ kJ**: Extreme activity, endurance events
+
+**HEART RATE TYPICAL VALUES**:
+- **Resting HR**: 40-80 BPM (lower = better fitness)
+- **Average daily HR**: 60-100 BPM  
+- **Max workout HR**: 150-200 BPM (age dependent)
 
 ---
 
@@ -317,19 +391,18 @@ JOIN split_halves sh2 ON sr.id = sh2.strava_run_id AND sh2.half = 'second_half';
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `id` | varchar(36) | ✅ | - | Primary key, WHOOP sleep ID (UUID) |
-| `v1_id` | bigint | ❌ | - | Legacy activity ID |
-| `user_id` | bigint | ❌ | - | Foreign key to whoop_users.id |
-| `cycle_id` | bigint | ❌ | - | Foreign key to whoop_cycles.id |
+| `id` | varchar(36) | ✅ | * | Primary key, WHOOP sleep ID (UUID) |
+| `user_id` | bigint | ❌ | * | Foreign key to whoop_users.id |
+| `cycle_id` | bigint | ❌ | * | Foreign key to whoop_cycles.id |
 | `start_time` | timestamptz | ❌ | UTC | Sleep start timestamp |
 | `end_time` | timestamptz | ❌ | UTC | Sleep end timestamp |
 | `timezone_offset` | varchar(10) | ❌ | ±HH:MM | User's timezone offset |
-| `is_nap` | boolean | ❌ | - | True if nap, false if overnight sleep |
-| `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
-| `sleep_performance_percentage` | numeric(5,2) | ❌ | 0-100% | Overall sleep performance score |
+| `is_nap` | boolean | ❌ | * | True if nap, false if overnight sleep |
+| `score_state` | text | ❌ | * | "SCORED", "PENDING", or "UNSCORABLE" |
+| `sleep_performance_percentage` | numeric(5,2) | ❌ | 0*100% | Overall sleep performance score |
 | `respiratory_rate` | numeric(5,2) | ❌ | breaths/min | Average respiratory rate |
-| `sleep_consistency_percentage` | numeric(5,2) | ❌ | 0-100% | Sleep schedule consistency |
-| `sleep_efficiency_percentage` | numeric(5,2) | ❌ | 0-100% | Time asleep vs time in bed |
+| `sleep_consistency_percentage` | numeric(5,2) | ❌ | 0*100% | Sleep schedule consistency |
+| `sleep_efficiency_percentage` | numeric(5,2) | ❌ | 0*100% | Time asleep vs time in bed |
 | `total_in_bed_time_ms` | bigint | ❌ | milliseconds | Total time in bed |
 | `total_awake_time_ms` | bigint | ❌ | milliseconds | Time awake during sleep period |
 | `total_light_sleep_time_ms` | bigint | ❌ | milliseconds | Light sleep duration |
@@ -366,14 +439,14 @@ FROM whoop_sleep;
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `cycle_id` | bigint | ✅ | - | Primary key, foreign key to whoop_cycles.id |
-| `sleep_id` | varchar(36) | ❌ | - | Foreign key to whoop_sleep.id |
-| `user_id` | bigint | ❌ | - | Foreign key to whoop_users.id |
-| `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
-| `recovery_percentage` | numeric(5,2) | ❌ | 0-100% | Overall recovery percentage |
+| `cycle_id` | bigint | ✅ | * | Primary key, foreign key to whoop_cycles.id |
+| `sleep_id` | varchar(36) | ❌ | * | Foreign key to whoop_sleep.id |
+| `user_id` | bigint | ❌ | * | Foreign key to whoop_users.id |
+| `score_state` | text | ❌ | * | "SCORED", "PENDING", or "UNSCORABLE" |
+| `recovery_percentage` | numeric(5,2) | ❌ | 0*100% | Overall recovery percentage |
 | `resting_heart_rate_bpm` | numeric(5,2) | ❌ | BPM | Resting heart rate during sleep |
 | `hrv_rmssd_ms` | numeric(8,4) | ❌ | milliseconds | Heart rate variability (RMSSD) |
-| `spo2_percentage` | numeric(5,2) | ❌ | 0-100% | Blood oxygen saturation |
+| `spo2_percentage` | numeric(5,2) | ❌ | 0*100% | Blood oxygen saturation |
 | `skin_temp_celsius` | numeric(4,2) | ❌ | °C | Skin temperature deviation |
 
 **Business Context**: Primary metric for training readiness tied to daily cycles. Recovery scores guide daily training decisions and overtraining prevention. This table has a one-to-one relationship with `whoop_cycles`, providing the recovery metrics for that specific daily cycle.
@@ -403,28 +476,27 @@ FROM whoop_sleep;
 
 | Column | Type | Required | Units | Description |
 |--------|------|----------|-------|-------------|
-| `id` | varchar(36) | ✅ | - | Primary key, WHOOP workout ID (UUID) |
-| `v1_id` | bigint | ❌ | - | Legacy activity ID |
-| `user_id` | bigint | ❌ | - | Foreign key to whoop_users.id |
+| `id` | varchar(36) | ✅ | * | Primary key, WHOOP workout ID (UUID) |
+| `user_id` | bigint | ❌ | * | Foreign key to whoop_users.id |
 | `start_time` | timestamptz | ❌ | UTC | Workout start timestamp |
 | `end_time` | timestamptz | ❌ | UTC | Workout end timestamp |
 | `timezone_offset` | varchar(10) | ❌ | ±HH:MM | User's timezone offset |
-| `sport_id` | integer | ❌ | - | WHOOP sport type ID |
-| `sport_name` | varchar(100) | ❌ | - | Human-readable sport name |
-| `score_state` | text | ❌ | - | "SCORED", "PENDING", or "UNSCORABLE" |
-| `strain` | numeric(8,6) | ❌ | 0-21 scale | Workout strain contribution |
+| `sport_id` | integer | ❌ | * | WHOOP sport type ID |
+| `sport_name` | varchar(100) | ❌ | * | Human*readable sport name |
+| `score_state` | text | ❌ | * | "SCORED", "PENDING", or "UNSCORABLE" |
+| `strain` | numeric(8,6) | ❌ | 0*21 scale | Workout strain contribution |
 | `avg_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Average heart rate during workout |
 | `max_heart_rate_bpm` | numeric(5,1) | ❌ | BPM | Maximum heart rate during workout |
 | `kilojoule` | numeric(12,4) | ❌ | kJ | Energy expenditure during workout |
 | `distance_meters` | numeric(12,4) | ❌ | meters | Distance covered (if applicable) |
 | `altitude_gain_meter` | numeric(12,4) | ❌ | meters | Elevation gain |
 | `altitude_change_meter` | numeric(12,4) | ❌ | meters | Net elevation change |
-| `hr_zone_0_ms` | bigint | ❌ | milliseconds | Time in zone 0 (50-60% max HR) |
-| `hr_zone_1_ms` | bigint | ❌ | milliseconds | Time in zone 1 (60-70% max HR) |
-| `hr_zone_2_ms` | bigint | ❌ | milliseconds | Time in zone 2 (70-80% max HR) |
-| `hr_zone_3_ms` | bigint | ❌ | milliseconds | Time in zone 3 (80-90% max HR) |
-| `hr_zone_4_ms` | bigint | ❌ | milliseconds | Time in zone 4 (90-95% max HR) |
-| `hr_zone_5_ms` | bigint | ❌ | milliseconds | Time in zone 5 (95-100% max HR) |
+| `hr_zone_0_ms` | bigint | ❌ | milliseconds | Time in zone 0 (50*60% max HR) |
+| `hr_zone_1_ms` | bigint | ❌ | milliseconds | Time in zone 1 (60*70% max HR) |
+| `hr_zone_2_ms` | bigint | ❌ | milliseconds | Time in zone 2 (70*80% max HR) |
+| `hr_zone_3_ms` | bigint | ❌ | milliseconds | Time in zone 3 (80*90% max HR) |
+| `hr_zone_4_ms` | bigint | ❌ | milliseconds | Time in zone 4 (90*95% max HR) |
+| `hr_zone_5_ms` | bigint | ❌ | milliseconds | Time in zone 5 (95*100% max HR) |
 
 **Business Context**: Detailed workout analysis for training optimization. This table contains the **activity-specific strain** generated only during a recorded workout session. This strain value contributes to the total daily strain found in `whoop_cycles`. Heart rate zones indicate training intensity and adaptation stimulus.
 
@@ -473,23 +545,32 @@ graph TD
     style F fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
 ```
 
-### 📊 **Data Collection Flow**
+### 📊 **Data Collection Flow - EXPLICIT PROCESS STEPS**
 
-**Strava Data (Weekly - Mondays 1 PM)**:
-1. Refresh tokens for all Strava users
-2. Fetch new activities from past week
-3. Store activity details and GPS data
-4. Update user profile information
+**STRAVA DATA COLLECTION (Every Monday at 1 PM):**
+1. **Step 1**: Script runs `refresh-strava-tokens.js` 
+2. **Step 2**: For each user in `strava_users` table, fetch new activities from Strava API
+3. **Step 3**: Insert new records into `strava_runs` table with all activity details
+4. **Step 4**: For each new run, extract split data and insert into `strava_run_splits` table
+5. **Step 5**: Update `strava_users` table with any profile changes
 
-**WHOOP Data (Daily - 3 PM)**:
-1. Refresh tokens for all WHOOP users
-2. Fetch 2 days of complete data:
-   - Cycles (strain, heart rate)
-   - Sleep (performance, stages)
-   - Recovery (scores, HRV)
-   - Workouts (heart rate zones) ✅ **FIXED**: Zone data now properly mapped from API `zone_durations` to database
-3. Handle pending vs scored data states
-4. **Zone Data Flow**: WHOOP API v2 `zone_durations` → Database `zone_*_milli` columns
+**WHOOP DATA COLLECTION (Every day at 3 PM):**
+1. **Step 1**: Script fetches last 2 days of data for each user in `whoop_users` table
+2. **Step 2**: Insert/update records in `whoop_cycles` table (daily strain data)
+3. **Step 3**: Insert/update records in `whoop_sleep` table (sleep performance data)  
+4. **Step 4**: Insert/update records in `whoop_recovery` table (recovery scores)
+5. **Step 5**: Insert/update records in `whoop_workouts` table (individual workout sessions)
+
+**ACTIVITY CORRELATION PROCESSING (After both Strava and WHOOP data sync):**
+1. **Step 1**: Script `run-correlation-etl.js` finds new uncorrelated activities
+2. **Step 2**: Matches Strava runs with WHOOP workouts based on time and distance
+3. **Step 3**: Calculates confidence score (0.00 to 1.00) for each potential match
+4. **Step 4**: Inserts high-confidence matches into `activity_correlations` table
+
+**DATA STATE PROGRESSION:**
+- **"PENDING"**: WHOOP is still calculating the score (wait for next sync)
+- **"SCORED"**: Data is complete and ready for analysis
+- **"UNSCORABLE"**: Insufficient data (e.g., device wasn't worn)
 
 ### 🔄 **Data State Management**
 

@@ -103,19 +103,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="database-structure-summary">Database Structure Summary</h2>
 <section id="tables-by-category" class="level3">
 <h3 class="anchored" data-anchor-id="tables-by-category">📋 <strong>Tables by Category</strong></h3>
-<p><strong>Authentication &amp; Users (2 tables)</strong> - <code>strava_users</code> - Strava user profiles and API tokens - <code>whoop_users</code> - WHOOP user profiles and API tokens</p>
-<p><strong>Fitness Activities (2 tables)</strong> - <code>strava_runs</code> - Running activities with GPS data - <code>whoop_workouts</code> - WHOOP workout sessions with heart rate zones</p>
+<p><strong>Fitness Activities (3 tables)</strong> - <code>strava_runs</code> - Running activities with GPS data and enhanced metrics - <code>strava_run_splits</code> - Detailed kilometer/mile pace splits for training analysis - <code>whoop_workouts</code> - WHOOP workout sessions with heart rate zones</p>
+<p><strong>Cross-Platform Correlations (1 table)</strong> - <code>activity_correlations</code> - Pre-computed relationships between Strava runs and WHOOP workouts</p>
 <p><strong>Health Metrics (3 tables)</strong> - <code>whoop_cycles</code> - Daily strain and recovery cycles - <code>whoop_recovery</code> - Recovery scores and physiological metrics - <code>whoop_sleep</code> - Sleep performance and stage breakdowns</p>
 </section>
-<section id="key-relationships" class="level3">
-<h3 class="anchored" data-anchor-id="key-relationships">🔗 <strong>Key Relationships</strong></h3>
-<pre><code>strava_users ← strava_runs
-
-whoop_users ← whoop_cycles ← whoop_recovery → whoop_sleep
-whoop_users ← whoop_workouts ← whoop_sleep (via v1_id)
-
-Recovery acts as the bridge between Cycles and Sleep due to WHOOP API v2 limitations.</code></pre>
-<p><strong>Relationship Details:</strong> - <code>whoop_recovery.cycle_id</code> → <code>whoop_cycles.id</code> (Recovery belongs to a Cycle) - <code>whoop_recovery.sleep_id</code> → <code>whoop_sleep.id</code> (Recovery analyzes a Sleep session) - <code>whoop_sleep.cycle_id</code> → <code>whoop_cycles.id</code> (Sleep belongs to a Cycle, populated via Recovery) - <code>whoop_sleep.v1_id</code> → <code>whoop_workouts.v1_id</code> (Sleep may be related to a Workout) - All tables → <code>whoop_users.id</code> (User ownership)</p>
+<section id="key-relationships---explicit-foreign-key-connections" class="level3">
+<h3 class="anchored" data-anchor-id="key-relationships---explicit-foreign-key-connections">🔗 <strong>Key Relationships - EXPLICIT FOREIGN KEY CONNECTIONS</strong></h3>
+<p><strong>PRIMARY RELATIONSHIPS (How tables connect to each other):</strong></p>
+<p><strong>STRAVA ECOSYSTEM:</strong> - <code>strava_users.id</code> ← <code>strava_runs.user_id</code> (Each run belongs to ONE user) - <code>strava_runs.id</code> ← <code>strava_run_splits.strava_run_id</code> (Each split belongs to ONE run)</p>
+<p><strong>WHOOP ECOSYSTEM:</strong> - <code>whoop_users.id</code> ← <code>whoop_cycles.user_id</code> (Each cycle belongs to ONE user) - <code>whoop_users.id</code> ← <code>whoop_recovery.user_id</code> (Each recovery belongs to ONE user)<br>
+- <code>whoop_users.id</code> ← <code>whoop_sleep.user_id</code> (Each sleep belongs to ONE user) - <code>whoop_users.id</code> ← <code>whoop_workouts.user_id</code> (Each workout belongs to ONE user)</p>
+<p><strong>WHOOP INTERNAL RELATIONSHIPS:</strong> - <code>whoop_cycles.id</code> ← <code>whoop_recovery.cycle_id</code> (Each recovery analyzes ONE cycle) - <code>whoop_sleep.id</code> ← <code>whoop_recovery.sleep_id</code> (Each recovery analyzes ONE sleep session) - <code>whoop_cycles.id</code> ← <code>whoop_sleep.cycle_id</code> (Each sleep belongs to ONE cycle)</p>
+<p><strong>CROSS-PLATFORM CONNECTION:</strong> - <code>strava_runs.id</code> ← <code>activity_correlations.strava_run_id</code> (Links to Strava activity) - <code>whoop_workouts.id</code> ← <code>activity_correlations.whoop_workout_id</code> (Links to WHOOP activity)</p>
+<p><strong>EXPLICIT FOREIGN KEY RULES:</strong> - If <code>strava_runs.user_id = 123</code>, that run belongs to user with <code>strava_users.id = 123</code> - If <code>whoop_recovery.cycle_id = 456</code>, that recovery analyzes cycle with <code>whoop_cycles.id = 456</code> - If <code>activity_correlations.strava_run_id = 789</code>, it links to <code>strava_runs.id = 789</code></p>
 <pre><code>WHOOP API v2 Data Relationships
 ═══════════════════════════════════════════════════════════════════
 
@@ -125,16 +125,15 @@ Recovery acts as the bridge between Cycles and Sleep due to WHOOP API v2 limitat
 │ id (PK)         │     │ cycle_id (FK)   │     │ id (PK)         │
 │ strain          │     │ sleep_id (FK)   │     │ cycle_id (FK)   │
 │ kilojoule       │     │ recovery_score  │     │ performance_%   │
-│ heart_rate      │     │ hrv_rmssd_milli │     │ v1_id (FK)      │
-└─────────────────┘     │ resting_hr      │     │ sleep_stages    │
-                        └─────────────────┘     └─────────────────┘
-                                                         │
+│ heart_rate      │     │ hrv_rmssd_milli │     │ sleep_stages    │
+└─────────────────┘     │ resting_hr      │     └─────────────────┘
+                        └─────────────────┘              │
                                                          │ (optional)
                                                          ▼
                                                 ┌─────────────────┐
                                                 │  🏋️ WORKOUTS   │
                                                 │                 │
-                                                │ v1_id (UK)      │
+                                                │ id (PK)         │
                                                 │ strain          │
                                                 │ sport_name      │
                                                 │ zone_*_milli    │
@@ -143,18 +142,47 @@ Recovery acts as the bridge between Cycles and Sleep due to WHOOP API v2 limitat
 Key Relationships:
 • Recovery acts as bridge between Cycles ↔ Sleep (WHOOP API design)
 • Each Cycle has one Recovery score based on Sleep analysis
-• Sleep may optionally relate to Workouts via v1_id
+• Sleep may optionally relate to Workouts
 • All entities belong to a user (user_id FK not shown)</code></pre>
 <hr>
 </section>
 </section>
 <section id="table-documentation" class="level2">
 <h2 class="anchored" data-anchor-id="table-documentation">Table Documentation</h2>
+<section id="understanding-table-symbols---explicit-definitions" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-table-symbols---explicit-definitions">📖 <strong>Understanding Table Symbols - EXPLICIT DEFINITIONS</strong></h3>
+<p>Every column in every table has exactly ONE of these two symbols in the “Required” column:</p>
+<p><strong>✅ = REQUIRED FIELD (NOT NULL DATABASE CONSTRAINT)</strong> - <strong>MEANING</strong>: This field MUST have a value. It cannot be empty, blank, or null. - <strong>DATABASE RULE</strong>: PostgreSQL will reject any INSERT or UPDATE that tries to leave this field empty. - <strong>PRACTICAL IMPACT</strong>: Every single record in the database will have a value in this field. - <strong>EXAMPLES</strong>: - <code>id</code> columns are ALWAYS ✅ because they are primary keys - <code>strava_run_id</code> in splits table is ✅ because every split MUST belong to a run</p>
+<p><strong>❌ = OPTIONAL FIELD (NULL ALLOWED)</strong> - <strong>MEANING</strong>: This field CAN be empty. The database allows NULL values. - <strong>DATABASE RULE</strong>: PostgreSQL will accept records where this field is empty/null. - <strong>PRACTICAL IMPACT</strong>: Some records may have this field empty, some may have values. - <strong>REAL EXAMPLES</strong>: - <code>first_name</code> is ❌ because Strava API might not return the user’s name - <code>distance_meters</code> is ❌ because some activities don’t have distance data - <code>sport_type</code> is ❌ because older activities might not specify the sport type</p>
+<p><strong>CRITICAL DIFFERENCE</strong>: - ✅ = “This field will ALWAYS have data in every record” - ❌ = “This field MIGHT be empty in some records”</p>
+<p><strong>WHEN QUERYING DATA</strong>: - For ✅ fields: You can assume the value exists, no need to check for NULL - For ❌ fields: You MUST handle NULL values in your queries using COALESCE() or WHERE field IS NOT NULL</p>
+<p><strong>CONCRETE DATABASE EXAMPLES</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- ✅ REQUIRED FIELD EXAMPLE (id is always present)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="kw">id</span>, distance_meters <span class="kw">FROM</span> strava_runs;</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">-- Result: id will ALWAYS have a value like 1234567890</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- ❌ OPTIONAL FIELD EXAMPLE (distance_meters might be NULL)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="kw">id</span>, distance_meters <span class="kw">FROM</span> strava_runs;</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- Result: distance_meters might be 5000.0 OR NULL</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- HANDLING OPTIONAL FIELDS IN QUERIES:</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="kw">id</span>, <span class="fu">COALESCE</span>(distance_meters, <span class="dv">0</span>) <span class="kw">as</span> distance </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs;</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">-- This replaces NULL values with 0</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">-- FILTERING OUT NULL VALUES:</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> strava_runs </span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> distance_meters <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span>;</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">-- This only returns records that have distance data</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>PRACTICAL MEANING FOR EACH TABLE</strong>: - <code>strava_users.id</code> = ✅ = Every user record WILL have an ID - <code>strava_users.first_name</code> = ❌ = Some user records might have NULL for first_name - <code>strava_runs.id</code> = ✅ = Every run record WILL have an ID<br>
+- <code>strava_runs.distance_meters</code> = ❌ = Some runs might have NULL distance (e.g., manual entries) - <code>whoop_recovery.cycle_id</code> = ✅ = Every recovery record WILL be linked to a cycle - <code>whoop_recovery.recovery_percentage</code> = ❌ = Some recovery records might have NULL percentage (pending calculation)</p>
+<hr>
+</section>
 <section id="strava_users---strava-user-profiles" class="level3">
 <h3 class="anchored" data-anchor-id="strava_users---strava-user-profiles">🏃‍♂️ <strong>STRAVA_USERS</strong> - Strava User Profiles</h3>
-<p><strong>Purpose</strong>: Stores Strava user authentication and profile information<br>
-<strong>Data Source</strong>: Strava OAuth + Profile API<br>
-<strong>Update Frequency</strong>: On authentication and weekly sync</p>
+<p><strong>Purpose</strong>: Stores Strava user identification information<br>
+<strong>Data Source</strong>: Strava Profile API<br>
+<strong>Update Frequency</strong>: Weekly sync</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 18%">
@@ -177,118 +205,20 @@ Key Relationships:
 <td><code>id</code></td>
 <td>bigint</td>
 <td>✅</td>
-<td>-</td>
+<td>*</td>
 <td>Primary key, Strava user ID</td>
 </tr>
 <tr class="even">
-<td><code>email</code></td>
-<td>varchar(255)</td>
-<td>❌</td>
-<td>-</td>
-<td>User’s email address</td>
-</tr>
-<tr class="odd">
 <td><code>first_name</code></td>
 <td>varchar(100)</td>
 <td>❌</td>
-<td>-</td>
-<td>User’s first name</td>
-</tr>
-<tr class="even">
-<td><code>last_name</code></td>
-<td>varchar(100)</td>
-<td>❌</td>
-<td>-</td>
-<td>User’s last name</td>
-</tr>
-<tr class="odd">
-<td><code>username</code></td>
-<td>varchar(100)</td>
-<td>❌</td>
-<td>-</td>
-<td>Strava username/handle</td>
-</tr>
-<tr class="even">
-<td><code>city</code></td>
-<td>varchar(100)</td>
-<td>❌</td>
-<td>-</td>
-<td>User’s city location</td>
-</tr>
-<tr class="odd">
-<td><code>state</code></td>
-<td>varchar(100)</td>
-<td>❌</td>
-<td>-</td>
-<td>User’s state/province</td>
-</tr>
-<tr class="even">
-<td><code>country</code></td>
-<td>varchar(100)</td>
-<td>❌</td>
-<td>-</td>
-<td>User’s country code</td>
-</tr>
-<tr class="odd">
-<td><code>sex</code></td>
-<td>varchar(1)</td>
-<td>❌</td>
-<td>-</td>
-<td>Gender: ‘M’, ‘F’, or null</td>
-</tr>
-<tr class="even">
-<td><code>profile_picture_url</code></td>
-<td>text</td>
-<td>❌</td>
-<td>-</td>
-<td>URL to user’s profile image</td>
-</tr>
-<tr class="odd">
-<td><code>access_token</code></td>
-<td>text</td>
-<td>❌</td>
-<td>-</td>
-<td>Strava API access token (encrypted)</td>
-</tr>
-<tr class="even">
-<td><code>refresh_token</code></td>
-<td>text</td>
-<td>❌</td>
-<td>-</td>
-<td>Strava API refresh token (encrypted)</td>
-</tr>
-<tr class="odd">
-<td><code>token_expires_at</code></td>
-<td>timestamptz</td>
-<td>❌</td>
-<td>UTC</td>
-<td>When access token expires</td>
-</tr>
-<tr class="even">
-<td><code>scopes</code></td>
-<td>text</td>
-<td>❌</td>
-<td>-</td>
-<td>Granted API permissions (read, read_all, etc.)</td>
-</tr>
-<tr class="odd">
-<td><code>created_at</code></td>
-<td>timestamptz</td>
-<td>❌</td>
-<td>UTC</td>
-<td>Record creation timestamp</td>
-</tr>
-<tr class="even">
-<td><code>updated_at</code></td>
-<td>timestamptz</td>
-<td>❌</td>
-<td>UTC</td>
-<td>Last profile update timestamp</td>
+<td>*</td>
+<td>User’s first name for identification</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Business Context</strong>: Central authentication table for Strava integration. Tokens are refreshed automatically via cron job every Monday at 1 PM.</p>
-<p><strong>Data Patterns</strong>: - One record per Strava user - Tokens expire every 6 hours, refreshed automatically - Profile data updated during weekly sync</p>
+<p><strong>Business Context</strong>: Simple user identification table for Strava integration. Only stores essential user identification data.</p>
+<p><strong>Data Patterns</strong>: - One record per Strava user - Profile data updated during weekly sync - Simple identification only</p>
 <hr>
 </section>
 <section id="strava_runs---running-activities" class="level3">
@@ -318,29 +248,29 @@ Key Relationships:
 <td><code>id</code></td>
 <td>bigint</td>
 <td>✅</td>
-<td>-</td>
+<td>*</td>
 <td>Primary key, Strava activity ID</td>
 </tr>
 <tr class="even">
 <td><code>user_id</code></td>
 <td>bigint</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Foreign key to strava_users.id</td>
 </tr>
 <tr class="odd">
 <td><code>name</code></td>
 <td>varchar(255)</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Activity name (e.g., “Morning Run”)</td>
 </tr>
 <tr class="even">
 <td><code>sport_type</code></td>
 <td>varchar(50)</td>
 <td>❌</td>
-<td>-</td>
-<td>Activity type: “Run”</td>
+<td>*</td>
+<td>Activity type: “Run”, “TrailRun”, “Treadmill”</td>
 </tr>
 <tr class="odd">
 <td><code>start_date</code></td>
@@ -350,6 +280,20 @@ Key Relationships:
 <td>Activity start timestamp</td>
 </tr>
 <tr class="even">
+<td><code>start_date_local</code></td>
+<td>timestamp</td>
+<td>❌</td>
+<td>Local</td>
+<td>Activity start in user’s local timezone</td>
+</tr>
+<tr class="odd">
+<td><code>utc_offset_seconds</code></td>
+<td>integer</td>
+<td>❌</td>
+<td>seconds</td>
+<td>Timezone offset from UTC</td>
+</tr>
+<tr class="even">
 <td><code>distance_meters</code></td>
 <td>double precision</td>
 <td>❌</td>
@@ -357,27 +301,104 @@ Key Relationships:
 <td>Total distance covered</td>
 </tr>
 <tr class="odd">
+<td><code>elapsed_time_seconds</code></td>
+<td>integer</td>
+<td>❌</td>
+<td>seconds</td>
+<td>Total elapsed time including stops</td>
+</tr>
+<tr class="even">
+<td><code>average_speed_mps</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>m/s</td>
+<td>Average speed in meters per second</td>
+</tr>
+<tr class="odd">
+<td><code>max_speed_mps</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>m/s</td>
+<td>Maximum speed in meters per second</td>
+</tr>
+<tr class="even">
+<td><code>total_elevation_gain</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>meters</td>
+<td>Total elevation gained during activity</td>
+</tr>
+<tr class="odd">
+<td><code>elev_high</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>meters</td>
+<td>Highest elevation point</td>
+</tr>
+<tr class="even">
+<td><code>elev_low</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>meters</td>
+<td>Lowest elevation point</td>
+</tr>
+<tr class="odd">
+<td><code>suffer_score</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>0*100+</td>
+<td>Strava’s proprietary effort metric</td>
+</tr>
+<tr class="even">
+<td><code>perceived_exertion</code></td>
+<td>integer</td>
+<td>❌</td>
+<td>1*10</td>
+<td>User’s subjective effort rating</td>
+</tr>
+<tr class="odd">
+<td><code>start_latlng</code></td>
+<td>point</td>
+<td>❌</td>
+<td>lat,lng</td>
+<td>Starting coordinates as PostgreSQL POINT</td>
+</tr>
+<tr class="even">
+<td><code>end_latlng</code></td>
+<td>point</td>
+<td>❌</td>
+<td>lat,lng</td>
+<td>Ending coordinates as PostgreSQL POINT</td>
+</tr>
+<tr class="odd">
 <td><code>summary_polyline</code></td>
 <td>text</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Encoded GPS polyline (low resolution)</td>
 </tr>
 <tr class="even">
 <td><code>detailed_polyline</code></td>
 <td>text</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Encoded GPS polyline (high resolution)</td>
 </tr>
 <tr class="odd">
+<td><code>private_note</code></td>
+<td>text</td>
+<td>❌</td>
+<td>*</td>
+<td>User’s private notes about the activity</td>
+</tr>
+<tr class="even">
 <td><code>created_at</code></td>
 <td>timestamptz</td>
 <td>❌</td>
 <td>UTC</td>
 <td>Record creation timestamp</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>updated_at</code></td>
 <td>timestamptz</td>
 <td>❌</td>
@@ -386,25 +407,170 @@ Key Relationships:
 </tr>
 </tbody>
 </table>
-<p><strong>Business Context</strong>: Core running data for performance analysis, route tracking, and progress monitoring. GPS polylines enable route visualization and analysis.</p>
-<p><strong>Data Patterns</strong>: - ~94 historical activities imported - New activities added weekly - Distance typically 1-25 km for recreational runners - Polylines can be decoded for mapping applications</p>
+<p><strong>Business Context</strong>: Core running data for performance analysis, route tracking, and progress monitoring. GPS polylines enable route visualization and analysis. Enhanced with detailed speed metrics, elevation data, coordinates, and subjective effort ratings for comprehensive training analysis.</p>
+<p><strong>Data Patterns - EXACT CURRENT VALUES</strong>: - <strong>TOTAL RECORDS</strong>: Exactly 18 enhanced Strava activities in database - <strong>NEW RECORDS</strong>: Real-time API integration adds new activities immediately<br>
+- <strong>DISTANCE RANGE</strong>: Activities range from 1.2 km to 25.6 km - <strong>COORDINATES</strong>: Stored as PostgreSQL POINT type: access with <code>start_latlng[0]</code> (latitude), <code>start_latlng[1]</code> (longitude) - <strong>SUFFER SCORES</strong>: Range from 15 to 187 (higher = more training stress) - <strong>PERCEIVED EXERTION</strong>: User ratings from 1 (very easy) to 10 (maximum effort) - <strong>GPS ACCURACY</strong>: Both summary and detailed polylines stored for route visualization</p>
 <p><strong>Common Queries</strong>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Monthly running summary</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Monthly running summary with enhanced metrics</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> DATE_TRUNC(<span class="st">'month'</span>, start_date) <span class="kw">as</span> <span class="dt">month</span>, </span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">as</span> runs, </span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">SUM</span>(distance_meters)<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> total_km</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs <span class="kw">WHERE</span> user_id <span class="op">=</span> ? <span class="kw">GROUP</span> <span class="kw">BY</span> <span class="dt">month</span>;</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">-- Average pace by route</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> name, <span class="fu">AVG</span>(distance_meters) <span class="kw">as</span> avg_distance</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs <span class="kw">WHERE</span> sport_type <span class="op">=</span> <span class="st">'Run'</span> <span class="kw">GROUP</span> <span class="kw">BY</span> name;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">SUM</span>(distance_meters)<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> total_km,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>       <span class="fu">AVG</span>(average_speed_mps <span class="op">*</span> <span class="fl">3.6</span>) <span class="kw">as</span> avg_speed_kmh,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">AVG</span>(suffer_score) <span class="kw">as</span> avg_suffer_score</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs <span class="kw">WHERE</span> user_id <span class="op">=</span> ? <span class="kw">GROUP</span> <span class="kw">BY</span> <span class="dt">month</span>;</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- Performance analysis with coordinates</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> name, </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>       distance_meters<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> km,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>       average_speed_mps <span class="op">*</span> <span class="fl">3.6</span> <span class="kw">as</span> speed_kmh,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>       start_latlng[<span class="dv">0</span>] <span class="kw">as</span> start_lat, start_latlng[<span class="dv">1</span>] <span class="kw">as</span> start_lng,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>       suffer_score, perceived_exertion</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs <span class="kw">WHERE</span> sport_type <span class="op">=</span> <span class="st">'Run'</span> <span class="kw">ORDER</span> <span class="kw">BY</span> start_date <span class="kw">DESC</span>;</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">-- Route clustering by start coordinates</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> name, start_latlng, </span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>       ST_Distance(start_latlng, ST_Point(<span class="op">-</span><span class="fl">73.9442</span>, <span class="fl">40.7580</span>)) <span class="op">*</span> <span class="dv">111320</span> <span class="kw">as</span> distance_from_astoria_meters</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs <span class="kw">ORDER</span> <span class="kw">BY</span> distance_from_astoria_meters;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="strava_run_splits---detailed-pace-splits" class="level3">
+<h3 class="anchored" data-anchor-id="strava_run_splits---detailed-pace-splits">🏃‍♂️ <strong>STRAVA_RUN_SPLITS</strong> - Detailed Pace Splits</h3>
+<p><strong>Purpose</strong>: Stores kilometer/mile split data for detailed pace analysis<br>
+<strong>Data Source</strong>: Strava Activities API (splits array)<br>
+<strong>Update Frequency</strong>: Real-time with enhanced data collection</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 13%">
+<col style="width: 22%">
+<col style="width: 15%">
+<col style="width: 29%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Required</th>
+<th>Units</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>id</code></td>
+<td>bigserial</td>
+<td>✅</td>
+<td>*</td>
+<td>Primary key, auto*increment</td>
+</tr>
+<tr class="even">
+<td><code>strava_run_id</code></td>
+<td>bigint</td>
+<td>✅</td>
+<td>*</td>
+<td>Foreign key to strava_runs.id</td>
+</tr>
+<tr class="odd">
+<td><code>split_type</code></td>
+<td>text</td>
+<td>✅</td>
+<td>*</td>
+<td>Split type: “metric” (km) or “standard” (mile)</td>
+</tr>
+<tr class="even">
+<td><code>split_number</code></td>
+<td>integer</td>
+<td>✅</td>
+<td>*</td>
+<td>Split sequence number (1, 2, 3…)</td>
+</tr>
+<tr class="odd">
+<td><code>distance_meters</code></td>
+<td>numeric</td>
+<td>✅</td>
+<td>meters</td>
+<td>Split distance (1000m or 1609.34m)</td>
+</tr>
+<tr class="even">
+<td><code>elapsed_time_seconds</code></td>
+<td>integer</td>
+<td>✅</td>
+<td>seconds</td>
+<td>Total time including stops for this split</td>
+</tr>
+<tr class="odd">
+<td><code>moving_time_seconds</code></td>
+<td>integer</td>
+<td>✅</td>
+<td>seconds</td>
+<td>Active movement time for this split</td>
+</tr>
+<tr class="even">
+<td><code>elevation_difference_meters</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>meters</td>
+<td>Net elevation change for this split</td>
+</tr>
+<tr class="odd">
+<td><code>average_speed_mps</code></td>
+<td>numeric</td>
+<td>✅</td>
+<td>m/s</td>
+<td>Average speed for this split</td>
+</tr>
+<tr class="even">
+<td><code>average_grade_adjusted_speed</code></td>
+<td>numeric</td>
+<td>❌</td>
+<td>m/s</td>
+<td>Speed adjusted for elevation grade</td>
+</tr>
+<tr class="odd">
+<td><code>pace_zone</code></td>
+<td>integer</td>
+<td>❌</td>
+<td>1*5</td>
+<td>Pace intensity zone for this split</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Business Context</strong>: Enables detailed pace analysis, training zone monitoring, and performance consistency evaluation. Critical for interval training analysis and identifying race pacing strategies.</p>
+<p><strong>Data Patterns - EXACT SPLIT METRICS</strong>: - <strong>TOTAL SPLITS</strong>: Exactly 110+ splits currently stored across all enhanced activities - <strong>SPLIT TYPES</strong>: ‘metric’ splits = exactly 1000 meters, ‘standard’ splits = exactly 1609.34 meters<br>
+- <strong>TYPICAL COUNTS</strong>: 5km run = 5 metric splits, 10km run = 10 metric splits - <strong>PACE ZONES</strong>: Zone 1 (recovery) to Zone 5 (maximum effort) based on heart rate percentage - <strong>SPEED CONVERSION</strong>: <code>average_speed_mps * 3.6 = km/h</code>, <code>1000/average_speed_mps/60 = minutes per km</code> - <strong>ELEVATION</strong>: Positive values = uphill, negative values = downhill for each split segment</p>
+<p><strong>Common Split Analysis Queries</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Pace progression analysis</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> split_number, </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>       average_speed_mps <span class="op">*</span> <span class="fl">3.6</span> <span class="kw">as</span> speed_kmh,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>       elapsed_time_seconds <span class="op">/</span> <span class="fl">60.0</span> <span class="kw">as</span> pace_per_km_minutes</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_run_splits </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> strava_run_id <span class="op">=</span> ? <span class="kw">AND</span> split_type <span class="op">=</span> <span class="st">'metric'</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> split_number;</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- Negative split detection (getting faster)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> split_halves <span class="kw">AS</span> (</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">SELECT</span> strava_run_id,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>         <span class="cf">CASE</span> <span class="cf">WHEN</span> split_number <span class="op">&lt;=</span> <span class="fu">MAX</span>(split_number) <span class="kw">OVER</span> (<span class="kw">PARTITION</span> <span class="kw">BY</span> strava_run_id) <span class="op">/</span> <span class="fl">2.0</span> </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>              <span class="cf">THEN</span> <span class="st">'first_half'</span> <span class="cf">ELSE</span> <span class="st">'second_half'</span> <span class="cf">END</span> <span class="kw">as</span> half,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>         <span class="fu">AVG</span>(average_speed_mps) <span class="kw">OVER</span> (<span class="kw">PARTITION</span> <span class="kw">BY</span> strava_run_id, </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>              <span class="cf">CASE</span> <span class="cf">WHEN</span> split_number <span class="op">&lt;=</span> <span class="fu">MAX</span>(split_number) <span class="kw">OVER</span> (<span class="kw">PARTITION</span> <span class="kw">BY</span> strava_run_id) <span class="op">/</span> <span class="fl">2.0</span> </span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">THEN</span> <span class="st">'first_half'</span> <span class="cf">ELSE</span> <span class="st">'second_half'</span> <span class="cf">END</span>) <span class="kw">as</span> avg_speed</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">FROM</span> strava_run_splits <span class="kw">WHERE</span> split_type <span class="op">=</span> <span class="st">'metric'</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> sr.name,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>       (sh2.avg_speed <span class="op">-</span> sh1.avg_speed) <span class="op">*</span> <span class="fl">3.6</span> <span class="kw">as</span> speed_improvement_kmh,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>       <span class="cf">CASE</span> <span class="cf">WHEN</span> sh2.avg_speed <span class="op">&gt;</span> sh1.avg_speed </span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">THEN</span> <span class="st">'Negative Split'</span> <span class="cf">ELSE</span> <span class="st">'Positive Split'</span> <span class="cf">END</span> <span class="kw">as</span> split_type</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs sr</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> split_halves sh1 <span class="kw">ON</span> sr.<span class="kw">id</span> <span class="op">=</span> sh1.strava_run_id <span class="kw">AND</span> sh1.half <span class="op">=</span> <span class="st">'first_half'</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> split_halves sh2 <span class="kw">ON</span> sr.<span class="kw">id</span> <span class="op">=</span> sh2.strava_run_id <span class="kw">AND</span> sh2.half <span class="op">=</span> <span class="st">'second_half'</span>;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="whoop_users---whoop-user-profiles" class="level3">
 <h3 class="anchored" data-anchor-id="whoop_users---whoop-user-profiles">💪 <strong>WHOOP_USERS</strong> - WHOOP User Profiles</h3>
-<p><strong>Purpose</strong>: Stores WHOOP user authentication and profile information<br>
-<strong>Data Source</strong>: WHOOP OAuth + Profile API<br>
-<strong>Update Frequency</strong>: On authentication and daily data fetch</p>
+<p><strong>Purpose</strong>: Stores WHOOP user identification information<br>
+<strong>Data Source</strong>: WHOOP Profile API<br>
+<strong>Update Frequency</strong>: Daily data fetch</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 18%">
@@ -427,69 +593,20 @@ Key Relationships:
 <td><code>id</code></td>
 <td>bigint</td>
 <td>✅</td>
-<td>-</td>
+<td>*</td>
 <td>Primary key, WHOOP user ID</td>
 </tr>
 <tr class="even">
-<td><code>email</code></td>
-<td>varchar(255)</td>
-<td>❌</td>
-<td>-</td>
-<td>User’s email address</td>
-</tr>
-<tr class="odd">
 <td><code>first_name</code></td>
 <td>varchar(255)</td>
 <td>❌</td>
-<td>-</td>
-<td>User’s first name</td>
-</tr>
-<tr class="even">
-<td><code>last_name</code></td>
-<td>varchar(255)</td>
-<td>❌</td>
-<td>-</td>
-<td>User’s last name</td>
-</tr>
-<tr class="odd">
-<td><code>access_token</code></td>
-<td>text</td>
-<td>❌</td>
-<td>-</td>
-<td>WHOOP API access token (encrypted)</td>
-</tr>
-<tr class="even">
-<td><code>refresh_token</code></td>
-<td>text</td>
-<td>❌</td>
-<td>-</td>
-<td>WHOOP API refresh token (encrypted)</td>
-</tr>
-<tr class="odd">
-<td><code>token_expires_at</code></td>
-<td>timestamptz</td>
-<td>❌</td>
-<td>UTC</td>
-<td>When access token expires</td>
-</tr>
-<tr class="even">
-<td><code>created_at</code></td>
-<td>timestamptz</td>
-<td>❌</td>
-<td>UTC</td>
-<td>Record creation timestamp</td>
-</tr>
-<tr class="odd">
-<td><code>updated_at</code></td>
-<td>timestamptz</td>
-<td>❌</td>
-<td>UTC</td>
-<td>Last profile update timestamp</td>
+<td>*</td>
+<td>User’s first name for identification</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Business Context</strong>: Authentication table for WHOOP health data integration. Tokens refreshed automatically during daily data fetch at 3 PM.</p>
-<p><strong>Data Patterns</strong>: - One record per WHOOP user - Tokens expire every 24 hours, refreshed daily - Smaller user base than Strava (premium health device)</p>
+<p><strong>Business Context</strong>: Simple user identification table for WHOOP health data integration.</p>
+<p><strong>Data Patterns</strong>: - One record per WHOOP user - Simple identification only - Smaller user base than Strava (premium health device)</p>
 <hr>
 </section>
 <section id="whoop_cycles---daily-strain-cycles" class="level3">
@@ -519,14 +636,14 @@ Key Relationships:
 <td><code>id</code></td>
 <td>bigint</td>
 <td>✅</td>
-<td>-</td>
+<td>*</td>
 <td>Primary key, WHOOP cycle ID</td>
 </tr>
 <tr class="even">
 <td><code>user_id</code></td>
 <td>bigint</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Foreign key to whoop_users.id</td>
 </tr>
 <tr class="odd">
@@ -554,14 +671,14 @@ Key Relationships:
 <td><code>score_state</code></td>
 <td>text</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>“SCORED”, “PENDING”, or “UNSCORABLE”</td>
 </tr>
 <tr class="odd">
 <td><code>strain</code></td>
 <td>numeric(8,6)</td>
 <td>❌</td>
-<td>0-21 scale</td>
+<td>0*21 scale</td>
 <td>Daily strain score</td>
 </tr>
 <tr class="even">
@@ -572,15 +689,15 @@ Key Relationships:
 <td>Energy expenditure</td>
 </tr>
 <tr class="odd">
-<td><code>average_heart_rate</code></td>
-<td>integer</td>
+<td><code>avg_heart_rate_bpm</code></td>
+<td>numeric(5,1)</td>
 <td>❌</td>
 <td>BPM</td>
 <td>Average heart rate for cycle</td>
 </tr>
 <tr class="even">
-<td><code>max_heart_rate</code></td>
-<td>integer</td>
+<td><code>max_heart_rate_bpm</code></td>
+<td>numeric(5,1)</td>
 <td>❌</td>
 <td>BPM</td>
 <td>Maximum heart rate for cycle</td>
@@ -589,7 +706,12 @@ Key Relationships:
 </table>
 <p><strong>Business Context</strong>: Daily load measurement for recovery planning and overtraining prevention. This table contains the <strong>total daily strain</strong> for an entire 24-hour cycle - the cumulative cardiovascular load from all activities and daily life. Strain scores guide training intensity decisions and contribute to recovery calculations.</p>
 <p><strong>Data Patterns</strong>: - One record per day per user - Strain scores: 0-9 (low), 10-13 (moderate), 14-17 (high), 18-21 (very high) - Cycles typically 24 hours but can vary with sleep schedule - Energy expenditure correlates with strain and activity</p>
-<p><strong>Typical Values</strong>: - Sedentary day: strain 2-6, ~1500-2000 kJ - Active day: strain 10-15, ~2500-3500 kJ - Heavy training: strain 16-20, ~3500+ kJ</p>
+<p><strong>EXACT VALUE RANGES - WHOOP STRAIN SCALE</strong>: - <strong>STRAIN 0-4</strong>: Very low activity (desk job, minimal movement) - <strong>STRAIN 5-9</strong>: Low activity (light walking, easy day)<br>
+- <strong>STRAIN 10-13</strong>: Moderate activity (normal workout, active day) - <strong>STRAIN 14-17</strong>: High activity (intense workout, long run) - <strong>STRAIN 18-21</strong>: Very high activity (marathon, extreme training)</p>
+<p><strong>ENERGY EXPENDITURE RANGES</strong>: - <strong>1200-1800 kJ</strong>: Sedentary day, minimal activity - <strong>1800-2500 kJ</strong>: Light activity day, easy workout<br>
+- <strong>2500-3500 kJ</strong>: Active day, moderate workout - <strong>3500-4500 kJ</strong>: High activity, intense training - <strong>4500+ kJ</strong>: Extreme activity, endurance events</p>
+<p><strong>HEART RATE TYPICAL VALUES</strong>: - <strong>Resting HR</strong>: 40-80 BPM (lower = better fitness) - <strong>Average daily HR</strong>: 60-100 BPM<br>
+- <strong>Max workout HR</strong>: 150-200 BPM (age dependent)</p>
 <hr>
 </section>
 <section id="whoop_sleep---sleep-performance-data" class="level3">
@@ -619,129 +741,122 @@ Key Relationships:
 <td><code>id</code></td>
 <td>varchar(36)</td>
 <td>✅</td>
-<td>-</td>
+<td>*</td>
 <td>Primary key, WHOOP sleep ID (UUID)</td>
 </tr>
 <tr class="even">
-<td><code>v1_id</code></td>
-<td>bigint</td>
-<td>❌</td>
-<td>-</td>
-<td>Legacy activity ID</td>
-</tr>
-<tr class="odd">
 <td><code>user_id</code></td>
 <td>bigint</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Foreign key to whoop_users.id</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>cycle_id</code></td>
 <td>bigint</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Foreign key to whoop_cycles.id</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>start_time</code></td>
 <td>timestamptz</td>
 <td>❌</td>
 <td>UTC</td>
 <td>Sleep start timestamp</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>end_time</code></td>
 <td>timestamptz</td>
 <td>❌</td>
 <td>UTC</td>
 <td>Sleep end timestamp</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>timezone_offset</code></td>
 <td>varchar(10)</td>
 <td>❌</td>
 <td>±HH:MM</td>
 <td>User’s timezone offset</td>
 </tr>
-<tr class="even">
-<td><code>nap</code></td>
+<tr class="odd">
+<td><code>is_nap</code></td>
 <td>boolean</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>True if nap, false if overnight sleep</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>score_state</code></td>
 <td>text</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>“SCORED”, “PENDING”, or “UNSCORABLE”</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>sleep_performance_percentage</code></td>
 <td>numeric(5,2)</td>
 <td>❌</td>
-<td>0-100%</td>
+<td>0*100%</td>
 <td>Overall sleep performance score</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>respiratory_rate</code></td>
 <td>numeric(5,2)</td>
 <td>❌</td>
 <td>breaths/min</td>
 <td>Average respiratory rate</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>sleep_consistency_percentage</code></td>
 <td>numeric(5,2)</td>
 <td>❌</td>
-<td>0-100%</td>
+<td>0*100%</td>
 <td>Sleep schedule consistency</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>sleep_efficiency_percentage</code></td>
 <td>numeric(5,2)</td>
 <td>❌</td>
-<td>0-100%</td>
+<td>0*100%</td>
 <td>Time asleep vs time in bed</td>
 </tr>
-<tr class="even">
-<td><code>total_in_bed_time_milli</code></td>
+<tr class="odd">
+<td><code>total_in_bed_time_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
 <td>Total time in bed</td>
 </tr>
-<tr class="odd">
-<td><code>total_awake_time_milli</code></td>
+<tr class="even">
+<td><code>total_awake_time_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
 <td>Time awake during sleep period</td>
 </tr>
-<tr class="even">
-<td><code>total_light_sleep_time_milli</code></td>
+<tr class="odd">
+<td><code>total_light_sleep_time_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
 <td>Light sleep duration</td>
 </tr>
-<tr class="odd">
-<td><code>total_slow_wave_sleep_time_milli</code></td>
+<tr class="even">
+<td><code>total_slow_wave_sleep_time_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
 <td>Deep sleep duration</td>
 </tr>
-<tr class="even">
-<td><code>total_rem_sleep_time_milli</code></td>
+<tr class="odd">
+<td><code>total_rem_sleep_time_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
 <td>REM sleep duration</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>disturbance_count</code></td>
 <td>integer</td>
 <td>❌</td>
@@ -753,10 +868,10 @@ Key Relationships:
 <p><strong>Business Context</strong>: Critical sleep data for recovery optimization and performance correlation. Sleep quality directly impacts training readiness and recovery scores.</p>
 <p><strong>Data Patterns</strong>: - 1-2 records per day (overnight sleep + optional nap) - Sleep performance 70-100% for good sleep - Efficiency typically 85-95% for healthy adults - Stage distribution: Light 45-55%, Deep 15-20%, REM 20-25%</p>
 <p><strong>Time Conversions</strong>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Convert milliseconds to hours</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> total_in_bed_time_milli <span class="op">/</span> <span class="fl">3600000.0</span> <span class="kw">as</span> hours_in_bed,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>       total_light_sleep_time_milli <span class="op">/</span> <span class="fl">3600000.0</span> <span class="kw">as</span> hours_light_sleep</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_sleep;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Convert milliseconds to hours</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> total_in_bed_time_ms <span class="op">/</span> <span class="fl">3600000.0</span> <span class="kw">as</span> hours_in_bed,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>       total_light_sleep_time_ms <span class="op">/</span> <span class="fl">3600000.0</span> <span class="kw">as</span> hours_light_sleep</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_sleep;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Typical Values</strong>: - Good night: 85%+ performance, 7-9 hours, &lt;5 disturbances - Poor night: &lt;70% performance, &lt;6 or &gt;10 hours, &gt;10 disturbances</p>
 <hr>
 </section>
@@ -787,46 +902,46 @@ Key Relationships:
 <td><code>cycle_id</code></td>
 <td>bigint</td>
 <td>✅</td>
-<td>-</td>
+<td>*</td>
 <td>Primary key, foreign key to whoop_cycles.id</td>
 </tr>
 <tr class="even">
 <td><code>sleep_id</code></td>
 <td>varchar(36)</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Foreign key to whoop_sleep.id</td>
 </tr>
 <tr class="odd">
 <td><code>user_id</code></td>
 <td>bigint</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Foreign key to whoop_users.id</td>
 </tr>
 <tr class="even">
 <td><code>score_state</code></td>
 <td>text</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>“SCORED”, “PENDING”, or “UNSCORABLE”</td>
 </tr>
 <tr class="odd">
-<td><code>recovery_score</code></td>
+<td><code>recovery_percentage</code></td>
 <td>numeric(5,2)</td>
 <td>❌</td>
-<td>0-100%</td>
+<td>0*100%</td>
 <td>Overall recovery percentage</td>
 </tr>
 <tr class="even">
-<td><code>resting_heart_rate</code></td>
+<td><code>resting_heart_rate_bpm</code></td>
 <td>numeric(5,2)</td>
 <td>❌</td>
 <td>BPM</td>
 <td>Resting heart rate during sleep</td>
 </tr>
 <tr class="odd">
-<td><code>hrv_rmssd_milli</code></td>
+<td><code>hrv_rmssd_ms</code></td>
 <td>numeric(8,4)</td>
 <td>❌</td>
 <td>milliseconds</td>
@@ -836,7 +951,7 @@ Key Relationships:
 <td><code>spo2_percentage</code></td>
 <td>numeric(5,2)</td>
 <td>❌</td>
-<td>0-100%</td>
+<td>0*100%</td>
 <td>Blood oxygen saturation</td>
 </tr>
 <tr class="odd">
@@ -881,155 +996,148 @@ Key Relationships:
 <td><code>id</code></td>
 <td>varchar(36)</td>
 <td>✅</td>
-<td>-</td>
+<td>*</td>
 <td>Primary key, WHOOP workout ID (UUID)</td>
 </tr>
 <tr class="even">
-<td><code>v1_id</code></td>
-<td>bigint</td>
-<td>❌</td>
-<td>-</td>
-<td>Legacy activity ID</td>
-</tr>
-<tr class="odd">
 <td><code>user_id</code></td>
 <td>bigint</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>Foreign key to whoop_users.id</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>start_time</code></td>
 <td>timestamptz</td>
 <td>❌</td>
 <td>UTC</td>
 <td>Workout start timestamp</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>end_time</code></td>
 <td>timestamptz</td>
 <td>❌</td>
 <td>UTC</td>
 <td>Workout end timestamp</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>timezone_offset</code></td>
 <td>varchar(10)</td>
 <td>❌</td>
 <td>±HH:MM</td>
 <td>User’s timezone offset</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>sport_id</code></td>
 <td>integer</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>WHOOP sport type ID</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>sport_name</code></td>
 <td>varchar(100)</td>
 <td>❌</td>
-<td>-</td>
-<td>Human-readable sport name</td>
+<td>*</td>
+<td>Human*readable sport name</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>score_state</code></td>
 <td>text</td>
 <td>❌</td>
-<td>-</td>
+<td>*</td>
 <td>“SCORED”, “PENDING”, or “UNSCORABLE”</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>strain</code></td>
 <td>numeric(8,6)</td>
 <td>❌</td>
-<td>0-21 scale</td>
+<td>0*21 scale</td>
 <td>Workout strain contribution</td>
 </tr>
-<tr class="odd">
-<td><code>average_heart_rate</code></td>
-<td>integer</td>
+<tr class="even">
+<td><code>avg_heart_rate_bpm</code></td>
+<td>numeric(5,1)</td>
 <td>❌</td>
 <td>BPM</td>
 <td>Average heart rate during workout</td>
 </tr>
-<tr class="even">
-<td><code>max_heart_rate</code></td>
-<td>integer</td>
+<tr class="odd">
+<td><code>max_heart_rate_bpm</code></td>
+<td>numeric(5,1)</td>
 <td>❌</td>
 <td>BPM</td>
 <td>Maximum heart rate during workout</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>kilojoule</code></td>
 <td>numeric(12,4)</td>
 <td>❌</td>
 <td>kJ</td>
 <td>Energy expenditure during workout</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>distance_meters</code></td>
 <td>numeric(12,4)</td>
 <td>❌</td>
 <td>meters</td>
 <td>Distance covered (if applicable)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>altitude_gain_meter</code></td>
 <td>numeric(12,4)</td>
 <td>❌</td>
 <td>meters</td>
 <td>Elevation gain</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>altitude_change_meter</code></td>
 <td>numeric(12,4)</td>
 <td>❌</td>
 <td>meters</td>
 <td>Net elevation change</td>
 </tr>
-<tr class="odd">
-<td><code>zone_zero_milli</code></td>
-<td>bigint</td>
-<td>❌</td>
-<td>milliseconds</td>
-<td>Time in zone 0 (50-60% max HR)</td>
-</tr>
 <tr class="even">
-<td><code>zone_one_milli</code></td>
+<td><code>hr_zone_0_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
-<td>Time in zone 1 (60-70% max HR)</td>
+<td>Time in zone 0 (50*60% max HR)</td>
 </tr>
 <tr class="odd">
-<td><code>zone_two_milli</code></td>
+<td><code>hr_zone_1_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
-<td>Time in zone 2 (70-80% max HR)</td>
+<td>Time in zone 1 (60*70% max HR)</td>
 </tr>
 <tr class="even">
-<td><code>zone_three_milli</code></td>
+<td><code>hr_zone_2_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
-<td>Time in zone 3 (80-90% max HR)</td>
+<td>Time in zone 2 (70*80% max HR)</td>
 </tr>
 <tr class="odd">
-<td><code>zone_four_milli</code></td>
+<td><code>hr_zone_3_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
-<td>Time in zone 4 (90-95% max HR)</td>
+<td>Time in zone 3 (80*90% max HR)</td>
 </tr>
 <tr class="even">
-<td><code>zone_five_milli</code></td>
+<td><code>hr_zone_4_ms</code></td>
 <td>bigint</td>
 <td>❌</td>
 <td>milliseconds</td>
-<td>Time in zone 5 (95-100% max HR)</td>
+<td>Time in zone 4 (90*95% max HR)</td>
+</tr>
+<tr class="odd">
+<td><code>hr_zone_5_ms</code></td>
+<td>bigint</td>
+<td>❌</td>
+<td>milliseconds</td>
+<td>Time in zone 5 (95*100% max HR)</td>
 </tr>
 </tbody>
 </table>
@@ -1064,10 +1172,13 @@ Key Relationships:
     style D fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     style F fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px</code></pre>
 </section>
-<section id="data-collection-flow" class="level3">
-<h3 class="anchored" data-anchor-id="data-collection-flow">📊 <strong>Data Collection Flow</strong></h3>
-<p><strong>Strava Data (Weekly - Mondays 1 PM)</strong>: 1. Refresh tokens for all Strava users 2. Fetch new activities from past week 3. Store activity details and GPS data 4. Update user profile information</p>
-<p><strong>WHOOP Data (Daily - 3 PM)</strong>: 1. Refresh tokens for all WHOOP users 2. Fetch 2 days of complete data: - Cycles (strain, heart rate) - Sleep (performance, stages) - Recovery (scores, HRV) - Workouts (heart rate zones) ✅ <strong>FIXED</strong>: Zone data now properly mapped from API <code>zone_durations</code> to database 3. Handle pending vs scored data states 4. <strong>Zone Data Flow</strong>: WHOOP API v2 <code>zone_durations</code> → Database <code>zone_*_milli</code> columns</p>
+<section id="data-collection-flow---explicit-process-steps" class="level3">
+<h3 class="anchored" data-anchor-id="data-collection-flow---explicit-process-steps">📊 <strong>Data Collection Flow - EXPLICIT PROCESS STEPS</strong></h3>
+<p><strong>STRAVA DATA COLLECTION (Every Monday at 1 PM):</strong> 1. <strong>Step 1</strong>: Script runs <code>refresh-strava-tokens.js</code> 2. <strong>Step 2</strong>: For each user in <code>strava_users</code> table, fetch new activities from Strava API 3. <strong>Step 3</strong>: Insert new records into <code>strava_runs</code> table with all activity details 4. <strong>Step 4</strong>: For each new run, extract split data and insert into <code>strava_run_splits</code> table 5. <strong>Step 5</strong>: Update <code>strava_users</code> table with any profile changes</p>
+<p><strong>WHOOP DATA COLLECTION (Every day at 3 PM):</strong> 1. <strong>Step 1</strong>: Script fetches last 2 days of data for each user in <code>whoop_users</code> table 2. <strong>Step 2</strong>: Insert/update records in <code>whoop_cycles</code> table (daily strain data) 3. <strong>Step 3</strong>: Insert/update records in <code>whoop_sleep</code> table (sleep performance data)<br>
+4. <strong>Step 4</strong>: Insert/update records in <code>whoop_recovery</code> table (recovery scores) 5. <strong>Step 5</strong>: Insert/update records in <code>whoop_workouts</code> table (individual workout sessions)</p>
+<p><strong>ACTIVITY CORRELATION PROCESSING (After both Strava and WHOOP data sync):</strong> 1. <strong>Step 1</strong>: Script <code>run-correlation-etl.js</code> finds new uncorrelated activities 2. <strong>Step 2</strong>: Matches Strava runs with WHOOP workouts based on time and distance 3. <strong>Step 3</strong>: Calculates confidence score (0.00 to 1.00) for each potential match 4. <strong>Step 4</strong>: Inserts high-confidence matches into <code>activity_correlations</code> table</p>
+<p><strong>DATA STATE PROGRESSION:</strong> - <strong>“PENDING”</strong>: WHOOP is still calculating the score (wait for next sync) - <strong>“SCORED”</strong>: Data is complete and ready for analysis - <strong>“UNSCORABLE”</strong>: Insufficient data (e.g., device wasn’t worn)</p>
 </section>
 <section id="data-state-management" class="level3">
 <h3 class="anchored" data-anchor-id="data-state-management">🔄 <strong>Data State Management</strong></h3>
@@ -1079,96 +1190,164 @@ Key Relationships:
 <h2 class="anchored" data-anchor-id="common-query-patterns">Common Query Patterns</h2>
 <section id="performance-analysis-queries" class="level3">
 <h3 class="anchored" data-anchor-id="performance-analysis-queries">📈 <strong>Performance Analysis Queries</strong></h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Monthly running progression</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    DATE_TRUNC(<span class="st">'month'</span>, start_date) <span class="kw">as</span> <span class="dt">month</span>,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">as</span> total_runs,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(<span class="fu">SUM</span>(distance_meters)<span class="op">/</span><span class="dv">1000</span>, <span class="dv">2</span>) <span class="kw">as</span> total_km,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(<span class="fu">AVG</span>(distance_meters)<span class="op">/</span><span class="dv">1000</span>, <span class="dv">2</span>) <span class="kw">as</span> avg_km_per_run</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> user_id <span class="op">=</span> ? </span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> <span class="dt">month</span> </span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> <span class="dt">month</span>;</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co">-- Recovery vs Running Performance</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    sr.start_date:<span class="ch">:date</span> <span class="kw">as</span> run_date,</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    sr.distance_meters<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> km,</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    wr.recovery_score,</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    wr.resting_heart_rate</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs sr</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_recovery wr <span class="kw">ON</span> sr.start_date:<span class="ch">:date</span> <span class="op">=</span> (</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> start_time:<span class="ch">:date</span> <span class="kw">FROM</span> whoop_cycles <span class="kw">WHERE</span> <span class="kw">id</span> <span class="op">=</span> wr.cycle_id</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> sr.user_id <span class="op">=</span> ? <span class="kw">AND</span> wr.user_id <span class="op">=</span> ?</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> sr.start_date;</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="co">-- Sleep Quality Impact on Training</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    ws.sleep_performance_percentage,</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    ws.total_in_bed_time_milli <span class="op">/</span> <span class="fl">3600000.0</span> <span class="kw">as</span> hours_sleep,</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(ww.strain) <span class="kw">as</span> avg_workout_strain</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_sleep ws</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_workouts ww <span class="kw">ON</span> <span class="dt">DATE</span>(ws.start_time) <span class="op">=</span> <span class="dt">DATE</span>(ww.start_time)</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> ws.nap <span class="op">=</span> <span class="kw">false</span></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> ws.<span class="kw">id</span>, ws.sleep_performance_percentage, hours_sleep</span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> ws.sleep_performance_percentage;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Monthly running progression</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    DATE_TRUNC(<span class="st">'month'</span>, start_date) <span class="kw">as</span> <span class="dt">month</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">as</span> total_runs,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(<span class="fu">SUM</span>(distance_meters)<span class="op">/</span><span class="dv">1000</span>, <span class="dv">2</span>) <span class="kw">as</span> total_km,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(<span class="fu">AVG</span>(distance_meters)<span class="op">/</span><span class="dv">1000</span>, <span class="dv">2</span>) <span class="kw">as</span> avg_km_per_run</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> user_id <span class="op">=</span> ? </span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> <span class="dt">month</span> </span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> <span class="dt">month</span>;</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">-- Recovery vs Running Performance</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    sr.start_date:<span class="ch">:date</span> <span class="kw">as</span> run_date,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    sr.distance_meters<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> km,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    wr.recovery_percentage,</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    wr.resting_heart_rate_bpm</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs sr</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_recovery wr <span class="kw">ON</span> sr.start_date:<span class="ch">:date</span> <span class="op">=</span> (</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> start_time:<span class="ch">:date</span> <span class="kw">FROM</span> whoop_cycles <span class="kw">WHERE</span> <span class="kw">id</span> <span class="op">=</span> wr.cycle_id</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> sr.user_id <span class="op">=</span> ? <span class="kw">AND</span> wr.user_id <span class="op">=</span> ?</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> sr.start_date;</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">-- Sleep Quality Impact on Training</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    ws.sleep_performance_percentage,</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    ws.total_in_bed_time_ms <span class="op">/</span> <span class="fl">3600000.0</span> <span class="kw">as</span> hours_sleep,</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(ww.strain) <span class="kw">as</span> avg_workout_strain</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_sleep ws</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_workouts ww <span class="kw">ON</span> <span class="dt">DATE</span>(ws.start_time) <span class="op">=</span> <span class="dt">DATE</span>(ww.start_time)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> ws.is_nap <span class="op">=</span> <span class="kw">false</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> ws.<span class="kw">id</span>, ws.sleep_performance_percentage, hours_sleep</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> ws.sleep_performance_percentage;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="health-correlation-queries" class="level3">
 <h3 class="anchored" data-anchor-id="health-correlation-queries">🎯 <strong>Health Correlation Queries</strong></h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Weekly recovery trends</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    DATE_TRUNC(<span class="st">'week'</span>, wc.start_time) <span class="kw">as</span> week,</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(wr.recovery_score) <span class="kw">as</span> avg_recovery,</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(wr.hrv_rmssd_milli) <span class="kw">as</span> avg_hrv,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(wr.resting_heart_rate) <span class="kw">as</span> avg_rhr</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_recovery wr</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_cycles wc <span class="kw">ON</span> wr.cycle_id <span class="op">=</span> wc.<span class="kw">id</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> wr.user_id <span class="op">=</span> ?</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> week</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> week;</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">-- Heart rate zone distribution</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    sport_name,</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>((zone_three_milli <span class="op">+</span> zone_four_milli <span class="op">+</span> zone_five_milli) <span class="op">/</span> </span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        (zone_zero_milli <span class="op">+</span> zone_one_milli <span class="op">+</span> zone_two_milli <span class="op">+</span> </span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>         zone_three_milli <span class="op">+</span> zone_four_milli <span class="op">+</span> zone_five_milli):<span class="ch">:float</span> <span class="op">*</span> <span class="dv">100</span>) <span class="kw">as</span> high_intensity_percentage</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_workouts</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> user_id <span class="op">=</span> ?</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> sport_name</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> high_intensity_percentage <span class="kw">DESC</span>;</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">-- Cross-platform correlation: Strava runs with WHOOP workouts</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> strava <span class="kw">AS</span> (</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="kw">SELECT</span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    s.<span class="op">*</span>,</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    s.start_date:<span class="ch">:date</span>                    <span class="kw">AS</span> run_date,</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">EXTRACT</span>(<span class="kw">HOUR</span> <span class="kw">FROM</span> s.start_date):<span class="ch">:int</span>  <span class="kw">AS</span> run_hour</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  <span class="kw">FROM</span> strava_runs <span class="kw">AS</span> s</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>),</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>whoop <span class="kw">AS</span> (</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  <span class="kw">SELECT</span></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    w.<span class="op">*</span>,</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    w.start_time:<span class="ch">:date</span>                                    <span class="kw">AS</span> run_date,</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">EXTRACT</span>(<span class="kw">HOUR</span> <span class="kw">FROM</span> w.start_time):<span class="ch">:int</span>                  <span class="kw">AS</span> run_hour</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  <span class="kw">FROM</span> whoop_workouts <span class="kw">AS</span> w</span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>  s.name <span class="kw">as</span> strava_name,</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>  s.distance_meters<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> strava_km,</span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>  s.moving_time_seconds<span class="op">/</span><span class="dv">60</span> <span class="kw">as</span> strava_minutes,</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>  w.sport_name <span class="kw">as</span> whoop_sport,</span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>  w.strain <span class="kw">as</span> whoop_strain,</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>  w.average_heart_rate,</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>  w.max_heart_rate,</span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>  s.run_date,</span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>  s.run_hour</span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava <span class="kw">AS</span> s</span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop <span class="kw">AS</span> w </span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> s.run_date <span class="op">=</span> w.run_date </span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> s.run_hour <span class="op">=</span> w.run_hour</span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> w.run_date <span class="kw">DESC</span>;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Weekly recovery trends</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    DATE_TRUNC(<span class="st">'week'</span>, wc.start_time) <span class="kw">as</span> week,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(wr.recovery_percentage) <span class="kw">as</span> avg_recovery,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(wr.hrv_rmssd_ms) <span class="kw">as</span> avg_hrv,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(wr.resting_heart_rate_bpm) <span class="kw">as</span> avg_rhr</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_recovery wr</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_cycles wc <span class="kw">ON</span> wr.cycle_id <span class="op">=</span> wc.<span class="kw">id</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> wr.user_id <span class="op">=</span> ?</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> week</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> week;</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">-- Heart rate zone distribution</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    sport_name,</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>((hr_zone_3_ms <span class="op">+</span> hr_zone_4_ms <span class="op">+</span> hr_zone_5_ms) <span class="op">/</span> </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        (hr_zone_0_ms <span class="op">+</span> hr_zone_1_ms <span class="op">+</span> hr_zone_2_ms <span class="op">+</span> </span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>         hr_zone_3_ms <span class="op">+</span> hr_zone_4_ms <span class="op">+</span> hr_zone_5_ms):<span class="ch">:float</span> <span class="op">*</span> <span class="dv">100</span>) <span class="kw">as</span> high_intensity_percentage</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> whoop_workouts</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> user_id <span class="op">=</span> ?</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> sport_name</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> high_intensity_percentage <span class="kw">DESC</span>;</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">-- Cross-platform correlation: Strava runs with WHOOP workouts</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> strava <span class="kw">AS</span> (</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>  <span class="kw">SELECT</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    s.<span class="op">*</span>,</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    s.start_date:<span class="ch">:date</span>                    <span class="kw">AS</span> run_date,</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">EXTRACT</span>(<span class="kw">HOUR</span> <span class="kw">FROM</span> s.start_date):<span class="ch">:int</span>  <span class="kw">AS</span> run_hour</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  <span class="kw">FROM</span> strava_runs <span class="kw">AS</span> s</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>whoop <span class="kw">AS</span> (</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  <span class="kw">SELECT</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    w.<span class="op">*</span>,</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    w.start_time:<span class="ch">:date</span>                                    <span class="kw">AS</span> run_date,</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">EXTRACT</span>(<span class="kw">HOUR</span> <span class="kw">FROM</span> w.start_time):<span class="ch">:int</span>                  <span class="kw">AS</span> run_hour</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>  <span class="kw">FROM</span> whoop_workouts <span class="kw">AS</span> w</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>  s.name <span class="kw">as</span> strava_name,</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>  s.distance_meters<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> strava_km,</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>  s.moving_time_seconds<span class="op">/</span><span class="dv">60</span> <span class="kw">as</span> strava_minutes,</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  w.sport_name <span class="kw">as</span> whoop_sport,</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  w.strain <span class="kw">as</span> whoop_strain,</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  ww.avg_heart_rate_bpm,</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>  ww.max_heart_rate_bpm,</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>  s.run_date,</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>  s.run_hour</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava <span class="kw">AS</span> s</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop <span class="kw">AS</span> w </span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> s.run_date <span class="op">=</span> w.run_date </span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> s.run_hour <span class="op">=</span> w.run_hour</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> w.run_date <span class="kw">DESC</span>;</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a><span class="co">-- Professional approach: Query correlated activities from junction table</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> </span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>  sr.name <span class="kw">as</span> strava_name,</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>  sr.distance_meters<span class="op">/</span><span class="dv">1000</span> <span class="kw">as</span> strava_km,</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">TO_CHAR</span>(sr.start_date, <span class="st">'YYYY-MM-DD HH24:MI'</span>) <span class="kw">as</span> strava_start,</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>  ww.sport_name <span class="kw">as</span> whoop_sport,</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>  ww.strain <span class="kw">as</span> whoop_strain,</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>  ww.average_heart_rate,</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">COALESCE</span>(ww.distance_meters<span class="op">/</span><span class="dv">1000</span>, <span class="dv">0</span>) <span class="kw">as</span> whoop_km,</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">TO_CHAR</span>(ww.start_time, <span class="st">'YYYY-MM-DD HH24:MI'</span>) <span class="kw">as</span> whoop_start,</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ROUND</span>(ac.correlation_confidence:<span class="ch">:numeric</span>, <span class="dv">2</span>) <span class="kw">as</span> confidence,</span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>  ac.correlation_method,</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>  ac.time_diff_minutes</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> activity_correlations ac</span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> strava_runs sr <span class="kw">ON</span> ac.strava_run_id <span class="op">=</span> sr.<span class="kw">id</span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_workouts ww <span class="kw">ON</span> ac.whoop_workout_id <span class="op">=</span> ww.<span class="kw">id</span></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> ac.user_id <span class="op">=</span> ? <span class="kw">AND</span> ac.correlation_confidence <span class="op">&gt;=</span> <span class="fl">0.75</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> sr.start_date <span class="kw">DESC</span>;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="cross-platform-data-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="cross-platform-data-architecture">🔗 Cross-Platform Data Architecture</h2>
+<section id="professional-activity-correlation-system" class="level3">
+<h3 class="anchored" data-anchor-id="professional-activity-correlation-system"><strong>Professional Activity Correlation System</strong></h3>
+<p>For production systems, professionals use a <strong>junction table approach</strong> rather than real-time JOINs for cross-platform correlations:</p>
+<section id="architecture-components" class="level4">
+<h4 class="anchored" data-anchor-id="architecture-components"><strong>Architecture Components:</strong></h4>
+<ol type="1">
+<li><strong>Junction Table</strong>: <code>activity_correlations</code>
+<ul>
+<li>Stores pre-computed relationships between Strava runs and WHOOP workouts</li>
+<li>Includes confidence scoring (0.0-1.0) and correlation method metadata</li>
+<li>Prevents duplicate correlations with unique constraints</li>
+</ul></li>
+<li><strong>ETL Process</strong>: <code>scripts/data/run-correlation-etl.js</code>
+<ul>
+<li>Runs daily after data sync (Strava + WHOOP)</li>
+<li>Uses multiple algorithms: datetime matching, distance correlation, confidence scoring</li>
+<li>Only processes new activities to avoid recomputation</li>
+</ul></li>
+<li><strong>Confidence Scoring</strong>:
+<ul>
+<li><strong>0.95+</strong>: Near-perfect match (≤5min time diff + distance match)</li>
+<li><strong>0.85+</strong>: High confidence (≤15min time diff)</li>
+<li><strong>0.75+</strong>: Good confidence (≤60min time diff)</li>
+<li><strong>0.65+</strong>: Acceptable correlation (≤120min time diff)</li>
+</ul></li>
+</ol>
+</section>
+<section id="benefits-over-real-time-joins" class="level4">
+<h4 class="anchored" data-anchor-id="benefits-over-real-time-joins"><strong>Benefits Over Real-time JOINs:</strong></h4>
+<ul>
+<li><strong>Performance</strong>: Pre-computed relationships, no complex JOINs in queries</li>
+<li><strong>Accuracy</strong>: Multiple correlation algorithms with confidence scoring</li>
+<li><strong>Flexibility</strong>: Manual override capability for edge cases</li>
+<li><strong>Scalability</strong>: ETL approach handles growing data volumes efficiently</li>
+<li><strong>Analytics</strong>: Historical correlation patterns and method effectiveness tracking</li>
+</ul>
+</section>
+<section id="usage" class="level4">
+<h4 class="anchored" data-anchor-id="usage"><strong>Usage:</strong></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Process new correlations (run daily after data sync)</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> scripts/data/run-correlation-etl.js process</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Query correlations for analysis</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> scripts/data/run-correlation-etl.js query 123</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
 </section>
 </section>
 <section id="units-and-data-formats-reference" class="level2">
@@ -1208,6 +1387,114 @@ Key Relationships:
 <li>Scores/Percentages: 2 decimal places (<code>numeric(5,2)</code>)</li>
 <li>High precision metrics: 6 decimal places (<code>numeric(8,6)</code>)</li>
 </ul>
+<hr>
+</section>
+<section id="activity_correlations---cross-platform-activity-relationships" class="level3">
+<h3 class="anchored" data-anchor-id="activity_correlations---cross-platform-activity-relationships">🔗 <strong>ACTIVITY_CORRELATIONS</strong> - Cross-Platform Activity Relationships</h3>
+<p><strong>Purpose</strong>: Junction table storing pre-computed relationships between Strava runs and WHOOP workouts<br>
+<strong>Data Source</strong>: ETL processing via correlation algorithms<br>
+<strong>Update Frequency</strong>: Weekly (Monday) + real-time during data sync</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 13%">
+<col style="width: 22%">
+<col style="width: 15%">
+<col style="width: 29%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Required</th>
+<th>Units</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>id</code></td>
+<td>bigserial</td>
+<td>✅</td>
+<td>-</td>
+<td>Primary key, auto-increment</td>
+</tr>
+<tr class="even">
+<td><code>strava_run_id</code></td>
+<td>bigint</td>
+<td>✅</td>
+<td>-</td>
+<td>Foreign key to strava_runs.id</td>
+</tr>
+<tr class="odd">
+<td><code>whoop_workout_id</code></td>
+<td>varchar(36)</td>
+<td>✅</td>
+<td>-</td>
+<td>Foreign key to whoop_workouts.id (UUID)</td>
+</tr>
+<tr class="even">
+<td><code>correlation_confidence</code></td>
+<td>numeric(3,2)</td>
+<td>✅</td>
+<td>0.00-1.00</td>
+<td>Confidence score of the correlation match</td>
+</tr>
+<tr class="odd">
+<td><code>correlation_method</code></td>
+<td>varchar(50)</td>
+<td>✅</td>
+<td>-</td>
+<td>Algorithm used: datetime_match, datetime_distance_match, loose_datetime_match</td>
+</tr>
+<tr class="even">
+<td><code>time_diff_minutes</code></td>
+<td>integer</td>
+<td>❌</td>
+<td>minutes</td>
+<td>Time difference between activity start times</td>
+</tr>
+<tr class="odd">
+<td><code>distance_diff_meters</code></td>
+<td>integer</td>
+<td>❌</td>
+<td>meters</td>
+<td>Distance difference (when both platforms have data)</td>
+</tr>
+<tr class="even">
+<td><code>created_at</code></td>
+<td>timestamptz</td>
+<td>✅</td>
+<td>UTC</td>
+<td>When correlation was established</td>
+</tr>
+<tr class="odd">
+<td><code>notes</code></td>
+<td>text</td>
+<td>❌</td>
+<td>-</td>
+<td>Additional correlation metadata</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Business Context</strong>: Enables cross-platform analysis by connecting the same physical activity recorded on both Strava (GPS tracking) and WHOOP (physiological monitoring). This allows queries combining route data with strain metrics, heart rate zones with pace analysis, and recovery impact with training load.</p>
+<p><strong>Data Patterns</strong>: - High confidence correlations (0.90-1.00): Same activity with precise time matching - Medium confidence (0.70-0.89): Likely same activity with minor time differences<br>
+- Low confidence (0.50-0.69): Possible matches requiring manual review - Only correlations above 0.50 confidence are stored</p>
+<p><strong>Correlation Methods</strong>: - <code>datetime_match</code>: Exact or near-exact start time matching (±1 hour) - <code>datetime_distance_match</code>: Time + distance validation when both available - <code>loose_datetime_match</code>: Broader time window for edge cases</p>
+<p><strong>Typical Query Patterns</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Get Strava route with WHOOP strain data</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> sr.name, sr.distance_meters, ww.strain, ww.avg_heart_rate </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs sr</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> activity_correlations ac <span class="kw">ON</span> sr.<span class="kw">id</span> <span class="op">=</span> ac.strava_run_id</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_workouts ww <span class="kw">ON</span> ac.whoop_workout_id <span class="op">=</span> ww.<span class="kw">id</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> ac.correlation_confidence <span class="op">&gt;=</span> <span class="fl">0.90</span>;</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- Find runs with high strain but low perceived effort</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> sr.name, ww.strain, sr.perceived_effort_rating</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs sr</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> activity_correlations ac <span class="kw">ON</span> sr.<span class="kw">id</span> <span class="op">=</span> ac.strava_run_id  </span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> whoop_workouts ww <span class="kw">ON</span> ac.whoop_workout_id <span class="op">=</span> ww.<span class="kw">id</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> ww.strain <span class="op">&gt;</span> <span class="dv">15</span> <span class="kw">AND</span> sr.perceived_effort_rating <span class="op">&lt;</span> <span class="dv">3</span>;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="embedding-generation-guidelines" class="level2">
@@ -1220,6 +1507,8 @@ Key Relationships:
 <p><strong>whoop_sleep</strong>: “Sleep performance data with overall percentage score, time spent in light deep and REM sleep stages in milliseconds, sleep efficiency and consistency percentages, respiratory rate, and disturbance count”</p>
 <p><strong>whoop_cycles</strong>: “Daily strain cycles measuring physiological load on 0-21 scale, includes energy expenditure in kilojoules, average and max heart rate in BPM, cycle start and end times”</p>
 <p><strong>whoop_workouts</strong>: “Individual workout sessions with sport type, strain contribution, heart rate zones 0-5 time distribution in milliseconds, distance in meters, altitude gain, and energy expenditure in kilojoules”</p>
+<p><strong>strava_run_splits</strong>: “Detailed kilometer and mile pace splits for training analysis including split number, distance, elapsed time, moving time, average speed in meters per second, elevation difference, and pace zones for comprehensive pacing strategy evaluation”</p>
+<p><strong>activity_correlations</strong>: “Cross-platform junction table connecting Strava runs with WHOOP workouts for the same physical activity, includes confidence scores from 0.00 to 1.00, correlation methods like datetime_match, time differences in minutes, and distance differences in meters for comprehensive cross-platform analysis”</p>
 </section>
 <section id="column-level-embedding-descriptions" class="level3">
 <h3 class="anchored" data-anchor-id="column-level-embedding-descriptions">📊 <strong>Column-Level Embedding Descriptions</strong></h3>
@@ -1242,17 +1531,17 @@ Key Relationships:
 <tbody>
 <tr class="odd">
 <td><code>whoop_recovery</code></td>
-<td><code>recovery_score</code></td>
+<td><code>recovery_percentage</code></td>
 <td>The overall recovery percentage from 0-100. Higher is better. Green zone is above 66%, yellow 34-66%, red below 34%. Use this to find how ‘recovered’ or ‘ready’ a user is.</td>
 </tr>
 <tr class="even">
 <td><code>whoop_recovery</code></td>
-<td><code>hrv_rmssd_milli</code></td>
+<td><code>hrv_rmssd_ms</code></td>
 <td>Heart Rate Variability HRV in milliseconds. A key indicator of nervous system recovery and autonomic balance. Higher values typically indicate better recovery.</td>
 </tr>
 <tr class="odd">
 <td><code>whoop_recovery</code></td>
-<td><code>resting_heart_rate</code></td>
+<td><code>resting_heart_rate_bpm</code></td>
 <td>Resting Heart Rate RHR in beats per minute, measured during sleep. Lower values generally indicate better cardiovascular fitness and recovery.</td>
 </tr>
 <tr class="even">
@@ -1306,8 +1595,87 @@ Key Relationships:
 </tr>
 <tr class="odd">
 <td><code>strava_runs</code></td>
-<td><code>detailed_polyline</code></td>
-<td>High resolution encoded GPS polyline for detailed route analysis and precise mapping.</td>
+<td><code>suffer_score</code></td>
+<td>Strava’s proprietary effort metric from 0-100+. Higher values indicate greater training stress and effort. Use for training load analysis and recovery planning.</td>
+</tr>
+<tr class="even">
+<td><code>strava_runs</code></td>
+<td><code>perceived_exertion</code></td>
+<td>User’s subjective effort rating from 1-10 scale (1=very easy, 10=maximum effort). Provides context for how hard the activity felt regardless of objective metrics.</td>
+</tr>
+<tr class="odd">
+<td><code>strava_runs</code></td>
+<td><code>start_latlng</code></td>
+<td>Starting coordinates as PostgreSQL POINT type. Access latitude with start_latlng[0] and longitude with start_latlng[1]. Use for route analysis and location-based queries.</td>
+</tr>
+<tr class="even">
+<td><code>strava_runs</code></td>
+<td><code>end_latlng</code></td>
+<td>Ending coordinates as PostgreSQL POINT type. Access latitude with end_latlng[0] and longitude with end_latlng[1]. Use for route analysis and destination pattern identification.</td>
+</tr>
+<tr class="odd">
+<td><code>strava_runs</code></td>
+<td><code>average_speed_mps</code></td>
+<td>Average speed in meters per second. Multiply by 3.6 to convert to km/h or by 2.237 to convert to mph. Use for pace and performance analysis.</td>
+</tr>
+<tr class="even">
+<td><code>strava_runs</code></td>
+<td><code>total_elevation_gain</code></td>
+<td>Total elevation gained during activity in meters. Critical for understanding route difficulty and training stress from climbs.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="strava-run-splits-table" class="level4">
+<h4 class="anchored" data-anchor-id="strava-run-splits-table">Strava Run Splits Table</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 20%">
+<col style="width: 62%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Table</th>
+<th>Column</th>
+<th>Description for Embedding</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>strava_run_splits</code></td>
+<td><code>split_number</code></td>
+<td>Sequential split number (1, 2, 3, etc.) representing order within the run. Use for analyzing pace progression and identifying fastest/slowest segments.</td>
+</tr>
+<tr class="even">
+<td><code>strava_run_splits</code></td>
+<td><code>split_type</code></td>
+<td>Type of split measurement: ‘metric’ for kilometer splits (1000m) or ‘standard’ for mile splits (1609.34m). Use to filter for consistent split analysis.</td>
+</tr>
+<tr class="odd">
+<td><code>strava_run_splits</code></td>
+<td><code>average_speed_mps</code></td>
+<td>Average speed for this split in meters per second. Convert to pace by calculating 1000/speed for minutes per kilometer. Critical for pace analysis and training zones.</td>
+</tr>
+<tr class="even">
+<td><code>strava_run_splits</code></td>
+<td><code>elapsed_time_seconds</code></td>
+<td>Total time for this split in seconds including any stops. Compare with moving_time_seconds to identify rest periods during the split.</td>
+</tr>
+<tr class="odd">
+<td><code>strava_run_splits</code></td>
+<td><code>moving_time_seconds</code></td>
+<td>Active movement time for this split in seconds excluding stops. Use for pure pace analysis without rest time influence.</td>
+</tr>
+<tr class="even">
+<td><code>strava_run_splits</code></td>
+<td><code>elevation_difference_meters</code></td>
+<td>Net elevation change for this split in meters. Positive values indicate uphill, negative downhill. Critical for understanding pace variations due to terrain.</td>
+</tr>
+<tr class="odd">
+<td><code>strava_run_splits</code></td>
+<td><code>pace_zone</code></td>
+<td>Training intensity zone (1-5) for this split based on pace. Zone 1=recovery, Zone 2=aerobic base, Zone 3=tempo, Zone 4=threshold, Zone 5=VO2 max.</td>
 </tr>
 </tbody>
 </table>
@@ -1335,22 +1703,22 @@ Key Relationships:
 </tr>
 <tr class="even">
 <td><code>whoop_sleep</code></td>
-<td><code>total_in_bed_time_milli</code></td>
+<td><code>total_in_bed_time_ms</code></td>
 <td>Total time in bed in milliseconds. Convert to hours by dividing by 3600000. Includes time awake in bed.</td>
 </tr>
 <tr class="odd">
 <td><code>whoop_sleep</code></td>
-<td><code>total_light_sleep_time_milli</code></td>
+<td><code>total_light_sleep_time_ms</code></td>
 <td>Light sleep duration in milliseconds. Typically 45-55% of total sleep. Convert to hours or minutes as needed.</td>
 </tr>
 <tr class="even">
 <td><code>whoop_sleep</code></td>
-<td><code>total_slow_wave_sleep_time_milli</code></td>
+<td><code>total_slow_wave_sleep_time_ms</code></td>
 <td>Deep sleep duration in milliseconds. Critical for physical recovery. Typically 15-20% of total sleep.</td>
 </tr>
 <tr class="odd">
 <td><code>whoop_sleep</code></td>
-<td><code>total_rem_sleep_time_milli</code></td>
+<td><code>total_rem_sleep_time_ms</code></td>
 <td>REM sleep duration in milliseconds. Important for mental recovery and memory. Typically 20-25% of total sleep.</td>
 </tr>
 <tr class="even">
@@ -1365,7 +1733,7 @@ Key Relationships:
 </tr>
 <tr class="even">
 <td><code>whoop_sleep</code></td>
-<td><code>nap</code></td>
+<td><code>is_nap</code></td>
 <td>Boolean indicating if this is a nap (true) or overnight sleep (false). Use to filter main sleep vs naps.</td>
 </tr>
 </tbody>
@@ -1464,80 +1832,103 @@ Key Relationships:
 </section>
 <section id="recent-database-updates-september-2025" class="level2">
 <h2 class="anchored" data-anchor-id="recent-database-updates-september-2025">Recent Database Updates (September 2025)</h2>
-<section id="fixed-whoop-v1_id-column-issue" class="level3">
-<h3 class="anchored" data-anchor-id="fixed-whoop-v1_id-column-issue">✅ <strong>Fixed WHOOP v1_id Column Issue</strong></h3>
+<section id="enhanced-strava-data-collection-september-17-2025" class="level3">
+<h3 class="anchored" data-anchor-id="enhanced-strava-data-collection-september-17-2025">🚀 <strong>Enhanced Strava Data Collection (September 17, 2025)</strong></h3>
 <ul>
-<li><strong>Problem</strong>: <code>column "v1_id" of relation "whoop_sleep" does not exist</code> error</li>
-<li><strong>Solution</strong>: Renamed <code>activity_v1_id</code> → <code>v1_id</code> in <code>whoop_sleep</code> table</li>
-<li><strong>Migration</strong>: <code>migrations/add_relationship_whoop_sleep_workouts.sql</code></li>
+<li><strong>New Table</strong>: Added <code>strava_run_splits</code> for detailed kilometer/mile pace analysis</li>
+<li><strong>Enhanced Fields</strong>: Added coordinates (<code>start_latlng</code>, <code>end_latlng</code> as PostgreSQL POINT), speed metrics, elevation data, suffer scores to <code>strava_runs</code></li>
+<li><strong>Real-time Integration</strong>: Implemented enhanced data collection with <code>fetch-real-enhanced-data.js</code> as main production script</li>
+<li><strong>Data Volume</strong>: 18 activities with enhanced data, 110+ splits properly normalized</li>
 </ul>
 </section>
-<section id="enhanced-foreign-key-relationships" class="level3">
-<h3 class="anchored" data-anchor-id="enhanced-foreign-key-relationships">🔗 <strong>Enhanced Foreign Key Relationships</strong></h3>
+<section id="cross-platform-activity-correlations" class="level3">
+<h3 class="anchored" data-anchor-id="cross-platform-activity-correlations">🔗 <strong>Cross-Platform Activity Correlations</strong></h3>
 <ul>
-<li><strong>Added</strong>: <code>whoop_sleep.v1_id</code> → <code>whoop_workouts.v1_id</code> (for workout-related sleep)</li>
-<li><strong>Added</strong>: <code>whoop_recovery.cycle_id</code> → <code>whoop_cycles.id</code> (ensures recovery integrity)</li>
-<li><strong>Cleaned</strong>: Orphaned <code>v1_id</code> references set to NULL to maintain data integrity</li>
+<li><strong>Junction Table</strong>: Added <code>activity_correlations</code> for professional cross-platform analysis</li>
+<li><strong>Confidence Scoring</strong>: Implemented 0.00-1.00 confidence scoring with multiple correlation methods</li>
+<li><strong>ETL Process</strong>: Added automated correlation processing via <code>run-correlation-etl.js</code></li>
+<li><strong>Method Support</strong>: datetime_match, datetime_distance_match, loose_datetime_match algorithms</li>
 </ul>
 </section>
-<section id="data-integrity-improvements" class="level3">
-<h3 class="anchored" data-anchor-id="data-integrity-improvements">📊 <strong>Data Integrity Improvements</strong></h3>
+<section id="database-schema-standardization" class="level3">
+<h3 class="anchored" data-anchor-id="database-schema-standardization">📊 <strong>Database Schema Standardization</strong></h3>
 <ul>
-<li><strong>Unique constraint</strong>: Added to <code>whoop_workouts.v1_id</code> for proper FK references</li>
-<li><strong>Relationship validation</strong>: All FK constraints now enforce proper WHOOP API data model</li>
-<li><strong>Bridge pattern</strong>: Recovery table confirmed as bridge between Cycles and Sleep (per WHOOP API design)</li>
+<li><strong>Column Naming</strong>: Standardized all heart rate columns to <code>*_bpm</code> format</li>
+<li><strong>Time Fields</strong>: Unified all duration fields to <code>*_ms</code> (milliseconds) format</li>
+<li><strong>Coordinates</strong>: Native PostgreSQL POINT type for optimal geographic queries</li>
+<li><strong>Relationships</strong>: Proper foreign key constraints enforcing WHOOP API v2 data model</li>
 </ul>
 </section>
-<section id="critical-bug-fixes-september-15-2025" class="level3">
-<h3 class="anchored" data-anchor-id="critical-bug-fixes-september-15-2025">🔧 <strong>Critical Bug Fixes (September 15, 2025)</strong></h3>
-<section id="zone-data-mapping-fix" class="level4">
-<h4 class="anchored" data-anchor-id="zone-data-mapping-fix"><strong>Zone Data Mapping Fix</strong></h4>
+<section id="current-data-inventory-september-17-2025" class="level3">
+<h3 class="anchored" data-anchor-id="current-data-inventory-september-17-2025">🎯 <strong>Current Data Inventory (September 17, 2025)</strong></h3>
+<section id="tables-summary-9-tables-total" class="level4">
+<h4 class="anchored" data-anchor-id="tables-summary-9-tables-total"><strong>Tables Summary (9 tables total)</strong></h4>
 <ul>
-<li><strong>Issue</strong>: Heart rate zone data not saving to database due to API structure mismatch</li>
-<li><strong>Root Cause</strong>: Code expected <code>zone_duration</code> but WHOOP API v2 returns <code>zone_durations</code> (plural)</li>
-<li><strong>Fix Applied</strong>:
-<ul>
-<li>Updated <code>src/lib/db/whoop-database.ts</code> to use <code>zone_durations</code> (plural)</li>
-<li>Fixed TypeScript types in <code>src/types/whoop.ts</code> to match API response structure</li>
-</ul></li>
-<li><strong>Impact</strong>: All workout heart rate zone data now saves correctly</li>
-<li><strong>Validation</strong>: Production daily fetch confirmed zone data flowing properly</li>
+<li><strong>Authentication</strong>: <code>strava_users</code>, <code>whoop_users</code> (2 tables)</li>
+<li><strong>Fitness Activities</strong>: <code>strava_runs</code>, <code>strava_run_splits</code>, <code>whoop_workouts</code> (3 tables)</li>
+<li><strong>Health Metrics</strong>: <code>whoop_cycles</code>, <code>whoop_recovery</code>, <code>whoop_sleep</code> (3 tables)</li>
+<li><strong>Cross-Platform</strong>: <code>activity_correlations</code> (1 table)</li>
 </ul>
 </section>
-<section id="foreign-key-constraint-resolution" class="level4">
-<h4 class="anchored" data-anchor-id="foreign-key-constraint-resolution"><strong>Foreign Key Constraint Resolution</strong></h4>
+<section id="data-volume" class="level4">
+<h4 class="anchored" data-anchor-id="data-volume"><strong>Data Volume</strong></h4>
 <ul>
-<li><strong>Issue</strong>: <code>whoop_sleep.v1_id</code> foreign key constraint blocking workout saves</li>
-<li><strong>Root Cause</strong>: WHOOP API v2 sleep/workout independence not reflected in database constraints</li>
-<li><strong>Fix Applied</strong>: Removed foreign key constraint from <code>whoop_sleep.v1_id</code> → <code>whoop_workouts.v1_id</code></li>
-<li><strong>Migration</strong>: <code>migrations/fix_sleep_foreign_key_null.sql</code> - sets orphaned v1_id to NULL</li>
-<li><strong>Impact</strong>: Sleep records can now exist independently without requiring workout relationships</li>
+<li><strong>Strava</strong>: 18 enhanced activities with full metrics and coordinates</li>
+<li><strong>Splits</strong>: 110+ pace splits for detailed training analysis</li>
+<li><strong>WHOOP</strong>: Complete physiological data with heart rate zones properly populated</li>
+<li><strong>Correlations</strong>: Cross-platform activity matching with confidence scoring</li>
 </ul>
 </section>
-<section id="token-refresh-ux-improvements" class="level4">
-<h4 class="anchored" data-anchor-id="token-refresh-ux-improvements"><strong>Token Refresh UX Improvements</strong></h4>
-<ul>
-<li><strong>Issue</strong>: Aggressive 30-minute proactive token refresh causing premature auth warnings</li>
-<li><strong>Root Cause</strong>: Token refresh triggered during routine page navigation vs actual expiration</li>
-<li><strong>Fix Applied</strong>:
-<ul>
-<li>Reduced proactive refresh buffer from 30 minutes to 1 minute</li>
-<li>Implemented single-warning-per-session to prevent console spam</li>
-<li>Updated log messaging for clarity</li>
-</ul></li>
-<li><strong>Impact</strong>: Users only see authentication prompts when tokens are genuinely expired</li>
-</ul>
-</section>
-<section id="database-schema-validation" class="level4">
-<h4 class="anchored" data-anchor-id="database-schema-validation"><strong>Database Schema Validation</strong></h4>
-<ul>
-<li><strong>Zone Data Fields</strong>: All <code>zone_*_milli</code> columns now properly populated with millisecond values</li>
-<li><strong>Data Flow</strong>: WHOOP API v2 → <code>zone_durations</code> → Database <code>zone_*_milli</code> columns ✅</li>
-<li><strong>Heart Rate Zones</strong>: Complete 6-zone distribution (0-5) now captured for training analysis</li>
-</ul>
+<section id="schema-validation" class="level4">
+<h4 class="anchored" data-anchor-id="schema-validation"><strong>Schema Validation</strong></h4>
+<p>All tables match production database schema exactly: - Column names standardized (<code>*_bpm</code>, <code>*_ms</code> formats) - PostgreSQL POINT coordinates for geographic queries - Proper foreign key relationships enforcing data integrity - Enhanced fields fully populated via real-time API integration</p>
 <div class="line-block"><code>whoop_workouts</code> | <code>zone_four_milli</code> | Time in heart rate zone 4 (90-95% max HR) in milliseconds. VO2 max, anaerobic threshold zone. |<br>
 <code>whoop_workouts</code> | <code>zone_five_milli</code> | Time in heart rate zone 5 (95-100% max HR) in milliseconds. Neuromuscular power, maximum effort zone. |<br>
 <code>whoop_workouts</code> | <code>distance_meters</code> | Distance covered during workout in meters. Convert to kilometers by dividing by 1000. Only applicable for distance-based sports. |</div>
+</section>
+<section id="activity-correlations-table" class="level4">
+<h4 class="anchored" data-anchor-id="activity-correlations-table">Activity Correlations Table</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 20%">
+<col style="width: 62%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Table</th>
+<th>Column</th>
+<th>Description for Embedding</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>activity_correlations</code></td>
+<td><code>correlation_confidence</code></td>
+<td>Confidence score from 0.00 to 1.00 indicating how certain this Strava run matches this WHOOP workout. Values above 0.90 are highly reliable, 0.70-0.89 are likely matches, below 0.70 may need review. Use to filter for reliable cross-platform data.</td>
+</tr>
+<tr class="even">
+<td><code>activity_correlations</code></td>
+<td><code>correlation_method</code></td>
+<td>Algorithm used to establish the correlation: ‘datetime_match’ for time-based matching, ‘datetime_distance_match’ for time plus distance validation, ‘loose_datetime_match’ for broader time windows. Helps understand correlation reliability.</td>
+</tr>
+<tr class="odd">
+<td><code>activity_correlations</code></td>
+<td><code>time_diff_minutes</code></td>
+<td>Time difference in minutes between Strava run start and WHOOP workout start. Values near 0 indicate exact time matches. Negative values mean WHOOP started before Strava.</td>
+</tr>
+<tr class="even">
+<td><code>activity_correlations</code></td>
+<td><code>strava_run_id</code></td>
+<td>Foreign key linking to the Strava run record. Use to JOIN with strava_runs table for GPS data, route information, perceived effort, and pace metrics.</td>
+</tr>
+<tr class="odd">
+<td><code>activity_correlations</code></td>
+<td><code>whoop_workout_id</code></td>
+<td>Foreign key linking to the WHOOP workout record. Use to JOIN with whoop_workouts table for strain data, heart rate zones, and physiological metrics.</td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
 <section id="query-intent-categories" class="level3">
@@ -1550,7 +1941,8 @@ Key Relationships:
 <li><strong>Sleep Quality</strong>: “sleep performance”, “stage distribution”, “sleep consistency”</li>
 </ol>
 <hr>
-<p><strong>✅ Schema Documentation Complete - Ready for Embedding Generation</strong></p>
+<p><strong>✅ Schema Documentation Complete - Updated September 17, 2025</strong></p>
+<p>This documentation now accurately reflects the current production database schema with all enhanced fields, proper column names, and complete table relationships. Ready for embedding generation and AI query understanding.</p>
 </section>
 </section>
 </section>

@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-// 📂 scripts/data/strava-weekly-sync.js
+// 📂 scripts/data/fetch-all-strava-data-complete.js
 /**
- * 🔄 STREAMLINED WEEKLY STRAVA SYNC
+ * 🎯 COMPLETE STRAVA DATA FETCHER - Fetches ALL enhanced Strava data
  * 
  * This script:
- * ✅ Uses proven pagination approach to fetch new activities
- * ✅ Focuses only on recent activities (last 7 days) for efficiency
+ * ✅ Handles proper pagination to get ALL activities (not just 20)
+ * ✅ Populates available fields from list API (summary polylines, basic data)  
  * ✅ Handles rate limiting with delays
  * ✅ Updates existing activities with available data
  * 
  * Usage:
- *   node scripts/data/strava-weekly-sync.js
+ *   node scripts/data/fetch-all-strava-data-complete.js
  *   
  * Features:
- * - Efficient pagination for new activities only
+ * - Complete pagination (all pages)
  * - Basic activity data from list API
  * - Rate limiting protection
  * - Token refresh handling
@@ -22,9 +22,8 @@
 require('dotenv').config({ path: '.env' });
 const { sql } = require('@vercel/postgres');
 
-async function weeklyStravaSync() {
-  console.log('🔄 Weekly Strava Sync Starting...');
-  console.log('=================================\n');
+async function fetchAllStravaActivities() {
+  console.log('🚀 Fetching ALL Strava Activities with Pagination...\n');
 
   try {
     // Step 1: Get user tokens
@@ -45,21 +44,20 @@ async function weeklyStravaSync() {
     const user = userResult.rows[0];
     console.log(`   ✅ User: ${user.username || `${user.first_name} ${user.last_name}`}`);
 
-    // Step 2: Get timestamp for recent activities (last 7 days)
-    const sevenDaysAgo = Math.floor((Date.now() - (7 * 24 * 60 * 60 * 1000)) / 1000);
-    console.log(`\n2️⃣ Fetching activities since: ${new Date(sevenDaysAgo * 1000).toDateString()}`);
+    // Step 2: Fetch ALL activities with pagination
+    console.log('\n2️⃣ Fetching ALL activities from Strava API...');
     
     const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
-    const PER_PAGE = 50;
+    const PER_PAGE = 50;  // Strava max is 200, but 50 is safer for rate limiting
     let page = 1;
-    let allNewActivities = [];
+    let allActivities = [];
     let totalFetched = 0;
     
     while (true) {
-      console.log(`   � Fetching page ${page} (${PER_PAGE} activities per page)...`);
+      console.log(`   📄 Fetching page ${page} (${PER_PAGE} activities per page)...`);
       
       try {
-        const response = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}&after=${sevenDaysAgo}`, {
+        const response = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}`, {
           headers: {
             'Authorization': `Bearer ${user.access_token}`,
             'Accept': 'application/json',
@@ -72,7 +70,7 @@ async function weeklyStravaSync() {
             const newToken = await refreshToken(user);
             if (newToken) {
               // Retry with new token
-              const retryResponse = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}&after=${sevenDaysAgo}`, {
+              const retryResponse = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}`, {
                 headers: {
                   'Authorization': `Bearer ${newToken}`,
                   'Accept': 'application/json',
@@ -90,7 +88,7 @@ async function weeklyStravaSync() {
                 break;
               }
               
-              allNewActivities.push(...activities);
+              allActivities.push(...activities);
               totalFetched += activities.length;
               console.log(`      📊 Got ${activities.length} activities (total: ${totalFetched})`);
             } else {
@@ -110,7 +108,7 @@ async function weeklyStravaSync() {
             break;
           }
           
-          allNewActivities.push(...activities);
+          allActivities.push(...activities);
           totalFetched += activities.length;
           console.log(`      📊 Got ${activities.length} activities (total: ${totalFetched})`);
         }
@@ -120,9 +118,9 @@ async function weeklyStravaSync() {
         // Rate limiting: wait 1 second between API calls
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Safety check for weekly sync (shouldn't need many pages for 7 days)
-        if (page > 5) {
-          console.log('      ⚠️  Reached page limit (5) for weekly sync');
+        // Safety check: don't go beyond reasonable pagination
+        if (page > 20) {
+          console.log('      ⚠️  Reached page limit (20) for safety');
           break;
         }
         
@@ -132,28 +130,23 @@ async function weeklyStravaSync() {
       }
     }
 
-    console.log(`\n📊 Total new activities fetched: ${allNewActivities.length}`);
+    console.log(`\n📊 Total activities fetched: ${allActivities.length}`);
 
-    // Step 3: Filter for running activities and update database
-    console.log('\n3️⃣ Processing new running activities...');
+    // Step 3: Filter for running activities and insert/update database
+    console.log('\n3️⃣ Processing running activities...');
     
-    const newRunningActivities = allNewActivities.filter(activity => 
+    const runningActivities = allActivities.filter(activity => 
       activity.sport_type === 'Run' || 
       activity.sport_type === 'TrailRun' || 
       activity.type === 'Run'
     );
     
-    console.log(`   🏃 Found ${newRunningActivities.length} new running activities`);
-    
-    if (newRunningActivities.length === 0) {
-      console.log('\n� No new running activities found. Weekly sync complete!');
-      return;
-    }
+    console.log(`   🏃 Found ${runningActivities.length} running activities`);
     
     let newActivities = 0;
     let updatedActivities = 0;
     
-    for (const activity of newRunningActivities) {
+    for (const activity of runningActivities) {
       try {
         // Check if activity already exists
         const existingResult = await sql`
@@ -196,7 +189,6 @@ async function weeklyStravaSync() {
             )
           `;
           newActivities++;
-          console.log(`      ➕ Added: ${activity.name}`);
         } else {
           // Update existing activity with available fields from list API
           await sql`
@@ -225,7 +217,10 @@ async function weeklyStravaSync() {
             WHERE id = ${activity.id}
           `;
           updatedActivities++;
-          console.log(`      🔄 Updated: ${activity.name}`);
+        }
+        
+        if ((newActivities + updatedActivities) % 10 === 0) {
+          console.log(`      📊 Processed ${newActivities + updatedActivities} activities...`);
         }
         
       } catch (error) {
@@ -234,25 +229,25 @@ async function weeklyStravaSync() {
     }
 
     // Step 4: Show final results
-    console.log('\n4️⃣ Weekly Sync Results:');
-    console.log('========================');
+    console.log('\n4️⃣ Final Results:');
     console.log(`   ➕ New activities added: ${newActivities}`);
     console.log(`   🔄 Existing activities updated: ${updatedActivities}`);
-    console.log(`   📊 Total processed: ${newActivities + updatedActivities}`);
     
     const finalCount = await sql`SELECT COUNT(*) as total FROM strava_runs`;
     console.log(`   📊 Total activities in database: ${finalCount.rows[0].total}`);
     
-    console.log('\n✅ Weekly Strava sync completed successfully!');
-    console.log('💡 Next sync recommended in 7 days');
+    const enhancedCount = await sql`SELECT COUNT(*) as enhanced FROM strava_runs WHERE suffer_score IS NOT NULL`;
+    console.log(`   💪 Activities with enhanced data: ${enhancedCount.rows[0].enhanced}`);
+    
+    console.log('\n✅ All Strava activities fetched successfully!');
+    console.log('💡 Run fetch-real-enhanced-data.js next to add detailed metrics to activities');
 
   } catch (error) {
-    console.error('❌ Weekly sync failed:', error);
-    process.exit(1);
+    console.error('❌ Fetch failed:', error);
   }
 }
 
-// Helper function to refresh token (same as complete script)
+// Helper function to refresh token
 async function refreshToken(user) {
   try {
     const refreshResponse = await fetch('https://www.strava.com/oauth/token', {
@@ -294,16 +289,4 @@ async function refreshToken(user) {
   }
 }
 
-// Handle graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n⏹️  Weekly sync interrupted by user');
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('\n⏹️  Weekly sync terminated');
-  process.exit(0);
-});
-
-// Run the script
-weeklyStravaSync().catch(console.error);
+fetchAllStravaActivities().catch(console.error);
