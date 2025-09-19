@@ -4,7 +4,75 @@
  * 🔄 STREAMLINED WEEKLY STRAVA SYNC
  * 
  * This script:
- * ✅ Uses proven pagination approach to fetch new activities
+ * ✅ Uses proven pagina    console.log(`   🏃 Found ${newRunningActivities.length} new running activities`);
+    
+    if (newRunningActivities.length === 0) {
+      console.log('\n✅ No new running activities found. Weekly sync complete!');
+      return;
+    }
+
+    // Step 4: Fetch detailed data for new running activities
+    console.log('\n4️⃣ Fetching detailed data for new running activities...');
+    console.log('   📡 Fetching detailed data (including detailed polylines)...');
+
+    // Fetch detailed data for each new running activity
+    const detailedActivities = [];
+    for (let i = 0; i < newRunningActivities.length; i++) {
+      const activity = newRunningActivities[i];
+      
+      try {
+        console.log(`      📄 Fetching details ${i + 1}/${newRunningActivities.length} (ID: ${activity.id})...`);
+        
+        const detailResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
+          headers: {
+            'Authorization': `Bearer ${user.access_token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (detailResponse.ok) {
+          const detailedActivity = await detailResponse.json();
+          detailedActivities.push(detailedActivity);
+        } else if (detailResponse.status === 401) {
+          console.log('      🔄 Token expired, refreshing...');
+          const newToken = await refreshToken(user);
+          if (newToken) {
+            // Retry with new token
+            const retryResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
+              headers: {
+                'Authorization': `Bearer ${newToken}`,
+                'Accept': 'application/json',
+              },
+            });
+            if (retryResponse.ok) {
+              const detailedActivity = await retryResponse.json();
+              detailedActivities.push(detailedActivity);
+            }
+          }
+        }
+        
+        // Rate limiting - be respectful to Strava API
+        if (i % 5 === 0 && i > 0) {
+          console.log(`      ⏱️  Rate limiting: processed ${i} activities, waiting 1 second...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+      } catch (error) {
+        console.warn(`      ⚠️  Failed to fetch details for activity ${activity.id}:`, error.message);
+        // Continue with the basic activity data
+        detailedActivities.push(activity);
+      }
+    }
+
+    console.log(`   ✅ Retrieved detailed data for ${detailedActivities.length} activities`);
+
+    // Step 5: Process and store activities
+    console.log('\n5️⃣ Processing and storing activities...');
+    
+    let newActivities = 0;
+    let updatedActivities = 0;
+    
+    for (const activity of detailedActivities) {ch to fetch new activities
  * ✅ Focuses only on recent activities (last 7 days) for efficiency
  * ✅ Handles rate limiting with delays
  * ✅ Updates existing activities with available data
@@ -233,8 +301,8 @@ async function weeklyStravaSync() {
       }
     }
 
-    // Step 4: Show final results
-    console.log('\n4️⃣ Weekly Sync Results:');
+    // Step 6: Show final results
+    console.log('\n6️⃣ Weekly Sync Results:');
     console.log('========================');
     console.log(`   ➕ New activities added: ${newActivities}`);
     console.log(`   🔄 Existing activities updated: ${updatedActivities}`);
@@ -243,8 +311,11 @@ async function weeklyStravaSync() {
     const finalCount = await sql`SELECT COUNT(*) as total FROM strava_runs`;
     console.log(`   📊 Total activities in database: ${finalCount.rows[0].total}`);
     
+    const polylineCount = await sql`SELECT COUNT(*) as with_polylines FROM strava_runs WHERE detailed_polyline IS NOT NULL`;
+    console.log(`   🗺️  Activities with detailed polylines: ${polylineCount.rows[0].with_polylines}`);
+    
     console.log('\n✅ Weekly Strava sync completed successfully!');
-    console.log('💡 Next sync recommended in 7 days');
+    console.log('�️  New activities include detailed polylines for route visualization');
 
   } catch (error) {
     console.error('❌ Weekly sync failed:', error);

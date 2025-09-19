@@ -250,6 +250,11 @@ export class WhoopDatabaseService {
             console.warn(`Skipping recovery for cycle ${recovery.cycle_id} - no score data`);
             return;
         }
+
+        // Map API field names (_milli) to database field names (_ms)
+        // The API returns "hrv_rmssd_milli" but our database expects "hrv_rmssd_ms"
+        const hrvValue = (recovery.score as any)?.hrv_rmssd_milli ?? recovery.score?.hrv_rmssd_ms ?? null;
+
         await db`
             INSERT INTO whoop_recovery (
                 cycle_id, sleep_id, user_id, score_state, recovery_percentage,
@@ -259,7 +264,7 @@ export class WhoopDatabaseService {
             VALUES (
                 ${recovery.cycle_id}, ${recovery.sleep_id}, ${recovery.user_id},
                 ${recovery.score_state}, ${recovery.score.recovery_score || null},
-                ${recovery.score.resting_heart_rate || null}, ${recovery.score.hrv_rmssd_ms || null},
+                ${recovery.score.resting_heart_rate || null}, ${hrvValue},
                 ${recovery.score.spo2_percentage || null}, ${recovery.score.skin_temp_celsius || null},
                 ${recovery.created_at}, ${recovery.updated_at}
             )

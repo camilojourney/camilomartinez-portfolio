@@ -57,7 +57,7 @@ async function fetchAllStravaActivities() {
       console.log(`   📄 Fetching page ${page} (${PER_PAGE} activities per page)...`);
       
       try {
-        const response = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}`, {
+        const response = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}&include_all_efforts=true`, {
           headers: {
             'Authorization': `Bearer ${user.access_token}`,
             'Accept': 'application/json',
@@ -70,7 +70,7 @@ async function fetchAllStravaActivities() {
             const newToken = await refreshToken(user);
             if (newToken) {
               // Retry with new token
-              const retryResponse = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}`, {
+              const retryResponse = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}&include_all_efforts=true`, {
                 headers: {
                   'Authorization': `Bearer ${newToken}`,
                   'Accept': 'application/json',
@@ -132,8 +132,8 @@ async function fetchAllStravaActivities() {
 
     console.log(`\n📊 Total activities fetched: ${allActivities.length}`);
 
-    // Step 3: Filter for running activities and insert/update database
-    console.log('\n3️⃣ Processing running activities...');
+    // Step 3: Fetch detailed data for running activities
+    console.log('\n3️⃣ Fetching detailed data for running activities...');
     
     const runningActivities = allActivities.filter(activity => 
       activity.sport_type === 'Run' || 
@@ -142,11 +142,66 @@ async function fetchAllStravaActivities() {
     );
     
     console.log(`   🏃 Found ${runningActivities.length} running activities`);
+    console.log('   📡 Fetching detailed data (including detailed polylines)...');
+
+    // Fetch detailed data for each running activity
+    const detailedActivities = [];
+    for (let i = 0; i < runningActivities.length; i++) {
+      const activity = runningActivities[i];
+      
+      try {
+        console.log(`      📄 Fetching details ${i + 1}/${runningActivities.length} (ID: ${activity.id})...`);
+        
+        const detailResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
+          headers: {
+            'Authorization': `Bearer ${user.access_token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (detailResponse.ok) {
+          const detailedActivity = await detailResponse.json();
+          detailedActivities.push(detailedActivity);
+        } else if (detailResponse.status === 401) {
+          console.log('      🔄 Token expired, refreshing...');
+          const newToken = await refreshToken(user);
+          if (newToken) {
+            // Retry with new token
+            const retryResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
+              headers: {
+                'Authorization': `Bearer ${newToken}`,
+                'Accept': 'application/json',
+              },
+            });
+            if (retryResponse.ok) {
+              const detailedActivity = await retryResponse.json();
+              detailedActivities.push(detailedActivity);
+            }
+          }
+        }
+        
+        // Rate limiting - be respectful to Strava API
+        if (i % 10 === 0 && i > 0) {
+          console.log(`      ⏱️  Rate limiting: processed ${i} activities, waiting 2 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+        
+      } catch (error) {
+        console.warn(`      ⚠️  Failed to fetch details for activity ${activity.id}:`, error.message);
+        // Continue with the basic activity data
+        detailedActivities.push(activity);
+      }
+    }
+
+    console.log(`   ✅ Retrieved detailed data for ${detailedActivities.length} activities`);
+
+    // Step 4: Process and store activities
+    console.log('\n4️⃣ Processing and storing activities...');
     
     let newActivities = 0;
     let updatedActivities = 0;
     
-    for (const activity of runningActivities) {
+    for (const activity of detailedActivities) {
       try {
         // Check if activity already exists
         const existingResult = await sql`
@@ -228,19 +283,19 @@ async function fetchAllStravaActivities() {
       }
     }
 
-    // Step 4: Show final results
-    console.log('\n4️⃣ Final Results:');
+    // Step 5: Show final results
+    console.log('\n5️⃣ Final Results:');
     console.log(`   ➕ New activities added: ${newActivities}`);
     console.log(`   🔄 Existing activities updated: ${updatedActivities}`);
     
     const finalCount = await sql`SELECT COUNT(*) as total FROM strava_runs`;
     console.log(`   📊 Total activities in database: ${finalCount.rows[0].total}`);
     
-    const enhancedCount = await sql`SELECT COUNT(*) as enhanced FROM strava_runs WHERE suffer_score IS NOT NULL`;
-    console.log(`   💪 Activities with enhanced data: ${enhancedCount.rows[0].enhanced}`);
+    const polylineCount = await sql`SELECT COUNT(*) as with_polylines FROM strava_runs WHERE detailed_polyline IS NOT NULL`;
+    console.log(`   �️  Activities with detailed polylines: ${polylineCount.rows[0].with_polylines}`);
     
     console.log('\n✅ All Strava activities fetched successfully!');
-    console.log('💡 Run fetch-real-enhanced-data.js next to add detailed metrics to activities');
+    console.log('�️  Detailed polylines now available for route visualization');
 
   } catch (error) {
     console.error('❌ Fetch failed:', error);
