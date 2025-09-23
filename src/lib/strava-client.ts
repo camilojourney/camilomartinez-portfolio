@@ -148,7 +148,11 @@ export class StravaClient {
         message: `HTTP ${response.status}: ${response.statusText}`,
         errors: [],
       }));
-      throw new Error(`Strava API error: ${errorData.message}`);
+      
+      const error = new Error(`Strava API error: ${errorData.message}`) as any;
+      error.status = response.status;
+      error.response = { status: response.status };
+      throw error;
     }
 
     return response.json();

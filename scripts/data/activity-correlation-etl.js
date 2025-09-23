@@ -5,29 +5,31 @@
  * Uses multiple matching algorithms with confidence scoring
  */
 
-import { Pool } from 'pg';
+const { Pool } = require('pg');
+require('dotenv').config({ path: '.env' });
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-interface CorrelationCandidate {
-  stravaRunId: number;
-  whoopWorkoutId: string;
-  userId: number;
-  timeDiffMinutes: number;
-  distanceDiffPercent?: number;
-  confidence: number;
-  method: string;
-}
+/**
+ * @typedef {Object} CorrelationCandidate
+ * @property {number} stravaRunId
+ * @property {string} whoopWorkoutId
+ * @property {number} userId
+ * @property {number} timeDiffMinutes
+ * @property {number} [distanceDiffPercent]
+ * @property {number} confidence
+ * @property {string} method
+ */
 
-export class ActivityCorrelationService {
+class ActivityCorrelationService {
   
   /**
    * Main ETL process - run this daily after data sync
    */
-  async processAllUserCorrelations(): Promise<void> {
+  async processAllUserCorrelations() {
     console.log('🔄 Starting cross-platform activity correlation ETL...');
     
     const users = await this.getActiveUsers();
@@ -42,7 +44,7 @@ export class ActivityCorrelationService {
   /**
    * Process correlations for a specific user
    */
-  async processUserCorrelations(userId: number): Promise<void> {
+  async processUserCorrelations(userId) {
     console.log(`Processing correlations for user ${userId}...`);
     
     // Get unprocessed activities from last 30 days
@@ -65,53 +67,22 @@ export class ActivityCorrelationService {
   /**
    * Find correlation candidates using multiple algorithms
    */
-  private async findCorrelationCandidates(userId: number): Promise<CorrelationCandidate[]> {
+  async findCorrelationCandidates(userId) {
+    // Simple query that just matches activities in the same hour
     const query = `
-      WITH strava_activities AS (
-        SELECT 
-          sr.id as strava_run_id,
-          sr.start_date,
-          sr.distance_meters,
-          sr.user_id
-        FROM strava_runs sr
-        WHERE sr.user_id = $1
-          AND sr.start_date >= NOW() - INTERVAL '30 days'
-          AND NOT EXISTS (
-            SELECT 1 FROM activity_correlations ac 
-            WHERE ac.strava_run_id = sr.id
-          )
-      ),
-      whoop_activities AS (
-        SELECT 
-          ww.id as whoop_workout_id,
-          ww.start_time,
-          ww.distance_meters,
-          ww.sport_name,
-          ww.user_id
-        FROM whoop_workouts ww
-        WHERE ww.user_id = $1
-          AND ww.start_time >= NOW() - INTERVAL '30 days'
-          AND ww.sport_name ILIKE '%run%'
-          AND NOT EXISTS (
-            SELECT 1 FROM activity_correlations ac 
-            WHERE ac.whoop_workout_id = ww.id
-          )
-      )
       SELECT 
-        sa.strava_run_id,
-        wa.whoop_workout_id,
-        sa.user_id,
-        ABS(EXTRACT(EPOCH FROM (sa.start_date - wa.start_time)) / 60)::INTEGER as time_diff_minutes,
-        CASE 
-          WHEN sa.distance_meters > 0 AND wa.distance_meters > 0 
-          THEN ABS((sa.distance_meters - wa.distance_meters) / sa.distance_meters * 100)
-          ELSE NULL 
-        END as distance_diff_percent
-      FROM strava_activities sa
-      CROSS JOIN whoop_activities wa
-      WHERE ABS(EXTRACT(EPOCH FROM (sa.start_date - wa.start_time)) / 60) <= 120 -- Within 2 hours
-      ORDER BY time_diff_minutes ASC
-    `;
+        s.id as strava_run_id,
+        w.id as whoop_workout_id
+      FROM strava_runs s
+      JOIN whoop_workouts w 
+        ON s.start_date::date = w.start_time::date
+        AND EXTRACT(HOUR FROM s.start_date) = EXTRACT(HOUR FROM w.start_time)
+      WHERE NOT EXISTS (
+        SELECT 1 FROM activity_correlations ac 
+        WHERE ac.strava_run_id = s.id OR ac.whoop_workout_id = w.id
+      )
+      AND w.sport_name ILIKE '%run%'
+      ORDER BY s.start_date DESC
     
     const result = await pool.query(query, [userId]);
     
@@ -129,28 +100,17 @@ export class ActivityCorrelationService {
   /**
    * Calculate confidence score based on multiple factors
    */
-  private calculateConfidence(row: any): number {
-    let confidence = 0.5; // Base confidence
-    
-    // Time-based confidence (closer = higher confidence)
-    if (row.time_diff_minutes <= 5) {
-      confidence += 0.4; // Very close timing
-    } else if (row.time_diff_minutes <= 15) {
-      confidence += 0.3; // Close timing
-    } else if (row.time_diff_minutes <= 60) {
-      confidence += 0.2; // Reasonable timing
-    } else {
-      confidence += 0.1; // Loose timing
-    }
+  calculateConfidence(row) {
+    let confidence = 0.8; // High base confidence since we match exact hour
     
     // Distance-based confidence (if both have distance)
     if (row.distance_diff_percent !== null) {
       if (row.distance_diff_percent <= 5) {
-        confidence += 0.3; // Very close distance
+        confidence += 0.2; // Very close distance
       } else if (row.distance_diff_percent <= 15) {
-        confidence += 0.2; // Close distance
-      } else if (row.distance_diff_percent <= 30) {
-        confidence += 0.1; // Reasonable distance difference
+        confidence += 0.1; // Close distance
+      } else if (row.distance_diff_percent > 30) {
+        confidence -= 0.1; // Distance differs significantly
       }
     }
     
@@ -160,45 +120,37 @@ export class ActivityCorrelationService {
   /**
    * Determine correlation method used
    */
-  private determineMethod(row: any): string {
-    if (row.time_diff_minutes <= 15 && row.distance_diff_percent !== null && row.distance_diff_percent <= 10) {
-      return 'datetime_distance_match';
-    } else if (row.time_diff_minutes <= 15) {
-      return 'datetime_match';
-    } else if (row.distance_diff_percent !== null && row.distance_diff_percent <= 5) {
-      return 'distance_match';
+  determineMethod(row) {
+    if (row.distance_diff_percent !== null && row.distance_diff_percent <= 10) {
+      return 'exact_hour_distance_match';
     } else {
-      return 'loose_datetime_match';
+      return 'exact_hour_match';
     }
   }
   
   /**
    * Insert correlation records
    */
-  private async insertCorrelations(correlations: CorrelationCandidate[]): Promise<void> {
+  async insertCorrelations(correlations) {
     if (correlations.length === 0) return;
     
-    const values = correlations.map(c => 
-      `(${c.userId}, ${c.stravaRunId}, '${c.whoopWorkoutId}', ${c.confidence}, '${c.method}', ${c.timeDiffMinutes}, ${c.distanceDiffPercent || 'NULL'})`
-    ).join(',');
+    // Just insert the IDs - that's all we need!
+    for (const correlation of correlations) {
+      await pool.query(`
+        INSERT INTO activity_correlations 
+        (strava_run_id, whoop_workout_id)
+        VALUES ($1, $2)
+        ON CONFLICT (strava_run_id, whoop_workout_id) DO NOTHING
+      `, [correlation.stravaRunId, correlation.whoopWorkoutId]);
+    }
     
-    const query = `
-      INSERT INTO activity_correlations 
-      (user_id, strava_run_id, whoop_workout_id, correlation_confidence, correlation_method, time_diff_minutes, distance_diff_percent)
-      VALUES ${values}
-      ON CONFLICT (strava_run_id, whoop_workout_id) DO UPDATE SET
-        correlation_confidence = EXCLUDED.correlation_confidence,
-        correlation_method = EXCLUDED.correlation_method,
-        updated_at = NOW()
-    `;
-    
-    await pool.query(query);
+    console.log(`✅ Matched ${correlations.length} activities`);
   }
   
   /**
    * Get users with recent activity on both platforms
    */
-  private async getActiveUsers(): Promise<number[]> {
+  async getActiveUsers() {
     const query = `
       SELECT DISTINCT wu.id
       FROM whoop_users wu
@@ -222,26 +174,21 @@ export class ActivityCorrelationService {
   /**
    * Get correlated activities for analysis
    */
-  async getCorrelatedActivities(userId: number, limit: number = 50): Promise<any[]> {
+  async getCorrelatedActivities(userId, limit = 50) {
+    console.log('\n🔍 Checking matched activities...');
+    
+    // Just get the basic info about matches
     const query = `
       SELECT 
         sr.name as strava_name,
-        sr.distance_meters/1000 as strava_km,
         sr.start_date as strava_start,
         ww.sport_name as whoop_sport,
-        ww.strain as whoop_strain,
-        ww.average_heart_rate,
-        ww.distance_meters/1000 as whoop_km,
-        ww.start_time as whoop_start,
-        ac.correlation_confidence,
-        ac.correlation_method,
-        ac.time_diff_minutes
+        ww.start_time as whoop_start
       FROM activity_correlations ac
       JOIN strava_runs sr ON ac.strava_run_id = sr.id
       JOIN whoop_workouts ww ON ac.whoop_workout_id = ww.id
-      WHERE ac.user_id = $1
       ORDER BY sr.start_date DESC
-      LIMIT $2
+      LIMIT $1
     `;
     
     const result = await pool.query(query, [userId, limit]);
@@ -253,19 +200,38 @@ export class ActivityCorrelationService {
 if (require.main === module) {
   const service = new ActivityCorrelationService();
   
-  if (process.argv[2] === 'process') {
+  // Get the first user (since it's always you)
+  async function getYourUserId() {
+    const query = `
+      SELECT id FROM whoop_users 
+      WHERE access_token IS NOT NULL 
+      ORDER BY id 
+      LIMIT 1
+    `;
+    const result = await pool.query(query);
+    return result.rows[0]?.id;
+  }
+
+  if (process.argv[2] === 'process' || !process.argv[2]) {
     service.processAllUserCorrelations()
       .then(() => process.exit(0))
       .catch(error => {
         console.error('❌ ETL failed:', error);
         process.exit(1);
       });
-  } else if (process.argv[2] === 'query' && process.argv[3]) {
-    const userId = parseInt(process.argv[3]);
-    service.getCorrelatedActivities(userId)
+  } else if (process.argv[2] === 'query') {
+    getYourUserId()
+      .then(userId => {
+        if (!userId) {
+          console.error('❌ No user found in the database');
+          process.exit(1);
+        }
+        return service.getCorrelatedActivities(userId);
+      })
       .then(activities => {
-        console.log('📊 Correlated Activities:');
+        console.log('\n📊 Your Correlated Activities:');
         console.table(activities);
+        console.log(`\n✨ Total Activities: ${activities.length}`);
         process.exit(0);
       })
       .catch(error => {
@@ -274,9 +240,10 @@ if (require.main === module) {
       });
   } else {
     console.log('Usage:');
-    console.log('  node activity-correlation-etl.js process    # Process all correlations');
-    console.log('  node activity-correlation-etl.js query 123  # Query correlations for user 123');
+    console.log('  node activity-correlation-etl.js           # Process correlations (default)');
+    console.log('  node activity-correlation-etl.js process   # Same as above');
+    console.log('  node activity-correlation-etl.js query     # Show your correlated activities');
   }
 }
 
-export default ActivityCorrelationService;
+module.exports = ActivityCorrelationService;

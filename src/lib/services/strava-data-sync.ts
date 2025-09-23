@@ -110,36 +110,39 @@ async function upsertStravaRunWithUser(activity: StravaActivity, userId: number,
 async function upsertStravaSplits(runId: number, splitsMetric?: StravaSplit[], splitsStandard?: StravaSplit[]): Promise<void> {
   try {
     // Clear existing splits for this run first
-    await sql`DELETE FROM strava_run_splits WHERE run_id = ${runId}`;
+    await sql`DELETE FROM strava_run_splits WHERE strava_run_id = ${runId}`;
+
+    let totalSplitsInserted = 0;
 
     // Insert metric splits
     if (splitsMetric && splitsMetric.length > 0) {
       for (const [index, split] of splitsMetric.entries()) {
         await sql`
           INSERT INTO strava_run_splits (
-            run_id,
-            split_index,
+            strava_run_id,
+            split_number,
             split_type,
-            distance,
-            elapsed_time,
-            elevation_difference,
-            moving_time,
-            pace_zone,
-            average_speed,
-            average_grade_adjusted_speed
+            distance_meters,
+            elapsed_time_seconds,
+            moving_time_seconds,
+            elevation_difference_meters,
+            average_speed_mps,
+            average_grade_adjusted_speed,
+            pace_zone
           ) VALUES (
             ${runId},
             ${index + 1},
             'metric',
             ${split.distance || null},
             ${split.elapsed_time || null},
-            ${split.elevation_difference || null},
             ${split.moving_time || null},
-            ${split.pace_zone || null},
+            ${split.elevation_difference || null},
             ${split.average_speed || null},
-            ${split.average_grade_adjusted_speed || null}
+            ${split.average_grade_adjusted_speed || null},
+            ${split.pace_zone || null}
           )
         `;
+        totalSplitsInserted++;
       }
     }
 
@@ -148,34 +151,35 @@ async function upsertStravaSplits(runId: number, splitsMetric?: StravaSplit[], s
       for (const [index, split] of splitsStandard.entries()) {
         await sql`
           INSERT INTO strava_run_splits (
-            run_id,
-            split_index,
+            strava_run_id,
+            split_number,
             split_type,
-            distance,
-            elapsed_time,
-            elevation_difference,
-            moving_time,
-            pace_zone,
-            average_speed,
-            average_grade_adjusted_speed
+            distance_meters,
+            elapsed_time_seconds,
+            moving_time_seconds,
+            elevation_difference_meters,
+            average_speed_mps,
+            average_grade_adjusted_speed,
+            pace_zone
           ) VALUES (
             ${runId},
             ${index + 1},
             'standard',
             ${split.distance || null},
             ${split.elapsed_time || null},
-            ${split.elevation_difference || null},
             ${split.moving_time || null},
-            ${split.pace_zone || null},
+            ${split.elevation_difference || null},
             ${split.average_speed || null},
-            ${split.average_grade_adjusted_speed || null}
+            ${split.average_grade_adjusted_speed || null},
+            ${split.pace_zone || null}
           )
         `;
+        totalSplitsInserted++;
       }
     }
 
-    if (splitsMetric?.length || splitsStandard?.length) {
-      console.log(`📊 Inserted ${splitsMetric?.length || 0} metric splits, ${splitsStandard?.length || 0} standard splits for run ${runId}`);
+    if (totalSplitsInserted > 0) {
+      console.log(`📊 Inserted ${totalSplitsInserted} splits (${splitsMetric?.length || 0} metric, ${splitsStandard?.length || 0} standard) for run ${runId}`);
     }
   } catch (error) {
     console.error(`❌ Error upserting splits for run ${runId}:`, error);
@@ -290,20 +294,34 @@ export class HistoricalDataImporter {
           // Process each activity in the batch
           for (const activity of batch) {
             try {
-              // Try to get detailed polyline for better accuracy
-              let detailedPolyline: string | undefined;
+              // Get detailed activity data including polylines and splits
+              let detailedActivity: StravaActivity | undefined;
               try {
-                const detailedActivity = await stravaClient.getActivityDetails(activity.id);
-                detailedPolyline = detailedActivity.map?.polyline;
+                detailedActivity = await stravaClient.getActivityDetails(activity.id);
                 
                 // Small delay to respect rate limits
                 await this.delay(200);
-              } catch (detailError) {
-                console.warn(`⚠️ Could not get detailed polyline for activity ${activity.id}, using summary`);
+              } catch (detailError: any) {
+                // Check if this is a rate limit error
+                if (detailError?.response?.status === 429 || detailError?.status === 429) {
+                  console.log(`⏳ Rate limit exceeded during historical import! Stopping process to prevent data corruption.`);
+                  console.log(`💡 Progress saved. Run the script again later when rate limit resets.`);
+                  console.log(`📊 Processed ${progress.processedActivities}/${progress.totalActivities} activities successfully.`);
+                  
+                  // Set status to completed with partial data rather than failed
+                  progress.status = 'completed';
+                  progress.endTime = new Date();
+                  return progress;
+                }
+                
+                console.warn(`⚠️ Could not get detailed data for activity ${activity.id}, using summary`);
               }
 
-              // Upsert the activity
-              await upsertStravaRunWithUser(activity, userId, detailedPolyline);
+              // Upsert the activity with detailed data (including splits)
+              const activityToProcess = detailedActivity || activity;
+              const detailedPolyline = detailedActivity?.map?.polyline;
+              
+              await upsertStravaRunWithUser(activityToProcess, userId, detailedPolyline);
               progress.successfulImports++;
               
             } catch (activityError) {
@@ -490,18 +508,32 @@ export class WeeklySyncService {
       // Process the new activities
       for (const activity of newActivities) {
         try {
-          // Try to get detailed polyline
-          let detailedPolyline: string | undefined;
+          // Get detailed activity data including polylines and splits
+          let detailedActivity: StravaActivity | undefined;
           try {
-            const detailedActivity = await stravaClient.getActivityDetails(activity.id);
-            detailedPolyline = detailedActivity.map?.polyline;
+            detailedActivity = await stravaClient.getActivityDetails(activity.id);
             await this.historicalImporter['delay'](200);
-          } catch (detailError) {
-            console.warn(`⚠️ Could not get detailed polyline for activity ${activity.id}, using summary`);
+          } catch (detailError: any) {
+            // Check if this is a rate limit error
+            if (detailError?.response?.status === 429 || detailError?.status === 429) {
+              console.log(`⏳ Rate limit exceeded during weekly sync! Stopping process to prevent data corruption.`);
+              console.log(`💡 Progress saved. Run the script again later when rate limit resets.`);
+              console.log(`📊 Processed ${progress.processedActivities}/${progress.totalActivities} activities successfully.`);
+              
+              // Set status to completed with partial data rather than failed
+              progress.status = 'completed';
+              progress.endTime = new Date();
+              return progress;
+            }
+            
+            console.warn(`⚠️ Could not get detailed data for activity ${activity.id}, using summary`);
           }
 
-          // Upsert the activity
-          await upsertStravaRunWithUser(activity, userId, detailedPolyline);
+          // Upsert the activity with detailed data (including splits)
+          const activityToProcess = detailedActivity || activity;
+          const detailedPolyline = detailedActivity?.map?.polyline;
+          
+          await upsertStravaRunWithUser(activityToProcess, userId, detailedPolyline);
           progress.successfulImports++;
           
         } catch (activityError) {

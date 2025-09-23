@@ -1,29 +1,115 @@
 #!/usr/bin/env node
-// 📂 scripts/data/fetch-all-strava-data-complete.js
+// 📂 scripts/data/fetch-all-strava-data-complete-with-splits.js
 /**
- * 🎯 COMPLETE STRAVA DATA FETCHER - Fetches ALL enhanced Strava data
+ * 🎯 OPTIMIZED STRAVA DATA FETCHER - Fetches missing enhanced Strava data WITH SPLITS
  * 
  * This script:
  * ✅ Handles proper pagination to get ALL activities (not just 20)
- * ✅ Populates available fields from list API (summary polylines, basic data)  
+ * ✅ SMART OPTIMIZATION: Only fetches detailed data for activities missing detailed polylines/splits
+ * ✅ Skips activities that already have complete polyline and splits data
+ * ✅ Processes splits data for performance analysis
+ * ✅ Reduces API calls by up to 80-90% after initial import
  * ✅ Handles rate limiting with delays
  * ✅ Updates existing activities with available data
  * 
  * Usage:
- *   node scripts/data/fetch-all-strava-data-complete.js
+ *   node scripts/data/fetch-all-strava-data-complete-with-splits.js
  *   
  * Features:
  * - Complete pagination (all pages)
- * - Basic activity data from list API
+ * - Smart polyline and splits checking
+ * - Minimal API calls (only for missing data)
  * - Rate limiting protection
  * - Token refresh handling
+ * - Splits data processing (metric and standard)
  */
 
 require('dotenv').config({ path: '.env' });
 const { sql } = require('@vercel/postgres');
 
+// Helper function to upsert splits data
+async function upsertStravaSplits(runId, splitsMetric, splitsStandard) {
+  try {
+    // Clear existing splits for this run first
+    await sql`DELETE FROM strava_run_splits WHERE strava_run_id = ${runId}`;
+
+    let totalSplitsInserted = 0;
+
+    // Insert metric splits
+    if (splitsMetric && splitsMetric.length > 0) {
+      for (const [index, split] of splitsMetric.entries()) {
+        await sql`
+          INSERT INTO strava_run_splits (
+            strava_run_id,
+            split_number,
+            split_type,
+            distance_meters,
+            elapsed_time_seconds,
+            moving_time_seconds,
+            elevation_difference_meters,
+            average_speed_mps,
+            average_grade_adjusted_speed,
+            pace_zone
+          ) VALUES (
+            ${runId},
+            ${index + 1},
+            'metric',
+            ${split.distance || null},
+            ${split.elapsed_time || null},
+            ${split.moving_time || null},
+            ${split.elevation_difference || null},
+            ${split.average_speed || null},
+            ${split.average_grade_adjusted_speed || null},
+            ${split.pace_zone || null}
+          )
+        `;
+        totalSplitsInserted++;
+      }
+    }
+
+    // Insert standard splits
+    if (splitsStandard && splitsStandard.length > 0) {
+      for (const [index, split] of splitsStandard.entries()) {
+        await sql`
+          INSERT INTO strava_run_splits (
+            strava_run_id,
+            split_number,
+            split_type,
+            distance_meters,
+            elapsed_time_seconds,
+            moving_time_seconds,
+            elevation_difference_meters,
+            average_speed_mps,
+            average_grade_adjusted_speed,
+            pace_zone
+          ) VALUES (
+            ${runId},
+            ${index + 1},
+            'standard',
+            ${split.distance || null},
+            ${split.elapsed_time || null},
+            ${split.moving_time || null},
+            ${split.elevation_difference || null},
+            ${split.average_speed || null},
+            ${split.average_grade_adjusted_speed || null},
+            ${split.pace_zone || null}
+          )
+        `;
+        totalSplitsInserted++;
+      }
+    }
+
+    if (totalSplitsInserted > 0) {
+      console.log(`        📊 Inserted ${totalSplitsInserted} splits (${splitsMetric?.length || 0} metric, ${splitsStandard?.length || 0} standard)`);
+    }
+  } catch (error) {
+    console.error(`        ❌ Error upserting splits for run ${runId}:`, error.message);
+    // Don't throw here - we don't want splits errors to prevent the main run data from being saved
+  }
+}
+
 async function fetchAllStravaActivities() {
-  console.log('🚀 Fetching ALL Strava Activities with Pagination...\n');
+  console.log('🚀 Fetching ALL Strava Activities with Pagination and Splits...\n');
 
   try {
     // Step 1: Get user tokens
@@ -48,7 +134,7 @@ async function fetchAllStravaActivities() {
     console.log('\n2️⃣ Fetching ALL activities from Strava API...');
     
     const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
-    const PER_PAGE = 50;  // Strava max is 200, but 50 is safer for rate limiting
+    const PER_PAGE = 50;
     let page = 1;
     let allActivities = [];
     let totalFetched = 0;
@@ -102,7 +188,6 @@ async function fetchAllStravaActivities() {
         } else {
           const activities = await response.json();
           
-          // If no activities returned, we've reached the end
           if (activities.length === 0) {
             console.log(`      ✅ No more activities (page ${page} empty)`);
             break;
@@ -118,7 +203,7 @@ async function fetchAllStravaActivities() {
         // Rate limiting: wait 1 second between API calls
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Safety check: don't go beyond reasonable pagination
+        // Safety check
         if (page > 20) {
           console.log('      ⚠️  Reached page limit (20) for safety');
           break;
@@ -132,8 +217,8 @@ async function fetchAllStravaActivities() {
 
     console.log(`\n📊 Total activities fetched: ${allActivities.length}`);
 
-    // Step 3: Fetch detailed data for running activities
-    console.log('\n3️⃣ Fetching detailed data for running activities...');
+    // Step 3: Check which running activities need detailed data
+    console.log('\n3️⃣ Optimizing: Check which activities need detailed data and splits...');
     
     const runningActivities = allActivities.filter(activity => 
       activity.sport_type === 'Run' || 
@@ -142,15 +227,61 @@ async function fetchAllStravaActivities() {
     );
     
     console.log(`   🏃 Found ${runningActivities.length} running activities`);
-    console.log('   📡 Fetching detailed data (including detailed polylines)...');
+    
+    // Check which activities need detailed data or splits
+    console.log('   🔍 Checking database for existing polyline and splits data...');
+    
+    const activitiesNeedingDetailedData = [];
+    const activitiesWithCompleteData = [];
+    
+    for (const activity of runningActivities) {
+      const existingResult = await sql`
+        SELECT sr.id, sr.summary_polyline, sr.detailed_polyline,
+               COUNT(srs.id) as splits_count
+        FROM strava_runs sr
+        LEFT JOIN strava_run_splits srs ON sr.id = srs.strava_run_id
+        WHERE sr.id = ${activity.id}
+        GROUP BY sr.id, sr.summary_polyline, sr.detailed_polyline
+      `;
+      
+      const existing = existingResult.rows[0];
+      
+      if (!existing) {
+        // New activity - needs detailed data
+        activitiesNeedingDetailedData.push(activity);
+      } else {
+        const hasSummary = existing.summary_polyline && existing.summary_polyline.length > 0;
+        const hasDetailed = existing.detailed_polyline && existing.detailed_polyline.length > 0;
+        const hasSplits = existing.splits_count > 0;
+        
+        if (!hasSummary || !hasDetailed || !hasSplits) {
+          // Missing some data - needs API call
+          activitiesNeedingDetailedData.push(activity);
+        } else {
+          // Has complete data - skip
+          activitiesWithCompleteData.push(activity);
+        }
+      }
+    }
+    
+    console.log(`   ✅ ${activitiesWithCompleteData.length} activities already have complete data (skipping)`);
+    console.log(`   📡 ${activitiesNeedingDetailedData.length} activities need detailed data or splits`);
+    console.log(`   🎯 API calls reduced by ${Math.round((activitiesWithCompleteData.length / runningActivities.length) * 100)}%`);
 
-    // Fetch detailed data for each running activity
+    // Process activities that need detailed data
     const detailedActivities = [];
-    for (let i = 0; i < runningActivities.length; i++) {
-      const activity = runningActivities[i];
+    
+    // We'll only process activities that need detailed data
+    // Don't add activities that already have complete data to the processing list
+    console.log('   ✅ Skipping activities that already have complete data');
+    
+    // Fetch detailed data for activities that need it
+    console.log('\n   📡 Fetching detailed data for activities needing polylines or splits...');
+    for (let i = 0; i < activitiesNeedingDetailedData.length; i++) {
+      const activity = activitiesNeedingDetailedData[i];
       
       try {
-        console.log(`      📄 Fetching details ${i + 1}/${runningActivities.length} (ID: ${activity.id})...`);
+        console.log(`      📄 Fetching details ${i + 1}/${activitiesNeedingDetailedData.length} (ID: ${activity.id})...`);
         
         const detailResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
           headers: {
@@ -166,7 +297,6 @@ async function fetchAllStravaActivities() {
           console.log('      🔄 Token expired, refreshing...');
           const newToken = await refreshToken(user);
           if (newToken) {
-            // Retry with new token
             const retryResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
               headers: {
                 'Authorization': `Bearer ${newToken}`,
@@ -176,30 +306,52 @@ async function fetchAllStravaActivities() {
             if (retryResponse.ok) {
               const detailedActivity = await retryResponse.json();
               detailedActivities.push(detailedActivity);
+            } else {
+              console.log('      ❌ Token refresh retry failed - skipping activity to prevent data corruption');
+              continue;
             }
+          } else {
+            console.log('      ❌ Token refresh failed - skipping activity to prevent data corruption');
+            continue;
           }
+        } else if (detailResponse.status === 429) {
+          console.log('      ⏳ Rate limit exceeded! Stopping process to prevent data corruption.');
+          console.log('      💡 Run the script again later when rate limit resets.');
+          console.log(`      📊 Progress saved: ${i}/${activitiesNeedingDetailedData.length} activities processed.`);
+          
+          // Stop processing immediately - don't continue with incomplete data
+          break;
+        } else {
+          console.log(`      ❌ API call failed: ${detailResponse.status} ${detailResponse.statusText}`);
+          console.log('      ⚠️ Skipping this activity to avoid data corruption');
+          // Skip this activity instead of adding it with incomplete data
+          continue;
         }
         
-        // Rate limiting - be respectful to Strava API
-        if (i % 10 === 0 && i > 0) {
-          console.log(`      ⏱️  Rate limiting: processed ${i} activities, waiting 2 seconds...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+        // Rate limiting
+        if (i % 5 === 0 && i > 0) {
+          console.log(`      ⏱️  Rate limiting: processed ${i} activities, waiting 5 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
       } catch (error) {
         console.warn(`      ⚠️  Failed to fetch details for activity ${activity.id}:`, error.message);
-        // Continue with the basic activity data
-        detailedActivities.push(activity);
+        console.log('      ⚠️ Skipping this activity to avoid data corruption');
+        // Skip this activity instead of adding it with incomplete data
+        continue;
       }
     }
 
     console.log(`   ✅ Retrieved detailed data for ${detailedActivities.length} activities`);
 
     // Step 4: Process and store activities
-    console.log('\n4️⃣ Processing and storing activities...');
+    console.log('\n4️⃣ Processing and storing activities with splits...');
     
     let newActivities = 0;
     let updatedActivities = 0;
+    let processedSplits = 0;
     
     for (const activity of detailedActivities) {
       try {
@@ -208,20 +360,18 @@ async function fetchAllStravaActivities() {
           SELECT id FROM strava_runs WHERE id = ${activity.id}
         `;
         
-        // Handle coordinates if available  
+        // Handle coordinates
         let startPoint = null;
         let endPoint = null;
         if (activity.start_latlng && activity.start_latlng.length === 2) {
-          // Format as PostgreSQL POINT(longitude, latitude)
           startPoint = `(${activity.start_latlng[1]}, ${activity.start_latlng[0]})`;
         }
         if (activity.end_latlng && activity.end_latlng.length === 2) {
-          // Format as PostgreSQL POINT(longitude, latitude)  
           endPoint = `(${activity.end_latlng[1]}, ${activity.end_latlng[0]})`;
         }
 
         if (existingResult.rows.length === 0) {
-          // Insert new activity with available fields from list API
+          // Insert new activity
           await sql`
             INSERT INTO strava_runs (
               id, user_id, name, sport_type, start_date, start_date_local,
@@ -245,7 +395,7 @@ async function fetchAllStravaActivities() {
           `;
           newActivities++;
         } else {
-          // Update existing activity with available fields from list API
+          // Update existing activity
           await sql`
             UPDATE strava_runs 
             SET 
@@ -274,6 +424,13 @@ async function fetchAllStravaActivities() {
           updatedActivities++;
         }
         
+        // Handle splits data if available
+        if (activity.splits_metric || activity.splits_standard) {
+          console.log(`      📊 Processing splits for activity ${activity.id}...`);
+          await upsertStravaSplits(activity.id, activity.splits_metric, activity.splits_standard);
+          processedSplits++;
+        }
+        
         if ((newActivities + updatedActivities) % 10 === 0) {
           console.log(`      📊 Processed ${newActivities + updatedActivities} activities...`);
         }
@@ -287,15 +444,22 @@ async function fetchAllStravaActivities() {
     console.log('\n5️⃣ Final Results:');
     console.log(`   ➕ New activities added: ${newActivities}`);
     console.log(`   🔄 Existing activities updated: ${updatedActivities}`);
+    console.log(`   📊 Activities with splits processed: ${processedSplits}`);
     
     const finalCount = await sql`SELECT COUNT(*) as total FROM strava_runs`;
     console.log(`   📊 Total activities in database: ${finalCount.rows[0].total}`);
     
     const polylineCount = await sql`SELECT COUNT(*) as with_polylines FROM strava_runs WHERE detailed_polyline IS NOT NULL`;
-    console.log(`   �️  Activities with detailed polylines: ${polylineCount.rows[0].with_polylines}`);
+    console.log(`   🗺️  Activities with detailed polylines: ${polylineCount.rows[0].with_polylines}`);
+    
+    const splitsCount = await sql`SELECT COUNT(DISTINCT strava_run_id) as with_splits FROM strava_run_splits`;
+    console.log(`   📊 Activities with splits data: ${splitsCount.rows[0].with_splits}`);
+    
+    const totalSplitsCount = await sql`SELECT COUNT(*) as total_splits FROM strava_run_splits`;
+    console.log(`   📈 Total splits in database: ${totalSplitsCount.rows[0].total_splits}`);
     
     console.log('\n✅ All Strava activities fetched successfully!');
-    console.log('�️  Detailed polylines now available for route visualization');
+    console.log('🗺️  Detailed polylines and splits data now available for route and performance analysis');
 
   } catch (error) {
     console.error('❌ Fetch failed:', error);
@@ -321,7 +485,6 @@ async function refreshToken(user) {
     if (refreshResponse.ok) {
       const tokenData = await refreshResponse.json();
       
-      // Update token in database
       await sql`
         UPDATE strava_users 
         SET 

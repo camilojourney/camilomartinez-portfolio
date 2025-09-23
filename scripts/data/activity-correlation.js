@@ -46,10 +46,17 @@ async function correlateActivities() {
   // Save correlations
   if (matches.rows.length > 0) {
     const values = matches.rows.map(m => {
-      // Calculate time difference in minutes
-      const timeDiff = Math.abs((new Date(m.whoop_time) - new Date(m.strava_time)) / 1000 / 60);
+      // Calculate time difference in minutes properly
+      const stravaTime = new Date(m.strava_time);
+      const whoopTime = new Date(m.whoop_time);
       
-      return `(${m.strava_id}, '${m.whoop_id}', ${timeDiff}, ${m.strava_distance}, ${m.whoop_distance})`;
+      // Get difference in milliseconds, convert to minutes and round to nearest minute
+      const diffMs = Math.abs(whoopTime - stravaTime);
+      const timeDiffMinutes = Math.round(diffMs / 1000 / 60);
+      
+      console.log(`DEBUG: Strava time: ${stravaTime.toISOString()}, WHOOP time: ${whoopTime.toISOString()}, diff: ${timeDiffMinutes} minutes`);
+      
+      return `(${m.strava_id}, '${m.whoop_id}', ${timeDiffMinutes}, ${m.strava_distance}, ${m.whoop_distance})`;
     }).join(',');
 
     const insertQuery = `
@@ -71,14 +78,22 @@ async function correlateActivities() {
     await pool.query(insertQuery);
     console.log('✅ Saved correlations to database');
 
-    // Show matches
+    // Show matches with time differences
     console.log('\n📊 Matched Activities:');
-    console.table(matches.rows.map(m => ({
-      'Strava Time': new Date(m.strava_time).toLocaleString(),
-      'WHOOP Time': new Date(m.whoop_time).toLocaleString(),
-      'Strava Distance (km)': (m.strava_distance / 1000).toFixed(2),
-      'WHOOP Distance (km)': (m.whoop_distance / 1000).toFixed(2)
-    })));
+    console.table(matches.rows.map(m => {
+      const stravaTime = new Date(m.strava_time);
+      const whoopTime = new Date(m.whoop_time);
+      const diffMs = Math.abs(whoopTime - stravaTime);
+      const timeDiffMinutes = Math.round(diffMs / 1000 / 60);
+      
+      return {
+        'Strava Time': stravaTime.toLocaleString(),
+        'WHOOP Time': whoopTime.toLocaleString(),
+        'Diff (mins)': timeDiffMinutes,
+        'Strava Dist (km)': (m.strava_distance / 1000).toFixed(2),
+        'WHOOP Dist (km)': (m.whoop_distance / 1000).toFixed(2)
+      };
+    }));
   }
 }
 
