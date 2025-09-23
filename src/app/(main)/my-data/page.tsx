@@ -1,18 +1,11 @@
-export default async function MyDataPage() {
-    // Fetch all data in parallel
-    const [
-        strainData,
-        monthlyStrainData,
-        strainRecoveryData,
-        workoutData,
-        workoutTimeData
-    ] = await Promise.all([
-        getStrainData(),
-        getMonthlyStrainData(),
-        getStrainRecoveryData(),
-        getWorkoutData(),
-        getWorkoutTimes()
-    ]);
+import { sql } from '@/lib/db/db';
+import { Card } from '@/components/ui/Card';
+import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
+import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
+import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
+import { DailyFetchControl } from '@/components/features/whoop/DailyFetchControl';
+import WorkoutTimeChart from '@/components/features/whoop/WorkoutTimeChart';
+
 async function getStrainData() {
     try {
         const result = await sql`
@@ -347,32 +340,18 @@ export default async function MyDataPage() {
                                     )}
                                 </div>
                                 
-                                {/* Diagnostic component */}
-                                <div className="border-2 border-yellow-500 p-4 rounded-lg mb-4">
-                                    <h3 className="text-xl font-bold text-center text-white mb-2">Diagnostic Chart</h3>
-                                    <DiagnosticChart 
-                                        data={workoutTimeData} 
-                                        title="Workout Time Data Diagnostic" 
-                                    />
-                                </div>
+
                                 
-                                {/* Client-side wrapper component */}
-                                <div className="border-2 border-green-500 p-4 rounded-lg mb-4">
-                                    <h3 className="text-xl font-bold text-center text-white mb-2">Client Workout Time Chart</h3>
-                                    <ClientWorkoutTimeChart 
-                                        data={workoutTimeData} 
-                                        goalTime="08:15" 
-                                        debugMode={true}
-                                    />
-                                </div>
-                                
-                                {/* Original server component */}
-                                <div className="border-2 border-blue-500 p-4 rounded-lg">
-                                    <h3 className="text-xl font-bold text-center text-white mb-2">Server WorkoutTimeChart</h3>
+                                {/* Workout Time Chart Component */}
+                                <div className="border border-amber-500/30 bg-black/20 rounded-lg p-6">
                                     {workoutTimeData.length > 0 ? (
                                         <WorkoutTimeChart data={workoutTimeData} goalTime="08:15" />
                                     ) : (
-                                        <div className="text-center p-4 text-white/60">No workout time data available for chart.</div>
+                                        <div className="text-center p-8 text-white/60">
+                                            <div className="text-amber-400 text-3xl mb-3">⏰</div>
+                                            <p className="text-white/70 text-lg">No workout time data available.</p>
+                                            <p className="text-white/50 text-sm mt-2">Check that your database has workout records.</p>
+                                        </div>
                                     )}
                                 </div>
                             </Card>
