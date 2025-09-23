@@ -42,71 +42,56 @@ async function upsertStravaRunWithUser(activity: StravaActivity, userId: number,
       return;
     }
 
-    // Build PostGIS coordinate expressions
-    const startCoords = activity.start_latlng ? 
-      `ST_Point(${activity.start_latlng[1]}, ${activity.start_latlng[0]})` : 'NULL';
-    const endCoords = activity.end_latlng ? 
-      `ST_Point(${activity.end_latlng[1]}, ${activity.end_latlng[0]})` : 'NULL';
+    // Handle coordinates using PostgreSQL POINT constructor - matches database schema
+    const startLat = activity.start_latlng?.[0] || null;
+    const startLng = activity.start_latlng?.[1] || null;
+    const endLat = activity.end_latlng?.[0] || null;
+    const endLng = activity.end_latlng?.[1] || null;
 
-    // Use dynamic SQL to properly handle PostGIS functions
-    const query = `
+    // Use sql template with coordinate values directly - PostgreSQL will handle POINT conversion
+    await sql`
       INSERT INTO strava_runs (
-        id, user_id, name, sport_type, start_date, distance_meters,
-        summary_polyline, detailed_polyline,
-        elapsed_time_seconds, start_date_local, utc_offset_seconds,
-        average_speed_mps, max_speed_mps, total_elevation_gain,
-        elev_high, elev_low, suffer_score, perceived_exertion,
-        start_latlng, end_latlng, private_note
+        id, user_id, name, sport_type, start_date, start_date_local,
+        distance_meters, elapsed_time_seconds, utc_offset_seconds,
+        total_elevation_gain, elev_high, elev_low,
+        average_speed_mps, max_speed_mps, suffer_score, perceived_exertion,
+        start_latlng, end_latlng, summary_polyline, detailed_polyline,
+        private_note, created_at, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
-        ${startCoords}, ${endCoords}, $19
+        ${activity.id}, ${userId}, ${activity.name}, ${activity.type || activity.sport_type || 'Run'},
+        ${activity.start_date}, ${activity.start_date_local},
+        ${activity.distance || null}, ${activity.elapsed_time || null}, ${activity.utc_offset || null},
+        ${activity.total_elevation_gain || null}, ${activity.elev_high || null}, ${activity.elev_low || null},
+        ${activity.average_speed || null}, ${activity.max_speed || null}, 
+        ${activity.suffer_score || null}, ${activity.perceived_exertion || null},
+        ${startLat && startLng ? `(${startLng}, ${startLat})` : null}, 
+        ${endLat && endLng ? `(${endLng}, ${endLat})` : null}, 
+        ${activity.map.summary_polyline}, 
+        ${detailedPolyline || activity.map.polyline || activity.map.summary_polyline},
+        ${activity.private_note || null}, NOW(), NOW()
       )
       ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name,
         sport_type = EXCLUDED.sport_type,
         start_date = EXCLUDED.start_date,
-        distance_meters = EXCLUDED.distance_meters,
-        summary_polyline = EXCLUDED.summary_polyline,
-        detailed_polyline = EXCLUDED.detailed_polyline,
-        elapsed_time_seconds = EXCLUDED.elapsed_time_seconds,
         start_date_local = EXCLUDED.start_date_local,
+        distance_meters = EXCLUDED.distance_meters,
+        elapsed_time_seconds = EXCLUDED.elapsed_time_seconds,
         utc_offset_seconds = EXCLUDED.utc_offset_seconds,
-        average_speed_mps = EXCLUDED.average_speed_mps,
-        max_speed_mps = EXCLUDED.max_speed_mps,
         total_elevation_gain = EXCLUDED.total_elevation_gain,
         elev_high = EXCLUDED.elev_high,
         elev_low = EXCLUDED.elev_low,
+        average_speed_mps = EXCLUDED.average_speed_mps,
+        max_speed_mps = EXCLUDED.max_speed_mps,
         suffer_score = EXCLUDED.suffer_score,
         perceived_exertion = EXCLUDED.perceived_exertion,
         start_latlng = EXCLUDED.start_latlng,
         end_latlng = EXCLUDED.end_latlng,
+        summary_polyline = EXCLUDED.summary_polyline,
+        detailed_polyline = EXCLUDED.detailed_polyline,
         private_note = EXCLUDED.private_note,
         updated_at = NOW()
     `;
-
-    const values = [
-      activity.id,
-      userId,
-      activity.name,
-      activity.type || activity.sport_type || 'Run',
-      activity.start_date,
-      activity.distance,
-      activity.map.summary_polyline,
-      detailedPolyline || activity.map.polyline || activity.map.summary_polyline,
-      activity.elapsed_time || null,
-      activity.start_date_local || null,
-      activity.utc_offset || null,
-      activity.average_speed || null,
-      activity.max_speed || null,
-      activity.total_elevation_gain || null,
-      activity.elev_high || null,
-      activity.elev_low || null,
-      activity.suffer_score || null,
-      activity.perceived_exertion || null,
-      activity.private_note || null
-    ];
-
-    await executeQuery(query, values);
 
     // Now handle the splits data in the normalized table
     await upsertStravaSplits(activity.id, activity.splits_metric, activity.splits_standard);
