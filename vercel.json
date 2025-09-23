@@ -1,5 +1,5 @@
 {
-  "cron": [
+  "crons": [
     { 
       "path": "/api/cron/daily-data-fetch?secret=REDACTED_CRON_SECRET", 
       "schedule": "0 19 * * *"
