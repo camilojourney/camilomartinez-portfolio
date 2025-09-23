@@ -1,94 +1,100 @@
 #!/usr/bin/env node
-// 📂 scripts/data/strava-weekly-sync.js
+// 📂 scripts/data/strava-weekly-sync-clean.js
 /**
  * 🔄 STREAMLINED WEEKLY STRAVA SYNC
  * 
  * This script:
- * ✅ Uses proven pagina    console.log(`   🏃 Found ${newRunningActivities.length} new running activities`);
-    
-    if (newRunningActivities.length === 0) {
-      console.log('\n✅ No new running activities found. Weekly sync complete!');
-      return;
-    }
-
-    // Step 4: Fetch detailed data for new running activities
-    console.log('\n4️⃣ Fetching detailed data for new running activities...');
-    console.log('   📡 Fetching detailed data (including detailed polylines)...');
-
-    // Fetch detailed data for each new running activity
-    const detailedActivities = [];
-    for (let i = 0; i < newRunningActivities.length; i++) {
-      const activity = newRunningActivities[i];
-      
-      try {
-        console.log(`      📄 Fetching details ${i + 1}/${newRunningActivities.length} (ID: ${activity.id})...`);
-        
-        const detailResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
-          headers: {
-            'Authorization': `Bearer ${user.access_token}`,
-            'Accept': 'application/json',
-          },
-        });
-
-        if (detailResponse.ok) {
-          const detailedActivity = await detailResponse.json();
-          detailedActivities.push(detailedActivity);
-        } else if (detailResponse.status === 401) {
-          console.log('      🔄 Token expired, refreshing...');
-          const newToken = await refreshToken(user);
-          if (newToken) {
-            // Retry with new token
-            const retryResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
-              headers: {
-                'Authorization': `Bearer ${newToken}`,
-                'Accept': 'application/json',
-              },
-            });
-            if (retryResponse.ok) {
-              const detailedActivity = await retryResponse.json();
-              detailedActivities.push(detailedActivity);
-            }
-          }
-        }
-        
-        // Rate limiting - be respectful to Strava API
-        if (i % 5 === 0 && i > 0) {
-          console.log(`      ⏱️  Rate limiting: processed ${i} activities, waiting 1 second...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        
-      } catch (error) {
-        console.warn(`      ⚠️  Failed to fetch details for activity ${activity.id}:`, error.message);
-        // Continue with the basic activity data
-        detailedActivities.push(activity);
-      }
-    }
-
-    console.log(`   ✅ Retrieved detailed data for ${detailedActivities.length} activities`);
-
-    // Step 5: Process and store activities
-    console.log('\n5️⃣ Processing and storing activities...');
-    
-    let newActivities = 0;
-    let updatedActivities = 0;
-    
-    for (const activity of detailedActivities) {ch to fetch new activities
+ * ✅ Uses proven pagination to fetch new activities
  * ✅ Focuses only on recent activities (last 7 days) for efficiency
  * ✅ Handles rate limiting with delays
- * ✅ Updates existing activities with available data
+ * ✅ Updates existing activities with detailed polylines and splits
  * 
  * Usage:
- *   node scripts/data/strava-weekly-sync.js
- *   
- * Features:
- * - Efficient pagination for new activities only
- * - Basic activity data from list API
- * - Rate limiting protection
- * - Token refresh handling
+ *   node scripts/data/strava-weekly-sync-clean.js
  */
 
 require('dotenv').config({ path: '.env' });
 const { sql } = require('@vercel/postgres');
+
+// Helper function to upsert splits data
+async function upsertStravaSplits(runId, splitsMetric, splitsStandard) {
+  try {
+    // Clear existing splits for this run first
+    await sql`DELETE FROM strava_run_splits WHERE strava_run_id = ${runId}`;
+
+    let totalSplitsInserted = 0;
+
+    // Insert metric splits
+    if (splitsMetric && splitsMetric.length > 0) {
+      for (const [index, split] of splitsMetric.entries()) {
+        await sql`
+          INSERT INTO strava_run_splits (
+            strava_run_id,
+            split_number,
+            split_type,
+            distance_meters,
+            elapsed_time_seconds,
+            moving_time_seconds,
+            elevation_difference_meters,
+            average_speed_mps,
+            average_grade_adjusted_speed,
+            pace_zone
+          ) VALUES (
+            ${runId},
+            ${index + 1},
+            'metric',
+            ${split.distance || null},
+            ${split.elapsed_time || null},
+            ${split.moving_time || null},
+            ${split.elevation_difference || null},
+            ${split.average_speed || null},
+            ${split.average_grade_adjusted_speed || null},
+            ${split.pace_zone || null}
+          )
+        `;
+        totalSplitsInserted++;
+      }
+    }
+
+    // Insert standard splits
+    if (splitsStandard && splitsStandard.length > 0) {
+      for (const [index, split] of splitsStandard.entries()) {
+        await sql`
+          INSERT INTO strava_run_splits (
+            strava_run_id,
+            split_number,
+            split_type,
+            distance_meters,
+            elapsed_time_seconds,
+            moving_time_seconds,
+            elevation_difference_meters,
+            average_speed_mps,
+            average_grade_adjusted_speed,
+            pace_zone
+          ) VALUES (
+            ${runId},
+            ${index + 1},
+            'standard',
+            ${split.distance || null},
+            ${split.elapsed_time || null},
+            ${split.moving_time || null},
+            ${split.elevation_difference || null},
+            ${split.average_speed || null},
+            ${split.average_grade_adjusted_speed || null},
+            ${split.pace_zone || null}
+          )
+        `;
+        totalSplitsInserted++;
+      }
+    }
+
+    if (totalSplitsInserted > 0) {
+      console.log(`        📊 Inserted ${totalSplitsInserted} splits (${splitsMetric?.length || 0} metric, ${splitsStandard?.length || 0} standard)`);
+    }
+  } catch (error) {
+    console.error(`        ❌ Error upserting splits for run ${runId}:`, error.message);
+  }
+}
 
 async function weeklyStravaSync() {
   console.log('🔄 Weekly Strava Sync Starting...');
@@ -124,7 +130,7 @@ async function weeklyStravaSync() {
     let totalFetched = 0;
     
     while (true) {
-      console.log(`   � Fetching page ${page} (${PER_PAGE} activities per page)...`);
+      console.log(`   📄 Fetching page ${page} (${PER_PAGE} activities per page)...`);
       
       try {
         const response = await fetch(`${STRAVA_API_BASE}/athlete/activities?per_page=${PER_PAGE}&page=${page}&after=${sevenDaysAgo}`, {
@@ -172,7 +178,6 @@ async function weeklyStravaSync() {
         } else {
           const activities = await response.json();
           
-          // If no activities returned, we've reached the end
           if (activities.length === 0) {
             console.log(`      ✅ No more activities (page ${page} empty)`);
             break;
@@ -184,11 +189,8 @@ async function weeklyStravaSync() {
         }
         
         page++;
-        
-        // Rate limiting: wait 1 second between API calls
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Safety check for weekly sync (shouldn't need many pages for 7 days)
         if (page > 5) {
           console.log('      ⚠️  Reached page limit (5) for weekly sync');
           break;
@@ -202,8 +204,8 @@ async function weeklyStravaSync() {
 
     console.log(`\n📊 Total new activities fetched: ${allNewActivities.length}`);
 
-    // Step 3: Filter for running activities and update database
-    console.log('\n3️⃣ Processing new running activities...');
+    // Step 3: Filter for running activities
+    console.log('\n3️⃣ Filtering for running activities...');
     
     const newRunningActivities = allNewActivities.filter(activity => 
       activity.sport_type === 'Run' || 
@@ -214,34 +216,72 @@ async function weeklyStravaSync() {
     console.log(`   🏃 Found ${newRunningActivities.length} new running activities`);
     
     if (newRunningActivities.length === 0) {
-      console.log('\n� No new running activities found. Weekly sync complete!');
+      console.log('\n✅ No new running activities found. Weekly sync complete!');
       return;
     }
+
+    // Step 4: Fetch detailed data for new running activities
+    console.log('\n4️⃣ Fetching detailed data for new running activities...');
+    
+    const detailedActivities = [];
+    for (let i = 0; i < newRunningActivities.length; i++) {
+      const activity = newRunningActivities[i];
+      
+      try {
+        console.log(`      📄 Fetching details ${i + 1}/${newRunningActivities.length} (ID: ${activity.id})...`);
+        
+        const detailResponse = await fetch(`${STRAVA_API_BASE}/activities/${activity.id}`, {
+          headers: {
+            'Authorization': `Bearer ${user.access_token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (detailResponse.ok) {
+          const detailedActivity = await detailResponse.json();
+          detailedActivities.push(detailedActivity);
+          console.log(`        ✅ Got detailed data (${detailedActivity.map?.polyline ? 'with detailed polyline' : 'summary only'})`);
+        } else if (detailResponse.status === 429) {
+          console.log('      ⏳ Rate limit exceeded! Stopping to prevent data corruption.');
+          console.log(`      📊 Progress: ${i}/${newRunningActivities.length} activities processed.`);
+          break;
+        } else {
+          console.log(`        ❌ API call failed: ${detailResponse.status}, using basic data`);
+          detailedActivities.push(activity);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+      } catch (error) {
+        console.warn(`      ⚠️  Failed to fetch details for activity ${activity.id}:`, error.message);
+        detailedActivities.push(activity);
+      }
+    }
+
+    console.log(`   ✅ Retrieved detailed data for ${detailedActivities.length} activities`);
+
+    // Step 5: Process and store activities
+    console.log('\n5️⃣ Processing and storing activities...');
     
     let newActivities = 0;
     let updatedActivities = 0;
     
-    for (const activity of newRunningActivities) {
+    for (const activity of detailedActivities) {
       try {
-        // Check if activity already exists
         const existingResult = await sql`
           SELECT id FROM strava_runs WHERE id = ${activity.id}
         `;
         
-        // Handle coordinates if available  
         let startPoint = null;
         let endPoint = null;
         if (activity.start_latlng && activity.start_latlng.length === 2) {
-          // Format as PostgreSQL POINT(longitude, latitude)
           startPoint = `(${activity.start_latlng[1]}, ${activity.start_latlng[0]})`;
         }
         if (activity.end_latlng && activity.end_latlng.length === 2) {
-          // Format as PostgreSQL POINT(longitude, latitude)  
           endPoint = `(${activity.end_latlng[1]}, ${activity.end_latlng[0]})`;
         }
 
         if (existingResult.rows.length === 0) {
-          // Insert new activity with available fields from list API
           await sql`
             INSERT INTO strava_runs (
               id, user_id, name, sport_type, start_date, start_date_local,
@@ -259,41 +299,30 @@ async function weeklyStravaSync() {
               ${activity.suffer_score || null}, ${activity.perceived_exertion || null},
               ${startPoint}, ${endPoint}, 
               ${activity.map?.summary_polyline || null}, 
-              ${activity.map?.polyline || null},
+              ${activity.map?.polyline || activity.map?.summary_polyline || null},
               ${activity.private_note || activity.description || null}, NOW(), NOW()
             )
           `;
           newActivities++;
-          console.log(`      ➕ Added: ${activity.name}`);
+          console.log(`      ➕ Added: ${activity.name} (${activity.map?.polyline ? 'with detailed polyline' : 'summary only'})`);
         } else {
-          // Update existing activity with available fields from list API
           await sql`
             UPDATE strava_runs 
             SET 
               name = ${activity.name},
               sport_type = ${activity.sport_type || activity.type},
-              start_date = ${activity.start_date},
-              start_date_local = ${activity.start_date_local},
-              distance_meters = ${activity.distance || null},
-              elapsed_time_seconds = ${activity.elapsed_time || null},
-              utc_offset_seconds = ${activity.utc_offset || null},
-              total_elevation_gain = ${activity.total_elevation_gain || null},
-              elev_high = ${activity.elev_high || null},
-              elev_low = ${activity.elev_low || null},
-              average_speed_mps = ${activity.average_speed || null},
-              max_speed_mps = ${activity.max_speed || null},
-              suffer_score = ${activity.suffer_score || null},
-              perceived_exertion = ${activity.perceived_exertion || null},
-              start_latlng = ${startPoint},
-              end_latlng = ${endPoint},
               summary_polyline = ${activity.map?.summary_polyline || null},
-              detailed_polyline = ${activity.map?.polyline || null},
-              private_note = ${activity.private_note || activity.description || null},
+              detailed_polyline = ${activity.map?.polyline || activity.map?.summary_polyline || null},
               updated_at = NOW()
             WHERE id = ${activity.id}
           `;
           updatedActivities++;
-          console.log(`      🔄 Updated: ${activity.name}`);
+          console.log(`      🔄 Updated: ${activity.name} (${activity.map?.polyline ? 'with detailed polyline' : 'summary only'})`);
+        }
+
+        // Process splits data if available
+        if (activity.splits_metric || activity.splits_standard) {
+          await upsertStravaSplits(activity.id, activity.splits_metric, activity.splits_standard);
         }
         
       } catch (error) {
@@ -314,8 +343,11 @@ async function weeklyStravaSync() {
     const polylineCount = await sql`SELECT COUNT(*) as with_polylines FROM strava_runs WHERE detailed_polyline IS NOT NULL`;
     console.log(`   🗺️  Activities with detailed polylines: ${polylineCount.rows[0].with_polylines}`);
     
+    const splitsCount = await sql`SELECT COUNT(DISTINCT strava_run_id) as with_splits FROM strava_run_splits`;
+    console.log(`   📊 Activities with splits data: ${splitsCount.rows[0].with_splits}`);
+    
     console.log('\n✅ Weekly Strava sync completed successfully!');
-    console.log('�️  New activities include detailed polylines for route visualization');
+    console.log('🗺️  New activities include detailed polylines and splits for analysis');
 
   } catch (error) {
     console.error('❌ Weekly sync failed:', error);
@@ -323,7 +355,7 @@ async function weeklyStravaSync() {
   }
 }
 
-// Helper function to refresh token (same as complete script)
+// Helper function to refresh token
 async function refreshToken(user) {
   try {
     const refreshResponse = await fetch('https://www.strava.com/oauth/token', {
@@ -342,7 +374,6 @@ async function refreshToken(user) {
     if (refreshResponse.ok) {
       const tokenData = await refreshResponse.json();
       
-      // Update token in database
       await sql`
         UPDATE strava_users 
         SET 
@@ -365,16 +396,123 @@ async function refreshToken(user) {
   }
 }
 
-// Handle graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n⏹️  Weekly sync interrupted by user');
-  process.exit(0);
+/**
+ * Simple Activity Correlation
+ * Matches Strava runs with WHOOP workouts based on date and hour
+ */
+
+const { Pool } = require('pg');
+// dotenv already loaded at the top of the file
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-process.on('SIGTERM', () => {
-  console.log('\n⏹️  Weekly sync terminated');
-  process.exit(0);
-});
+async function correlateActivities() {
+  console.log('🔄 Finding activity correlations...');
+  
+  // First, check what we have
+  const stravaCount = await pool.query('SELECT COUNT(*) FROM strava_runs');
+  const whoopCount = await pool.query('SELECT COUNT(*) FROM whoop_workouts');
+  
+  console.log(`📊 Found ${stravaCount.rows[0].count} Strava runs`);
+  console.log(`📊 Found ${whoopCount.rows[0].count} WHOOP workouts`);
 
-// Run the script
-weeklyStravaSync().catch(console.error);
+  // Find matches by date and hour
+  const query = `
+    SELECT
+      s.id as strava_id,
+      w.id as whoop_id,
+      s.distance_meters as strava_distance, 
+      s.start_date as strava_time,
+      w.start_time as whoop_time, 
+      w.distance_meters as whoop_distance
+    FROM
+      strava_runs AS s
+    JOIN
+      whoop_workouts AS w ON s.start_date::date = w.start_time::date
+      AND EXTRACT(HOUR FROM s.start_date) = EXTRACT(HOUR FROM w.start_time)
+    ORDER BY
+      w.start_time DESC
+  `;
+
+  const matches = await pool.query(query);
+  console.log(`\n✨ Found ${matches.rows.length} matching activities!`);
+
+  // Save correlations
+  if (matches.rows.length > 0) {
+    const values = matches.rows.map(m => {
+      // Calculate time difference in minutes properly
+      const stravaTime = new Date(m.strava_time);
+      const whoopTime = new Date(m.whoop_time);
+      
+      // Get difference in milliseconds, convert to minutes and round to nearest minute
+      const diffMs = Math.abs(whoopTime - stravaTime);
+      const timeDiffMinutes = Math.round(diffMs / 1000 / 60);
+      
+      console.log(`DEBUG: Strava time: ${stravaTime.toISOString()}, WHOOP time: ${whoopTime.toISOString()}, diff: ${timeDiffMinutes} minutes`);
+      
+      return `(${m.strava_id}, '${m.whoop_id}', ${timeDiffMinutes}, ${m.strava_distance}, ${m.whoop_distance})`;
+    }).join(',');
+
+    const insertQuery = `
+      INSERT INTO activity_correlations (
+        strava_run_id, 
+        whoop_workout_id, 
+        time_diff_minutes,
+        strava_distance_meters,
+        whoop_distance_meters
+      )
+      VALUES ${values}
+      ON CONFLICT (strava_run_id, whoop_workout_id) DO UPDATE SET
+        time_diff_minutes = EXCLUDED.time_diff_minutes,
+        strava_distance_meters = EXCLUDED.strava_distance_meters,
+        whoop_distance_meters = EXCLUDED.whoop_distance_meters,
+        updated_at = NOW()
+    `;
+
+    await pool.query(insertQuery);
+    console.log('✅ Saved correlations to database');
+
+    // Show matches with time differences
+    console.log('\n📊 Matched Activities:');
+    console.table(matches.rows.map(m => {
+      const stravaTime = new Date(m.strava_time);
+      const whoopTime = new Date(m.whoop_time);
+      const diffMs = Math.abs(whoopTime - stravaTime);
+      const timeDiffMinutes = Math.round(diffMs / 1000 / 60);
+      
+      return {
+        'Strava Time': stravaTime.toLocaleString(),
+        'WHOOP Time': whoopTime.toLocaleString(),
+        'Diff (mins)': timeDiffMinutes,
+        'Strava Dist (km)': (m.strava_distance / 1000).toFixed(2),
+        'WHOOP Dist (km)': (m.whoop_distance / 1000).toFixed(2)
+      };
+    }));
+  }
+}
+
+// Main function to run everything in sequence
+async function main() {
+  try {
+    // First, run the weekly Strava sync
+    console.log('▶️ STEP 1: RUNNING WEEKLY STRAVA SYNC');
+    console.log('====================================\n');
+    await weeklyStravaSync();
+    
+    console.log('\n\n▶️ STEP 2: FINDING ACTIVITY CORRELATIONS');
+    console.log('====================================\n');
+    // Then run the correlation after sync completes
+    await correlateActivities();
+    
+    console.log('\n✅ Complete script execution finished successfully!');
+  } catch (error) {
+    console.error('❌ Script execution failed:', error);
+    process.exit(1);
+  }
+}
+
+// Run the main function
+main().catch(console.error);
