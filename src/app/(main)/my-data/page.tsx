@@ -1,10 +1,18 @@
-import { sql } from '@/lib/db/db';
-import { Card } from '@/components/ui/Card';
-import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
-import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
-import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
-import { DailyFetchControl } from '@/components/features/whoop/DailyFetchControl';
-
+export default async function MyDataPage() {
+    // Fetch all data in parallel
+    const [
+        strainData,
+        monthlyStrainData,
+        strainRecoveryData,
+        workoutData,
+        workoutTimeData
+    ] = await Promise.all([
+        getStrainData(),
+        getMonthlyStrainData(),
+        getStrainRecoveryData(),
+        getWorkoutData(),
+        getWorkoutTimes()
+    ]);
 async function getStrainData() {
     try {
         const result = await sql`
@@ -134,11 +142,51 @@ async function getWorkoutData() {
     }
 }
 
+async function getWorkoutTimes() {
+    try {
+        // Use TO_CHAR to format the date directly in SQL to avoid JS Date object issues
+        const result = await sql`
+            SELECT
+                TO_CHAR(DATE(start_time + (timezone_offset || ' hours')::interval), 'YYYY-MM-DD') AS workout_date,
+                TO_CHAR(MIN(start_time + (timezone_offset || ' hours')::interval), 'HH24:MI') AS first_workout_time
+            FROM whoop_workouts
+            WHERE sport_name IN ('running', 'weightlifting', 'boxing', 'weightlifting_msk')
+            GROUP BY workout_date
+            ORDER BY workout_date;
+        `;
+        
+        console.log('Raw DB result:', JSON.stringify(result.rows.slice(0, 3)));
+        
+        // Process the data for the chart
+        const processedData = result.rows.map(row => {
+            // Convert time to minutes for comparison
+            const [hours, minutes] = row.first_workout_time.split(':').map(Number);
+            const timeAsMinutes = hours * 60 + minutes;
+            
+            // Use the formatted string date directly
+            return {
+                date: row.workout_date, // Already formatted as YYYY-MM-DD string by SQL
+                time: row.first_workout_time,
+                timeAsMinutes
+            };
+        });
+        
+        console.log('Workout times data:', processedData.length, 'records');
+        console.log('Sample workout times:', JSON.stringify(processedData.slice(0, 3)));
+        
+        return processedData;
+    } catch (error) {
+        console.error('Error fetching workout times:', error);
+        return [];
+    }
+}
+
 export default async function MyDataPage() {
     const strainData = await getStrainData();
     const monthlyStrainData = await getMonthlyStrainData();
     const strainRecoveryData = await getStrainRecoveryData();
     const workoutData = await getWorkoutData();
+    const workoutTimeData = await getWorkoutTimes();
 
     return (
         <div className="min-h-screen relative overflow-hidden">
@@ -220,6 +268,115 @@ export default async function MyDataPage() {
                                 <ActivityHeatmap data={strainData} monthlyData={monthlyStrainData} />
                             </Card>
 
+                            {/* Morning Workout Challenge Chart */}
+                            <Card className="p-8 border-white/10 hover:border-amber-400/30 transition-all duration-300">
+                                <div className="mb-8 text-center">
+                                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 rounded-full px-6 py-3 mb-6">
+                                        <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+                                        <span className="text-amber-300 font-semibold tracking-wide">Am I winning my early morning battle?</span>
+                                    </div>
+                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+                                        The Morning Workout Challenge
+                                    </h2>
+                                    <div className="space-y-4 text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-6">
+                                        <p>
+                                            <span className="text-amber-400 font-semibold">The 8:15 AM Commitment:</span> As a self-proclaimed night owl, mornings have always been my greatest challenge. Yet the science is clear—early workouts set the foundation for better productivity, improved mood, and enhanced cognitive function throughout the day.
+                                        </p>
+                                        <p>
+                                            In January 2025, I made a life-changing commitment: start every workout before 8:15 AM. This isn't just about fitness—it's a complete lifestyle redesign that requires discipline with evening routines, nutrition timing, and sleep consistency.
+                                            <span className="text-yellow-400 font-semibold"> The yellow dotted line marks my 8:15 AM target</span>, separating success from failure each day.
+                                        </p>
+                                        <p>
+                                            Each dot below represents my first workout of the day. <span className="text-green-400 font-semibold">Green dots</span> celebrate the mornings I won the battle against my pillow, while <span className="text-red-400 font-semibold">red dots</span> reveal when I surrendered to sleep. The vertical lines connect each workout to its date, creating a visual story of my journey toward becoming a morning athlete.
+                                        </p>
+                                        <p className="text-amber-400 font-semibold text-center">
+                                            Skills Demonstrated: Time-Series Visualization, Habit Formation Analytics, Goal Progress Tracking
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {/* Enhanced debugging */}
+                                <div className="bg-black/20 p-4 mb-4 rounded text-white">
+                                    <p className="font-bold">Debug Information:</p>
+                                    <p>workoutTimeData length: {workoutTimeData.length}</p>
+                                    {workoutTimeData.length > 0 && (
+                                        <>
+                                            <p>First record: {JSON.stringify(workoutTimeData[0])}</p>
+                                            <p>Last record: {JSON.stringify(workoutTimeData[workoutTimeData.length - 1])}</p>
+                                        </>
+                                    )}
+                                </div>
+                                
+                                {/* Try direct rendering with inline styles */}
+                                <div className="border-2 border-amber-500 p-4 rounded-lg mb-4">
+                                    <h3 className="text-xl font-bold text-center text-white mb-2">Simple Workout Time Display</h3>
+                                    {workoutTimeData && workoutTimeData.length > 0 ? (
+                                        <div className="max-h-60 overflow-y-auto">
+                                            <table className="w-full text-sm text-white">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="text-left p-2 border-b border-amber-500/30">Date</th>
+                                                        <th className="text-left p-2 border-b border-amber-500/30">Time</th>
+                                                        <th className="text-left p-2 border-b border-amber-500/30">Before 8:15?</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {workoutTimeData.slice(0, 10).map((item, index) => (
+                                                        <tr key={index} className="border-b border-amber-500/10">
+                                                            <td className="p-2">{item.date}</td>
+                                                            <td className="p-2">{item.time}</td>
+                                                            <td className="p-2">
+                                                                {item.timeAsMinutes <= 495 ? (
+                                                                    <span className="text-green-400">✓</span>
+                                                                ) : (
+                                                                    <span className="text-red-400">✗</span>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                            {workoutTimeData.length > 10 && (
+                                                <p className="text-center text-xs mt-2 text-gray-400">
+                                                    Showing 10 of {workoutTimeData.length} records
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-center text-white/70">No workout time data available</p>
+                                    )}
+                                </div>
+                                
+                                {/* Diagnostic component */}
+                                <div className="border-2 border-yellow-500 p-4 rounded-lg mb-4">
+                                    <h3 className="text-xl font-bold text-center text-white mb-2">Diagnostic Chart</h3>
+                                    <DiagnosticChart 
+                                        data={workoutTimeData} 
+                                        title="Workout Time Data Diagnostic" 
+                                    />
+                                </div>
+                                
+                                {/* Client-side wrapper component */}
+                                <div className="border-2 border-green-500 p-4 rounded-lg mb-4">
+                                    <h3 className="text-xl font-bold text-center text-white mb-2">Client Workout Time Chart</h3>
+                                    <ClientWorkoutTimeChart 
+                                        data={workoutTimeData} 
+                                        goalTime="08:15" 
+                                        debugMode={true}
+                                    />
+                                </div>
+                                
+                                {/* Original server component */}
+                                <div className="border-2 border-blue-500 p-4 rounded-lg">
+                                    <h3 className="text-xl font-bold text-center text-white mb-2">Server WorkoutTimeChart</h3>
+                                    {workoutTimeData.length > 0 ? (
+                                        <WorkoutTimeChart data={workoutTimeData} goalTime="08:15" />
+                                    ) : (
+                                        <div className="text-center p-4 text-white/60">No workout time data available for chart.</div>
+                                    )}
+                                </div>
+                            </Card>
+
                             {/* Component 2: The Astoria Conquest */}
                             <Card className="p-8 border-white/10 hover:border-green-400/30 transition-all duration-300">
                                 <div className="mb-8 text-center">
@@ -257,6 +414,8 @@ export default async function MyDataPage() {
                                 </div>
                                 <ActivityDistributionChart data={workoutData} />
                             </Card>
+                            
+
                         </div>
                     )}
                 </div>
