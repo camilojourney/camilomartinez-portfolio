@@ -59,3 +59,4 @@ research/**/_freeze/
 research/**/_site/
 research/**/astoria_running_routes
 
+.vercel

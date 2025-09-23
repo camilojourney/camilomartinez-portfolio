@@ -1,0 +1,30 @@
+# Large data files
+*.sqlite
+*.db
+*.sql
+*.dump
+
+# Development files
+.env.local
+.env.development
+*.log
+
+# Documentation
+docs/
+*.md
+
+# Scripts and data
+scripts/data/
+data/
+backups/
+
+# Large assets
+*.mp4
+*.mov
+*.avi
+*.zip
+*.tar.gz
+
+# Development dependencies
+coverage/
+.nyc_output/

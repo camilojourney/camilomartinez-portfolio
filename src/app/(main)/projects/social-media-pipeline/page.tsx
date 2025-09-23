@@ -136,11 +136,11 @@ export default function SocialMediaPipelineProjectPage() {
               </h3>
               <div className="p-4 bg-white/[0.05] border border-white/[0.15] rounded-lg">
                 <p className="text-white/80 text-sm leading-relaxed italic">
-                  "{examples[activeExample].raw}"
+                  "{examples[activeExample]?.raw}"
                 </p>
               </div>
               <div className="mt-4 text-xs text-white/50">
-                Character count: {examples[activeExample].raw.length}
+                Character count: {examples[activeExample]?.raw?.length || 0}
               </div>
             </Card>
 
@@ -168,22 +168,22 @@ export default function SocialMediaPipelineProjectPage() {
                     )}
                   </h4>
                   <div className="text-white/90 text-sm space-y-2">
-                    {examples[activeExample].outputs.thread ? (
-                      examples[activeExample].outputs.thread.map((tweet, i) => (
+                    {examples[activeExample]?.outputs?.thread ? (
+                      examples[activeExample]?.outputs?.thread?.map((tweet, i) => (
                         <div key={i} className="p-2 bg-black/20 rounded border-l-2 border-blue-400/50">
                           {tweet}
                         </div>
                       ))
                     ) : (
                       <div className="p-2 bg-black/20 rounded border-l-2 border-blue-400/50">
-                        {examples[activeExample].outputs.tweet}
+                        {examples[activeExample]?.outputs?.tweet}
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Reel Script */}
-                {examples[activeExample].outputs.reel && (
+                {examples[activeExample]?.outputs?.reel && (
                   <div className="p-4 bg-purple-500/10 border border-purple-400/20 rounded-lg">
                     <h4 className="font-medium text-purple-300 mb-2 flex items-center space-x-2">
                       <Play className="w-4 h-4" />
@@ -191,7 +191,7 @@ export default function SocialMediaPipelineProjectPage() {
                     </h4>
                     <div className="text-white/90 text-sm">
                       <pre className="whitespace-pre-wrap font-sans">
-                        {examples[activeExample].outputs.reel}
+                        {examples[activeExample]?.outputs?.reel}
                       </pre>
                     </div>
                   </div>
