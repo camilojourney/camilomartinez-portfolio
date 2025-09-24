@@ -201,10 +201,10 @@ export default async function MyDataPage() {
                         </h1>
                         <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-8 py-4 mb-8">
                             <span className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></span>
-                            <span className="text-cyan-300 font-semibold text-lg tracking-wide">Live Fitness Data Pipeline</span>
+                            <span className="text-cyan-300 font-semibold text-lg tracking-wide">Live Data Pipeline</span>
                         </div>
                         <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
-                            Real-time insights from my fitness journey. This dashboard showcases{' '}
+                            Real-time insights into my health and performance. This dashboard showcases{' '}
                             <span className="text-cyan-400 font-semibold">data engineering</span>,{' '}
                             <span className="text-blue-400 font-semibold">API integration</span>, and{' '}
                             <span className="text-purple-400 font-semibold">interactive visualization</span>.
@@ -244,9 +244,7 @@ export default async function MyDataPage() {
                                             A strain of 10 represents that sweet spot where I'm pushing my body enough to see progress, but not so hard that I burn out. It means I'm consistently challenging myself through workouts, runs, and active recovery. 
                                             <span className="text-yellow-400 font-semibold"> The yellow dotted line shows this target</span>—my North Star for staying active.
                                         </p>
-                                        <p>
-                                            <span className="text-green-400 font-semibold">Green dots</span> mark the months I hit my goal, while <span className="text-red-400 font-semibold">red dots</span> remind me when life got in the way. The heatmap below reveals the daily story—each square representing a day of effort, consistency, and the pursuit of movement.
-                                        </p>
+                                 
                                         <p className="text-cyan-400 font-semibold text-center">
                                             Skills Demonstrated: React Visualization, Real-time Data Processing, SQL Aggregation, Goal Tracking
                                         </p>
