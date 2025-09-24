@@ -438,7 +438,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                                                 top: `calc(${100 - (weekData.averageStrain / 22) * 100}%)`,
                                                                 left: '2px', // Centered in the 3px week column
                                                                 transform: 'translateY(-50%)',
-                                                                backgroundColor: weekData.averageStrain >= 10 ? 'rgb(34 197 94)' : 'rgb(239 68 68)'
+                                                                backgroundColor: weekData.averageStrain >= 9.9 ? 'rgb(34 197 94)' : 'rgb(239 68 68)'
                                                             }}
                                                             onMouseEnter={e => {
                                                                 const rect = e.currentTarget.getBoundingClientRect();
@@ -471,6 +471,60 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                     ))}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Weekly Strain Legend and Stats */}
+                        <div className="mt-6 flex flex-col gap-4">
+                            {/* Legend */}
+                            <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-[#22c55e]"></div>
+                                    <span className="text-white/70 text-sm">Above Goal (10+)</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-[#ef4444]"></div>
+                                    <span className="text-white/70 text-sm">Below Goal</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
+                                    <span className="text-white/70 text-sm">Target (10)</span>
+                                </div>
+                            </div>
+
+                            {/* 3-Month Performance Stats */}
+                            {(() => {
+                                // Get last 12 weeks of data (approximately 3 months)
+                                const last12Weeks = weeklyStrainData.slice(-12);
+                                const totalWeeks = last12Weeks.length;
+                                const TARGET_STRAIN = 9.9;
+                                const successfulWeeks = last12Weeks.filter(week => week.averageStrain >= TARGET_STRAIN).length;
+                                const successRate = (successfulWeeks / totalWeeks) * 100;
+                                const averageStrain = last12Weeks.reduce((sum, week) => sum + week.averageStrain, 0) / totalWeeks;
+
+                                return (
+                                    <div className="flex justify-center items-center gap-8 p-4 bg-black/20 rounded-xl">
+                                        <div className="text-center">
+                                            <div className="text-white/60 text-sm mb-1">Last 3 Months</div>
+                                            <div className="text-xl font-semibold text-cyan-400">{successRate.toFixed(1)}%</div>
+                                            <div className="text-white/60 text-xs">Success Rate</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-white/60 text-sm mb-1">Weeks at Goal</div>
+                                            <div className="text-xl font-semibold text-cyan-400">{successfulWeeks} of {totalWeeks}</div>
+                                            <div className="text-white/60 text-xs">Last 12 Weeks</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-white/60 text-sm mb-1">Average Strain</div>
+                                            <div className="text-xl font-semibold text-cyan-400">
+                                                {averageStrain.toFixed(1)}
+                                            </div>
+                                            <div className={`text-xs ${averageStrain >= TARGET_STRAIN ? 'text-green-400' : 'text-red-400'}`}>
+                                                {averageStrain >= TARGET_STRAIN ? 'At Goal! 🎯' : `${(TARGET_STRAIN - averageStrain).toFixed(1)} Below Goal`}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 )}
@@ -539,9 +593,9 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                             Goal: 10.0+ strain per week
                         </div>
                         <div className="text-xs mt-1">
-                            {hoveredMonth.average_strain >= 10 ? 
+                            {hoveredMonth.average_strain >= 9.9 ? 
                                 <span className="text-green-400">🎯 Goal Achieved!</span> : 
-                                <span className="text-red-400">📈 Below Goal ({(10 - hoveredMonth.average_strain).toFixed(1)} short)</span>
+                                <span className="text-red-400">📈 Below Goal ({(9.9 - hoveredMonth.average_strain).toFixed(1)} short)</span>
                             }
                         </div>
                     </div>
