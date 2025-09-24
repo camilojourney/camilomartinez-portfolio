@@ -337,10 +337,24 @@ quarto render your-analysis.qmd
 pip install jupyter nbformat nbclient
 ```
 
-### Issue: "Kernel not found"
-**Solution**: Re-register your kernel
+### Issue: "Kernel not found" or "No kernel selected"
+**Solution**: Re-register your kernel with the EXACT name used in your Quarto document
 ```bash
+# First check existing kernels
+jupyter kernelspec list
+
+# Register a kernel with the same name used in your Quarto YAML header
 python -m ipykernel install --user --name=your-project-name
+```
+
+### Issue: VS Code not showing cell outputs when using "Run Cell" button
+**Solution**: The kernel name in the Quarto document must exactly match a registered Jupyter kernel. Check both:
+```bash
+# 1. Verify what kernels are available
+jupyter kernelspec list
+
+# 2. Check the 'jupyter:' field in your Quarto document's YAML header
+# They must match exactly, including case sensitivity
 ```
 
 ### Issue: "YAML parsing error"
@@ -351,6 +365,26 @@ python -m ipykernel install --user --name=your-project-name
 ```yaml
 jupyter: your-project-name  # Must match exactly
 ```
+
+### Issue: Cell outputs not visible when using "Run Cell" in VS Code
+**Solution**: Make sure your Jupyter kernel is correctly registered and matches the name in the Quarto document:
+```bash
+# Register kernel with the EXACT same name as in your Quarto YAML header
+python -m ipykernel install --user --name=astoria-conquest
+
+# Verify kernel is registered
+jupyter kernelspec list
+```
+
+For example, if your Quarto document has:
+```yaml
+---
+title: "Astoria Conquest"
+jupyter: astoria-conquest  # This name must match the installed kernel name
+---
+```
+
+Then your kernel must be registered with the EXACT same name: `astoria-conquest`
 
 ## Project Structure Templates
 

@@ -10,3 +10,10 @@ numpy==2.1.3
 requests==2.32.3
 folium==0.20.0
 gpxpy
+polyline==1.4.0
+ipykernel
+polyline
+psycopg2-binary
+pandas
+matplotlib
+scikit-learn
