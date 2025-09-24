@@ -17,8 +17,11 @@
     "check:recent-data": "node scripts/testing/check-recent-data.js"
   },
   "dependencies": {
+    "@googlemaps/polyline-codec": "^1.0.28",
     "@mapbox/polyline": "^1.2.1",
     "@radix-ui/react-slot": "^1.2.3",
+    "@turf/turf": "^7.2.0",
+    "@types/leaflet": "^1.9.20",
     "@types/mapbox__polyline": "^1.0.5",
     "@types/node": "20.11.17",
     "@types/react": "18.2.55",
@@ -33,6 +36,7 @@
     "dotenv": "^17.2.2",
     "framer-motion": "^12.23.12",
     "geist": "1.2.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.542.0",
     "next": "^15.3.4",
     "next-auth": "5.0.0-beta.29",
@@ -43,6 +47,7 @@
     "postcss": "^8.4.35",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-leaflet": "^5.0.0",
     "recharts": "^3.0.2",
     "sugar-high": "^0.6.0",
     "tailwind-merge": "^3.3.1",

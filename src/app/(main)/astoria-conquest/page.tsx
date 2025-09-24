@@ -6,11 +6,8 @@
 
 import { Metadata } from 'next';
 import LiquidNav from '@/components/shared/liquid-nav';
-import AstoriaBaseMap from '@/components/features/astoria-conquest/AstoriaBaseMap';
+import AstoriaConquestMap from '@/components/features/astoria-conquest/AstoriaConquestMap';
 import AstoriaConquestDemo from '@/components/features/astoria-conquest/AstoriaConquestDemo';
-// import { AstoriaRunMap } from '@/components/features/astoria-conquest/AstoriaRunMap';
-// import { ProgressDashboard } from '@/components/features/astoria-conquest/ProgressDashboard';
-import { AstoriaTrackerData } from '@/types/strava';
 
 export const metadata: Metadata = {
   title: 'Astoria Conquest | Running Every Street',
@@ -158,6 +155,29 @@ export default async function AstoriaConquestPage() {
 
           {/* Main Content Grid */}
           <div className="space-y-8">
+            {/* Strava Runs Map */}
+            <div className="backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 p-8">
+              <div className="mb-4">
+                <h2 className="text-2xl font-medium text-white mb-2 flex items-center gap-3">
+                  <span>🏃‍♂️</span>
+                  My Strava Runs
+                </h2>
+                <p className="text-white/70">
+                  Real-time visualization of my running progress in Astoria
+                </p>
+              </div>
+              <AstoriaConquestMap 
+                runs={(data.runs || []).map((run: any) => ({
+                  id: run.id.toString(),
+                  name: run.name || `Run ${run.id}`,
+                  polyline: run.detailed_polyline || '',
+                  distance: run.distance_meters || 0,
+                  date: run.start_date || new Date().toISOString(),
+                  moving_time: run.elapsed_time_seconds || 0
+                })).filter((run: any) => run.polyline)}
+              />
+            </div>
+            
             {/* Interactive Demo Section */}
             <AstoriaConquestDemo />
           </div>

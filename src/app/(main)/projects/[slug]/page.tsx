@@ -90,6 +90,29 @@ const projects: ProjectData[] = [
         imageUrl: '/images/project-coach-app.png'
     },
     {
+        slug: 'astoria-conquest',
+        title: 'Astoria Conquest - Interactive Running Map',
+        summary: 'A data-driven running exploration game that visualizes GPS routes on an interactive street map of Astoria, Queens.',
+        fullDescription: 'This project combines GPS tracking, interactive mapping, and gamification to turn running into an engaging exploration experience. Using real GPS data from running sessions, it creates a visual "conquest" map showing which streets have been covered.',
+        problem: 'Traditional running apps focus on fitness metrics but don\'t capture the exploratory aspect of urban running. Runners often wonder which areas they\'ve covered and which neighborhoods remain unexplored, but existing tools don\'t provide a clear visual representation of their geographic coverage.',
+        solution: 'An interactive web application that processes GPS running data to create beautiful visualizations on a custom street map. Each run is converted to an SVG overlay that shows exactly which streets were covered, with different colors and animations to indicate completion status and route characteristics.',
+        outcome: 'A unique running visualization tool that gamifies urban exploration while showcasing advanced skills in GPS data processing, interactive mapping, and real-time data visualization. The project demonstrates proficiency in Python data processing, React/TypeScript development, and creative UI/UX design.',
+        techStack: ['Next.js', 'React', 'TypeScript', 'Python', 'Tailwind CSS', 'SVG Processing', 'GPS Data Analysis', 'Interactive Maps'],
+        features: [
+            'GPS route processing and visualization',
+            'Interactive street map with zoom and pan',
+            'Custom SVG overlay generation for each run',
+            'Real-time route selection and filtering',
+            'Detailed statistics for each running session',
+            'Responsive design with glassmorphism UI',
+            'Street network analysis and coverage tracking',
+            'Animated route overlays with completion status'
+        ],
+        status: 'live',
+        demoUrl: '/projects/astoria-conquest',
+        imageUrl: '/images/project-astoria-conquest.png'
+    },
+    {
         slug: 'data-analytics-portfolio',
         title: 'Data Analytics Portfolio',
         summary: 'A comprehensive showcase of data analysis projects demonstrating proficiency in statistical modeling and business intelligence.',
@@ -121,6 +144,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
     if (!project) {
         notFound()
+    }
+
+    // Special handling for Astoria Conquest - render the interactive map
+    if (slug === 'astoria-conquest') {
+        const AstoriaConquestPage = (await import('@/app/(main)/projects/astoria-conquest/page')).default
+        return <AstoriaConquestPage />
     }
 
     const statusColors = {
@@ -294,6 +323,7 @@ export async function generateStaticParams() {
         { slug: 'interactive-chatbot' },
         { slug: 'ai-content-creator' },
         { slug: 'ai-coaching-app' },
+        { slug: 'astoria-conquest' },
         { slug: 'data-analytics-portfolio' }
     ]
 }

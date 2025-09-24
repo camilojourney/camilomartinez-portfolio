@@ -5,43 +5,44 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllRuns, getSimpleStats } from '@/lib/db/strava-database';
+import { astoriaConquestServiceOptimized } from '@/lib/services/astoria-conquest-optimized';
 
 export async function GET(request: NextRequest) {
   try {
     console.log('📊 Fetching Astoria Conquest data...');
     
-    // Get query parameters for optional filtering
-    const { searchParams } = new URL(request.url);
-    const includeRuns = searchParams.get('includeRuns') !== 'false'; // Default to true
-    const skipStats = searchParams.get('skipStats') === 'true'; // Default to false
+    // Get the runs with optimized processing and performance monitoring
+    const data = await astoriaConquestServiceOptimized.getRunsWithDetails();
     
-    // Fetch data in parallel for better performance
-    const [runs, stats] = await Promise.all([
-      includeRuns ? getAllRuns() : Promise.resolve([]),
-      skipStats ? Promise.resolve(null) : getSimpleStats()
-    ]);
-
+    // Calculate basic stats from the real data
+    const totalRuns = data.runs.length;
+    const totalDistance = data.runs.reduce((sum: number, run: any) => sum + run.distance_meters, 0);
+    const avgSpeed = data.runs.length > 0 ? data.runs.reduce((sum: number, run: any) => sum + (run.average_speed_mps || 0), 0) / data.runs.length : 0;
+    
     // Prepare response data
     const response = {
-      runs: runs,
-      stats: stats || {
-        totalRuns: 0,
-        totalDistance: 0,
-        totalDuration: 0,
-        avgPace: 0,
-        lastRunDate: null,
-        runFrequency: 0
+      runs: data.runs,
+      mapBounds: data.mapBounds, // Include expanded bounds for map component
+      originalMapBounds: data.originalMapBounds, // Original Astoria neighborhood bounds
+      stats: {
+        totalRuns,
+        totalDistance,
+        avgSpeed,
+        lastRunDate: data.runs.length > 0 ? data.runs[0].start_date : null,
+        runsWithWhoopData: data.runs.filter((run: any) => run.whoopData).length
       },
       metadata: {
         dataType: 'astoria-conquest',
         generatedAt: new Date().toISOString(),
-        runCount: runs.length,
-        source: 'strava-database'
-      }
+        runCount: data.runs.length,
+        source: 'astoria-conquest-service-optimized',
+        boundsExpanded: JSON.stringify(data.mapBounds) !== JSON.stringify(data.originalMapBounds)
+      },
+      performance: data.performanceStats || null
     };
 
-    console.log(`✅ Astoria data fetched: ${runs.length} runs, stats included: ${!skipStats}`);
+    console.log(`✅ Astoria data fetched: ${data.runs.length} runs with GPS coordinates and WHOOP data`);
+    console.log(`🗺️ Map bounds: ${data.mapBounds ? 'expanded to include GPS data' : 'using original bounds'}`);
     
     return NextResponse.json(response, {
       headers: {
