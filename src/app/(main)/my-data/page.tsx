@@ -272,73 +272,13 @@ export default async function MyDataPage() {
                                         The Morning Workout Challenge
                                     </h2>
                                     <div className="space-y-4 text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-6">
-                                        <p>
-                                            <span className="text-amber-400 font-semibold">The 8:15 AM Commitment:</span> As a self-proclaimed night owl, mornings have always been my greatest challenge. Yet the science is clear—early workouts set the foundation for better productivity, improved mood, and enhanced cognitive function throughout the day.
-                                        </p>
-                                        <p>
-                                            In January 2025, I made a life-changing commitment: start every workout before 8:15 AM. This isn't just about fitness—it's a complete lifestyle redesign that requires discipline with evening routines, nutrition timing, and sleep consistency.
-                                            <span className="text-yellow-400 font-semibold"> The yellow dotted line marks my 8:15 AM target</span>, separating success from failure each day.
-                                        </p>
-                                        <p>
-                                            Each dot below represents my first workout of the day. <span className="text-green-400 font-semibold">Green dots</span> celebrate the mornings I won the battle against my pillow, while <span className="text-red-400 font-semibold">red dots</span> reveal when I surrendered to sleep. The vertical lines connect each workout to its date, creating a visual story of my journey toward becoming a morning athlete.
-                                        </p>
-                                        <p className="text-amber-400 font-semibold text-center">
-                                            Skills Demonstrated: Time-Series Visualization, Habit Formation Analytics, Goal Progress Tracking
-                                        </p>
+                                        <h2 className="text-4xl font-bold text-center text-white mb-6">
+                                            Win The Morning, Win The Day
+                                        </h2>
                                     </div>
                                 </div>
                                 
-                                {/* Enhanced debugging */}
-                                <div className="bg-black/20 p-4 mb-4 rounded text-white">
-                                    <p className="font-bold">Debug Information:</p>
-                                    <p>workoutTimeData length: {workoutTimeData.length}</p>
-                                    {workoutTimeData.length > 0 && (
-                                        <>
-                                            <p>First record: {JSON.stringify(workoutTimeData[0])}</p>
-                                            <p>Last record: {JSON.stringify(workoutTimeData[workoutTimeData.length - 1])}</p>
-                                        </>
-                                    )}
-                                </div>
-                                
-                                {/* Try direct rendering with inline styles */}
-                                <div className="border-2 border-amber-500 p-4 rounded-lg mb-4">
-                                    <h3 className="text-xl font-bold text-center text-white mb-2">Simple Workout Time Display</h3>
-                                    {workoutTimeData && workoutTimeData.length > 0 ? (
-                                        <div className="max-h-60 overflow-y-auto">
-                                            <table className="w-full text-sm text-white">
-                                                <thead>
-                                                    <tr>
-                                                        <th className="text-left p-2 border-b border-amber-500/30">Date</th>
-                                                        <th className="text-left p-2 border-b border-amber-500/30">Time</th>
-                                                        <th className="text-left p-2 border-b border-amber-500/30">Before 8:15?</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {workoutTimeData.slice(0, 10).map((item, index) => (
-                                                        <tr key={index} className="border-b border-amber-500/10">
-                                                            <td className="p-2">{item.date}</td>
-                                                            <td className="p-2">{item.time}</td>
-                                                            <td className="p-2">
-                                                                {item.timeAsMinutes <= 495 ? (
-                                                                    <span className="text-green-400">✓</span>
-                                                                ) : (
-                                                                    <span className="text-red-400">✗</span>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                            {workoutTimeData.length > 10 && (
-                                                <p className="text-center text-xs mt-2 text-gray-400">
-                                                    Showing 10 of {workoutTimeData.length} records
-                                                </p>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <p className="text-center text-white/70">No workout time data available</p>
-                                    )}
-                                </div>
+
                                 
 
                                 

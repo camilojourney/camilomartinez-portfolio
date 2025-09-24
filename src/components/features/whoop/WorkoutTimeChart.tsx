@@ -85,21 +85,17 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   const height = 300;
   const padding = { top: 40, right: 20, bottom: 40, left: 60 };
   
-  // Find min and max time values for scaling Y-axis - use validData
-  const minTimeValue = Math.min(
-    ...validData.map(d => d.timeAsMinutes),
-    goalTimeInMinutes - 30 // Ensure goal is visible even if all workouts are after
-  );
-  const maxTimeValue = Math.max(
-    ...validData.map(d => d.timeAsMinutes),
-    goalTimeInMinutes + 30 // Ensure goal is visible even if all workouts are before
-  );
+  // Fixed time range from 6 AM to 12 PM
+  const minTimeValue = 6 * 60;  // 6:00 AM in minutes
+  const maxTimeValue = 12 * 60; // 12:00 PM in minutes
   
-  // Time formatting helper
+  // Enhanced time formatting helper with AM/PM
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours === 12 ? 12 : hours % 12;
+    return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
   };
 
   // Scale X position based on data index - use validData length for consistency
@@ -164,12 +160,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
 
   return (
     <div className="w-full overflow-hidden">
-      <h2 className="text-2xl text-center text-cyan-400 mb-2">
+      <h2 className="text-2xl text-center text-cyan-400 mb-6">
         Workout Start Times ⏰
       </h2>
-      <p className="text-center text-gray-300 mb-6">
-        Each dot represents the first workout of the day. Green dots indicate workouts before {goalTime}.
-      </p>
       
       <div className="overflow-x-auto pb-4">
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto" style={{ minWidth: "700px" }}>
@@ -183,24 +176,28 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           strokeWidth="1" 
         />
         
-        {/* Time labels (Y-axis) */}
-        {[minTimeValue, goalTimeInMinutes, maxTimeValue].map(time => (
+        {/* Time labels and grid lines (Y-axis) */}
+        {Array.from({ length: 7 }, (_, i) => (6 + i) * 60).map(time => (
           <g key={time}>
+            {/* Horizontal grid line */}
             <line 
-              x1={padding.left - 5} 
+              x1={padding.left} 
               y1={yScale(time)} 
-              x2={padding.left} 
+              x2={width - padding.right} 
               y2={yScale(time)} 
-              stroke="gray" 
+              stroke="rgba(255,255,255,0.1)" 
               strokeWidth="1" 
+              strokeDasharray="4"
             />
+            {/* Time label */}
             <text 
               x={padding.left - 10} 
               y={yScale(time)} 
               textAnchor="end" 
               dominantBaseline="middle" 
-              fill="gray" 
+              fill="rgba(255,255,255,0.6)" 
               fontSize="12"
+              className="font-medium"
             >
               {formatTime(time)}
             </text>
@@ -294,6 +291,56 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           }
         })}
       </svg>
+      </div>
+
+      {/* Legend and Stats */}
+      <div className="space-y-4">
+        <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-[#4ade80] border border-white/20"></div>
+            <span className="text-white/70 text-sm">Before 8:15 AM (Victory)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-[#f87171] border border-white/20"></div>
+            <span className="text-white/70 text-sm">After 8:15 AM (Room for Growth)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
+            <span className="text-white/70 text-sm">Target Time (8:15 AM)</span>
+          </div>
+        </div>
+
+        {/* Monthly Average Stats */}
+        {(() => {
+          // Get last 30 days of data
+          const last30Days = validData.slice(-30);
+          const totalWorkouts = last30Days.length;
+          const workoutsBeforeGoal = last30Days.filter(point => point.timeAsMinutes <= goalTimeInMinutes).length;
+          const successRate = (workoutsBeforeGoal / totalWorkouts) * 100;
+          
+          // Calculate average time
+          const averageMinutes = last30Days.reduce((sum, point) => sum + point.timeAsMinutes, 0) / totalWorkouts;
+          const avgHours = Math.floor(averageMinutes / 60);
+          const avgMins = Math.round(averageMinutes % 60);
+          const averageTime = `${avgHours.toString().padStart(2, '0')}:${avgMins.toString().padStart(2, '0')}`;
+          
+          return (
+            <div className="flex justify-center items-center gap-8 p-4 bg-black/20 rounded-xl">
+              <div className="text-center">
+                <div className="text-white/60 text-sm mb-1">Last 30 Days Average</div>
+                <div className="text-xl font-semibold text-cyan-400">{averageTime}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/60 text-sm mb-1">Success Rate</div>
+                <div className="text-xl font-semibold text-cyan-400">{successRate.toFixed(1)}%</div>
+              </div>
+              <div className="text-center">
+                <div className="text-white/60 text-sm mb-1">Early Workouts</div>
+                <div className="text-xl font-semibold text-cyan-400">{workoutsBeforeGoal} of {totalWorkouts}</div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

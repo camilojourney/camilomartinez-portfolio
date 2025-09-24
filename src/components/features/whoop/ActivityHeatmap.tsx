@@ -302,10 +302,10 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
             <div className="mb-8">
                 <h2 className="text-3xl font-light text-white mb-3 flex items-center gap-3">
                     <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
-                    My Strain Journey {selectedYear === new Date().getFullYear() ? 'This Year' : selectedYear}
+                    Fitness Activity {selectedYear === new Date().getFullYear() ? 'This Year' : selectedYear}
                 </h2>
                 <p className="text-white/70 font-light text-lg leading-relaxed">
-                    A month-by-month view of my fitness activities, with brighter green squares representing higher strain days (maximum: 21).
+                    Each square represents a day, with brighter greens showing higher strain levels (max: 21).
                 </p>
             </div>
             <div className="mt-6 mb-8 flex items-center justify-center">
@@ -367,47 +367,44 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                 </div>
                 
                 {/* Legend */}
-                <div className="flex flex-col gap-2 mt-6 text-xs text-white/60">
-                    <div className="flex items-center gap-3">
-                        <span className="font-light">Less</span>
-                        <div className="flex gap-1 relative">
-                            <div className="w-3 h-3 bg-gray-900 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">0: No Activity</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-900/30 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">1-2: Recovery Day</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-800/50 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">3-5: Rest Day</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-700/60 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">6-7: Light Activity</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-600/70 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">8-9: Moderate Activity</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-500/80 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">10-11: Good Training</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-400/90 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">12-13: Solid Training</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-400 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">14-15: High Training</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-300 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">16-17: Very High Training</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-200 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">18-19: Elite Performance</div>
-                            </div>
-                            <div className="w-3 h-3 bg-green-100 rounded-sm cursor-help group">
-                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">20-21: Exceptional Performance</div>
-                            </div>
+                <div className="flex items-center gap-3 mt-6 text-xs text-white/60">
+                    <span className="font-light">Less</span>
+                    <div className="flex gap-0.5 relative">
+                        <div className="w-2.5 h-2.5 bg-gray-900 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">0: No Activity</div>
                         </div>
-                        <span className="font-light">More</span>
+                        <div className="w-2.5 h-2.5 bg-green-900/30 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">1-2: Recovery Day</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-800/50 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">3-5: Rest Day</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-700/60 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">6-7: Light Activity</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-600/70 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">8-9: Moderate Activity</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-500/80 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">10-11: Good Training</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-400/90 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">12-13: Solid Training</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-400 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">14-15: High Training</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-300 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">16-17: Very High Training</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-200 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">18-19: Elite Performance</div>
+                        </div>
+                        <div className="w-2.5 h-2.5 bg-green-100 rounded-sm cursor-help group">
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">20-21: Exceptional Performance</div>
+                        </div>
                     </div>
-                    <div className="text-center text-xs text-white/40 italic">Hover over squares for strain level details (Maximum: 21)</div>
+                    <span className="font-light">More</span>
                 </div>
 
                 {/* Weekly Strain Chart */}
