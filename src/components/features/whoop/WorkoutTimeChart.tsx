@@ -80,15 +80,6 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   const [goalHours, goalMinutes] = goalTime.split(':').map(Number);
   const goalTimeInMinutes = goalHours * 60 + goalMinutes;
   
-  // Calculate chart dimensions and scales
-  const width = 1000;
-  const height = 300;
-  const padding = { top: 40, right: 20, bottom: 40, left: 60 };
-  
-  // Fixed time range from 6 AM to 12 PM
-  const minTimeValue = 6 * 60;  // 6:00 AM in minutes
-  const maxTimeValue = 12 * 60; // 12:00 PM in minutes
-  
   // Enhanced time formatting helper with AM/PM
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -97,6 +88,15 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     const displayHours = hours === 12 ? 12 : hours % 12;
     return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
   };
+  
+  // Calculate chart dimensions and scales
+  const width = 1000;
+  const height = 300;
+  const padding = { top: 40, right: 20, bottom: 40, left: 60 };
+  
+  // Fixed time range from 6 AM to 12 PM
+  const minTimeValue = 6 * 60;  // 6:00 AM in minutes
+  const maxTimeValue = 12 * 60; // 12:00 PM in minutes;
 
   // Scale X position based on data index - use validData length for consistency
   const xScale = (index: number) => {
@@ -298,15 +298,15 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-[#4ade80] border border-white/20"></div>
-            <span className="text-white/70 text-sm">Before 8:15 AM (Victory)</span>
+            <span className="text-white/70 text-sm">Before 8:30 AM (Victory)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-[#f87171] border border-white/20"></div>
-            <span className="text-white/70 text-sm">After 8:15 AM (Room for Growth)</span>
+            <span className="text-white/70 text-sm">After 8:30 AM (Room for Growth)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
-            <span className="text-white/70 text-sm">Target Time (8:15 AM)</span>
+            <span className="text-white/70 text-sm">Target Time (8:30 AM)</span>
           </div>
         </div>
 

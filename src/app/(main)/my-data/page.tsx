@@ -279,7 +279,7 @@ export default async function MyDataPage() {
                                 {/* Workout Time Chart Component */}
                                 <div className="border border-amber-500/30 bg-black/20 rounded-lg p-6">
                                     {workoutTimeData.length > 0 ? (
-                                        <WorkoutTimeChart data={workoutTimeData} goalTime="08:15" />
+                                        <WorkoutTimeChart data={workoutTimeData} goalTime="08:30" />
                                     ) : (
                                         <div className="text-center p-8 text-white/60">
                                             <div className="text-amber-400 text-3xl mb-3">⏰</div>
