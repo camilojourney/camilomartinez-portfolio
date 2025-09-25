@@ -50,6 +50,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const mainContainerRef = React.useRef<HTMLDivElement>(null);
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
     const calendarContainerRef = React.useRef<HTMLDivElement>(null);
+    const weeklyChartScrollRef = React.useRef<HTMLDivElement>(null);
 
     // Color and label utility functions (unchanged)
     const getStrainColor = (strain: number): string => {
@@ -88,68 +89,111 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
             const strainValue = typeof cycle.strain === 'number' ? cycle.strain : parseFloat(cycle.strain) || 0;
             strainMap.set(cycle.formatted_date, (strainMap.get(cycle.formatted_date) || 0) + strainValue);
         });
+
         return Array.from(strainMap.entries())
             .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-            .map(([date, strain]) => ({ date, strain, count: strain > 0 ? 1 : 0 }));
+            .map(([date, strain]) => ({
+                date,
+                strain,
+                count: strain > 0 ? 1 : 0
+            }));
     };
 
     const getAvailableYears = (): number[] => Array.from(new Set(data.map(cycle => new Date(cycle.formatted_date).getFullYear()))).sort((a, b) => b - a);
     
-    const organizeIntoWeeks = (days: DayData[]) => {
+    const organizeIntoWeeks = (days: DayData[], firstRecordedDate: string | null, lastRecordedDate: string | null) => {
         if (!selectedYear) return [];
+
         const dayMap = new Map(days.map(day => [day.date, day]));
+        const yearEndDate = new Date(selectedYear, 11, 31);
+        const calendarEndDate = new Date(yearEndDate);
+        calendarEndDate.setDate(calendarEndDate.getDate() + (6 - yearEndDate.getDay()));
         const yearStartDate = new Date(selectedYear, 0, 1);
         const calendarStartDate = new Date(yearStartDate);
         calendarStartDate.setDate(calendarStartDate.getDate() - yearStartDate.getDay());
-        const calendarEndDate = new Date(new Date(selectedYear, 11, 31));
-        calendarEndDate.setDate(calendarEndDate.getDate() + (6 - calendarEndDate.getDay()));
+
         const weeks: DayData[][] = [];
         let currentWeek: DayData[] = [];
-        for (let day = new Date(calendarStartDate); day <= calendarEndDate; day.setDate(day.getDate() + 1)) {
+
+        for (let day = new Date(calendarEndDate); day >= calendarStartDate; day.setDate(day.getDate() - 1)) {
             const dateStr = day.toISOString().split('T')[0];
-            const dayData = dayMap.get(dateStr) || {
-                date: day.getFullYear() === selectedYear ? dateStr : '',
-                strain: 0,
-                count: 0
-            };
-            currentWeek.push(dayData);
+            const beforeFirst = firstRecordedDate ? dateStr < firstRecordedDate : false;
+            const afterLast = lastRecordedDate ? dateStr > lastRecordedDate : false;
+
+            let dayData: DayData;
+            if (beforeFirst || afterLast) {
+                dayData = { date: '', strain: 0, count: 0 };
+            } else {
+                dayData = dayMap.get(dateStr) || {
+                    date: day.getFullYear() === selectedYear ? dateStr : '',
+                    strain: 0,
+                    count: 0
+                };
+            }
+
+            currentWeek.unshift(dayData);
+
             if (currentWeek.length === 7) {
-                weeks.push(currentWeek);
+                weeks.unshift(currentWeek);
                 currentWeek = [];
             }
         }
-        // Ensure consistent 53 weeks (or trim if slightly over in a leap year)
-        while (weeks.length < 53) {
-            weeks.push(Array(7).fill({ date: '', strain: 0, count: 0 }));
+
+        if (currentWeek.length > 0) {
+            weeks.unshift(currentWeek);
         }
-        return weeks.slice(0, 53);
+
+        let trimmedWeeks = weeks;
+
+        if (trimmedWeeks.length > 0) {
+            const firstWeekWithData = trimmedWeeks.findIndex(week => week.some(day => day.date));
+            if (firstWeekWithData > 0) {
+                trimmedWeeks = trimmedWeeks.slice(firstWeekWithData);
+            }
+        }
+
+        if (lastRecordedDate) {
+            let lastWeekWithData = -1;
+            trimmedWeeks.forEach((week, idx) => {
+                if (week.some(day => day.date)) {
+                    lastWeekWithData = idx;
+                }
+            });
+            if (lastWeekWithData >= 0 && lastWeekWithData < trimmedWeeks.length - 1) {
+                trimmedWeeks = trimmedWeeks.slice(0, lastWeekWithData + 1);
+            }
+        }
+
+        return trimmedWeeks;
     };
 
     const calendarData = generateCalendarData();
-    const weeks = organizeIntoWeeks(calendarData);
+    const firstRecordedDate = calendarData.length > 0 ? calendarData[0].date : null;
+    const lastRecordedDate = calendarData.length > 0 ? calendarData[calendarData.length - 1].date : null;
+    const weeks = organizeIntoWeeks(calendarData, firstRecordedDate, lastRecordedDate);
 
     // *****************************************************************
     // ***** WEEKLY STRAIN DATA CALCULATION *****
     // *****************************************************************
     const getWeeklyStrainData = (): WeeklyStrainData[] => {
-        return weeks.map((week, weekIndex) => {
-            const weekDays = week.filter(day => day.date && day.strain > 0);
-            if (weekDays.length === 0) return null;
-            
-            const totalStrain = weekDays.reduce((sum, day) => sum + day.strain, 0);
-            const averageStrain = totalStrain / weekDays.length;
-            
-            // Get the first valid date for reference
-            const firstDate = week.find(day => day.date)?.date;
-            if (!firstDate) return null;
-            
-            return {
-                weekIndex,
-                averageStrain,
-                firstDate,
-                daysWithData: weekDays.length
-            };
-        }).filter((week): week is WeeklyStrainData => week !== null);
+        return weeks
+            .map((week, weekIndex) => {
+                const weekDays = week.filter(day => day.date && day.strain > 0);
+                if (weekDays.length === 0) return null;
+
+                const totalStrain = weekDays.reduce((sum, day) => sum + day.strain, 0);
+                const averageStrain = totalStrain / weekDays.length;
+                const firstDate = week.find(day => day.date)?.date;
+                if (!firstDate) return null;
+
+                return {
+                    weekIndex,
+                    averageStrain,
+                    firstDate,
+                    daysWithData: weekDays.length
+                };
+            })
+            .filter((week): week is WeeklyStrainData => week !== null);
     };
 
     // *****************************************************************
@@ -159,20 +203,22 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
         const labels = new Map<number, string>(); // weekIndex -> monthShortName
         const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const seenMonths = new Set<number>(); // month index (0-11)
-
+        
+        // Process each week to determine where month labels should appear
         weeks.forEach((week, weekIndex) => {
-            // Find the first actual day in the week that belongs to the selected year
-            const firstValidDay = week.find(day => day.date && new Date(day.date).getFullYear() === selectedYear);
+            // Find the last actual day in the week that belongs to the selected year
+            const validDays = week.filter(day => day.date && new Date(day.date).getFullYear() === selectedYear);
+            const lastValidDay = validDays[validDays.length - 1];
 
-            if (firstValidDay) {
-                const date = new Date(firstValidDay.date + 'T00:00:00');
+            if (lastValidDay) {
+                const date = new Date(lastValidDay.date + 'T00:00:00');
                 const monthIndex = date.getMonth();
 
                 if (!seenMonths.has(monthIndex)) {
-                    // Check if the first day of the *month* itself falls within this week
-                    // This ensures we label at the true start of the month's appearance
-                    let dayOfMonth = date.getDate();
-                    if (dayOfMonth === 1 || weekIndex === 0) { // Label if it's the 1st or if it's the very first week (for Jan)
+                    // For reversed order, we want to label at the end of each month
+                    const nextDay = new Date(date);
+                    nextDay.setDate(date.getDate() + 1);
+                    if (nextDay.getMonth() !== monthIndex || weekIndex === weeks.length - 1) {
                         labels.set(weekIndex, allMonths[monthIndex]);
                         seenMonths.add(monthIndex);
                     }
@@ -204,6 +250,9 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     
     const monthLabels = getMonthLabels();
     const weeklyStrainData: WeeklyStrainData[] = getWeeklyStrainData();
+    const weeklyStrainByWeekIndex = React.useMemo(() => {
+        return new Map(weeklyStrainData.map(week => [week.weekIndex, week]));
+    }, [weeklyStrainData]);
 
     // Calculate stats
     const totalActiveDays = calendarData.filter(day => day.count > 0).length;
@@ -242,12 +291,18 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     // Effects for scrolling and tooltips
     React.useEffect(() => {
         if (scrollContainerRef.current && weeks.length > 0) {
-            // Center the content horizontally
+            // Scroll to show the most recent data (rightmost position)
             const container = scrollContainerRef.current;
-            const centerPosition = (container.scrollWidth - container.clientWidth) / 2;
-            container.scrollLeft = Math.max(0, centerPosition);
+            container.scrollLeft = container.scrollWidth;
         }
-    }, [weeks]);
+    }, [weeks, selectedYear]); // Include selectedYear to re-scroll when year changes
+
+    React.useEffect(() => {
+        if (weeklyChartScrollRef.current && weeklyStrainData.length > 0) {
+            const container = weeklyChartScrollRef.current;
+            container.scrollLeft = container.scrollWidth;
+        }
+    }, [weeklyStrainData.length, selectedYear]);
 
     // *****************************************************************
     // ***** REVISED useLayoutEffect FOR HEATMAP TOOLTIP CENTERING *****
@@ -418,7 +473,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                         </div>
                         
                         {/* Scrollable chart container */}
-                        <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-green-400/30 scrollbar-track-white/5">
+                        <div ref={weeklyChartScrollRef} className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-green-400/30 scrollbar-track-white/5">
                             <div className="inline-block min-w-full">
                                 <div className="h-32 relative min-w-max">
                                     {/* Goal Line */}
@@ -427,7 +482,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                     {/* Chart Data Points */}
                                     <div className="absolute inset-0 flex gap-1 ml-[3.25rem] min-w-max">
                                         {weeks.map((week, weekIndex) => {
-                                            const weekData = weeklyStrainData.find(data => data.weekIndex === weekIndex);
+                                            const weekData = weeklyStrainByWeekIndex.get(weekIndex);
 
                                             return (
                                                 <div key={weekIndex} className="w-3 h-full relative">

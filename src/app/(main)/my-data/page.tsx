@@ -5,7 +5,14 @@ import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecov
 import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
 import WorkoutTimeChart from '@/components/features/whoop/WorkoutTimeChart';
 
-async function getStrainData() {
+// Configure Incremental Static Regeneration (ISR) with 6-hour revalidation
+export const dynamic = 'auto';
+export const dynamicParams = true;
+export const revalidate = 21600; // Revalidate every 6 hours (21600 seconds)
+
+import { DashboardStrainData, DashboardMonthlyStrainData, DashboardStrainRecoveryData, DashboardWorkoutTimeData } from '@/types/whoop';
+
+async function getStrainData(): Promise<DashboardStrainData[]> {
     try {
         const result = await sql`
             SELECT
@@ -13,7 +20,7 @@ async function getStrainData() {
                 strain::decimal as strain
             FROM whoop_cycles
             WHERE strain IS NOT NULL
-            ORDER BY start_time DESC
+            ORDER BY start_time ASC
         `;
         
         // Ensure proper data serialization for client components
@@ -31,7 +38,7 @@ async function getStrainData() {
     }
 }
 
-async function getMonthlyStrainData() {
+async function getMonthlyStrainData(): Promise<DashboardMonthlyStrainData[]> {
     try {
         const result = await sql`
             SELECT
@@ -41,7 +48,7 @@ async function getMonthlyStrainData() {
             FROM whoop_cycles
             WHERE strain IS NOT NULL
             GROUP BY TO_CHAR(start_time, 'YYYY-MM')
-            ORDER BY month DESC
+            ORDER BY month ASC
         `;
         
         // Ensure proper data serialization for client components
@@ -60,7 +67,7 @@ async function getMonthlyStrainData() {
     }
 }
 
-async function getStrainRecoveryData() {
+async function getStrainRecoveryData(): Promise<DashboardStrainRecoveryData[]> {
     try {
         const result = await sql`
             SELECT
@@ -81,7 +88,7 @@ async function getStrainRecoveryData() {
                 AND c1.strain > 0
                 AND r2.recovery_percentage IS NOT NULL
                 AND r2.recovery_percentage > 0
-            ORDER BY c1.start_time DESC
+            ORDER BY c1.start_time ASC
         `;
         return result.rows as Array<{
             strain_date: string;
@@ -134,7 +141,7 @@ async function getWorkoutData() {
     }
 }
 
-async function getWorkoutTimes() {
+async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
     try {
         // Use TO_CHAR to format the date directly in SQL to avoid JS Date object issues
         const result = await sql`

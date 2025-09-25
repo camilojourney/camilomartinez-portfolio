@@ -24,7 +24,7 @@ A premium, interactive portfolio showcasing expertise in AI development, data an
 - **Contact**: Professional contact form with social links
 - **Live Data**: Real-time WHOOP fitness data demo with OAuth integration
 - **WHOOP Dashboard**: Data collection management and analytics interface
-- **My Stats**: Personal performance analytics and data visualization
+- **My Data**: Personal performance analytics and data visualization
 
 ### Key Technical Features
 - Dynamic project detail pages with comprehensive case studies
@@ -80,7 +80,7 @@ This portfolio features a comprehensive WHOOP fitness data integration that demo
 #### Pages
 - `/live-data` - Public demo with sample WHOOP data
 - `/whoop-dashboard` - Data collection management (requires auth)
-- `/my-stats` - Personal analytics and visualizations (requires auth)
+- `/my-data` - Personal analytics and visualizations (requires auth)
 
 ### Data Schema
 
@@ -95,7 +95,7 @@ The integration stores comprehensive WHOOP data including:
 1. **Authentication**: Sign in with WHOOP OAuth 2.0
 2. **Historical Collection**: Use the dashboard to backfill past data
 3. **Daily Sync**: Automatic collection runs daily at 2:00 PM UTC
-4. **Analytics**: View personal insights on the `/my-stats` page
+4. **Analytics**: View personal insights on the `/my-data` page
 
 ### Setup Requirements
 

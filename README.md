@@ -740,7 +740,7 @@ export async function POST() {
 #### Pages
 - `/live-data` - Public demo with sample WHOOP data
 - `/whoop-dashboard` - Data collection management (requires auth)
-- `/my-stats` - Personal analytics and visualizations (requires auth)
+- `/my-data` - Personal analytics and visualizations (requires auth)
 
 ### Data Schema
 
@@ -755,7 +755,7 @@ The integration stores comprehensive WHOOP data including:
 1. **Authentication**: Sign in with WHOOP OAuth 2.0
 2. **Historical Collection**: Use the dashboard to backfill past data
 3. **Daily Sync**: Automatic collection runs daily at 2:00 PM UTC
-4. **Analytics**: View personal insights on the `/my-stats` page
+4. **Analytics**: View personal insights on the `/my-data` page
 
 ### Setup Requirements
 

@@ -32,12 +32,12 @@ strava_runs (activity_id, run_date, geom, distance_meters, ...)
 strava_sync_log (id, sync_type, activities_processed, ...)
 ```
 
-### API Layer
+### Data Layer
 ```
-/api/astoria-conquest        # Main data endpoint (GeoJSON + stats)
-/api/strava/auth            # OAuth authentication flow
-/api/strava/sync            # Manual data synchronization
-/api/cron/strava-sync       # Automated daily sync (Vercel Cron)
+/public/data/astoria-conquest/
+├── astoria-base-map.geojson       # Base map data for Astoria
+├── astoria-covered-streets.geojson # Streets covered by runs
+└── astoria-progress-stats.json    # Overall progress statistics
 ```
 
 ### Frontend Components
@@ -187,23 +187,42 @@ FROM astoria_streets s
 LEFT JOIN (SELECT ST_Union(geom) as runs_union FROM strava_runs) r ON true
 ```
 
-## 🔧 API Endpoints
+## 🔧 Static Data Files
 
-### Data Retrieval
+### Data Structure
 
-**GET `/api/astoria-conquest`**
+**`astoria-base-map.geojson`**
 ```javascript
-// Response
+// Base map of Astoria streets
 {
-  "allStreetsGeoJSON": { /* FeatureCollection */ },
-  "runGeometriesGeoJSON": { /* FeatureCollection */ },
-  "stats": { /* AstoriaStats */ }
+  "type": "FeatureCollection",
+  "features": [/* Street geometries */]
 }
 ```
 
-**Query Parameters:**
-- `includeRuns=false` - Skip run geometries for faster loading
-- `skipStats=true` - Skip statistics calculation
+**`astoria-covered-streets.geojson`**
+```javascript
+// Streets covered by runs
+{
+  "type": "FeatureCollection",
+  "features": [/* Covered street geometries */]
+}
+```
+
+**`astoria-progress-stats.json`**
+```javascript
+{
+  "summary": {
+    "total_miles": number,
+    "covered_miles": number,
+    "percent_complete": number,
+    "total_segments": number,
+    "covered_segments": number,
+    "total_runs": number,
+    "last_updated": string
+  },
+  "runs": [/* Run data */]
+}
 
 ### Manual Sync
 

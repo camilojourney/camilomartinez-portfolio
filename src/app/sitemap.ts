@@ -14,7 +14,7 @@ export default async function sitemap() {
     '/blog', 
     '/contact',
     '/live-data',
-    '/my-stats',
+    '/my-data',
     '/projects',
     '/tools',
     '/whoop-dashboard',

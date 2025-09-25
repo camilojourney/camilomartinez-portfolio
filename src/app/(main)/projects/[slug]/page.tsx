@@ -148,7 +148,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
     // Special handling for Astoria Conquest - render the interactive map
     if (slug === 'astoria-conquest') {
-        const AstoriaConquestPage = (await import('@/app/(main)/projects/astoria-conquest/page')).default
+        const AstoriaConquestPage = (await import('@/app/(main)/astoria-conquest/page')).default
         return <AstoriaConquestPage />
     }
 

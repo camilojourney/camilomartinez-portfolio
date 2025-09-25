@@ -35,9 +35,7 @@ keep-ipynb: false
 
 ## Project Overview 
 
-I've lived in Astoria for the past two years. I usually run around Roosevelt Island, not far from my place. One day, while exploring the neighborhood, I realized there are so many great spots to discover. That’s why I decided to run all of Astoria—about ten miles at a time—to truly get to know this beautiful place.
-
-This project is simple, but not easy: I want to run every street in Astoria, starting from my home and finishing at my local gym, covering the entire area with runs that average around 10 miles each.
+Having lived in Astoria for the past two years, I've mostly run around Roosevelt Island, close to home. But as I explored more of the neighborhood, I realized there were countless hidden gems and vibrant streets I hadn't yet discovered. This inspired me to embark on a challenge: to run every street in Astoria, starting from my home and finishing at my local gym, with each route averaging about 10 miles. The goal is simple but ambitious—fully experience the neighborhood, one run at a time.
 
 ## Tech Stack & Skills
 * **Languages & Libraries:** Python, SQL, Pandas, scikit-learn, OSMnx.
@@ -48,16 +46,16 @@ This project is simple, but not easy: I want to run every street in Astoria, sta
 
 ## Data 
 
-I want to cover the area in the fewest runs possible, so I used the following data sources to map the routes.
+To minimize the number of runs needed to cover all of Astoria, I rely on several key data sources:
 
-* The Neighborhood Tabulation Areas (NTAs). [NTA Link](https://data.cityofnewyork.us/City-Government/2020-Neighborhood-Tabulation-Areas-NTAs-/9nt8-h7nd/about_data). To define the boundaries of the routes.
-* [**OSMnx**](https://github.com/gboeing/osmnx) (OpenStreetMap NetworkX). A Python library for retrieving, modeling, analyzing, and visualizing street networks—used to build and map the routes.
-* After that, I pull data from the [**Strava API**](https://developers.strava.com/) to update my runs on the map and track how many miles remain.
+* **Neighborhood Tabulation Areas (NTAs):** [NTA Link](https://data.cityofnewyork.us/City-Government/2020-Neighborhood-Tabulation-Areas-NTAs-/9nt8-h7nd/about_data). Used to define the boundaries for the challenge.
+* **OSMnx:** [OpenStreetMap NetworkX](https://github.com/gboeing/osmnx), a Python library for retrieving, modeling, analyzing, and visualizing street networks. This forms the basis for route planning and mapping.
+* **Strava API:** [Strava API](https://developers.strava.com/), which allows me to track my completed runs and monitor remaining mileage.
 
 ## Methodology
 ### Exploration (EDA)
 
-I start by pulling the NTA data from NYC Open Data by filtering for neighborhoods that contain "Astoria" in their names.
+I begin by pulling the NTA data from NYC Open Data, filtering for neighborhoods with "Astoria" in their names.
 
 ```{python}
 #| code-fold: true
@@ -89,7 +87,7 @@ print("\n" + "="*50)
 ```
 
 
-The following is how the selected **neighborhoods** look on a map.
+Here's how the selected **neighborhoods** appear on a map:
 
 ```{python}
 #| code-fold: true
@@ -190,11 +188,9 @@ else:
 
 ### Street Network Analysis
 
-After reviewing the neighborhoods, I focused on five zones: Astoria Park, Old Astoria–Hallets Point, Astoria (Central), Astoria (East)–Woodside (North) and Astoria (North)–Ditmars–Steinway.
+After identifying the neighborhoods, I focused on five key zones: Astoria Park, Old Astoria–Hallets Point, Astoria (Central), Astoria (East)–Woodside (North), and Astoria (North)–Ditmars–Steinway.
 
-With the area defined, I pulled all streets using [OSMnx](https://www.openstreetmap.org/), which provides the geospatial data I needed inside the boundary.
-
-I started by exploring the structure of the network data.
+With the area defined, I used [OSMnx](https://www.openstreetmap.org/) to pull all streets within the boundary and began exploring the structure of the network data.
 
 ```{python}
 #| code-fold: true
@@ -302,7 +298,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-After examining the network, I found multiple street types. “Footway” initially looked interesting, but I decided to omit it because footways often duplicate each street (one per sidewalk), which complicates modeling. The street types I kept are:
+Examining the network revealed several street types. While "footway" segments initially seemed useful, I omitted them because they often duplicate each street (one per sidewalk), complicating the model. I focused on these street types:
 
 * Residential
 * Tertiary
@@ -310,7 +306,7 @@ After examining the network, I found multiple street types. “Footway” initia
 * Unclassified
 * Living_street
 
-After filtering, I found another challenge: dead ends. Many segments end without a through-connection, which makes routing harder. I filtered them out, resulting in the following network:
+Filtering for these types presented another challenge: dead ends. Many street segments terminate without a through-connection, making efficient routing harder. By filtering these out, I obtained a cleaner, more navigable network:
 
 ```{python}
 #| code-fold: true
@@ -412,11 +408,11 @@ print(f"   • Total running distance: {total_distance_miles:.1f} miles")
 
 ```
 
-Now that I have the streets to run, I need the best set of routes to cover everything with minimal effort. I also want to enjoy the runs, so I optimize not just for full coverage but also for straighter paths, with each run averaging around 10 miles.
+With the network defined, the next step is to find the most efficient set of routes to cover every street with minimal effort. To make the runs enjoyable, I optimize not just for full coverage, but also for straighter paths, aiming for about 10 miles per run.
 
-This mathematical problem is called the Multi‑constrained Geographic Arc Routing Problem (MC‑GARP).
+Mathematically, this is known as the Multi‑constrained Geographic Arc Routing Problem (MC‑GARP).
 
-**Objective:** Minimize the total number of runs needed to traverse every street in Astoria.
+**Objective:** Minimize the total number of runs required to traverse every street in Astoria.
 
 ### Constraints
 * **Geographic Boundary Constraints**: All route segments must remain within the defined Astoria polygons.
@@ -427,16 +423,16 @@ This mathematical problem is called the Multi‑constrained Geographic Arc Routi
 * **Straightness Preference**: Favor straight paths where possible.
 * **Deadheading Minimization**: Reduce the amount of backtracking (running without covering new streets).
 
-**Why this is computationally challenging:**
-* **Exponential solution space:** With ~1,000 intersections in Astoria, possible routes grow exponentially.
-* **Geometric validation:** Each route segment requires polygon containment checks.
-* **Multi-objective optimization:** Balance coverage, distance, and boundary compliance.
-* **Irregular geography:** Astoria’s shape doesn’t partition cleanly into 8–12 mile zones.
+**Why is this computationally challenging?**
+* **Exponential solution space:** With about 1,000 intersections, the possible route combinations explode.
+* **Geometric validation:** Each route segment must be checked to ensure it stays within the boundary.
+* **Multi-objective optimization:** The solution must balance coverage, distance, and boundary compliance.
+* **Irregular geography:** Astoria’s layout doesn't divide neatly into equal-length runs.
 
 ## Solution:
 ## Phase 1: Graph Construction & Modeling
 
-First, I transform the real-world map of Astoria into a graph: intersections are nodes and streets are weighted edges. I ensure every segment lies within the boundary. I also merge nearby vertices to reduce clutter and speed up downstream algorithms.
+First, I transform the real-world map of Astoria into a graph: intersections become nodes and streets become weighted edges. I ensure every segment lies within the boundary, and merge nearby vertices to reduce clutter and speed up downstream algorithms.
 
 ```{python}
 # --- CLUSTER NEARBY VERTICES TO REDUCE CLUTTER ---
@@ -560,7 +556,7 @@ plt.show()
 
 ## Phase 2: Initial Solution - The Greedy Heuristic
 
-Next, I generate a first draft of the running plan. A fast greedy algorithm creates a set of routes that satisfy the constraints (home-to-gym, full coverage, and approximately 8–12 miles per run with a ~10-mile average). It’s valid but suboptimal—a starting point for true optimization.
+Next, I generate an initial draft of the running plan using a fast greedy algorithm. This produces a set of routes that satisfy the constraints: starting at home, ending at the gym, full street coverage, and roughly 8–12 miles per run (averaging around 10). While this solution is valid, it's not optimal—a baseline for further refinement.
 
 ```{python}
 #| code-fold: true
@@ -842,7 +838,7 @@ print(f"Total running distance: {total_distance_miles:.1f} miles")
 ```
 
 
-The following are a visualization and summaries of the initial solution, showing the first 4 routes.
+Below are visualizations and summaries of the initial solution, highlighting the first four routes.
 
 ```{python}
 #| layout-ncol: 2
@@ -897,19 +893,23 @@ for run in generated_runs[:4]:
 
 ## Phase 3: Core Optimizer - Adaptive Large Neighborhood Search (ALNS)
 
-This is the core of the project. ALNS iteratively improves the plan using a destroy-and-repair cycle:
+This phase is the heart of the project. Adaptive Large Neighborhood Search (ALNS) iteratively improves the plan through a destroy-and-repair cycle:
 
-* **Destroy:** strategically remove a few routes or street segments.
-* **Repair:** rebuild using smart heuristics to reinsert segments more efficiently.
-* **Decide:** keep improved plans and use acceptance logic to avoid getting stuck.
+* **Destroy:** Strategically removes a few routes or street segments.
+* **Repair:** Rebuilds the solution using heuristics to reinsert segments more efficiently.
+* **Decide:** Accepts improved plans, with logic to avoid getting stuck in local minima.
 
-Over many iterations, the process consolidates runs, reduces redundancy, and finds efficient coverage.
+Over many iterations, this process consolidates runs, reduces redundancy, and finds more efficient coverage.
 
 ```{python}
-#| eval: false
 #| code-fold: true
 #| code-summary: "Show Code"
-## Phase 3: Core Optimizer - Adaptive Large Neighborhood Search (ALNS)
+#| tbl-cap: "Runs summary (first & last 4)"
+#| echo: false
+#| df-print: paged
+
+
+## Phase 3: Core Optimizer - Adaptive Large Neighborhood Search (ALNS) [OPTIMIZED]
 
 import time
 import random
@@ -920,24 +920,24 @@ import networkx as nx
 from functools import lru_cache
 
 # ------------- CONFIG -------------
-ALNS_ITERATIONS      = 10      # was 200
-INITIAL_TEMPERATURE  = 2.0     # accept more early moves
-COOLING_RATE         = 0.996   # slightly slower cooling
+ALNS_ITERATIONS      = 80      # More iterations are now feasible
+INITIAL_TEMPERATURE  = 2.0
+COOLING_RATE         = 0.996
 
 # prefer longer runs
-MIN_ROUTE_DISTANCE   = 8.0    # miles
-MAX_ROUTE_DISTANCE   = 12.0   # miles
-TARGET_MILES         = 10.5   # soft target toward the upper bound
+MIN_ROUTE_DISTANCE   = 8.0     # miles
+MAX_ROUTE_DISTANCE   = 12.0    # miles
+TARGET_MILES         = 10.5
 
-# Objective weights (tune these)
-W_RUNS        = 1000.0
-W_DIST        = 1.0
-W_UNCOVERED   = 600.0
-W_RANGE       = 200.0
-W_SHORTFALL   = 30.0
+# Objective weights
+W_RUNS               = 1000.0
+W_DIST               = 1.0
+W_UNCOVERED          = 600.0
+W_RANGE              = 200.0
+W_SHORTFALL          = 30.0
 
 # Hard wall-time cap to avoid long runs
-MAX_WALL_TIME_SEC    = 180    # ~3 minutes
+MAX_WALL_TIME_SEC    = 180     # ~3 minutes
 
 # ------------- HELPERS -------------
 def path_distance_m(graph, path):
@@ -954,22 +954,28 @@ def miles(meters):
 
 def edges_from_path(path):
     """Directionless edge set from node path."""
-    edges = set()
-    for i in range(len(path) - 1):
-        u, v = sorted((path[i], path[i+1]))
-        edges.add((u, v))
-    return edges
+    return {tuple(sorted((path[i], path[i+1]))) for i in range(len(path) - 1)}
 
 # Required coverage universe (normalize like edges_from_path)
 all_required_edges = {tuple(sorted((u, v))) for u, v, k in G_final_streets.edges(keys=True)}
+
+# OPTIMIZATION: Augment solution with pre-calculated properties
+def augment_solution(solution):
+    """Add 'distance_meters' and 'edge_set' to each run for faster processing."""
+    for run in solution:
+        if 'distance_meters' not in run:
+            run['distance_meters'] = run['distance_miles'] * 1609.34
+        if 'edge_set' not in run:
+            run['edge_set'] = edges_from_path(run['path'])
+    return solution
 
 # ------------- COST (SOFT FEASIBILITY) -------------
 def route_range_violation(mi):
     """Miles outside [MIN, MAX] — positive if violating, 0 otherwise."""
     if mi < MIN_ROUTE_DISTANCE:
-        return (MIN_ROUTE_DISTANCE - mi)
+        return MIN_ROUTE_DISTANCE - mi
     if mi > MAX_ROUTE_DISTANCE:
-        return (mi - MAX_ROUTE_DISTANCE)
+        return mi - MAX_ROUTE_DISTANCE
     return 0.0
 
 def route_shortfall(mi):
@@ -977,7 +983,7 @@ def route_shortfall(mi):
     return max(0.0, TARGET_MILES - mi)
 
 def penalized_cost(solution):
-    """Lower is better. No hard filters; violations become penalties."""
+    """Lower is better. Uses pre-calculated properties for speed."""
     if not solution:
         return float('inf')
 
@@ -991,7 +997,7 @@ def penalized_cost(solution):
         total_miles += mi
         range_pen += route_range_violation(mi)
         shortfall_pen += route_shortfall(mi)
-        covered |= edges_from_path(r['path'])
+        covered.update(r.get('edge_set', edges_from_path(r['path']))) # Fallback for safety
 
     uncovered = len(all_required_edges - covered)
 
@@ -1004,48 +1010,46 @@ def penalized_cost(solution):
     )
 
 # ------------- DESTROY OPERATORS (light) -------------
-def destroy_random_routes(solution, percentage_to_remove=0.10):
+def destroy_random_routes(solution, percentage_to_remove=0.15):
     """Remove k random routes; return (remaining_solution, unassigned_edges)."""
     if not solution:
         return [], set()
-    destroyed = copy.deepcopy(solution)
+    
+    # Use faster, shallower copies
+    destroyed = [r.copy() for r in solution]
     k = max(1, int(len(destroyed) * percentage_to_remove))
     random.shuffle(destroyed)
     unassigned = set()
+    
     for _ in range(k):
-        if not destroyed:
-            break
+        if not destroyed: break
         r = destroyed.pop()
-        unassigned |= edges_from_path(r['path'])
+        unassigned.update(r['edge_set'])
+        
     return destroyed, unassigned
 
-def destroy_shaw_routes(solution, k=2):
-    """
-    Shaw removal: pick a seed route; remove it and the k-1 most related routes
-    by Jaccard overlap of (directionless) edge sets.
-    """
+def destroy_shaw_routes(solution, k=3):
+    """Shaw removal using pre-calculated edge sets for speed."""
     if len(solution) <= 1:
-        return copy.deepcopy(solution), set()
+        return [r.copy() for r in solution], set()
 
-    destroyed = copy.deepcopy(solution)
+    destroyed = [r.copy() for r in solution]
     unassigned = set()
 
-    # seed: longest route
     seed_idx = max(range(len(destroyed)), key=lambda i: destroyed[i]['distance_miles'])
-    seed_edges = edges_from_path(destroyed[seed_idx]['path'])
+    seed_edges = destroyed[seed_idx]['edge_set']
 
     def relatedness(i):
-        e = edges_from_path(destroyed[i]['path'])
-        inter = len(e & seed_edges)
-        union = len(e | seed_edges) or 1
+        e = destroyed[i]['edge_set']
+        inter = len(e.intersection(seed_edges))
+        union = len(e.union(seed_edges)) or 1
         return inter / union
 
-    # k-1 most related (excluding the seed itself)
     idxs = sorted(range(len(destroyed)), key=relatedness, reverse=True)
-    removed = sorted(set([seed_idx] + idxs[1:k]), reverse=True)
+    removed_indices = sorted(set([seed_idx] + idxs[1:k]), reverse=True)
 
-    for i in removed:
-        unassigned |= edges_from_path(destroyed[i]['path'])
+    for i in removed_indices:
+        unassigned.update(destroyed[i]['edge_set'])
         destroyed.pop(i)
 
     return destroyed, unassigned
@@ -1053,123 +1057,124 @@ def destroy_shaw_routes(solution, k=2):
 # ------------- REPAIR OPERATOR (REGRET-2, throttled) -------------
 @lru_cache(maxsize=10000)
 def sp_length_from(src):
-    """Cache of single-source shortest path lengths from src node."""
     return nx.single_source_dijkstra_path_length(G_final_streets, src, weight='length')
 
 @lru_cache(maxsize=50000)
 def sp_path(src, dst):
-    """Cached shortest path (list of nodes) between two nodes."""
     return nx.shortest_path(G_final_streets, src, dst, weight='length')
 
-def insertion_cost_for_edge(edge, repaired, run_idx, pos_idx):
-    """Cost delta (meters) to splice edge (u,v) between path[pos_idx]→path[pos_idx+1]."""
+def insertion_cost_for_edge(edge, path):
+    """Finds best insertion position and cost delta (meters) for an edge in a path."""
     u, v = edge
-    path = repaired[run_idx]['path']
+    best_cost, best_pos = float('inf'), -1
+    
+    # Check at most ~20 evenly-spaced insertion positions
+    step = max(1, (len(path) - 1) // 20)
+    for j in range(0, len(path) - 1, step):
+        p1, p2 = path[j], path[j+1]
+        
+        ed_p1p2 = G_final_streets.get_edge_data(p1, p2)
+        if not ed_p1p2: continue
+        p1p2_len = list(ed_p1p2.values())[0]['length']
+        
+        # Cost to insert u-v between p1-p2 can be done in two ways: p1->u...v->p2 or p1->v...u->p2
+        dists_p1 = sp_length_from(p1)
+        dists_p2 = {node: sp_length_from(node).get(p2, float('inf')) for node in [u, v]}
+
+        cost1 = dists_p1.get(u, float('inf')) + dists_p2.get(v, float('inf'))
+        cost2 = dists_p1.get(v, float('inf')) + dists_p2.get(u, float('inf'))
+
+        current_cost = min(cost1, cost2)
+        
+        if current_cost < best_cost:
+            best_cost = current_cost
+            best_pos = j
+
+    if best_pos == -1:
+        return float('inf'), -1, None
+    
+    # Return cost delta and which orientation (u->v or v->u) is cheaper
+    ed_uv = G_final_streets.get_edge_data(u, v, 0)
+    uv_len = ed_uv['length'] if ed_uv else 0
+    
+    final_delta = best_cost + uv_len - p1p2_len
+    orientation = (u, v) if cost1 <= cost2 else (v, u)
+    
+    return final_delta, best_pos, orientation
+
+def patch_path_with_edge(path, pos_idx, oriented_edge):
     p1, p2 = path[pos_idx], path[pos_idx+1]
-
-    ed_uv = G_final_streets.get_edge_data(u, v) or G_final_streets.get_edge_data(v, u)
-    ed_p1p2 = G_final_streets.get_edge_data(p1, p2)
-    if not ed_uv or not ed_p1p2:
-        return float('inf')
-
-    uv_len = list(ed_uv.values())[0]['length']
-    p1p2_len = list(ed_p1p2.values())[0]['length']
-
-    d1 = sp_length_from(p1).get(u, float('inf'))
-    d2 = sp_length_from(v).get(p2, float('inf'))
-
-    return d1 + uv_len + d2 - p1p2_len
-
-def patch_path_with_edge(edge, repaired, run_idx, pos_idx):
-    """Return the new path after actually inserting the edge (u,v)."""
-    u, v = edge
-    path = repaired[run_idx]['path']
-    p1, p2 = path[pos_idx], path[pos_idx+1]
+    u, v = oriented_edge
     path_to_u = sp_path(p1, u)
     path_v_to_p2 = sp_path(v, p2)
-    return path[:pos_idx+1] + path_to_u[1:] + path_v_to_p2[1:]
+    return path[:pos_idx] + path_to_u + path_v_to_p2[1:]
 
 def repair_regret2(destroyed_solution, unassigned_edges, home_node, gym_node):
-    repaired = copy.deepcopy(destroyed_solution)
+    repaired = [r.copy() for r in destroyed_solution]
     edges_left = set(unassigned_edges)
 
     # Stage A: insert into existing runs by regret-2
     while edges_left:
         candidate_rows = []
-        # cap edges per outer loop to reduce work
-        MAX_EDGES_PER_LOOP = 400
-        for e in list(edges_left)[:MAX_EDGES_PER_LOOP]:
+        for e in list(edges_left)[:400]: # Cap edges per outer loop
             costs = []
             for i, run in enumerate(repaired):
-                path = run['path']
-                # check at most ~20 evenly-spaced insertion positions
-                step = max(1, (len(path) - 1) // 20)
-                for j in range(0, len(path) - 1, step):
-                    c = insertion_cost_for_edge(e, repaired, i, j)
-                    if c < float('inf'):
-                        # coarse feasibility: allow small overshoot
-                        new_len_m = path_distance_m(G_final_streets, patch_path_with_edge(e, repaired, i, j))
-                        if miles(new_len_m) <= (MAX_ROUTE_DISTANCE + 0.8):
-                            costs.append((c, i, j))
+                # OPTIMIZATION: Use delta_cost to check feasibility without full path reconstruction
+                cost_delta, pos, orientation = insertion_cost_for_edge(e, run['path'])
+                
+                if cost_delta < float('inf'):
+                    new_dist_m = run['distance_meters'] + cost_delta
+                    if miles(new_dist_m) <= (MAX_ROUTE_DISTANCE + 0.8): # Allow small overshoot
+                        costs.append({'cost': cost_delta, 'run_idx': i, 'pos': pos, 'orientation': orientation})
+            
             if costs:
-                costs.sort()
-                best = costs[0][0]
-                second = costs[1][0] if len(costs) > 1 else best + 1e6
+                costs.sort(key=lambda x: x['cost'])
+                best = costs[0]['cost']
+                second = costs[1]['cost'] if len(costs) > 1 else best + 1e6
                 regret = second - best
-                candidate_rows.append((regret, best, e, costs[0][1], costs[0][2]))
+                candidate_rows.append({'regret': regret, 'edge': e, **costs[0]})
 
-        if not candidate_rows:
-            break
+        if not candidate_rows: break
 
-        # pick the edge with highest regret
-        regret, best_cost, edge, run_i, pos_j = max(candidate_rows)
-        new_path = patch_path_with_edge(edge, repaired, run_i, pos_j)
+        # Pick the edge with highest regret and perform the insertion
+        best_insert = max(candidate_rows, key=lambda x: x['regret'])
+        
+        run_i = best_insert['run_idx']
+        pos_j = best_insert['pos']
+        edge = best_insert['edge']
+        orientation = best_insert['orientation']
+        
+        new_path = patch_path_with_edge(repaired[run_i]['path'], pos_j, orientation)
+        
+        # Update the run's properties
         repaired[run_i]['path'] = new_path
-        repaired[run_i]['distance_miles'] = miles(path_distance_m(G_final_streets, new_path))
-
-        # mark both (u,v) and (v,u) as covered
+        repaired[run_i]['distance_meters'] += best_insert['cost']
+        repaired[run_i]['distance_miles'] = miles(repaired[run_i]['distance_meters'])
+        repaired[run_i]['edge_set'] = edges_from_path(new_path)
+        
         edges_left.discard(edge)
-        edges_left.discard((edge[1], edge[0]))
 
-    # Stage B: leftover edges → create new runs (start home, end gym)
+    # Stage B: create new runs for any leftover edges
     while edges_left:
-        new_path = [home_node]
-        last = new_path[-1]
-
-        # pick closest leftover edge endpoint to extend toward
-        d_last = sp_length_from(last)
-        edge = min(edges_left, key=lambda e: min(d_last.get(e[0], 1e18), d_last.get(e[1], 1e18)))
-        target = edge[0] if d_last.get(edge[0], 1e18) <= d_last.get(edge[1], 1e18) else edge[1]
-
-        # walk to it, traverse to the other end, then head to gym
-        new_path += sp_path(last, target)[1:]
-        other = edge[1] if target == edge[0] else edge[0]
-        new_path.append(other)
-        new_path += sp_path(new_path[-1], gym_node)[1:]
-
-        repaired.append({
-            'run_id': -1,
-            'path': new_path,
-            'distance_miles': miles(path_distance_m(G_final_streets, new_path))
-        })
-        edges_left.discard(edge)
-        edges_left.discard((edge[1], edge[0]))
-
-    return repaired
+        edge = edges_left.pop()
+        u, v = edge
+        path = sp_path(home_node, u) + sp_path(u, v)[1:] + sp_path(v, gym_node)[1:]
+        new_run = {'run_id': -1, 'path': path, 'distance_miles': miles(path_distance_m(G_final_streets, path))}
+        repaired.append(new_run)
+    
+    return augment_solution(repaired) # Ensure new runs are augmented
 
 # ------------- ACCEPTANCE (SA + RRT) -------------
-def accept(curr_cost, new_cost, temperature, best_cost, rrt_band):
-    """Accept if better, SA-probability, or within record-to-record band."""
-    if new_cost <= curr_cost:
+def accept(curr_cost, new_cost, temperature):
+    """Accept if better or by SA-probability."""
+    if new_cost < curr_cost:
         return True
     if temperature > 1e-9:
-        if math.exp((curr_cost - new_cost) / max(1e-9, temperature)) > random.random():
-            return True
-    if new_cost <= best_cost + rrt_band:
-        return True
+        return math.exp((curr_cost - new_cost) / temperature) > random.random()
     return False
 
 # ------------- OPERATOR REGISTRY + ADAPTATION -------------
+# ... (rest of the script is unchanged) ...
 destroy_ops = [
     ("random", destroy_random_routes),
     ("shaw",   destroy_shaw_routes),
@@ -1185,26 +1190,19 @@ scores_r  = {n: 0.0 for n,_ in repair_ops}
 def pick_operator(ops, weights):
     names = [n for n,_ in ops]
     ws = [weights[n] for n in names]
-    s = sum(ws)
-    probs = [w/s for w in ws]
-    return random.choices(ops, weights=probs, k=1)[0]
+    return random.choices(ops, weights=ws, k=1)[0]
 
 # ------------- INITIALIZATION -------------
 random.seed(42)
-try:
-    import numpy as _np
-    _np.random.seed(42)
-except Exception:
-    pass
+np.random.seed(42)
 
-initial_solution = generated_runs  # from Phase 2 (greedy/straight)
-current_solution = copy.deepcopy(initial_solution)
-best_solution    = copy.deepcopy(initial_solution)
+# OPTIMIZATION: Augment the initial solution
+initial_solution = augment_solution(generated_runs)
+current_solution = [r.copy() for r in initial_solution]
+best_solution    = [r.copy() for r in initial_solution]
 
 best_cost = penalized_cost(best_solution)
 temperature = INITIAL_TEMPERATURE
-rrt_band = 0.01 * best_cost     # 1% band around the incumbent
-no_improve = 0
 alns_start_time = time.time()
 
 print(f"🧠 ALNS: iters={ALNS_ITERATIONS}, T0={INITIAL_TEMPERATURE}, cooling={COOLING_RATE}")
@@ -1212,145 +1210,86 @@ print(f"Initial runs={len(best_solution)}, cost={best_cost:.2f}")
 
 # ------------- MAIN LOOP -------------
 for i in range(ALNS_ITERATIONS):
-    # hard wall-time cap
     if time.time() - alns_start_time > MAX_WALL_TIME_SEC:
+        print("⏰ Wall time limit reached.")
         break
 
-    # choose operators (roulette by weights)
     (d_name, destroy) = pick_operator(destroy_ops, weights_d)
     (r_name, repair)  = pick_operator(repair_ops,  weights_r)
-
-    # destroy + repair
-    tmp = copy.deepcopy(current_solution)
-    destroyed, unassigned = destroy(tmp)
+    
+    destroyed, unassigned = destroy(current_solution)
     candidate = repair(destroyed, unassigned)
 
     curr_cost = penalized_cost(current_solution)
     cand_cost = penalized_cost(candidate)
 
-    improved = cand_cost < curr_cost
-    accepted = accept(curr_cost, cand_cost, temperature, best_cost, rrt_band)
-
-    if accepted:
+    if accept(curr_cost, cand_cost, temperature):
         current_solution = candidate
-        # reward operators proportionally to improvement (non-negative)
-        delta = max(0.0, curr_cost - cand_cost)
-        scores_d[d_name] += delta
-        scores_r[r_name] += delta
+        
+        # Reward operators
+        if cand_cost < curr_cost:
+            scores_d[d_name] += 0.3 # Found an improving move
+            scores_r[r_name] += 0.3
 
-    # update best
     if cand_cost < best_cost:
-        best_solution = copy.deepcopy(candidate)
+        best_solution = candidate
         best_cost = cand_cost
-        no_improve = 0
-    else:
-        no_improve += 1
+        scores_d[d_name] += 0.6 # Found a new best
+        scores_r[r_name] += 0.6
+        print(f"  -> Iter {i+1}: New best solution! Cost: {best_cost:.2f}, Runs: {len(best_solution)}")
 
-    # cooling
+
     temperature *= COOLING_RATE
 
-    # periodic operator weight update (more frequent)
+    # Update operator weights every 20 iterations
     if (i + 1) % 20 == 0:
         for n in weights_d:
             weights_d[n] = 0.8 * weights_d[n] + 0.2 * (1.0 + scores_d[n])
+            scores_d[n] = 0
         for n in weights_r:
             weights_r[n] = 0.8 * weights_r[n] + 0.2 * (1.0 + scores_r[n])
-        scores_d = {n: 0.0 for n in scores_d}
-        scores_r = {n: 0.0 for n in scores_r}
-
-    # plateau reheat to keep exploring
-    if no_improve >= 200:
-        temperature = max(temperature, 0.5)  # brief reheat
-        no_improve = 0
-
-    # progress log (removed)
-
-    # early stop on long plateau (removed)
+            scores_r[n] = 0
 
 # ------------- SUMMARY -------------
-
-end = time.time()
+end_time = time.time()
 best_df = pd.DataFrame(best_solution)
-best_df['run_id'] = range(1, len(best_df) + 1)
 
-print("\nALNS Optimization Complete")
-print(f"Final runs: {len(best_solution)}")
-print(best_df[['run_id', 'distance_miles']].round(2))
+import numpy as np
+from IPython.display import display
 
+df = best_df[['run_id', 'distance_miles']].round(2)
+
+# Build compact first/last 4 with a centered ellipsis row, keep distance as numeric
+if len(df) > 8:
+    ellipsis_row = pd.DataFrame({'run_id': ['…'], 'distance_miles': [np.nan]})
+    compact = pd.concat([df.head(4), ellipsis_row, df.tail(4)], ignore_index=True)
+else:
+    compact = df.copy()
+
+compact = compact.reset_index(drop=True)
+
+# Center-align headers and cells; hide index; format distance to 2 decimals
+styler = (
+    compact.style
+        .hide(axis="index")
+        .format({'distance_miles': '{:.2f}'})
+        .set_properties(**{'text-align': 'center'})
+        .set_table_styles([
+            {'selector': 'th', 'props': [('text-align', 'center')]}
+        ])
+)
+
+display(styler)
 ```
 
-After running the ALNS, I got the same number of runs, and without any improvement on the length of each run. Also the mileage didn't improve. This is likely because the greedy algorithm already produced a very efficient set of routes, leaving little room for further optimization by ALNS with the constraints in place.
+After exporting the optimized routes, I upload the GPX files to Strava, using the desktop site’s **Create → Import GPX** feature. Strava then generates a route for each file, which I can follow on my watch during my runs. This approach keeps me motivated and ensures efficient coverage of all Astoria’s streets.
 
+I also store these runs in a database and display them on my portfolio site, so anyone can explore the routes and associated data. Planned visualizations include total miles run, streets covered, and miles remaining.
 
-## Exporting the routes to GPX files for Strava
-I wanted turn-by-turn guidance on my runs, so after optimization I exported each route to GPX for upload to Strava. That way I can follow the route on my smartwatch.
-```{python}
-#| eval: false
-#| code-fold: true
-#| code-summary: "Show Code"
+## After Running
+To follow the routes on my Apple Watch, I use an app called WorkOutDoors. It lets me import GPX files and provides turn-by-turn navigation, tracking my progress and distance remaining on each run.
 
-import gpxpy
-import gpxpy.gpx
-import os
-
-# --- Phase 13: Export Final Routes to GPX Files ---
-
-print("💾 Exporting optimized routes to GPX files...")
-
-# Create a directory to store the GPX files if it doesn't exist
-output_dir = "astoria_running_routes"
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-# Use the 'best_solution' from the ALNS algorithm
-final_runs = best_solution 
-
-# Loop through each optimized run to create a GPX file
-for run in final_runs:
-    run_id = run['run_id']
-    path = run['path']
-    
-    # Create a new GPX object
-    gpx = gpxpy.gpx.GPX()
-
-    # Create a new track in our GPX file
-    gpx_track = gpxpy.gpx.GPXTrack()
-    gpx.tracks.append(gpx_track)
-
-    # Create a new segment in our track
-    gpx_segment = gpxpy.gpx.GPXTrackSegment()
-    gpx_track.segments.append(gpx_segment)
-
-    # Add each point from our route path to the GPX segment
-    for node_id in path:
-        node = G_final_streets.nodes[node_id]
-        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(latitude=node['y'], longitude=node['x']))
-        
-    # Define the filename
-    file_name = f"Astoria_Run_{run_id}.gpx"
-    file_path = os.path.join(output_dir, file_name)
-    
-    # Save the GPX file
-    with open(file_path, 'w') as f:
-        f.write(gpx.to_xml())
-        
-
-print(f"\n✅ All {len(final_runs)} routes have been exported to the '{output_dir}' folder.")
-```
-
-
-After exporting all the routes, I uploaded them to Strava and followed them on my runs. It’s a great way to ensure I cover all the streets in Astoria efficiently!
-
-On the Strava website (desktop), I go to **Create → Import GPX**, then upload each file. Strava creates a route for each GPX, which I can follow on my watch during runs.
-
-So each time I run the route, Strava tracks my progress and shows me how far I've gone and how much further I need to go to complete the route. It's a great way to stay motivated and ensure I cover all the streets in Astoria!
-
-I also store these runs in a database and display them on my portfolio site, so anyone can explore the routes and the associated data. I plan to include visualizations for total miles run, streets covered, and miles remaining.
-
-## After running
-With the proper routes, I downloaded the routes on my apple watch using a app called WorkOutDoors. It allows me to import GPX files and follow the route turn by turn. It also tracks my progress and shows how far I've gone and how much further I need to go to complete the route.
-
-so first I would get the map of Astoria and then proceed to add the runs. For the sake of this example I will show the first run I did.
+As an example, here’s how I visualize the first run I completed:
 
 
 
@@ -1711,17 +1650,16 @@ plt.tight_layout()
 plt.show()
 ```
 
-when I ran the above code, it produced a nice map of the Astoria street network, which I saved as a PNG file for reference.
-The data I get after running is a polyline that represents the GPS track of my run. This polyline is encoded in a compact format, which I can decode to get the actual latitude and longitude points of my run. 
-after decoding the polyline, I matched the GPS points to the nearest streets in the Astoria street network using a map-matching algorithm. This step is crucial because GPS data can be noisy, and I want to ensure that my run follows the actual streets as closely as possible.
+Running the above code produces a detailed map of the Astoria street network, which I save as a PNG for reference.
+After each run, I obtain a polyline representing the GPS track. This polyline is encoded in a compact format, which I decode to extract the latitude and longitude points. To ensure accuracy—since GPS data can be noisy—I use a map-matching algorithm to align the recorded points to the nearest streets in the Astoria network.
 
 
 ```{python}
 #| label: fig-gps-track-comparison
 #| fig-cap: "Comparing original GPS data with map-matched track"
 #| fig-subcap: 
-#|   - "(a) Original GPS Track from Strava"
-#|   - "(b) Matched Track on Astoria Streets"
+#|   - " Original GPS Track from Strava"
+#|   - " Matched Track on Astoria Streets"
 #| layout-ncol: 2
 #| code-fold: true
 #| message: false
@@ -2078,6 +2016,7 @@ from shapely.geometry import LineString, MultiLineString
 import networkx as nx
 import geopandas as gpd
 
+full_matched_path = globals().get('full_matched_path', [])
 # ===== PROGRESS TRACKING LOGIC =====
 
 # 1. Calculate the total distance of all streets in Astoria
@@ -2546,4 +2485,8 @@ if os.path.exists(progress_file):
 
 In conclusion, this project helps me plan and execute my runs in Astoria efficiently. This project addresses challenges similar to those faced by logistics leaders like Amazon (delivery route optimization) and mobility platforms like Uber (dynamic fleet routing). By combining graph modeling, heuristics, and ALNS, I create routes that average around 10 miles, cover every street, and still feel enjoyable to run.
 
-Next, I’ll expand the database and visualizations, and begin conquering streets in other neighborhoods—keeping my portfolio up to date as I go.
+After my first run, I had initiated my path to conquest Astoria, covering approximately 7.78 miles and making significant progress toward my goal. I 
+
+I am exicted to continue updating my progress as I run more routes, aiming to cover all streets in Astoria over time. Future enhancements could include. 
+
+All this updated would be seen on [my portafoleo](https://camilomartinez.co/astoria-conquest)

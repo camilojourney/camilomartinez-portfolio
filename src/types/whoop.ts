@@ -113,6 +113,30 @@ export interface WhoopWorkout {
     };
 }
 
+// Dashboard-specific types
+export interface DashboardStrainData {
+    formatted_date: string;
+    strain: number;
+}
+
+export interface DashboardMonthlyStrainData {
+    month: string;
+    average_strain: number;
+    days_count: number;
+}
+
+export interface DashboardStrainRecoveryData {
+    strain_date: string;
+    strain: number;
+    recovery_score: number;
+}
+
+export interface DashboardWorkoutTimeData {
+    date: string;
+    time: string;
+    timeAsMinutes: number;
+}
+
 // API Response wrappers
 export interface WhoopCyclesResponse {
     records: WhoopCycle[];

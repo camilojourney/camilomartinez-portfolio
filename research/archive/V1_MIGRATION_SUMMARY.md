@@ -25,7 +25,7 @@ Successfully migrated the entire WHOOP analytics dashboard from V2 to V1 API wit
 - `/v1/cycle/{id}/recovery` - Recovery data per cycle
 - `/v1/activity/workout` - Workout activities
 
-### 📊 Analytics Dashboard (`/my-stats`)
+### 📊 Analytics Dashboard (`/my-data`)
 - **Updated**: All SQL queries to use new V1 schema
 - **Fixed**: Sport ID mapping (1=weightlifting, 2=running, 3=boxing, 4=table-tennis)
 - **Enhanced**: Better data relationships using foreign keys
@@ -46,7 +46,7 @@ Successfully migrated the entire WHOOP analytics dashboard from V2 to V1 API wit
 2. **Run database schema** from `database-schema.sql`
 3. **Authenticate** with WHOOP at `/signin`
 4. **Collect data** by calling `POST /api/whoop-collector`
-5. **View analytics** at `/my-stats`
+5. **View analytics** at `/my-data`
 
 ## Key Benefits:
 

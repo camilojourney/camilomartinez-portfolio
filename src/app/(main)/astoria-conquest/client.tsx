@@ -1,0 +1,160 @@
+'use client';
+
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { AstoriaStats } from '@/components/features/astoria-conquest/AstoriaStats';
+import { MapContainer } from '@/components/features/astoria-conquest/MapContainer';
+import { RunCard } from '@/components/features/astoria-conquest/RunCard';
+import { RunSelector } from '@/components/features/astoria-conquest/RunSelector';
+import type { 
+  StravaRun, 
+  RunCardData,
+  AstoriaStats as AstoriaStatsType
+} from '@/types/astoria';
+
+interface AstoriaConquestClientProps {
+  baseMap: any;
+  coveredStreets: any;
+  stats: {
+    covered_miles: number;
+    total_miles: number;
+    covered_segments: number;
+    total_segments: number;
+    percent_complete: number;
+    last_updated: string;
+  };
+  runs: StravaRun[];
+  runStats: AstoriaStatsType;
+}
+
+export function AstoriaConquestClient({ 
+  baseMap, 
+  coveredStreets, 
+  stats, 
+  runs, 
+  runStats 
+}: AstoriaConquestClientProps) {
+  const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
+  
+  const selectedRun = selectedRunId 
+    ? runs.find(run => run.id === selectedRunId)
+    : null;
+
+  const displayedStats: AstoriaStatsType = selectedRun
+    ? { ...runStats, runs: [selectedRun] }
+    : runStats;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex justify-between items-center">
+          <a href="/" className="text-gray-300 hover:text-white flex items-center space-x-2 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Home</span>
+          </a>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <div className="relative h-[40vh] min-h-[300px] bg-black/40 mt-16">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+            <h1 className="text-5xl md:text-6xl font-bold mb-4">Astoria Conquest</h1>
+            <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">
+              Running every street in Astoria, Queens. Follow my journey as I explore the neighborhood, one run at a time.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
+        {/* Progress Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-black/20 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-400">Streets Covered</h3>
+            <p className="text-3xl font-bold">{stats?.percent_complete}%</p>
+            <p className="text-sm text-gray-400">
+              {stats?.covered_segments} of {stats?.total_segments} streets
+            </p>
+          </div>
+          <div className="bg-black/20 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-400">Total Distance</h3>
+            <p className="text-3xl font-bold">{stats?.covered_miles.toFixed(1)} mi</p>
+            <p className="text-sm text-gray-400">Across {runStats?.total_runs || 0} runs</p>
+          </div>
+          <div className="bg-black/20 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-400">Total Elevation</h3>
+            <p className="text-3xl font-bold">{(runStats?.total_elevation || 0).toFixed(0)}m</p>
+            <p className="text-sm text-gray-400">Cumulative gain</p>
+          </div>
+        </div>
+
+        {/* Run Selector */}
+        <RunSelector
+          runs={runs}
+          selectedRunId={selectedRunId}
+          onRunSelect={setSelectedRunId}
+        />
+
+        {/* Map and Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
+          <div className="space-y-8">
+            <div className="bg-black/20 rounded-xl p-4 aspect-[4/3]">
+              <MapContainer 
+                baseMapData={baseMap} 
+                coveredStreetsData={coveredStreets || { type: "FeatureCollection", features: [] }}
+                selectedRun={selectedRun || undefined}
+              />
+            </div>
+            
+            <div className="bg-black/20 rounded-xl p-6">
+              <AstoriaStats 
+                stats={displayedStats}
+              />
+            </div>
+          </div>
+
+          {/* Run Cards */}
+          <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
+            {(selectedRun ? [selectedRun] : runs).map((run: StravaRun) => {
+              const runData: RunCardData = {
+                ...run,
+                heart_rate_zones: {
+                  rest: run.heart_rate_zones.zone1_seconds,
+                  light: run.heart_rate_zones.zone2_seconds,
+                  moderate: run.heart_rate_zones.zone3_seconds,
+                  hard: run.heart_rate_zones.zone4_seconds,
+                  peak: run.heart_rate_zones.zone5_seconds,
+                  max: Math.max(
+                    run.heart_rate_zones.zone1_seconds,
+                    run.heart_rate_zones.zone2_seconds,
+                    run.heart_rate_zones.zone3_seconds,
+                    run.heart_rate_zones.zone4_seconds,
+                    run.heart_rate_zones.zone5_seconds
+                  )
+                }
+              };
+              
+              return (
+                <RunCard 
+                  key={run.id} 
+                  run={runData}
+                  isSelected={run.id === selectedRunId}
+                  onClick={() => setSelectedRunId(run.id === selectedRunId ? null : run.id)}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <p className="text-center text-xs text-gray-500 mt-4 pb-8">
+        Last updated: {stats?.last_updated}
+      </p>
+    </div>
+  );
+}

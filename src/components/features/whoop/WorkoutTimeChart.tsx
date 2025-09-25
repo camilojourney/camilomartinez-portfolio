@@ -15,6 +15,8 @@ type WorkoutTimeChartProps = {
 };
 
 const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) => {
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
   // Enhanced debugging
   console.log('WorkoutTimeChart initialization');
   console.log('- Data length:', data?.length || 0);
@@ -34,7 +36,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   }
 
   // More robust validation of date strings
-  const validData = data.filter(point => {
+  const validData = React.useMemo(() => data.filter(point => {
     try {
       if (!point.date) {
         console.warn('Found data point with missing date');
@@ -55,7 +57,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
       console.error(`Error filtering data point with date: ${point?.date}`, error);
       return false;
     }
-  });
+  }), [data]);
   
   console.log(`WorkoutTimeChart filtered data: ${validData.length}/${data.length} valid entries`);
   
@@ -75,6 +77,17 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
       </div>
     );
   }
+
+  const sortedData = React.useMemo(() => {
+    return [...validData].sort((a, b) => a.date.localeCompare(b.date));
+  }, [validData]);
+  
+  React.useEffect(() => {
+    if (scrollContainerRef.current && sortedData.length > 0) {
+      const container = scrollContainerRef.current;
+      container.scrollLeft = container.scrollWidth;
+    }
+  }, [sortedData.length]);
 
   // Convert goal time to minutes for comparison
   const [goalHours, goalMinutes] = goalTime.split(':').map(Number);
@@ -101,8 +114,10 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   // Scale X position based on data index - use validData length for consistency
   const xScale = (index: number) => {
     const chartWidth = width - padding.left - padding.right;
-    // Use validData.length instead of data.length for consistency
-    const step = chartWidth / (validData.length - 1 || 1);
+    if (sortedData.length <= 1) {
+      return padding.left + chartWidth;
+    }
+    const step = chartWidth / (sortedData.length - 1);
     return padding.left + index * step;
   };
   
@@ -118,9 +133,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   let displayMonths = [];
   
   // Handle case with very few data points
-  if (validData.length <= 6) {
+  if (sortedData.length <= 6) {
     // With few points, show each month
-    displayMonths = validData.map((d, index) => {
+    displayMonths = sortedData.map((d, index) => {
       try {
         const date = parse(d.date, 'yyyy-MM-dd', new Date());
 
@@ -137,12 +152,12 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     });
   } else {
     // With many points, create evenly spaced month markers (maximum 6)
-    const step = Math.max(1, Math.floor(validData.length / 6));
+    const step = Math.max(1, Math.floor(sortedData.length / 6));
     
-    for (let i = 0; i < validData.length; i += step) {
-      const index = Math.min(i, validData.length - 1);
+    for (let i = 0; i < sortedData.length; i += step) {
+      const index = Math.min(i, sortedData.length - 1);
       try {
-        const date = parseISO(validData[index].date);
+        const date = parseISO(sortedData[index].date);
         displayMonths.push({
           month: format(date, 'MMM'),
           x: xScale(index)
@@ -164,7 +179,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         Workout Start Times ⏰
       </h2>
       
-      <div className="overflow-x-auto pb-4">
+      <div ref={scrollContainerRef} className="overflow-x-auto pb-4">
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto" style={{ minWidth: "700px" }}>
         {/* Y-axis and labels */}
         <line 
@@ -240,7 +255,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         />
         
         {/* Data points with enhanced visualization */}
-        {validData.map((point, i) => {
+        {sortedData.map((point, i) => {
           try {
             // Parse date safely
             const dateObj = parse(String(point.date), 'yyyy-MM-dd', new Date());
@@ -251,7 +266,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             const isBeforeGoal = point.timeAsMinutes <= goalTimeInMinutes;
             
             // Calculate point size (make recent points larger)
-            const isRecentPoint = i >= validData.length - 10;
+            const isRecentPoint = i >= sortedData.length - 10;
             const pointSize = isRecentPoint ? 6 : 5;
             
             // Apply stroke for emphasis on recent points
@@ -313,7 +328,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         {/* Monthly Average Stats */}
         {(() => {
           // Get last 30 days of data
-          const last30Days = validData.slice(-30);
+          const last30Days = sortedData.slice(-30);
           const totalWorkouts = last30Days.length;
           const workoutsBeforeGoal = last30Days.filter(point => point.timeAsMinutes <= goalTimeInMinutes).length;
           const successRate = (workoutsBeforeGoal / totalWorkouts) * 100;

@@ -157,7 +157,7 @@ export default async function LiveDataPage() {
                                 Check out the comprehensive performance dashboard with historical charts and insights.
                             </p>
                             <a
-                                href="/my-stats"
+                                href="/my-data"
                                 className="inline-block bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-lg hover:bg-purple-500/30 transition-colors"
                             >
                                 View My Performance Dashboard →
@@ -173,13 +173,13 @@ export default async function LiveDataPage() {
                                 These charts use stored data from your WHOOP account to show insights about strain, sleep performance, recovery, and workout patterns.
                             </p>
                             <div className="text-center py-12">
-                                <div className="text-white/60 text-lg mb-4">📊 Charts Available in My Stats</div>
-                                <div className="text-white/40 mb-6">Visit the My Stats page to see your beautiful performance charts</div>
+                                <div className="text-white/60 text-lg mb-4">📊 Charts Available in My Data</div>
+                                <div className="text-white/40 mb-6">Visit the My Data page to see your beautiful performance charts</div>
                                 <a
-                                    href="/my-stats"
+                                    href="/my-data"
                                     className="inline-block bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-lg hover:bg-purple-500/30 transition-colors"
                                 >
-                                    View My Stats Dashboard →
+                                    View My Data Dashboard →
                                 </a>
                             </div>
                         </div>
