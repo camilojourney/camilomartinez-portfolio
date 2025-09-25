@@ -22,6 +22,8 @@ execute:
   eval: true
   keep-going: true
   highlight-style: github
+  freeze: auto
+keep-ipynb: false
 ---
 
 ::: {.hero-section}
@@ -904,6 +906,7 @@ This is the core of the project. ALNS iteratively improves the plan using a dest
 Over many iterations, the process consolidates runs, reduces redundancy, and finds efficient coverage.
 
 ```{python}
+#| eval: false
 #| code-fold: true
 #| code-summary: "Show Code"
 ## Phase 3: Core Optimizer - Adaptive Large Neighborhood Search (ALNS)
@@ -1355,6 +1358,7 @@ so first I would get the map of Astoria and then proceed to add the runs. For th
 #| code-fold: true
 #| code-summary: "Show Code"
 #| fig-cap: "Astoria Street Network Map"
+#| output: false
 #!/usr/bin/env python3
 """
 Generate Astoria Street Network Map and Street Index
@@ -1707,13 +1711,23 @@ plt.tight_layout()
 plt.show()
 ```
 
+when I ran the above code, it produced a nice map of the Astoria street network, which I saved as a PNG file for reference.
+The data I get after running is a polyline that represents the GPS track of my run. This polyline is encoded in a compact format, which I can decode to get the actual latitude and longitude points of my run. 
+after decoding the polyline, I matched the GPS points to the nearest streets in the Astoria street network using a map-matching algorithm. This step is crucial because GPS data can be noisy, and I want to ensure that my run follows the actual streets as closely as possible.
+
 
 ```{python}
+#| label: fig-gps-track-comparison
+#| fig-cap: "Comparing original GPS data with map-matched track"
+#| fig-subcap: 
+#|   - "(a) Original GPS Track from Strava"
+#|   - "(b) Matched Track on Astoria Streets"
+#| layout-ncol: 2
 #| code-fold: true
+#| message: false
 #| code-summary: "Show My Run"
-#| fig-cap: "My First Run, Matched to the Astoria Street Network"
 
-import polyline # You may need to run: pip install polyline
+import polyline
 import pickle
 import math
 from shapely.geometry import Point
@@ -1723,8 +1737,14 @@ import osmnx as ox
 from math import radians, sin, cos, sqrt, atan2
 
 # --- Distance calculation helper ---
+G_graph = G_final if 'G_final' in globals() else G if 'G' in globals() else None
 
-def _bearing_uv(u, v, Gref=G_final):
+def _bearing_uv(u, v, Gref=None):
+    if Gref is None:
+        Gref = G_graph
+    if Gref is None:
+        return 0.0
+        
     dx = Gref.nodes[v]['x'] - Gref.nodes[u]['x']
     dy = Gref.nodes[v]['y'] - Gref.nodes[u]['y']
     return math.atan2(dy, dx)
@@ -1745,54 +1765,17 @@ def haversine(lat1, lon1, lat2, lon2):
     return 2 * R * atan2(sqrt(a), sqrt(1 - a))
 
 # 1. DECODE THE POLYLINE
-# Your provided polyline from a Strava run
+# Polyline from a Strava run
 encoded_polyline = r"wvvwFz|ebM@PA@G?u@Y[EIEq@m@wJoH?ESKQSk@c@[QqCyB{B{AaLqIc@e@aAm@}I{GMMKW{CmBmAgAu@g@eAcA_Ae@_Ay@IUOSk@_@e@e@QGSAs@a@eAw@IMOMOQQ]OGYSUI][[QcAy@a@Qg@a@WMi@m@KIQG]_@S[u@c@IMG_@@kARaC?YFo@?Y@MLa@JmAAc@H_AJs@FUDi@?[P}@Dq@@kAPoAB}@P{@ToBDKD]@YAQRo@@aALk@VsEJUFs@f@}BE@GI?[x@{CLs@Fk@FyBCuCFkB@KDCu@aAKSG?IGCO?m@JeAAm@Pu@AEu@iAQOW]w@{@u@oA{JqMKGIQMKm@u@_@]_@k@qA_BS]kAcBc@w@IIMEU_@[WM[q@eAYMg@e@_@c@EQICOSCOJ{AF[PuALo@@YLy@Bg@ZsBXmDDQNUdBQf@Ml@KrBUVALEpAOl@Al@Mf@C|AU~@Gr@Mb@APEd@k@DCHSPOTC`@Qx@QREp@Et@SRCLBZzAPdBJd@BRH\PnAFdAF`@D`ACb@BhBCTGrBK^BPEVGpBDhBErABnCIjB@^EVEj@Az@O~ACf@K|@IPEZCdAKbBC`@M`BE|@Mv@IlAW|AKxBKn@Er@ITA^@\KtAi@hEM|AOl@?RCVu@dAIRM|AMn@BPCRCPIL?RGd@I`@?RIz@Cr@CHCTCnAEb@GPGpAId@Az@CL@p@C^]rAK~@Mv@?VARA\EXIxAMn@Ch@E\Eh@CbAOlA@VETS|B?h@Kn@Ex@SnAOdBCf@Kr@OhBIl@UbA_@fAOTMHBTOLKl@UPa@b@o@`AQ`@o@x@_@v@MLw@`Ba@h@uCtEc@~@_@hAg@p@KVo@dA}@t@c@\a@`@iA~@k@JGDCCIH]Fa@N{@`@m@^IB_@ZIBSSQW_@i@SQYc@a@_@Ug@KIa@SKSMIKOIEKe@WSQ_@USYi@SUYk@m@k@MQKUWOSS[a@M[u@q@cA}AcAiA]u@m@k@MSSOU]YYKSAMEGcA}@MYe@g@ISm@{@o@y@k@_AKM}@uAf@eAlBcD@IG_@DM`A}A@MTc@DCLB`@h@r@p@j@n@xAnAj@p@NVj@l@~@pBVVbAnAJPJ\dAjATb@l@l@Zb@^b@FJX\JTb@p@d@l@jAhANXp@t@JZ\d@f@j@VPz@pAFNTX`@p@f@l@zAxAd@v@r@t@JXRNR`@`@j@LH`@Dr@d@v@^xAfAr@b@TRLVlA|@PPHFNNBFPDp@d@TE^_@~DkF|HuJd@i@h@]bBaA?KFGVCXDVG^Q^]^Kl@b@FNB?PJ|@z@~@`@h@`@XXZ^t@d@d@d@HBDFjAx@HHn@XZPRZd@^NTp@^`@Xx@v@XRj@VrAt@pA|@LP@LAPMd@F|@Ky@?UOKBC"
 
-# The decoded_coords will be a list of (latitude, longitude) tuples
+# Decode the GPS coordinates from the polyline
 decoded_coords = polyline.decode(encoded_polyline)
-print(f"📍 Decoded polyline into {len(decoded_coords)} GPS points.")
 
-# --- DIAGNOSTICS: CRS + bbox + raw GPS overlay ---
-print("CRS check:")
-try:
-    import osmnx as _ox
-    print("  gdf_astoria.crs:", gdf_astoria.crs)
-    print("  edges_gdf.crs  :", edges_gdf.crs)
-    try:
-        print("  G_final CRS    :", _ox.utils_graph.get_graph_crs(G_final))
-    except Exception:
-        pass
-except Exception:
-    pass
-
-# Bounds of the network (lon/lat degrees)
+# Get the boundaries of the network
 minx, miny, maxx, maxy = edges_gdf.total_bounds
-print("Bounds [minx, miny, maxx, maxy]:", (minx, miny, maxx, maxy))
 
-# Do the first few GPS points fall inside the network bbox?
-for i, (lat, lon) in enumerate(decoded_coords[:5], 1):
-    inside = (minx <= lon <= maxx) and (miny <= lat <= maxy)
-    print(f"pt{i}: (lat={lat:.6f}, lon={lon:.6f}) inside_bbox={inside}")
-
-# Plot network + raw GPS points (no map-matching) for a quick visual sanity check
-import matplotlib.pyplot as _plt
-_plt.style.use('dark_background')
-_fig, _ax = _plt.subplots(figsize=(10, 8), dpi=120)
-gdf_astoria.plot(ax=_ax, facecolor='#1a1a1a', edgecolor='#333333', alpha=0.6)
-edges_gdf.plot(ax=_ax, color='#444444', linewidth=0.9, alpha=0.8)
-_ax.scatter([p[1] for p in decoded_coords], [p[0] for p in decoded_coords], s=6, c='cyan', alpha=0.8, label='Raw GPS')
-_ax.legend(facecolor='black', edgecolor='#444', framealpha=0.7)
-_ax.set_title('Network + Raw GPS (sanity check)')
-_ax.set_xticks([]); _ax.set_yticks([])
-_plt.tight_layout(); _plt.show()
-
-# --- CLIP GPS to the network bbox to avoid far-away snaps ---
-
+# Filter points to only those within the network boundaries
 decoded_clipped = [(lat, lon) for (lat, lon) in decoded_coords if (minx <= lon <= maxx) and (miny <= lat <= maxy)]
-if len(decoded_clipped) < len(decoded_coords):
-    print(f"Clipped {len(decoded_coords) - len(decoded_clipped)} GPS points outside bbox; using {len(decoded_clipped)} points.")
-else:
-    print("All GPS points are within bbox.")
 
 # --- Improve map-matching sensitivity ---
 # Light smoothing to reduce GPS jitter (moving average window=3)
@@ -1921,34 +1904,59 @@ for a, b in zip(snapped_nodes[:-1], snapped_nodes[1:]):
             full_matched_path.extend(seg)
             
     except (nx.NetworkXNoPath, Exception) as e:
-        print(f"No path between nodes {a} and {b}. Error: {str(e)[:100]}")
         # If no path exists, skip this hop
         continue
-print(f"✅ Matched run to a path of {len(full_matched_path)} nodes on the street graph.")
 
-# 4. VISUALIZE THE FINAL MAP WITH THE RUN
-# This code is similar to your previous map visualization, with one new line to plot the route.
+# 4. CREATE TWO SEPARATE PLOTS FOR SIDE-BY-SIDE DISPLAY
 plt.style.use('dark_background')
-fig, ax = plt.subplots(figsize=(14, 12), dpi=150)
-ax.set_facecolor('#000000')
-fig.set_facecolor('#000000')
 
-# Plot neighborhood boundaries and the base street network
-gdf_astoria.plot(ax=ax, facecolor='#1a1a1a', edgecolor='#333333', alpha=0.6)
-edges_gdf.plot(ax=ax, color='#444444', linewidth=0.9, alpha=0.8)
+# Extract GPS coordinates
+gps_x = [p[1] for p in decoded_smooth]
+gps_y = [p[0] for p in decoded_smooth]
 
-# --- THIS IS THE NEW PART ---
-# Plot your map-matched run on top of the network (robust, no osmnx utils)!
-# --- THIS IS THE NEW PART ---
+# Figure 1: Network + raw GPS points (no map-matching)
+plt.figure(figsize=(10, 8), dpi=150)
+ax1 = plt.gca()
+ax1.set_facecolor('#000000')
+plt.gcf().set_facecolor('#000000')
+
+# Plot the network and raw GPS points
+gdf_astoria.plot(ax=ax1, facecolor='#1a1a1a', edgecolor='#333333', alpha=0.6)
+edges_gdf.plot(ax=ax1, color='#444444', linewidth=0.9, alpha=0.8)
+ax1.scatter([p[1] for p in decoded_coords], [p[0] for p in decoded_coords], s=6, c='cyan', alpha=0.8, label='Raw GPS')
+ax1.legend(loc='upper right', fontsize=12, frameon=True, 
+          facecolor='black', edgecolor='#444444', framealpha=0.7)
+ax1.set_title('Network + Raw GPS (sanity check)')
+ax1.set_xlabel('')
+ax1.set_ylabel('')
+ax1.set_xticks([])
+ax1.set_yticks([])
+
+# Set plot limits
+xmin, ymin, xmax, ymax = edges_gdf.total_bounds
+ax1.set_xlim([xmin, xmax])
+ax1.set_ylim([ymin, ymax])
+
+plt.tight_layout()
+plt.show()
+
+# Figure 2: Matched Street Network
+plt.figure(figsize=(10, 8), dpi=150)
+ax2 = plt.gca()
+ax2.set_facecolor('#000000')
+plt.gcf().set_facecolor('#000000')
+
+ax2.set_title('Matched Street Network', fontsize=14, color='white')
+gdf_astoria.plot(ax=ax2, facecolor='#1a1a1a', edgecolor='#333333', alpha=0.6)
+edges_gdf.plot(ax=ax2, color='#444444', linewidth=0.9, alpha=0.8)
+
+# Plot matched path on second plot if available
 if full_matched_path:
-    print(f"✅ Using matched path with {len(full_matched_path)} nodes.")
-else:
-    print("⚠️ No matched path available - falling back to raw GPS visualization.")
-    # Plot raw GPS as a fallback
-    gps_x = [p[1] for p in decoded_smooth]
-    gps_y = [p[0] for p in decoded_smooth]
-    if gps_x:
-        ax.plot(gps_x, gps_y, linewidth=3, color='#00FFFF', alpha=0.9, zorder=5, linestyle='--')
+    # Use matched path
+    pass
+elif gps_x:
+    # Plot raw GPS as a fallback on second plot if no matched path
+    ax2.plot(gps_x, gps_y, linewidth=3, color='#00FFFF', alpha=0.9, zorder=5, linestyle='--')
         
 if full_matched_path:
     # Function to simplify a path (reduce unnecessary details)
@@ -2024,30 +2032,30 @@ if full_matched_path:
         try:
             main_path_x, main_path_y = simplify_path(main_path_x, main_path_y, tolerance=1e-5)
         except (ImportError, Exception) as e:
-            print(f"Path simplification skipped: {str(e)}")
+            pass  # Path simplification is optional
     
-    # Draw the main path
+    # Draw the main path on the second plot (matched network)
     if len(main_path_x) >= 2:
-        ax.plot(main_path_x, main_path_y, linewidth=3, color='#00FFFF', alpha=0.9, zorder=5)
+        ax2.plot(main_path_x, main_path_y, linewidth=3, color='#00FFFF', alpha=0.9, zorder=5)
     
-    # Ensure the same plot extent as the base network (avoid autoscale surprises)
-    xmin, ymin, xmax, ymax = edges_gdf.total_bounds
-    ax.set_xlim([xmin, xmax]); ax.set_ylim([ymin, ymax])
+    # Ensure the same plot extent
+    ax2.set_xlim([xmin, xmax])
+    ax2.set_ylim([ymin, ymax])
 # ----------------------------
 
-# Mark the home and gym locations
-ax.scatter(HOME_COORDS[1], HOME_COORDS[0], c='#00ff00', s=150, marker='h', 
+# Add home and gym markers to second plot
+ax2.scatter(HOME_COORDS[1], HOME_COORDS[0], c='#00ff00', s=150, marker='h', 
            label='Home', zorder=10, edgecolors='white', linewidth=2)
-ax.scatter(GYM_COORDS[1], GYM_COORDS[0], c='#ff8c00', s=150, marker='s', 
+ax2.scatter(GYM_COORDS[1], GYM_COORDS[0], c='#ff8c00', s=150, marker='s', 
            label='Gym', zorder=10, edgecolors='white', linewidth=2)
 
-ax.set_title('Astoria Conquest: My First Run', fontsize=20, color='white', pad=20)
-ax.legend(loc='upper right', fontsize=14, frameon=True, 
+# Configure second plot
+ax2.legend(loc='upper right', fontsize=12, frameon=True, 
           facecolor='black', edgecolor='#444444', framealpha=0.7)
-ax.set_xlabel('')
-ax.set_ylabel('')
-ax.set_xticks([])
-ax.set_yticks([])
+ax2.set_xlabel('')
+ax2.set_ylabel('')
+ax2.set_xticks([])
+ax2.set_yticks([])
 
 plt.tight_layout()
 plt.show()
@@ -2434,18 +2442,18 @@ ax_info.text(0.5, 0.5, info_text, transform=ax_info.transAxes, fontsize=12,
 ax_segments = plt.subplot(right_grid[2])
 ax_segments.set_facecolor('#111111')
 
+# Calculate percentages before drawing the bars
+# Calculate run percentage for consistency
+run_percent = (run_distance_miles / total_distance_miles) * 100 if total_distance_miles > 0 else 0
+
 # Progress bar for segments with more accurate calculation - THICKER bars for better visibility
 segment_data = [segment_percent, 100 - segment_percent]
 ax_segments.barh(y=0, width=segment_percent, color='#00FFFF', height=0.35, left=0)
 ax_segments.barh(y=0, width=100 - segment_percent, left=segment_percent, color='#444444', height=0.35)
 
 # Add a second progress bar for distance coverage - THICKER bars
-# Use run_percent calculated above for consistency with actual run distance
 ax_segments.barh(y=1, width=run_percent, color='#00FFFF', height=0.35, left=0)
 ax_segments.barh(y=1, width=100 - run_percent, left=run_percent, color='#444444', height=0.35)
-
-# Calculate run percentage once to ensure consistency
-run_percent = (run_distance_miles / total_distance_miles) * 100 if total_distance_miles > 0 else 0
 
 # Only show percentage labels for what remains to be completed (segments)
 # Removed the label for the completed portion
