@@ -1,6 +1,6 @@
 # Camilo Martinez - AI Developer Portfolio 🚀
 
-A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system with automated WHOOP fitness data integration.
+A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system with automated WHOOP fitness data integration and advanced GPS track visualization.
 
 ## � **Quick Navigation**
 
