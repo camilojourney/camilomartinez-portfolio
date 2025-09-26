@@ -9,6 +9,7 @@ import { baseUrl } from './sitemap'
 import AuthProvider from '@/components/features/auth/AuthProvider'
 import LiquidNav from '@/components/shared/liquid-nav'
 import Footer from '@/components/shared/footer'
+import { GlobalChatbot } from '@/components/features/GlobalChatbot'
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -64,6 +65,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <GlobalChatbot />
             <Analytics />
             <SpeedInsights />
           </div>

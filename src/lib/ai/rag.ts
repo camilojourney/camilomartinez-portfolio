@@ -2,7 +2,10 @@ import { OpenAI } from 'openai';
 import { Pool } from 'pg';
 
 const openai = new OpenAI();
-const pool = new Pool({ connectionString: process.env.POSTGRES_URL_NONPRISMA });
+const pool = new Pool({ 
+  connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 /**
  * Performs a vector similarity search against schema embeddings.

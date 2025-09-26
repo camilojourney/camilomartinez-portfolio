@@ -101,7 +101,17 @@ async function handleDailyFetch(request: Request) {
         }
 
         console.log(`[DAILY-FETCH] Completed: ${results.successfulUsers}/${results.totalUsers} users processed successfully`);
-        console.log(`[DAILY-FETCH] Summary: Tokens refreshed → Data fetched → Job complete`);
+        console.log('[DAILY-FETCH] Refreshing materialized views for downstream analytics...');
+
+        try {
+            await sql`SELECT refresh_all_materialized_views();`;
+            console.log('[DAILY-FETCH] Materialized views refreshed successfully.');
+        } catch (refreshError) {
+            console.error('[DAILY-FETCH] Failed to refresh materialized views:', refreshError);
+            throw new Error(`Materialized view refresh failed: ${refreshError instanceof Error ? refreshError.message : 'Unknown error'}`);
+        }
+
+        console.log('[DAILY-FETCH] Summary: Tokens refreshed → Data fetched → Views refreshed → Job complete');
 
         return NextResponse.json({
             success: true,
