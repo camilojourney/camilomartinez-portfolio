@@ -1,14 +1,8 @@
 -- Final AI-Native Fitness Views
 -- September 25, 2025 - Final Version with Split Raw Metrics
 
--- Drop and recreate views to ensure all changes are applied
-DROP MATERIALIZED VIEW IF EXISTS daily_fitness_snapshot;
-DROP MATERIALIZED VIEW IF EXISTS run_performance_details;
-DROP MATERIALIZED VIEW IF EXISTS boxing_performance_details;
-DROP MATERIALIZED VIEW IF EXISTS weightlifting_performance_details;
-
--- VIEW 1: The main daily summary (Updated with lowercase sport names and removed Strava metrics)
-CREATE MATERIALIZED VIEW daily_fitness_snapshot AS
+-- Refresh materialized views (create if not exists)
+CREATE MATERIALIZED VIEW IF NOT EXISTS daily_fitness_snapshot AS
 SELECT
     wc.user_id, wc.start_time::date AS "date", wr.recovery_percentage AS whoop_recovery_score,
     wr.hrv_rmssd_ms AS whoop_hrv, ws.sleep_performance_percentage AS whoop_sleep_performance_percent,
@@ -39,7 +33,7 @@ LEFT JOIN (
 ---
 
 -- VIEW 2: Granular run details (Updated with new columns)
-CREATE MATERIALIZED VIEW run_performance_details AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS run_performance_details AS
 SELECT
     -- Core Run Info
     sr.id AS strava_run_id,
@@ -75,7 +69,7 @@ LEFT JOIN whoop_workouts ww ON ac.whoop_workout_id = ww.id;
 ---
 
 -- VIEW 3 & 4: Boxing and Weightlifting Details (Unchanged)
-CREATE MATERIALIZED VIEW boxing_performance_details AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS boxing_performance_details AS
 SELECT id AS whoop_workout_id, start_time, strain, avg_heart_rate_bpm, max_heart_rate_bpm,
     (EXTRACT(EPOCH FROM (end_time - start_time)) / 60.0) AS duration_minutes,
     (strain / (EXTRACT(EPOCH FROM (end_time - start_time)) / 60.0)) AS strain_density,
@@ -84,7 +78,7 @@ SELECT id AS whoop_workout_id, start_time, strain, avg_heart_rate_bpm, max_heart
     (hr_zone_4_ms / 60000.0) AS whoop_hr_zone4_mins, (hr_zone_5_ms / 60000.0) AS whoop_hr_zone5_mins
 FROM whoop_workouts WHERE sport_name = 'boxing';
 
-CREATE MATERIALIZED VIEW weightlifting_performance_details AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS weightlifting_performance_details AS
 SELECT id AS whoop_workout_id, start_time, strain, avg_heart_rate_bpm, max_heart_rate_bpm,
     (EXTRACT(EPOCH FROM (end_time - start_time)) / 60.0) AS duration_minutes,
     (strain / (EXTRACT(EPOCH FROM (end_time - start_time)) / 60.0)) AS strain_density,

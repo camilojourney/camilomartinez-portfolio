@@ -13,7 +13,8 @@ async function refreshMaterializedViews() {
     ssl: { rejectUnauthorized: false }
   });
 
-  console.log('Reading migration file...');
+  // First, ensure views exist by running the creation script if needed
+  console.log('Ensuring materialized views exist...');
   const fs = require('fs');
   const path = require('path');
   const migrationSQL = fs.readFileSync(
@@ -21,11 +22,19 @@ async function refreshMaterializedViews() {
     'utf8'
   );
 
-  console.log('Executing migration...');
-  
   try {
+    // Create views if they don't exist
     await pool.query(migrationSQL);
-    console.log('Successfully created and refreshed materialized views');
+    
+    // Refresh all materialized views
+    console.log('Refreshing materialized views...');
+    await pool.query(`
+      REFRESH MATERIALIZED VIEW daily_fitness_snapshot;
+      REFRESH MATERIALIZED VIEW run_performance_details;
+      REFRESH MATERIALIZED VIEW boxing_performance_details;
+      REFRESH MATERIALIZED VIEW weightlifting_performance_details;
+    `);
+    console.log('Successfully refreshed all materialized views');
   } catch (error) {
     console.error('Error creating/refreshing materialized views:', error);
     throw error;
