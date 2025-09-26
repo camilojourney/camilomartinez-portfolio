@@ -16,6 +16,14 @@ type WorkoutTimeChartProps = {
 
 const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [hoveredWorkout, setHoveredWorkout] = React.useState<{
+    dateLabel: string;
+    timeLabel: string;
+    rawTime: string;
+    x: number;
+    y: number;
+    isBeforeGoal: boolean;
+  } | null>(null);
 
   // Enhanced debugging
   console.log('WorkoutTimeChart initialization');
@@ -89,6 +97,30 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     }
   }, [sortedData.length]);
 
+  const monthGroups = React.useMemo(() => {
+    if (!sortedData.length) return [] as Array<{ month: string; startIndex: number; endIndex: number }>;
+
+    const groups: Array<{ month: string; startIndex: number; endIndex: number }> = [];
+
+    sortedData.forEach((point, index) => {
+      try {
+        const date = parseISO(point.date);
+        const monthName = format(date, 'MMM');
+        const currentGroup = groups[groups.length - 1];
+
+        if (!currentGroup || currentGroup.month !== monthName) {
+          groups.push({ month: monthName, startIndex: index, endIndex: index });
+        } else {
+          currentGroup.endIndex = index;
+        }
+      } catch (error) {
+        console.error(`Error grouping month for date: ${point.date}`, error);
+      }
+    });
+
+    return groups;
+  }, [sortedData]);
+
   // Convert goal time to minutes for comparison
   const [goalHours, goalMinutes] = goalTime.split(':').map(Number);
   const goalTimeInMinutes = goalHours * 60 + goalMinutes;
@@ -129,48 +161,14 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     return height - padding.bottom - (normalized * chartHeight);
   };
   
-  // Simplify month markers to use a maximum of 6 evenly-spaced entries
-  let displayMonths = [];
-  
-  // Handle case with very few data points
-  if (sortedData.length <= 6) {
-    // With few points, show each month
-    displayMonths = sortedData.map((d, index) => {
-      try {
-        const date = parse(d.date, 'yyyy-MM-dd', new Date());
+  const displayMonths = monthGroups.map(group => {
+    const centerIndex = Math.round((group.startIndex + group.endIndex) / 2);
+    return {
+      month: group.month,
+      x: xScale(centerIndex)
+    };
+  });
 
-        return { 
-          month: format(date, 'MMM'), 
-          x: xScale(index) 
-        };
-      } catch (error) {
-        return { 
-          month: 'Unknown',
-          x: xScale(index) 
-        };
-      }
-    });
-  } else {
-    // With many points, create evenly spaced month markers (maximum 6)
-    const step = Math.max(1, Math.floor(sortedData.length / 6));
-    
-    for (let i = 0; i < sortedData.length; i += step) {
-      const index = Math.min(i, sortedData.length - 1);
-      try {
-        const date = parseISO(sortedData[index].date);
-        displayMonths.push({
-          month: format(date, 'MMM'),
-          x: xScale(index)
-        });
-      } catch (error) {
-        displayMonths.push({
-          month: 'Unknown',
-          x: xScale(index)
-        });
-      }
-    }
-  }
-  
   console.log('Generated month markers:', displayMonths.length);
 
   return (
@@ -179,7 +177,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         Workout Start Times ⏰
       </h2>
       
-      <div ref={scrollContainerRef} className="overflow-x-auto pb-4">
+      <div ref={scrollContainerRef} className="overflow-x-auto pb-4 relative">
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto" style={{ minWidth: "700px" }}>
         {/* Y-axis and labels */}
         <line 
@@ -295,9 +293,21 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                   stroke={strokeColor}
                   strokeWidth={strokeWidth}
                   opacity="0.8"
-                >
-                  <title>{`${formattedDate}: ${point.time}`}</title>
-                </circle>
+                  onMouseEnter={e => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const parsedTime = parse(point.time, 'HH:mm', new Date());
+                    const timeLabel = format(parsedTime, 'h:mm a');
+                    setHoveredWorkout({
+                      dateLabel: format(dateObj, 'EEE, MMM d, yyyy'),
+                      timeLabel,
+                      rawTime: point.time,
+                      x: rect.left + rect.width / 2,
+                      y: rect.top,
+                      isBeforeGoal
+                    });
+                  }}
+                  onMouseLeave={() => setHoveredWorkout(null)}
+                />
               </g>
             );
           } catch (error) {
@@ -305,7 +315,29 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             return null; // Skip rendering this point
           }
         })}
-      </svg>
+        </svg>
+
+        {hoveredWorkout && (
+          <div
+            className="fixed pointer-events-none z-[10000]"
+            style={{
+              left: hoveredWorkout.x,
+              top: hoveredWorkout.y,
+              transform: 'translate(-50%, calc(-100% - 16px))'
+            }}
+          >
+            <div className="bg-black/95 backdrop-blur-sm border-2 border-cyan-400 rounded-lg px-3 py-2 shadow-2xl text-xs min-w-[160px]">
+              <div className="text-white font-medium mb-1">{hoveredWorkout.dateLabel}</div>
+              <div className="text-white/70 mb-1">
+                {hoveredWorkout.timeLabel}
+                <span className="text-white/40"> ({hoveredWorkout.rawTime})</span>
+              </div>
+              <div className="text-white/60">
+                {hoveredWorkout.isBeforeGoal ? '✅ Before 8:30 AM' : '⏰ After 8:30 AM'}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Legend and Stats */}

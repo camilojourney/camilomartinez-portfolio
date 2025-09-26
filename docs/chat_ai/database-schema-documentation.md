@@ -1,5 +1,5 @@
 # Database Schema Documentation 📊
-*Last Updated: September 15, 2025 - Zone Data Fix Applied*
+*Last Updated: September 25, 2025 - Documentation Update*
 
 ## Core Concepts
 
@@ -907,7 +907,146 @@ When generating embeddings for AI query understanding, use these comprehensive d
 
 ---
 
+## Materialized Views
+
+### 📊 **daily_fitness_snapshot** - Comprehensive Daily Metrics
+**Purpose**: Primary foundational view that creates a single, comprehensive record of all key fitness and recovery metrics for each day. Eliminates complex joins for high-level correlational analysis.
+
+**Key Metrics Included**:
+- WHOOP Recovery metrics (recovery score, HRV, RHR, SpO2)
+- WHOOP Sleep metrics (performance, efficiency, sleep stages)
+- WHOOP Daily Strain metrics (strain, energy expenditure, heart rates)
+- Aggregated Strava Run metrics (total distance, speed, suffer score)
+- Aggregated WHOOP Workout metrics (total strain, duration)
+
+**Update Frequency**: Refreshed daily after data ingestion
+
+```sql
+CREATE MATERIALIZED VIEW daily_fitness_snapshot AS
+SELECT
+    -- Main keys for joining and filtering
+    wc.user_id,
+    wc.start_time::date AS "date",
+    wc.id AS whoop_cycle_id,
+
+    -- WHOOP Recovery Metrics
+    wr.recovery_percentage AS whoop_recovery_score,
+    wr.resting_heart_rate_bpm AS whoop_rhr,
+    wr.hrv_rmssd_ms AS whoop_hrv,
+    wr.spo2_percentage AS whoop_spo2_percent,
+    wr.skin_temp_celsius AS whoop_skin_temp,
+
+    -- WHOOP Sleep Metrics
+    ws.sleep_performance_percentage AS whoop_sleep_performance_percent,
+    ws.sleep_efficiency_percentage AS whoop_sleep_efficiency_percent,
+    (ws.total_in_bed_time_ms / 3600000.0) AS whoop_hours_in_bed,
+    (ws.total_awake_time_ms / 60000.0) AS whoop_minutes_awake,
+    (ws.total_rem_sleep_time_ms / 3600000.0) AS whoop_hours_rem_sleep,
+    (ws.total_slow_wave_sleep_time_ms / 3600000.0) AS whoop_hours_sws,
+    ws.sleep_consistency_percentage AS whoop_sleep_consistency_percent,
+    ws.respiratory_rate AS whoop_respiratory_rate,
+    ws.disturbance_count AS whoop_sleep_disturbances,
+
+    -- WHOOP Daily Strain Metrics
+    wc.strain AS whoop_day_strain,
+    wc.kilojoule AS whoop_day_kilojoules,
+    wc.avg_heart_rate_bpm AS whoop_day_avg_hr,
+    wc.max_heart_rate_bpm AS whoop_day_max_hr,
+
+    -- Aggregated Strava Run Metrics
+    COALESCE(daily_runs.total_runs_today, 0) AS strava_run_count,
+    COALESCE(daily_runs.total_distance_miles, 0) AS strava_total_run_miles,
+    daily_runs.avg_speed_mph AS strava_avg_run_speed_mph,
+    daily_runs.total_suffer_score AS strava_total_suffer_score,
+
+    -- Aggregated WHOOP Workout Metrics
+    COALESCE(daily_workouts.total_workouts_today, 0) AS whoop_workout_count,
+    COALESCE(daily_workouts.total_strain, 0) AS whoop_total_workout_strain,
+    daily_workouts.total_workout_duration_minutes AS whoop_total_workout_minutes
+FROM whoop_cycles wc
+LEFT JOIN whoop_recovery wr ON wc.id = wr.cycle_id
+LEFT JOIN whoop_sleep ws ON wc.id = ws.cycle_id
+LEFT JOIN (
+    SELECT
+        start_date::date AS run_date,
+        user_id,
+        COUNT(id) AS total_runs_today,
+        SUM(distance_meters * 0.000621371) AS total_distance_miles,
+        AVG(average_speed_mps * 2.23694) AS avg_speed_mph,
+        SUM(suffer_score) AS total_suffer_score
+    FROM strava_runs
+    GROUP BY run_date, user_id
+) AS daily_runs ON wc.start_time::date = daily_runs.run_date 
+    AND wc.user_id = daily_runs.user_id
+LEFT JOIN (
+    SELECT
+        start_time::date AS workout_date,
+        user_id,
+        COUNT(id) AS total_workouts_today,
+        SUM(strain) AS total_strain,
+        SUM(EXTRACT(EPOCH FROM (end_time - start_time)) / 60.0) AS total_workout_duration_minutes
+    FROM whoop_workouts
+    GROUP BY workout_date, user_id
+) AS daily_workouts ON wc.start_time::date = daily_workouts.workout_date 
+    AND wc.user_id = daily_workouts.user_id
+ORDER BY "date" DESC;
+```
+
+### 📊 **run_performance_details** - Granular Run Analysis
+**Purpose**: Deep-dive analysis view for individual activities. Connects each Strava run to its splits and correlated WHOOP workout for detailed performance analysis.
+
+**Key Metrics Included**:
+- Core Strava run information (distance, duration, speed)
+- Correlated WHOOP workout data (strain, heart rates, zones)
+- Detailed split information (pace, distance, zones)
+
+**Update Frequency**: Refreshed daily after data ingestion
+
+```sql
+CREATE MATERIALIZED VIEW run_performance_details AS
+SELECT
+    -- Core Strava Run Info
+    sr.id AS strava_run_id,
+    sr.name AS run_name,
+    sr.start_date AS run_start_date,
+    (sr.distance_meters * 0.000621371) AS total_distance_miles,
+    (sr.elapsed_time_seconds / 60.0) AS total_duration_minutes,
+    (sr.average_speed_mps * 2.23694) AS avg_speed_mph,
+    sr.suffer_score AS strava_suffer_score,
+
+    -- Correlated WHOOP Workout Info
+    ww.id AS whoop_workout_id,
+    ww.strain AS whoop_strain,
+    ww.avg_heart_rate_bpm AS whoop_avg_hr,
+    ww.max_heart_rate_bpm AS whoop_max_hr,
+    ww.kilojoule AS whoop_kilojoules,
+    -- Heart rate zones in minutes
+    (ww.hr_zone_1_ms / 60000.0) AS whoop_hr_zone1_mins,
+    (ww.hr_zone_2_ms / 60000.0) AS whoop_hr_zone2_mins,
+    (ww.hr_zone_3_ms / 60000.0) AS whoop_hr_zone3_mins,
+    (ww.hr_zone_4_ms / 60000.0) AS whoop_hr_zone4_mins,
+    (ww.hr_zone_5_ms / 60000.0) AS whoop_hr_zone5_mins,
+
+    -- Strava Split Details
+    srs.split_number,
+    srs.split_type,
+    (srs.distance_meters * 0.000621371) AS split_distance_miles,
+    (srs.moving_time_seconds / 60.0) AS split_moving_time_minutes,
+    (srs.average_speed_mps * 2.23694) AS split_avg_speed_mph,
+    srs.pace_zone AS split_pace_zone
+FROM strava_runs sr
+JOIN strava_run_splits srs ON sr.id = srs.strava_run_id
+LEFT JOIN activity_correlations ac ON sr.id = ac.strava_run_id
+LEFT JOIN whoop_workouts ww ON ac.whoop_workout_id = ww.id;
+```
+
 ## Recent Database Updates (September 2025)
+
+### 🚀 **Enhanced Documentation Update (September 25, 2025)**
+- **Updated Schema Documentation**: Enhanced documentation with latest table structures and relationships
+- **Unified Formatting**: Standardized naming conventions across all documentation
+- **Cross-Platform Integration**: Improved clarity on activity correlations and data relationships
+- **Data Quality**: Added detailed data pattern examples and common query patterns
 
 ### 🚀 **Enhanced Strava Data Collection (September 17, 2025)**
 - **New Table**: Added `strava_run_splits` for detailed kilometer/mile pace analysis

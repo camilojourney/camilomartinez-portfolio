@@ -110,41 +110,64 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="key-relationships---explicit-foreign-key-connections" class="level3">
 <h3 class="anchored" data-anchor-id="key-relationships---explicit-foreign-key-connections">🔗 <strong>Key Relationships - EXPLICIT FOREIGN KEY CONNECTIONS</strong></h3>
 <p><strong>PRIMARY RELATIONSHIPS (How tables connect to each other):</strong></p>
-<p><strong>STRAVA ECOSYSTEM:</strong> - <code>strava_users.id</code> ← <code>strava_runs.user_id</code> (Each run belongs to ONE user) - <code>strava_runs.id</code> ← <code>strava_run_splits.strava_run_id</code> (Each split belongs to ONE run)</p>
-<p><strong>WHOOP ECOSYSTEM:</strong> - <code>whoop_users.id</code> ← <code>whoop_cycles.user_id</code> (Each cycle belongs to ONE user) - <code>whoop_users.id</code> ← <code>whoop_recovery.user_id</code> (Each recovery belongs to ONE user)<br>
-- <code>whoop_users.id</code> ← <code>whoop_sleep.user_id</code> (Each sleep belongs to ONE user) - <code>whoop_users.id</code> ← <code>whoop_workouts.user_id</code> (Each workout belongs to ONE user)</p>
-<p><strong>WHOOP INTERNAL RELATIONSHIPS:</strong> - <code>whoop_cycles.id</code> ← <code>whoop_recovery.cycle_id</code> (Each recovery analyzes ONE cycle) - <code>whoop_sleep.id</code> ← <code>whoop_recovery.sleep_id</code> (Each recovery analyzes ONE sleep session) - <code>whoop_cycles.id</code> ← <code>whoop_sleep.cycle_id</code> (Each sleep belongs to ONE cycle)</p>
-<p><strong>CROSS-PLATFORM CONNECTION:</strong> - <code>strava_runs.id</code> ← <code>activity_correlations.strava_run_id</code> (Links to Strava activity) - <code>whoop_workouts.id</code> ← <code>activity_correlations.whoop_workout_id</code> (Links to WHOOP activity)</p>
-<p><strong>EXPLICIT FOREIGN KEY RULES:</strong> - If <code>strava_runs.user_id = 123</code>, that run belongs to user with <code>strava_users.id = 123</code> - If <code>whoop_recovery.cycle_id = 456</code>, that recovery analyzes cycle with <code>whoop_cycles.id = 456</code> - If <code>activity_correlations.strava_run_id = 789</code>, it links to <code>strava_runs.id = 789</code></p>
-<pre><code>WHOOP API v2 Data Relationships
+<p><strong>STRAVA ECOSYSTEM:</strong></p>
+<ul>
+<li><code>strava_users.id</code> ← <code>strava_runs.user_id</code> (Each run belongs to ONE user)</li>
+<li><code>strava_runs.id</code> ← <code>strava_run_splits.strava_run_id</code> (Each split belongs to ONE run)</li>
+</ul>
+<p><strong>WHOOP ECOSYSTEM:</strong></p>
+<ul>
+<li><code>whoop_users.id</code> ← <code>whoop_cycles.user_id</code> (Each cycle belongs to ONE user)</li>
+<li><code>whoop_users.id</code> ← <code>whoop_recovery.user_id</code> (Each recovery belongs to ONE user)<br>
+</li>
+<li><code>whoop_users.id</code> ← <code>whoop_sleep.user_id</code> (Each sleep belongs to ONE user)</li>
+<li><code>whoop_users.id</code> ← <code>whoop_workouts.user_id</code> (Each workout belongs to ONE user)</li>
+</ul>
+<p><strong>WHOOP INTERNAL RELATIONSHIPS:</strong></p>
+<ul>
+<li><code>whoop_cycles.id</code> ← <code>whoop_recovery.cycle_id</code> (Each recovery analyzes ONE cycle)</li>
+<li><code>whoop_sleep.id</code> ← <code>whoop_recovery.sleep_id</code> (Each recovery analyzes ONE sleep session)</li>
+<li><code>whoop_cycles.id</code> ← <code>whoop_sleep.cycle_id</code> (Each sleep belongs to ONE cycle)</li>
+</ul>
+<p><strong>CRITICAL RELATIONSHIP CLARIFICATION:</strong> - <strong>WORKOUTS are NOT directly connected to CYCLES</strong> - they only connect to users via <code>user_id</code> - Workouts contribute strain to daily total, but there’s NO <code>cycle_id</code> foreign key in workouts table - Recovery acts as the bridge connecting Cycles ↔︎ Sleep via <code>cycle_id</code> and <code>sleep_id</code> - To connect workouts to cycles, you must match by user and date/time, not foreign keys</p>
+<pre><code>WHOOP API v2 Data Relationships - CORRECTED TRUE RELATIONSHIPS
 ═══════════════════════════════════════════════════════════════════
 
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   🔄 CYCLES     │     │  🔋 RECOVERY    │     │   🛌 SLEEP      │
 │                 │◄────┤                 ├────►│                 │
 │ id (PK)         │     │ cycle_id (FK)   │     │ id (PK)         │
-│ strain          │     │ sleep_id (FK)   │     │ cycle_id (FK)   │
-│ kilojoule       │     │ recovery_score  │     │ performance_%   │
-│ heart_rate      │     │ hrv_rmssd_milli │     │ sleep_stages    │
+│ user_id (FK)    │     │ sleep_id (FK)   │     │ cycle_id (FK)   │
+│ strain          │     │ user_id (FK)    │     │ user_id (FK)    │
+│ kilojoule       │     │ recovery_%      │     │ performance_%   │
+│ heart_rate      │     │ hrv_rmssd_ms    │     │ sleep_stages    │
 └─────────────────┘     │ resting_hr      │     └─────────────────┘
-                        └─────────────────┘              │
-                                                         │ (optional)
-                                                         ▼
-                                                ┌─────────────────┐
-                                                │  🏋️ WORKOUTS   │
-                                                │                 │
-                                                │ id (PK)         │
-                                                │ strain          │
-                                                │ sport_name      │
-                                                │ zone_*_milli    │
-                                                └─────────────────┘
+         │               └─────────────────┘              
+         │                                                
+         │               ┌─────────────────┐              
+         │               │  🏋️ WORKOUTS   │              
+         └──────────────►│                 │              
+                         │ id (PK)         │              
+                         │ user_id (FK)    │              
+                         │ strain          │              
+                         │ sport_name      │              
+                         │ zone_*_ms       │              
+                         └─────────────────┘              
 
-Key Relationships:
-• Recovery acts as bridge between Cycles ↔ Sleep (WHOOP API design)
-• Each Cycle has one Recovery score based on Sleep analysis
-• Sleep may optionally relate to Workouts
-• All entities belong to a user (user_id FK not shown)</code></pre>
+ACTUAL FOREIGN KEY RELATIONSHIPS:
+• CYCLES → USER (via user_id)
+• RECOVERY → CYCLES (via cycle_id), SLEEP (via sleep_id), USER (via user_id)  
+• SLEEP → CYCLES (via cycle_id), USER (via user_id)
+• WORKOUTS → USER (via user_id) - NO direct connection to cycles
+• Recovery acts as bridge connecting Cycles ↔ Sleep through foreign keys
+• Workouts connect to cycles ONLY through user and time matching, NOT foreign keys</code></pre>
 <hr>
+<p><strong>CROSS-PLATFORM CONNECTION:</strong></p>
+<ul>
+<li><code>strava_runs.id</code> ← <code>activity_correlations.strava_run_id</code> (Links to Strava activity)</li>
+<li><code>whoop_workouts.id</code> ← <code>activity_correlations.whoop_workout_id</code> (Links to WHOOP activity)</li>
+</ul>
+<p><strong>EXPLICIT FOREIGN KEY RULES:</strong> - If <code>strava_runs.user_id = 123</code>, that run belongs to user with <code>strava_users.id = 123</code> - If <code>whoop_recovery.cycle_id = 456</code>, that recovery analyzes cycle with <code>whoop_cycles.id = 456</code> - If <code>activity_correlations.strava_run_id = 789</code>, it links to <code>strava_runs.id = 789</code></p>
 </section>
 </section>
 <section id="table-documentation" class="level2">

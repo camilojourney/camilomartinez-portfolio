@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.16",
-    "@types/pg": "^8.11.0"
+    "@types/pg": "^8.11.0",
+    "ts-node": "^10.9.2"
   }
 }

@@ -109,6 +109,27 @@ interface YearlyTotals {
         };
     }, [data]);
 
+    const visibleMonthlyData = useMemo(() => {
+        if (!processedData.monthlyData.length) return processedData.monthlyData;
+
+        const monthlyTotals = processedData.monthlyData.map(month => month.Weightlifting + month.Running + month.Boxing);
+        const firstIndex = monthlyTotals.findIndex(total => total > 0);
+        let lastIndex = -1;
+
+        for (let i = monthlyTotals.length - 1; i >= 0; i--) {
+            if (monthlyTotals[i] > 0) {
+                lastIndex = i;
+                break;
+            }
+        }
+
+        if (firstIndex === -1 || lastIndex === -1) {
+            return processedData.monthlyData;
+        }
+
+        return processedData.monthlyData.slice(firstIndex, lastIndex + 1);
+    }, [processedData.monthlyData]);
+
     const monthlyChartScrollRef = React.useRef<HTMLDivElement>(null);
 
     // Colors for each sport
@@ -130,19 +151,20 @@ interface YearlyTotals {
     const barChartHeight = 400;
     const donutChartSize = 300;
     const padding = { top: 40, right: 60, bottom: 60, left: 60 };
-    const barGroupWidth = (barChartWidth - padding.left - padding.right) / 12; // Total width allocated per month
+    const monthsToDisplay = visibleMonthlyData.length || 1;
+    const barGroupWidth = (barChartWidth - padding.left - padding.right) / monthsToDisplay;
     const groupPadding = barGroupWidth * 0.2; // Use 20% of the group width for spacing
     const barWidth = (barGroupWidth - groupPadding) / 3; // The width for each of the 3 bars
 
     // Get max value for y-axis scale
     const maxHours = useMemo(() => {
         let max = 0;
-        processedData.monthlyData.forEach(month => {
+        visibleMonthlyData.forEach(month => {
             const monthTotal = month.Weightlifting + month.Running + month.Boxing;
             if (monthTotal > max) max = monthTotal;
         });
         return Math.ceil(max * 1.2); // Add 20% padding
-    }, [processedData.monthlyData]);
+    }, [visibleMonthlyData]);
 
     // Scale functions
     const yScale = (hours: number) => (barChartHeight - padding.top - padding.bottom) * (1 - hours / maxHours);
@@ -212,7 +234,7 @@ interface YearlyTotals {
         if (maxScrollLeft > 0) {
             container.scrollLeft = maxScrollLeft;
         }
-    }, [processedData.monthlyData.length]);
+    }, [visibleMonthlyData.length]);
 
     return (
         <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8">
@@ -338,7 +360,7 @@ interface YearlyTotals {
                             ))}
 
                             {/* X-axis labels (months) */}
-                            {processedData.monthlyData.map((month, i) => (
+                            {visibleMonthlyData.map((month, i) => (
                                 <text
                                     key={i}
                                     x={padding.left + i * barGroupWidth + barGroupWidth / 2}
@@ -365,7 +387,7 @@ interface YearlyTotals {
                             </text>
 
                             {/* Bars */}
-                            {processedData.monthlyData.map((month, monthIndex) => {
+                            {visibleMonthlyData.map((month, monthIndex) => {
                                 // Calculate the starting x-position for this month's group of bars
                                 const groupXStart = padding.left + monthIndex * barGroupWidth + groupPadding / 2;
 

@@ -1,6 +1,9 @@
 -- Final AI-Native Fitness Views
 -- September 25, 2025 - Final Version with Split Raw Metrics
 
+-- Drop existing materialized views to update structure
+DROP MATERIALIZED VIEW IF EXISTS daily_fitness_snapshot;
+
 -- Refresh materialized views (create if not exists)
 CREATE MATERIALIZED VIEW IF NOT EXISTS daily_fitness_snapshot AS
 SELECT
@@ -17,7 +20,13 @@ SELECT
 FROM
     whoop_cycles wc
 LEFT JOIN whoop_recovery wr ON wc.id = wr.cycle_id
-LEFT JOIN whoop_sleep ws ON wc.id = ws.cycle_id
+LEFT JOIN (
+    SELECT cycle_id, 
+           SUM(total_in_bed_time_ms) as total_in_bed_time_ms,
+           AVG(sleep_performance_percentage) as sleep_performance_percentage
+    FROM whoop_sleep 
+    GROUP BY cycle_id
+) ws ON wc.id = ws.cycle_id
 LEFT JOIN (
     SELECT
         start_time::date AS workout_date, user_id, COUNT(id) AS whoop_workout_count,

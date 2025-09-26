@@ -226,7 +226,7 @@ async function processUserData(userId: number, accessToken: string, dbService: W
     // 1. Insert cycles first (no dependencies)
     await dbService.upsertCycles(filteredCycles);
     
-    // 2. Insert sleep data (recovery depends on this)
+    // 2. Insert sleep data (we'll update its cycle_id later using recovery data)
     await dbService.upsertSleeps(filteredSleep);
     
     // 3. Insert workouts (no dependencies)  
@@ -234,6 +234,9 @@ async function processUserData(userId: number, accessToken: string, dbService: W
     
     // 4. Insert recovery LAST (depends on sleep_id being available)
     const recoveryResult = await dbService.upsertRecoveries(filteredRecovery);
+
+    // 5. Update sleep-cycle relationships using the recovery data
+    await dbService.updateSleepCycleRelationships(filteredRecovery);
 
     const actualResults = {
         newCycles: filteredCycles.length,

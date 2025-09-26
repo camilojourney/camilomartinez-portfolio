@@ -22,8 +22,10 @@ interface DayData {
 
 // State for the chart tooltip
 interface HoveredMonth {
-    monthName: string;
+    label: string;
     average_strain: number;
+    weekStart: string; // YYYY-MM-DD
+    weekEnd: string;   // YYYY-MM-DD
     x: number;
     y: number;
 }
@@ -35,6 +37,8 @@ interface WeeklyStrainData {
     firstDate: string; // YYYY-MM-DD
     daysWithData: number;
 }
+
+const TOOLTIP_OFFSET_PX = 28;
 
 export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const [hoveredDay, setHoveredDay] = useState<DayData | null>(null);
@@ -202,47 +206,27 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const getMonthLabels = () => {
         const labels = new Map<number, string>(); // weekIndex -> monthShortName
         const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const seenMonths = new Set<number>(); // month index (0-11)
-        
-        // Process each week to determine where month labels should appear
+        const monthRanges = new Map<number, { min: number; max: number }>();
+
         weeks.forEach((week, weekIndex) => {
-            // Find the last actual day in the week that belongs to the selected year
-            const validDays = week.filter(day => day.date && new Date(day.date).getFullYear() === selectedYear);
-            const lastValidDay = validDays[validDays.length - 1];
-
-            if (lastValidDay) {
-                const date = new Date(lastValidDay.date + 'T00:00:00');
+            week.forEach(day => {
+                if (!day.date) return;
+                const date = new Date(day.date + 'T00:00:00');
+                if (date.getFullYear() !== selectedYear) return;
                 const monthIndex = date.getMonth();
-
-                if (!seenMonths.has(monthIndex)) {
-                    // For reversed order, we want to label at the end of each month
-                    const nextDay = new Date(date);
-                    nextDay.setDate(date.getDate() + 1);
-                    if (nextDay.getMonth() !== monthIndex || weekIndex === weeks.length - 1) {
-                        labels.set(weekIndex, allMonths[monthIndex]);
-                        seenMonths.add(monthIndex);
-                    }
+                const range = monthRanges.get(monthIndex);
+                if (!range) {
+                    monthRanges.set(monthIndex, { min: weekIndex, max: weekIndex });
+                } else {
+                    range.min = Math.min(range.min, weekIndex);
+                    range.max = Math.max(range.max, weekIndex);
                 }
-            }
+            });
         });
 
-        // Ensure all 12 months are represented by finding appropriate weeks
-        allMonths.forEach((monthName, monthIndex) => {
-            if (!seenMonths.has(monthIndex)) {
-                // Find a week that contains days from this month
-                const weekWithMonth = weeks.findIndex(week => {
-                    return week.some(day => {
-                        if (!day.date) return false;
-                        const date = new Date(day.date + 'T00:00:00');
-                        return date.getFullYear() === selectedYear && date.getMonth() === monthIndex;
-                    });
-                });
-                
-                if (weekWithMonth !== -1 && !labels.has(weekWithMonth)) {
-                    labels.set(weekWithMonth, monthName);
-                    seenMonths.add(monthIndex);
-                }
-            }
+        monthRanges.forEach((range, monthIndex) => {
+            const centerIndex = Math.round((range.min + range.max) / 2);
+            labels.set(centerIndex, allMonths[monthIndex]);
         });
 
         return labels;
@@ -265,12 +249,10 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const handleMouseEnter = (day: DayData, event: React.MouseEvent) => {
         if (day.date) {
             setHoveredDay(day);
-            const cell = event.target as HTMLElement;
-            const rect = cell.getBoundingClientRect();
-            // Set the position for the tooltip
+            const rect = (event.target as HTMLElement).getBoundingClientRect();
             setTooltipPosition({
-                x: rect.left + rect.width / 2, // Center of the square
-                y: rect.top, // Top of the square
+                x: rect.left + rect.width / 2,
+                y: rect.top,
             });
         }
     };
@@ -290,19 +272,54 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
 
     // Effects for scrolling and tooltips
     React.useEffect(() => {
-        if (scrollContainerRef.current && weeks.length > 0) {
-            // Scroll to show the most recent data (rightmost position)
-            const container = scrollContainerRef.current;
-            container.scrollLeft = container.scrollWidth;
-        }
-    }, [weeks, selectedYear]); // Include selectedYear to re-scroll when year changes
+        const heatmapContainer = scrollContainerRef.current;
+        const weeklyContainer = weeklyChartScrollRef.current;
+        if (!heatmapContainer || !weeklyContainer) return;
 
-    React.useEffect(() => {
-        if (weeklyChartScrollRef.current && weeklyStrainData.length > 0) {
-            const container = weeklyChartScrollRef.current;
-            container.scrollLeft = container.scrollWidth;
-        }
-    }, [weeklyStrainData.length, selectedYear]);
+        let syncingFromHeatmap = false;
+        let syncingFromWeekly = false;
+
+        const getMaxScroll = () => Math.max(heatmapContainer.scrollWidth - heatmapContainer.clientWidth, 0);
+
+        const clampScroll = (value: number) => {
+            const maxScroll = getMaxScroll();
+            return Math.min(Math.max(value, 0), maxScroll);
+        };
+
+        const syncFromHeatmap = () => {
+            if (syncingFromWeekly) return;
+            syncingFromHeatmap = true;
+            const clamped = clampScroll(heatmapContainer.scrollLeft);
+            heatmapContainer.scrollLeft = clamped;
+            weeklyContainer.scrollLeft = clamped;
+            requestAnimationFrame(() => {
+                syncingFromHeatmap = false;
+            });
+        };
+
+        const syncFromWeekly = () => {
+            if (syncingFromHeatmap) return;
+            syncingFromWeekly = true;
+            const clamped = clampScroll(weeklyContainer.scrollLeft);
+            weeklyContainer.scrollLeft = clamped;
+            heatmapContainer.scrollLeft = clamped;
+            requestAnimationFrame(() => {
+                syncingFromWeekly = false;
+            });
+        };
+
+        heatmapContainer.addEventListener('scroll', syncFromHeatmap, { passive: true });
+        weeklyContainer.addEventListener('scroll', syncFromWeekly, { passive: true });
+
+        const targetScrollLeft = clampScroll(heatmapContainer.scrollWidth - heatmapContainer.clientWidth);
+        heatmapContainer.scrollLeft = targetScrollLeft;
+        weeklyContainer.scrollLeft = targetScrollLeft;
+
+        return () => {
+            heatmapContainer.removeEventListener('scroll', syncFromHeatmap);
+            weeklyContainer.removeEventListener('scroll', syncFromWeekly);
+        };
+    }, [weeks.length, weeklyStrainData.length, selectedYear]);
 
     // *****************************************************************
     // ***** REVISED useLayoutEffect FOR HEATMAP TOOLTIP CENTERING *****
@@ -500,12 +517,15 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                                                 const startDate = new Date(weekData.firstDate + 'T00:00:00');
                                                                 const endDate = new Date(startDate);
                                                                 endDate.setDate(startDate.getDate() + 6);
-                                                                const weekLabel = `Week of ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-                                                                setHoveredMonth({ 
-                                                                    monthName: weekLabel, 
-                                                                    average_strain: weekData.averageStrain, 
-                                                                    x: rect.left + rect.width / 2, 
-                                                                    y: rect.top 
+                                                                const weekLabel = `Week of ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                                                                const dotRect = e.currentTarget.getBoundingClientRect();
+                                                                setHoveredMonth({
+                                                                    label: weekLabel,
+                                                                    average_strain: weekData.averageStrain,
+                                                                    weekStart: weekData.firstDate,
+                                                                    weekEnd: endDate.toISOString().split('T')[0],
+                                                                    x: dotRect.left + dotRect.width / 2,
+                                                                    y: dotRect.top
                                                                 });
                                                             }}
                                                             onMouseLeave={() => setHoveredMonth(null)}
@@ -593,9 +613,9 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                     className="fixed pointer-events-none z-[9999]"
                     style={{
                         left: tooltipPosition.x,
-                        top: tooltipPosition.y,
-                        transform: 'translate(-50%, -300%)', // Center horizontally, move up
-                        transition: 'opacity 0.2s, transform 0.2s',
+                        top: tooltipPosition.y - TOOLTIP_OFFSET_PX,
+                        transform: 'translateX(-50%)',
+                        transition: 'opacity 0.2s ease',
                     }}
                 >
                     <div className="bg-black/95 backdrop-blur-sm border-2 border-green-400 rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
@@ -630,13 +650,18 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                     className="fixed pointer-events-none z-[10000]"
                     style={{
                         left: hoveredMonth.x,
-                        top: hoveredMonth.y, // Keep the Y position from the hover event
-                        transform: 'translate(-150%, -180%)' // Move up more for visibility
+                        top: hoveredMonth.y - TOOLTIP_OFFSET_PX,
+                        transform: 'translateX(-50%)'
                     }}
                 >
                     <div className="bg-black/95 backdrop-blur-sm border-2 border-yellow-400 rounded-lg p-3 shadow-2xl min-w-[160px]">
                         <div className="text-white text-sm font-medium mb-1">
-                            {hoveredMonth.monthName}
+                            {hoveredMonth.label}
+                        </div>
+                        <div className="text-xs text-gray-400 mb-2">
+                            {new Date(hoveredMonth.weekStart + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            {' → '}
+                            {new Date(hoveredMonth.weekEnd + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-gray-300 text-sm">Average Strain:</span>

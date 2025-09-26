@@ -108,6 +108,45 @@ One-time script to:
 - Generate embeddings
 - Store in schema_embeddings table
 
+#### Embedding Process Details
+1. **View Analysis**:
+   - Scans materialized view definitions
+   - Extracts column names, types, and descriptions
+   - Builds semantic understanding of each view
+
+2. **Embedding Generation**:
+   - Uses OpenAI's text-embedding-ada-002 model
+   - Generates embeddings for:
+     - View names and purposes
+     - Column descriptions
+     - Relationship contexts
+
+3. **Storage**:
+   - Saves embeddings in schema_embeddings table
+   - Creates necessary indexes for vector similarity search
+   - Preserves metadata for troubleshooting
+
+#### Running the Embedding Script
+```bash
+# Ensure database is configured
+# Then run:
+npx tsx scripts/ai/embed-schema.ts
+```
+
+#### Troubleshooting
+Common issues and solutions:
+1. **OpenAI API Rate Limits**
+   - Error: "Rate limit exceeded"
+   - Solution: Add delay between requests
+
+2. **Database Connection**
+   - Error: "Connection refused"
+   - Solution: Verify DATABASE_URL and SSL settings
+
+3. **Missing Views**
+   - Error: "View not found"
+   - Solution: Run migrations first
+
 ### 4.2 RAG Helper
 ```typescript
 // src/lib/ai/rag.ts
@@ -158,9 +197,42 @@ Pipeline:
 3. Ensures proper temporal alignment
 4. Validates and executes
 
-## 6. Security & Performance
+## 6. Error Handling & Best Practices
 
-### 6.1 Security Measures
+### 6.1 Common Errors & Solutions
+
+#### API Errors
+1. **OpenAI API Issues**
+   - Error: "OpenAI API error: invalid_api_key"
+   - Solution: Verify OPENAI_API_KEY in environment variables
+
+2. **Database Timeouts**
+   - Error: "QueryTimeoutError"
+   - Solution: Optimize query or adjust timeout settings
+
+3. **Invalid Queries**
+   - Error: "Syntax error in SQL"
+   - Solution: Validate query structure before execution
+
+### 6.2 Best Practices
+1. **Error Prevention**
+   - Use TypeScript for type safety
+   - Implement input validation
+   - Add comprehensive logging
+
+2. **Error Recovery**
+   - Implement retry mechanisms
+   - Provide clear error messages
+   - Log errors for debugging
+
+3. **Monitoring**
+   - Track error rates
+   - Monitor query performance
+   - Alert on critical failures
+
+## 7. Security & Performance
+
+### 7.1 Security Measures
 - Read-only database user
 - Query whitelisting
 - Input sanitization
@@ -172,15 +244,55 @@ Pipeline:
 - Query timeout limits
 - Result streaming
 
-## 7. Future Enhancements
+## 7. Development Setup
 
-### 7.1 Planned Features
+### 7.1 Prerequisites
+- Node.js (v18+)
+- PostgreSQL (v15+) with pgvector extension
+- OpenAI API key
+- TypeScript knowledge
+
+### 7.2 Environment Setup
+1. Install dependencies:
+```bash
+pnpm install
+```
+
+2. Configure environment variables:
+```bash
+# Database connection
+DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
+
+# OpenAI configuration
+OPENAI_API_KEY=your_api_key
+EMBEDDING_MODEL=text-embedding-ada-002
+```
+
+3. Set up database:
+```bash
+# Run migrations
+pnpm run migrate
+```
+
+4. Generate schema embeddings:
+```bash
+npx tsx scripts/ai/embed-schema.ts
+```
+
+### 7.3 Development Tools
+- VSCode with ESLint and Prettier extensions
+- pgAdmin or similar for database inspection
+- Node.js debugger configuration included
+
+## 8. Future Enhancements
+
+### 8.1 Planned Features
 - Query caching layer
 - Enhanced error explanations
 - Query suggestion system
 - Performance analytics
 
-### 7.2 Potential Optimizations
+### 8.2 Potential Optimizations
 - Parallel query execution
 - Advanced result caching
 - Dynamic timeout adjustment

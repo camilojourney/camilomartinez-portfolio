@@ -1,6 +1,6 @@
-# Vector Embeddings and Materialized Views Documentation
+# Vector Embeddings and Materialized Views
 
-This document provides a detailed overview of our materialized views and their corresponding vector embeddings used for AI-powered fitness data analysis.
+> A comprehensive guide to AI-powered fitness data analysis through materialized views and vector embeddings.
 
 ## Table of Contents
 1. [Daily Fitness Snapshot](#daily-fitness-snapshot)

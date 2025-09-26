@@ -83,557 +83,215 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="database-embeddings-implementation-guide" class="level1">
-<h1>Database Embeddings Implementation Guide 🚀</h1>
-<section id="project-overview" class="level2">
-<h2 class="anchored" data-anchor-id="project-overview">Project Overview</h2>
-<p>Transform your fitness data collection system into an intelligent AI-powered database assistant that understands natural language queries and provides insights about your Strava runs, WHOOP recovery data, and training patterns.</p>
-</section>
-<section id="current-state" class="level2">
-<h2 class="anchored" data-anchor-id="current-state">Current State ✅</h2>
-<section id="what-you-already-have" class="level3">
-<h3 class="anchored" data-anchor-id="what-you-already-have">What You Already Have</h3>
+<p>Of course. Based on a deep synthesis of industry-leading research, here is a professional-grade implementation guide that elevates your original plan. This version is built not just on <em>how</em> to implement the system but on the foundational <em>why</em> that drives elite AI and data architectures.</p>
+<hr>
+<section id="ai-native-data-intelligence-engine-an-architectural-guide" class="level1">
+<h1>AI-Native Data Intelligence Engine: An Architectural Guide</h1>
+<section id="executive-vision-from-data-silos-to-conversational-insights" class="level2">
+<h2 class="anchored" data-anchor-id="executive-vision-from-data-silos-to-conversational-insights">1. Executive Vision: From Data Silos to Conversational Insights</h2>
+<p>This document outlines the architecture for transforming your fitness data warehouse into an <strong>AI-native intelligence engine</strong>. We are moving beyond a simple “chatbot” to create a system that deeply understands the relationships within your data, answers complex questions, and proactively delivers insights.</p>
+<p>The core transition is from a human-driven, SQL-first approach to an AI-driven, intent-first model.</p>
+<p><strong>Before (Human as Translator):</strong></p>
+<ol type="1">
+<li><strong>Human:</strong> Has a question (“Am I getting faster?”).</li>
+<li><strong>Human:</strong> Translates the question into complex SQL <code>JOINS</code> and <code>AVG()</code> functions.</li>
+<li><strong>Database:</strong> Returns raw data.</li>
+<li><strong>Human:</strong> Interprets the data to find the answer.</li>
+</ol>
+<p><strong>After (AI as Engine):</strong></p>
+<ol type="1">
+<li><strong>Human:</strong> Asks a question in natural language.</li>
+<li><strong>AI Engine:</strong>
 <ul>
-<li><strong>PostgreSQL Database</strong> with Neon hosting</li>
-<li><strong>pgvector Extension</strong> enabled (v0.8.0)</li>
-<li><strong>Automated Data Collection</strong>:
-<ul>
-<li>Strava runs (94 historical activities + weekly sync)</li>
-<li>WHOOP daily data (sleep, recovery, strain)</li>
+<li>Understands the <em>intent</em>.</li>
+<li>Retrieves relevant context from a unified data model.</li>
+<li>Generates and safely executes the optimal query.</li>
+<li>Synthesizes the raw data into a narrative answer.</li>
 </ul></li>
-<li><strong>Production Environment</strong> with Vercel deployment</li>
-<li><strong>Cron Jobs</strong> for automated data updates</li>
-</ul>
+</ol>
+<hr>
 </section>
-<section id="database-tables" class="level3">
-<h3 class="anchored" data-anchor-id="database-tables">Database Tables</h3>
-<ul>
-<li><code>strava_runs</code> - Running activities with GPS data</li>
-<li><code>whoop_sleep</code> - Sleep metrics and scores</li>
-<li><code>whoop_recovery</code> - Recovery data and HRV</li>
-<li><code>whoop_strain</code> - Daily strain and activities</li>
-<li><code>users</code> - Authentication and tokens</li>
-</ul>
+<section id="foundational-architecture-the-ai-native-data-warehouse" class="level2">
+<h2 class="anchored" data-anchor-id="foundational-architecture-the-ai-native-data-warehouse">2. Foundational Architecture: The AI-Native Data Warehouse</h2>
+<p>Success depends entirely on the quality of our data foundation. An AI cannot understand a poorly designed schema any more than a human can. We will engineer our warehouse for a world where the primary consumer is a machine learning model.</p>
+<section id="the-core-problem-normalized-vs.-ai-friendly-schemas" class="level3">
+<h3 class="anchored" data-anchor-id="the-core-problem-normalized-vs.-ai-friendly-schemas">2.1. The Core Problem: Normalized vs.&nbsp;AI-Friendly Schemas</h3>
+<p>Your current schema is likely <strong>normalized</strong> for transactional efficiency (e.g., <code>strava_runs</code>, <code>whoop_sleep</code>, <code>whoop_recovery</code>). This is great for data integrity but terrible for Text-to-SQL models, as it forces the AI to learn complex, multi-table joins—a primary source of error.</p>
 </section>
-</section>
-<section id="ultimate-goal" class="level2">
-<h2 class="anchored" data-anchor-id="ultimate-goal">Ultimate Goal 🎯</h2>
-<section id="the-vision-conversational-data-assistant" class="level3">
-<h3 class="anchored" data-anchor-id="the-vision-conversational-data-assistant">The Vision: Conversational Data Assistant</h3>
-<p><strong>Before (Current):</strong></p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- You write complex SQL:</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">AVG</span>(moving_time), <span class="fu">AVG</span>(distance) </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> strava_runs </span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> start_date <span class="op">&gt;=</span> <span class="st">'2025-08-01'</span> </span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">AND</span> start_date <span class="op">&lt;</span> <span class="st">'2025-09-01'</span>;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>After (AI Assistant):</strong></p>
-<pre><code>You: "How was my running performance in August?"
-
-AI: "In August 2025, you ran 12 times with an average distance of 5.2 miles and average pace of 8:45/mile. Your longest run was 10.3 miles. Compared to July, you increased your weekly mileage by 15%."</code></pre>
-</section>
-<section id="example-conversations" class="level3">
-<h3 class="anchored" data-anchor-id="example-conversations">Example Conversations</h3>
-<p><strong>Conversation 1: Performance Analysis</strong></p>
-<pre><code>User: "Am I getting faster this year?"
-AI: "Yes! Your average pace improved from 9:15/mile in January to 8:45/mile in August. Your 5K pace dropped by 30 seconds. Here's your progression chart..."
-
-User: "What about my recovery correlation?"
-AI: "Interesting pattern: Your best running performances (sub-8:00 pace) happened when your WHOOP recovery was above 75%. Days with recovery below 50% showed 12% slower paces on average."</code></pre>
-<p><strong>Conversation 2: Route Intelligence</strong></p>
-<pre><code>User: "Show me my favorite running routes in Astoria"
-AI: "Based on your GPS data, your top 3 Astoria routes are:
-1. Astoria Park Loop (ran 18 times, avg pace 8:20)
-2. Waterfront Trail (ran 12 times, avg pace 8:45)
-3. Neighborhood Circuit (ran 8 times, avg pace 9:10)
-
-Would you like to see elevation profiles or plan a new route?"</code></pre>
-<p><strong>Conversation 3: Health Insights</strong></p>
-<pre><code>User: "How does my sleep affect my running?"
-AI: "Strong correlation found: 
-- 8+ hours sleep → 15% faster average pace
-- &lt;6 hours sleep → 20% higher perceived effort
-- Best performances occur 2-3 days after 85%+ sleep scores
-
-Recommendation: Prioritize sleep 2 nights before key workouts."</code></pre>
-</section>
-</section>
-<section id="professional-implementation-standards" class="level2">
-<h2 class="anchored" data-anchor-id="professional-implementation-standards">Professional Implementation Standards 🏆</h2>
-<section id="why-this-guide-follows-industry-best-practices" class="level3">
-<h3 class="anchored" data-anchor-id="why-this-guide-follows-industry-best-practices">Why This Guide Follows Industry Best Practices</h3>
-<p>This implementation guide demonstrates mature software engineering principles:</p>
-<p><strong>Holistic Vision:</strong> - Starts with the “Why” - ultimate goal and user experience - Uses concrete “Before/After” examples and conversation scenarios - Aligns stakeholders around clear outcomes</p>
-<p><strong>Structured Development:</strong> - Logical, iterative roadmap (Foundation → Query Engine → Interface) - Delivers value incrementally with each phase - Allows for early validation and course correction</p>
-<p><strong>Beyond Pure Implementation:</strong> - <strong>Cost Analysis</strong>: Shows fiscal responsibility and budgeting considerations - <strong>Success Metrics</strong>: Defines measurable outcomes (technical, user, business) - <strong>Risk Mitigation</strong>: Proactively identifies problems with solutions - <strong>Justified Decisions</strong>: Explains <em>why</em> specific technologies were chosen</p>
-<p><strong>Production-Ready Considerations:</strong> - Query safety with multiple protection layers - Conversational context for natural follow-up questions - Schema documentation quality as critical success factor - Performance optimizations (HNSW vs IVFFlat indexes)</p>
-<p><strong>Forward-Thinking Design:</strong> - <code>query_history</code> table creates dataset for future improvements - Feedback collection enables model fine-tuning - Caching layer foundation for scaling</p>
+<section id="the-solution-denormalized-ai-optimized-materialized-views" class="level3">
+<h3 class="anchored" data-anchor-id="the-solution-denormalized-ai-optimized-materialized-views">2.2. The Solution: Denormalized, AI-Optimized Materialized Views</h3>
+<p>We will not replace your existing tables. Instead, we will create a new, denormalized layer specifically for the AI. This is our “AI serving layer.”</p>
+<p><strong>Recommendation:</strong> Create a <strong><code>daily_fitness_snapshot</code></strong> materialized view. This single, wide table pre-joins your most important data points, creating a rich, contextual record for each day.</p>
+<section id="proposed-daily_fitness_snapshot-schema" class="level4">
+<h4 class="anchored" data-anchor-id="proposed-daily_fitness_snapshot-schema"><strong>Proposed <code>daily_fitness_snapshot</code> Schema:</strong></h4>
+<p>This table becomes the primary “document” for our RAG system. Each row is a self-contained story of a day.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">MATERIALIZED</span> <span class="kw">VIEW</span> daily_fitness_snapshot <span class="kw">AS</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    u.<span class="kw">id</span> <span class="kw">AS</span> user_id,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    d.<span class="dt">date</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- WHOOP Recovery &amp; Sleep</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    wr.recovery_score,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    wr.hrv_ms,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    ws.sleep_score,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    ws.hours_slept,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- WHOOP Strain</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    wst.strain_score,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">-- Strava Activity (Aggregated for the day)</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    sa.total_runs_today,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    sa.total_running_distance_meters,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    sa.avg_run_pace_ms,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    sa.longest_run_id <span class="co">-- Foreign key to the most significant run of the day</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    dates d <span class="co">-- A simple calendar table</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> users u <span class="kw">ON</span> <span class="kw">TRUE</span> <span class="co">-- Or your user table</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> whoop_recovery wr <span class="kw">ON</span> wr.<span class="dt">date</span> <span class="op">=</span> d.<span class="dt">date</span> <span class="kw">AND</span> wr.user_id <span class="op">=</span> u.<span class="kw">id</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> whoop_sleep ws <span class="kw">ON</span> ws.<span class="dt">date</span> <span class="op">=</span> d.<span class="dt">date</span> <span class="kw">AND</span> ws.user_id <span class="op">=</span> u.<span class="kw">id</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> whoop_strain wst <span class="kw">ON</span> wst.<span class="dt">date</span> <span class="op">=</span> d.<span class="dt">date</span> <span class="kw">AND</span> wst.user_id <span class="op">=</span> u.<span class="kw">id</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> (</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        start_date:<span class="ch">:date</span> <span class="kw">AS</span> run_date,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        user_id,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">COUNT</span>(<span class="kw">id</span>) <span class="kw">AS</span> total_runs_today,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">SUM</span>(distance) <span class="kw">AS</span> total_running_distance_meters,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">AVG</span>(average_speed) <span class="kw">AS</span> avg_run_pace_ms,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        (array_agg(<span class="kw">id</span> <span class="kw">ORDER</span> <span class="kw">BY</span> distance <span class="kw">DESC</span>))[<span class="dv">1</span>] <span class="kw">AS</span> longest_run_id</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> strava_runs</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">GROUP</span> <span class="kw">BY</span> run_date, user_id</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>) sa <span class="kw">ON</span> sa.run_date <span class="op">=</span> d.<span class="dt">date</span> <span class="kw">AND</span> sa.user_id <span class="op">=</span> u.<span class="kw">id</span>;</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="co">-- Refresh this view daily after data ingestion</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="kw">REFRESH</span> <span class="kw">MATERIALIZED</span> <span class="kw">VIEW</span> daily_fitness_snapshot;</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Why this is a game-changer:</strong></p>
+<ol type="1">
+<li><strong>Simplified Queries:</strong> The AI no longer needs to guess <code>JOIN</code> logic. A query like “How does my sleep affect my running pace?” becomes a simple <code>SELECT</code> on a single table.</li>
+<li><strong>Rich Context for RAG:</strong> Each row is a perfect “document” to embed. Instead of embedding isolated column descriptions, we can embed descriptions of the entire “daily snapshot” concept.</li>
+<li><strong>Performance:</strong> Querying a materialized view is orders of magnitude faster than performing joins on the fly.</li>
+</ol>
 <hr>
 </section>
 </section>
-<section id="technical-architecture" class="level2">
-<h2 class="anchored" data-anchor-id="technical-architecture">Technical Architecture 🏗️</h2>
-<section id="phase-1-schema-embeddings-foundation" class="level3">
-<h3 class="anchored" data-anchor-id="phase-1-schema-embeddings-foundation">Phase 1: Schema Embeddings (Foundation)</h3>
-<pre><code>Database Schema → Text Descriptions → OpenAI Embeddings → Vector Storage</code></pre>
 </section>
-<section id="phase-2-query-understanding-intelligence" class="level3">
-<h3 class="anchored" data-anchor-id="phase-2-query-understanding-intelligence">Phase 2: Query Understanding (Intelligence)</h3>
-<pre><code>User Question → Embedding → Schema Similarity → SQL Generation → Results</code></pre>
-</section>
-<section id="phase-3-conversational-interface-experience" class="level3">
-<h3 class="anchored" data-anchor-id="phase-3-conversational-interface-experience">Phase 3: Conversational Interface (Experience)</h3>
-<pre><code>User Chat → Context + History → AI Response → Follow-up Questions</code></pre>
-</section>
-</section>
-<section id="implementation-roadmap" class="level2">
-<h2 class="anchored" data-anchor-id="implementation-roadmap">Implementation Roadmap 📋</h2>
-<section id="phase-1-foundation-setup-week-1" class="level3">
-<h3 class="anchored" data-anchor-id="phase-1-foundation-setup-week-1">Phase 1: Foundation Setup (Week 1)</h3>
-<section id="step-1.1-extract-database-schema" class="level4">
-<h4 class="anchored" data-anchor-id="step-1.1-extract-database-schema">Step 1.1: Extract Database Schema</h4>
+<section id="the-rag-and-text-to-sql-engine-a-decomposed-self-correcting-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="the-rag-and-text-to-sql-engine-a-decomposed-self-correcting-pipeline">3. The RAG and Text-to-SQL Engine: A Decomposed, Self-Correcting Pipeline</h2>
+<p>We will implement a state-of-the-art Text-to-SQL pipeline inspired by the <strong>DIN-SQL (Decomposed In-context Learning)</strong> methodology. This breaks the complex task of generating SQL into a logical chain of thought, significantly improving accuracy and enabling self-correction.</p>
+<section id="the-intelligent-query-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="the-intelligent-query-pipeline"><strong>The Intelligent Query Pipeline:</strong></h3>
+<ol type="1">
+<li><p><strong>Schema Linking (RAG):</strong></p>
 <ul>
-<li>Document all tables, columns, relationships</li>
-<li>Create human-readable descriptions</li>
-<li>Include business context and data patterns</li>
-<li><strong>Schema Documentation Sprint</strong>: Critical success factor requiring:
-<ul>
-<li>Clear, unambiguous descriptions for every table and column</li>
-<li>Explicit units (e.g., <code>distance</code> in meters, <code>moving_time</code> in seconds)</li>
-<li>Enum value definitions and valid ranges</li>
-<li>Relationship explanations and business logic context</li>
+<li><strong>User Question:</strong> “Compare my average pace in August to my recovery.”</li>
+<li><strong>Embedding:</strong> The question is embedded using <code>text-embedding-3-small</code>.</li>
+<li><strong>Vector Search:</strong> We perform a similarity search against the embeddings of our <strong><code>schema_embeddings</code></strong> table, which now contains highly descriptive entries for the <code>daily_fitness_snapshot</code> view.</li>
+<li><strong>Result:</strong> The system identifies <code>avg_run_pace_ms</code> and <code>recovery_score</code> from <code>daily_fitness_snapshot</code> as the most relevant schema components.</li>
 </ul></li>
-</ul>
-</section>
-<section id="step-1.2-choose-embedding-model" class="level4">
-<h4 class="anchored" data-anchor-id="step-1.2-choose-embedding-model">Step 1.2: Choose Embedding Model</h4>
-<p><strong>Recommendation: <code>text-embedding-3-small</code></strong></p>
-<p><strong>Why text-embedding-3-small?</strong> - <strong>Cost Effective</strong>: $0.02 per 1M tokens (vs $0.13 for large) - <strong>Performance</strong>: 1536 dimensions, excellent for schema understanding - <strong>Speed</strong>: Faster processing for real-time queries - <strong>Quality</strong>: Sufficient for database schema similarity</p>
-<p><strong>When to use text-embedding-3-large:</strong> - If you need maximum accuracy for complex queries - If cost is not a primary concern - For production systems with high query volume</p>
-</section>
-<section id="step-1.3-create-schema-embeddings" class="level4">
-<h4 class="anchored" data-anchor-id="step-1.3-create-schema-embeddings">Step 1.3: Create Schema Embeddings</h4>
+<li><p><strong>Query Decomposition &amp; Classification (DIN-SQL):</strong></p>
 <ul>
-<li>Convert schema descriptions to embeddings</li>
-<li>Store in <code>schema_embeddings</code> table</li>
-<li>Build similarity search functions</li>
-</ul>
-</section>
-</section>
-<section id="phase-2-query-engine-week-2" class="level3">
-<h3 class="anchored" data-anchor-id="phase-2-query-engine-week-2">Phase 2: Query Engine (Week 2)</h3>
-<section id="step-2.1-natural-language-processing" class="level4">
-<h4 class="anchored" data-anchor-id="step-2.1-natural-language-processing">Step 2.1: Natural Language Processing</h4>
+<li>The LLM (GPT-4) receives the question and the retrieved schema.</li>
+<li><strong>Step A (Classification):</strong> It first classifies the query. Is it <code>EASY</code> (simple <code>SELECT</code>/<code>WHERE</code>), <code>MEDIUM</code> (<code>GROUP BY</code>), or <code>HARD</code> (<code>JOIN</code> or complex subquery)?</li>
+<li><strong>Step B (Decomposition):</strong> Based on the classification, it generates a “query plan” in plain English.
 <ul>
-<li>Parse user questions into intents</li>
-<li>Extract entities (dates, metrics, filters)</li>
-<li>Identify query complexity and type</li>
-</ul>
-</section>
-<section id="step-2.2-sql-generation-pipeline" class="level4">
-<h4 class="anchored" data-anchor-id="step-2.2-sql-generation-pipeline">Step 2.2: SQL Generation Pipeline</h4>
-<ul>
-<li>Map user intent to relevant schema components</li>
-<li>Generate SQL queries using GPT-4</li>
-<li>Validate and optimize generated queries</li>
-</ul>
-</section>
-<section id="step-2.3-result-formatting" class="level4">
-<h4 class="anchored" data-anchor-id="step-2.3-result-formatting">Step 2.3: Result Formatting</h4>
-<ul>
-<li>Execute SQL and fetch results</li>
-<li>Format data for human consumption</li>
-<li>Generate insights and summaries</li>
-</ul>
-</section>
-</section>
-<section id="phase-3-conversational-interface-week-3" class="level3">
-<h3 class="anchored" data-anchor-id="phase-3-conversational-interface-week-3">Phase 3: Conversational Interface (Week 3)</h3>
-<section id="step-3.1-chat-api-development" class="level4">
-<h4 class="anchored" data-anchor-id="step-3.1-chat-api-development">Step 3.1: Chat API Development</h4>
-<ul>
-<li>Create <code>/api/chat/database</code> endpoint</li>
-<li><strong>Implement conversation context management</strong>:
-<ul>
-<li>Accept array of previous messages for follow-up context</li>
-<li>Pass conversation history to GPT-4 for continuity</li>
-<li>Handle references like “What about in July?” or “Show me more details”</li>
+<li><em>Example Plan:</em> “First, I need to filter the <code>daily_fitness_snapshot</code> for the month of August. Then, I will select the <code>avg_run_pace_ms</code> and <code>recovery_score</code> columns. Finally, I will calculate the average of both.”</li>
 </ul></li>
-<li>Add query history and follow-up support</li>
-</ul>
-</section>
-<section id="step-3.2-frontend-integration" class="level4">
-<h4 class="anchored" data-anchor-id="step-3.2-frontend-integration">Step 3.2: Frontend Integration</h4>
+</ul></li>
+<li><p><strong>SQL Generation (PICARD-inspired):</strong></p>
 <ul>
-<li>Build chat interface component</li>
-<li>Add query visualization components</li>
-<li>Implement result sharing and export</li>
-</ul>
-</section>
-<section id="step-3.3-advanced-features" class="level4">
-<h4 class="anchored" data-anchor-id="step-3.3-advanced-features">Step 3.3: Advanced Features</h4>
+<li>The LLM uses the plan to generate the SQL.</li>
+<li>We employ a constrained decoding approach. The model’s output is restricted to valid SQL syntax, preventing basic errors.</li>
+<li><strong>Generated SQL:</strong> <code>sql     SELECT        AVG(avg_run_pace_ms),        AVG(recovery_score)      FROM daily_fitness_snapshot      WHERE date &gt;= '2025-08-01' AND date &lt; '2025-09-01';</code></li>
+</ul></li>
+<li><p><strong>Self-Correction &amp; Validation:</strong></p>
 <ul>
-<li>Multi-step query conversations</li>
-<li>Data visualization generation</li>
-<li>Proactive insights and recommendations</li>
-</ul>
-</section>
-</section>
-</section>
-<section id="technical-implementation-details" class="level2">
-<h2 class="anchored" data-anchor-id="technical-implementation-details">Technical Implementation Details 🔧</h2>
-<section id="database-schema-for-embeddings" class="level3">
-<h3 class="anchored" data-anchor-id="database-schema-for-embeddings">Database Schema for Embeddings</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Schema embeddings storage</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> schema_embeddings (</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  table_name <span class="dt">VARCHAR</span>(<span class="dv">255</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  column_name <span class="dt">VARCHAR</span>(<span class="dv">255</span>),</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  description TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  embedding vector(<span class="dv">1536</span>), <span class="co">-- text-embedding-3-small dimensions</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  metadata JSONB,</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW()</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>);</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">-- Create index for similarity search</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">-- HNSW index often provides better speed/accuracy tradeoff</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_schema_embeddings_vector </span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="kw">ON</span> schema_embeddings </span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="kw">USING</span> hnsw (embedding vector_cosine_ops);</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">-- Alternative: IVFFlat index (requires manual tuning)</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">-- CREATE INDEX idx_schema_embeddings_ivfflat </span></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co">-- ON schema_embeddings </span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">-- USING ivfflat (embedding vector_cosine_ops) </span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co">-- WITH (lists = 100);</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co">-- Query history for learning</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> query_history (</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  user_id <span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> users(<span class="kw">id</span>),</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  user_question TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  generated_sql TEXT,</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  execution_time_ms <span class="dt">INTEGER</span>,</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  result_count <span class="dt">INTEGER</span>,</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  feedback_rating <span class="dt">INTEGER</span>, <span class="co">-- 1-5 stars</span></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW()</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="openai-integration" class="level3">
-<h3 class="anchored" data-anchor-id="openai-integration">OpenAI Integration</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 📂 src/lib/services/embedding-service.ts</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> OpenAI <span class="im">from</span> <span class="st">'openai'</span><span class="op">;</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> EmbeddingService {</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> openai<span class="op">:</span> OpenAI<span class="op">;</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>() {</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">openai</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">OpenAI</span>({</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      apiKey<span class="op">:</span> <span class="bu">process</span><span class="op">.</span><span class="at">env</span><span class="op">.</span><span class="at">OPENAI_API_KEY</span><span class="op">!</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">createEmbedding</span>(text<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">number</span>[]<span class="op">&gt;</span> {</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">openai</span><span class="op">.</span><span class="at">embeddings</span><span class="op">.</span><span class="fu">create</span>({</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      model<span class="op">:</span> <span class="st">'text-embedding-3-small'</span><span class="op">,</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>      input<span class="op">:</span> text<span class="op">,</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>      encoding_format<span class="op">:</span> <span class="st">'float'</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> response<span class="op">.</span><span class="at">data</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">embedding</span><span class="op">;</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">findSimilarSchema</span>(</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    userQuery<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> </span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    limit<span class="op">:</span> <span class="dt">number</span> <span class="op">=</span> <span class="dv">5</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  )<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span>SchemaMatch[]<span class="op">&gt;</span> {</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> queryEmbedding <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="fu">createEmbedding</span>(userQuery)<span class="op">;</span></span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> results <span class="op">=</span> <span class="cf">await</span> <span class="fu">sql</span><span class="vs">`</span></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="vs">      SELECT </span></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="vs">        table_name,</span></span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="vs">        column_name,</span></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="vs">        description,</span></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="vs">        1 - (embedding &lt;=&gt; </span><span class="sc">${</span>queryEmbedding<span class="sc">}</span><span class="vs">) as similarity</span></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="vs">      FROM schema_embeddings</span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="vs">      ORDER BY embedding &lt;=&gt; </span><span class="sc">${</span>queryEmbedding<span class="sc">}</span></span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="vs">      LIMIT </span><span class="sc">${</span>limit<span class="sc">}</span></span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="vs">    `</span><span class="op">;</span></span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> results<span class="op">;</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="sql-generation-pipeline" class="level3">
-<h3 class="anchored" data-anchor-id="sql-generation-pipeline">SQL Generation Pipeline</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 📂 src/lib/services/sql-generator.ts</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">class</span> SQLGenerator {</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="kw">readonly</span> FORBIDDEN_KEYWORDS <span class="op">=</span> [</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'DROP'</span><span class="op">,</span> <span class="st">'DELETE'</span><span class="op">,</span> <span class="st">'UPDATE'</span><span class="op">,</span> <span class="st">'INSERT'</span><span class="op">,</span> <span class="st">'TRUNCATE'</span><span class="op">,</span> <span class="st">'ALTER'</span><span class="op">,</span> </span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">'CREATE'</span><span class="op">,</span> <span class="st">'GRANT'</span><span class="op">,</span> <span class="st">'REVOKE'</span><span class="op">,</span> <span class="st">'EXECUTE'</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">;</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">async</span> <span class="fu">generateSQL</span>(</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    userQuestion<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    relevantSchema<span class="op">:</span> SchemaMatch[]<span class="op">,</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    conversationHistory<span class="op">?:</span> Message[]</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  )<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="dt">string</span><span class="op">&gt;</span> {</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> contextualPrompt <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">buildContextualPrompt</span>(</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>      userQuestion<span class="op">,</span> </span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>      relevantSchema<span class="op">,</span> </span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>      conversationHistory</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    )<span class="op">;</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> response <span class="op">=</span> <span class="cf">await</span> <span class="kw">this</span><span class="op">.</span><span class="at">openai</span><span class="op">.</span><span class="at">chat</span><span class="op">.</span><span class="at">completions</span><span class="op">.</span><span class="fu">create</span>({</span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>      model<span class="op">:</span> <span class="st">'gpt-4'</span><span class="op">,</span></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>      messages<span class="op">:</span> [</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        { role<span class="op">:</span> <span class="st">'system'</span><span class="op">,</span> content<span class="op">:</span> contextualPrompt }<span class="op">,</span></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>        { role<span class="op">:</span> <span class="st">'user'</span><span class="op">,</span> content<span class="op">:</span> userQuestion }</span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>      ]<span class="op">,</span></span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>      temperature<span class="op">:</span> <span class="fl">0.1</span></span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> generatedSQL <span class="op">=</span> response<span class="op">.</span><span class="at">choices</span>[<span class="dv">0</span>]<span class="op">.</span><span class="at">message</span><span class="op">.</span><span class="at">content</span><span class="op">;</span></span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Safety validation</span></span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">this</span><span class="op">.</span><span class="fu">validateAndSanitizeSQL</span>(generatedSQL)<span class="op">;</span></span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="fu">validateAndSanitizeSQL</span>(sql<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> <span class="dt">string</span> {</span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Check for forbidden keywords</span></span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> upperSQL <span class="op">=</span> sql<span class="op">.</span><span class="fu">toUpperCase</span>()<span class="op">;</span></span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (<span class="kw">const</span> keyword <span class="kw">of</span> <span class="kw">this</span><span class="op">.</span><span class="at">FORBIDDEN_KEYWORDS</span>) {</span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (upperSQL<span class="op">.</span><span class="fu">includes</span>(keyword)) {</span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> <span class="kw">new</span> <span class="bu">Error</span>(<span class="vs">`Forbidden SQL operation: </span><span class="sc">${</span>keyword<span class="sc">}</span><span class="vs">`</span>)<span class="op">;</span></span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Add LIMIT if missing</span></span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="op">!</span>upperSQL<span class="op">.</span><span class="fu">includes</span>(<span class="st">'LIMIT'</span>)) {</span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>      sql <span class="op">=</span> sql<span class="op">.</span><span class="fu">trim</span>()<span class="op">;</span></span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (sql<span class="op">.</span><span class="fu">endsWith</span>(<span class="st">';'</span>)) {</span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>        sql <span class="op">=</span> sql<span class="op">.</span><span class="fu">slice</span>(<span class="dv">0</span><span class="op">,</span> <span class="op">-</span><span class="dv">1</span>) <span class="op">+</span> <span class="st">' LIMIT 1000;'</span><span class="op">;</span></span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>      } <span class="cf">else</span> {</span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>        sql <span class="op">+=</span> <span class="st">' LIMIT 1000'</span><span class="op">;</span></span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> sql<span class="op">;</span></span>
-<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="fu">buildContextualPrompt</span>(</span>
-<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>    userQuestion<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
-<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>    relevantSchema<span class="op">:</span> SchemaMatch[]<span class="op">,</span></span>
-<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>    conversationHistory<span class="op">?:</span> Message[]</span>
-<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>  )<span class="op">:</span> <span class="dt">string</span> {</span>
-<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> contextualInfo <span class="op">=</span> <span class="st">''</span><span class="op">;</span></span>
-<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (conversationHistory <span class="op">&amp;&amp;</span> conversationHistory<span class="op">.</span><span class="at">length</span> <span class="op">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>      contextualInfo <span class="op">=</span> <span class="vs">`</span></span>
-<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a><span class="vs">Previous conversation context:</span></span>
-<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a><span class="sc">${</span>conversationHistory<span class="op">.</span><span class="fu">slice</span>(<span class="op">-</span><span class="dv">3</span>)<span class="op">.</span><span class="fu">map</span>(msg <span class="kw">=&gt;</span> </span>
-<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>  <span class="vs">`</span><span class="sc">${</span>msg<span class="op">.</span><span class="at">role</span><span class="sc">}</span><span class="vs">: </span><span class="sc">${</span>msg<span class="op">.</span><span class="at">content</span><span class="sc">}</span><span class="vs">`</span></span>
-<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>)<span class="op">.</span><span class="fu">join</span>(<span class="st">'</span><span class="sc">\n</span><span class="st">'</span>)<span class="sc">}</span></span>
-<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a><span class="vs">Current question may reference previous results or context.</span></span>
-<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a><span class="vs">`</span><span class="op">;</span></span>
-<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="vs">`</span></span>
-<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a><span class="vs">You are a SQL expert for a fitness tracking database.</span></span>
-<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a><span class="vs">Available Tables and Columns:</span></span>
-<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a><span class="sc">${</span><span class="kw">this</span><span class="op">.</span><span class="fu">formatSchemaContext</span>(relevantSchema)<span class="sc">}</span></span>
-<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a><span class="sc">${</span>contextualInfo<span class="sc">}</span></span>
-<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a><span class="vs">Current User Question: "</span><span class="sc">${</span>userQuestion<span class="sc">}</span><span class="vs">"</span></span>
-<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a><span class="vs">Rules:</span></span>
-<span id="cb11-85"><a href="#cb11-85" aria-hidden="true" tabindex="-1"></a><span class="vs">- Generate only SELECT queries (no INSERT, UPDATE, DELETE, DROP)</span></span>
-<span id="cb11-86"><a href="#cb11-86" aria-hidden="true" tabindex="-1"></a><span class="vs">- Include appropriate WHERE clauses for date filtering</span></span>
-<span id="cb11-87"><a href="#cb11-87" aria-hidden="true" tabindex="-1"></a><span class="vs">- Use proper JOINs when referencing multiple tables</span></span>
-<span id="cb11-88"><a href="#cb11-88" aria-hidden="true" tabindex="-1"></a><span class="vs">- Return only the SQL query, no explanations</span></span>
-<span id="cb11-89"><a href="#cb11-89" aria-hidden="true" tabindex="-1"></a><span class="vs">- If the question references "previous" data, consider the conversation context</span></span>
-<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a><span class="vs">    `</span><span class="op">;</span></span>
-<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-</section>
-<section id="cost-analysis" class="level2">
-<h2 class="anchored" data-anchor-id="cost-analysis">Cost Analysis 💰</h2>
-<section id="embedding-costs-text-embedding-3-small" class="level3">
-<h3 class="anchored" data-anchor-id="embedding-costs-text-embedding-3-small">Embedding Costs (text-embedding-3-small)</h3>
-<ul>
-<li><strong>Schema Processing</strong>: ~50 schema descriptions × 100 tokens = 5,000 tokens</li>
-<li><strong>One-time Cost</strong>: $0.0001 (essentially free)</li>
-<li><strong>User Queries</strong>: ~50 tokens per query × 1,000 queries/month = 50,000 tokens</li>
-<li><strong>Monthly Cost</strong>: ~$0.001 per 1,000 user queries</li>
-</ul>
-</section>
-<section id="gpt-4-costs-sql-generation" class="level3">
-<h3 class="anchored" data-anchor-id="gpt-4-costs-sql-generation">GPT-4 Costs (SQL Generation)</h3>
-<ul>
-<li><strong>Query Generation</strong>: ~500 tokens per request</li>
-<li><strong>Cost</strong>: $0.03 per 1K input tokens + $0.06 per 1K output tokens</li>
-<li><strong>Per Query</strong>: ~$0.025</li>
-<li><strong>1,000 queries/month</strong>: ~$25</li>
-</ul>
-</section>
-<section id="total-monthly-cost-estimate" class="level3">
-<h3 class="anchored" data-anchor-id="total-monthly-cost-estimate">Total Monthly Cost Estimate</h3>
-<ul>
-<li><strong>Light Usage</strong> (100 queries): ~$2.50</li>
-<li><strong>Moderate Usage</strong> (500 queries): ~$12.50</li>
-<li><strong>Heavy Usage</strong> (1,000 queries): ~$25</li>
-</ul>
-</section>
-</section>
-<section id="success-metrics" class="level2">
-<h2 class="anchored" data-anchor-id="success-metrics">Success Metrics 📊</h2>
-<section id="technical-metrics" class="level3">
-<h3 class="anchored" data-anchor-id="technical-metrics">Technical Metrics</h3>
-<ul>
-<li><strong>Query Accuracy</strong>: &gt;90% generated SQL executes successfully</li>
-<li><strong>Response Time</strong>: &lt;2 seconds end-to-end</li>
-<li><strong>Similarity Relevance</strong>: &gt;0.7 cosine similarity for schema matches</li>
-</ul>
-</section>
-<section id="user-experience-metrics" class="level3">
-<h3 class="anchored" data-anchor-id="user-experience-metrics">User Experience Metrics</h3>
-<ul>
-<li><strong>User Satisfaction</strong>: &gt;4.5/5 average rating</li>
-<li><strong>Query Success Rate</strong>: &gt;85% of questions answered satisfactorily</li>
-<li><strong>Adoption Rate</strong>: Users ask &gt;10 questions per week</li>
-</ul>
-</section>
-<section id="business-value-metrics" class="level3">
-<h3 class="anchored" data-anchor-id="business-value-metrics">Business Value Metrics</h3>
-<ul>
-<li><strong>Time Saved</strong>: Reduce data analysis time by 70%</li>
-<li><strong>Insights Generated</strong>: 5x more data discoveries per week</li>
-<li><strong>User Engagement</strong>: 3x increase in data exploration</li>
-</ul>
-</section>
-</section>
-<section id="risk-mitigation" class="level2">
-<h2 class="anchored" data-anchor-id="risk-mitigation">Risk Mitigation 🛡️</h2>
-<section id="data-security" class="level3">
-<h3 class="anchored" data-anchor-id="data-security">Data Security</h3>
-<ul>
-<li>Never expose raw personal data in responses</li>
-<li>Implement query result filtering</li>
-<li>Add rate limiting and authentication</li>
-</ul>
-</section>
-<section id="query-safety-enhanced" class="level3">
-<h3 class="anchored" data-anchor-id="query-safety-enhanced">Query Safety (Enhanced)</h3>
-<ul>
-<li><strong>SQL injection prevention</strong> (parameterized queries)</li>
-<li><strong>Query sanitization layer</strong> with multiple protection levels:
-<ol type="1">
-<li><strong>Destructive Keywords Blocking</strong>: Explicitly parse generated SQL to forbid <code>DROP</code>, <code>DELETE</code>, <code>UPDATE</code>, <code>INSERT</code>, <code>TRUNCATE</code>, <code>ALTER</code></li>
-<li><strong>Resource Limits</strong>: Automatically add <code>LIMIT 1000</code> to queries lacking limits to prevent accidentally fetching huge datasets</li>
-<li><strong>Query Timeout</strong>: Kill any query running longer than 10 seconds</li>
-<li><strong>Read-only Access</strong>: Database user with SELECT-only permissions</li>
-</ol></li>
-<li><strong>Query complexity limits</strong> (execution time caps)</li>
-<li><strong>Result Size Monitoring</strong>: Track and limit response payload sizes</li>
-</ul>
-</section>
-<section id="cost-control" class="level3">
-<h3 class="anchored" data-anchor-id="cost-control">Cost Control</h3>
-<ul>
-<li>Token usage monitoring and alerts</li>
-<li>Query caching for repeated questions</li>
-<li>Graceful degradation if limits exceeded</li>
-</ul>
-</section>
-</section>
-<section id="next-steps-after-guide-creation" class="level2">
-<h2 class="anchored" data-anchor-id="next-steps-after-guide-creation">Next Steps After Guide Creation 🚀</h2>
-<section id="immediate-actions-this-week" class="level3">
-<h3 class="anchored" data-anchor-id="immediate-actions-this-week">Immediate Actions (This Week)</h3>
-<ol type="1">
-<li><strong>Review and approve this guide</strong></li>
-<li><strong>Set up OpenAI API access</strong> and billing</li>
-<li><strong>Create schema documentation</strong> (extract all table/column info)</li>
-<li><strong>Build schema embedding pipeline</strong></li>
+<li>The generated SQL is passed back to the LLM for a final review. “Is this SQL query correct based on the query plan?” This catches logical errors.</li>
+<li>The validated SQL is then passed through our <strong>multi-layer security sandbox</strong> (read-only user, keyword blocks, <code>LIMIT</code> injection, query timeout) before execution.</li>
+</ul></li>
 </ol>
-</section>
-<section id="phase-1-implementation-week-1" class="level3">
-<h3 class="anchored" data-anchor-id="phase-1-implementation-week-1">Phase 1 Implementation (Week 1)</h3>
-<ol type="1">
-<li><strong>Create embedding service</strong> with OpenAI integration</li>
-<li><strong>Extract and process schema</strong> into embeddings</li>
-<li><strong>Build similarity search functions</strong></li>
-<li><strong>Test embedding quality</strong> with sample queries</li>
-</ol>
-</section>
-<section id="phase-2-development-week-2" class="level3">
-<h3 class="anchored" data-anchor-id="phase-2-development-week-2">Phase 2 Development (Week 2)</h3>
-<ol type="1">
-<li><strong>Implement SQL generation</strong> pipeline</li>
-<li><strong>Create query execution</strong> safety layer</li>
-<li><strong>Build result formatting</strong> system</li>
-<li><strong>Add query validation</strong> and optimization</li>
-</ol>
-</section>
-<section id="phase-3-integration-week-3" class="level3">
-<h3 class="anchored" data-anchor-id="phase-3-integration-week-3">Phase 3 Integration (Week 3)</h3>
-<ol type="1">
-<li><strong>Develop chat API</strong> endpoints</li>
-<li><strong>Build frontend interface</strong> for conversations</li>
-<li><strong>Add conversation context</strong> management</li>
-<li><strong>Implement user feedback</strong> collection</li>
-</ol>
-</section>
-</section>
-<section id="file-structure-plan" class="level2">
-<h2 class="anchored" data-anchor-id="file-structure-plan">File Structure Plan 📁</h2>
-<pre><code>docs/
-├── embeddings-implementation-guide.md (this file)
-├── schema-documentation.md (to be created)
-├── api-specifications.md (to be created)
-└── user-examples.md (to be created)
-
-src/lib/services/
-├── embedding-service.ts (to be created)
-├── sql-generator.ts (to be created)
-├── query-executor.ts (to be created)
-└── conversation-manager.ts (to be created)
-
-src/app/api/
-├── chat/
-│   └── database/
-│       └── route.ts (to be created)
-└── embeddings/
-    ├── generate/route.ts (to be created)
-    └── search/route.ts (to be created)
-
-scripts/
-├── generate-schema-embeddings.js (to be created)
-├── test-embedding-quality.js (to be created)
-└── migrate-embeddings.js (to be created)</code></pre>
-</section>
-<section id="getting-started-checklist" class="level2">
-<h2 class="anchored" data-anchor-id="getting-started-checklist">Getting Started Checklist ✅</h2>
-<ul class="task-list">
-<li><label><input type="checkbox">Review and approve this implementation guide</label></li>
-<li><label><input type="checkbox">Set up OpenAI API key and billing account</label></li>
-<li><label><input type="checkbox">Create detailed schema documentation</label></li>
-<li><label><input type="checkbox">Set up embedding service infrastructure</label></li>
-<li><label><input type="checkbox">Generate initial schema embeddings</label></li>
-<li><label><input type="checkbox">Test embedding quality with sample queries</label></li>
-<li><label><input type="checkbox">Build SQL generation pipeline</label></li>
-<li><label><input type="checkbox">Create safety and validation layers</label></li>
-<li><label><input type="checkbox">Develop chat API endpoints</label></li>
-<li><label><input type="checkbox">Build frontend conversation interface</label></li>
-<li><label><input type="checkbox">Test end-to-end user experience</label></li>
-<li><label><input type="checkbox">Deploy to production environment</label></li>
-<li><label><input type="checkbox">Monitor performance and user feedback</label></li>
-</ul>
 <hr>
-<p><strong>Ready to transform your fitness data into an intelligent conversation? Let’s start with Phase 1! 🚀</strong></p>
+</section>
+</section>
+<section id="technical-implementation-refined-schema" class="level2">
+<h2 class="anchored" data-anchor-id="technical-implementation-refined-schema">4. Technical Implementation &amp; Refined Schema</h2>
+<section id="vector-storage-and-indexing-pgvector" class="level3">
+<h3 class="anchored" data-anchor-id="vector-storage-and-indexing-pgvector">4.1. Vector Storage and Indexing (<code>pgvector</code>)</h3>
+<p>Your choice of <code>pgvector</code> is excellent. We will enhance its implementation.</p>
+<p><strong>Index Selection:</strong></p>
+<ul>
+<li><strong>HNSW (Hierarchical Navigable Small World):</strong> This is the correct choice. It provides the best balance of recall and query speed for most workloads. It is superior to IVFFlat as it doesn’t require re-training and adapts better to new data.</li>
+</ul>
+<!-- end list -->
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Use vector_cosine_ops for normalized embeddings</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">INDEX</span> <span class="kw">ON</span> schema_embeddings <span class="kw">USING</span> hnsw (embedding vector_cosine_ops);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="advanced-schema_embeddings-table" class="level3">
+<h3 class="anchored" data-anchor-id="advanced-schema_embeddings-table">4.2. Advanced <code>schema_embeddings</code> Table</h3>
+<p>We will enrich this table with more metadata to help the RAG process.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> schema_embeddings (</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- Use 'view' or 'table' to differentiate</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  object_type <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">'table'</span>, </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  object_name <span class="dt">VARCHAR</span>(<span class="dv">255</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  column_name <span class="dt">VARCHAR</span>(<span class="dv">255</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- Example: "The daily average running pace in milliseconds per meter."</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  description TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- Add data type and relationships for more context</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  data_type <span class="dt">VARCHAR</span>(<span class="dv">100</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  relationship_info TEXT, <span class="co">-- e.g., "Foreign key to strava_runs.id"</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  embedding vector(<span class="dv">1536</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">WITH</span> <span class="dt">TIME</span> <span class="dt">ZONE</span> <span class="kw">DEFAULT</span> NOW()</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="the-query_history-table-our-flywheel-for-improvement" class="level3">
+<h3 class="anchored" data-anchor-id="the-query_history-table-our-flywheel-for-improvement">4.3. The <code>query_history</code> Table: Our Flywheel for Improvement</h3>
+<p>Your <code>query_history</code> table is the most valuable long-term asset. It’s the dataset we will use to fine-tune models in the future. We will add a crucial field: <code>corrected_sql</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> query_history (</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  user_id <span class="dt">INTEGER</span> <span class="kw">REFERENCES</span> users(<span class="kw">id</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  user_question TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  generated_sql TEXT,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- For human-in-the-loop correction</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  corrected_sql TEXT, </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- Was the query successful and did the user find it helpful?</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  was_successful <span class="dt">BOOLEAN</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  user_feedback <span class="dt">SMALLINT</span>, <span class="co">-- e.g., -1 for downvote, 1 for upvote</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  latency_ms <span class="dt">INTEGER</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  created_at <span class="dt">TIMESTAMP</span> <span class="kw">WITH</span> <span class="dt">TIME</span> <span class="dt">ZONE</span> <span class="kw">DEFAULT</span> NOW()</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="phased-rollout-success-measurement" class="level2">
+<h2 class="anchored" data-anchor-id="phased-rollout-success-measurement">5. Phased Rollout &amp; Success Measurement</h2>
+<section id="phase-1-foundational-data-layer-1-week" class="level3">
+<h3 class="anchored" data-anchor-id="phase-1-foundational-data-layer-1-week">Phase 1: Foundational Data Layer (1 Week)</h3>
+<ul>
+<li><strong>Goal:</strong> Create the <code>daily_fitness_snapshot</code> materialized view.</li>
+<li><strong>Action:</strong> Implement the SQL view logic. Set up a cron job to refresh it daily.</li>
+<li><strong>Metric:</strong> View successfully refreshes daily and contains accurate, correlated data.</li>
+</ul>
+</section>
+<section id="phase-2-rag-schema-intelligence-1-week" class="level3">
+<h3 class="anchored" data-anchor-id="phase-2-rag-schema-intelligence-1-week">Phase 2: RAG &amp; Schema Intelligence (1 Week)</h3>
+<ul>
+<li><strong>Goal:</strong> Build a robust schema retrieval system.</li>
+<li><strong>Action:</strong> Populate the enhanced <code>schema_embeddings</code> table. Build and test the similarity search function.</li>
+<li><strong>Metric:</strong> For a set of 20 test questions, the RAG system retrieves the correct tables/columns from <code>daily_fitness_snapshot</code> with &gt;95% accuracy.</li>
+</ul>
+</section>
+<section id="phase-3-decomposed-text-to-sql-engine-2-weeks" class="level3">
+<h3 class="anchored" data-anchor-id="phase-3-decomposed-text-to-sql-engine-2-weeks">Phase 3: Decomposed Text-to-SQL Engine (2 Weeks)</h3>
+<ul>
+<li><strong>Goal:</strong> Implement the full DIN-SQL inspired pipeline.</li>
+<li><strong>Action:</strong> Build the multi-step prompt chain for classification, decomposition, generation, and self-correction. Implement the security sandbox.</li>
+<li><strong>Metric:</strong> End-to-end query success rate &gt;80% on the 20 test questions. Latency &lt; 3 seconds.</li>
+</ul>
+</section>
+<section id="phase-4-conversational-interface-feedback-loop-1-week" class="level3">
+<h3 class="anchored" data-anchor-id="phase-4-conversational-interface-feedback-loop-1-week">Phase 4: Conversational Interface &amp; Feedback Loop (1 Week)</h3>
+<ul>
+<li><strong>Goal:</strong> Launch the user-facing chat application.</li>
+<li><strong>Action:</strong> Develop the API and frontend. Implement the <code>query_history</code> logging with user feedback buttons (👍/👎).</li>
+<li><strong>Metric:</strong> Achieve a user satisfaction score &gt;4.0/5. Capture at least 100 queries in the history table within the first week.</li>
+</ul>
+</section>
 </section>
 </section>
 
