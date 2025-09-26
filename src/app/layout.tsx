@@ -9,7 +9,7 @@ import { baseUrl } from './sitemap'
 import AuthProvider from '@/components/features/auth/AuthProvider'
 import LiquidNav from '@/components/shared/liquid-nav'
 import Footer from '@/components/shared/footer'
-import { GlobalChatbot } from '@/components/features/GlobalChatbot'
+// import { GlobalChatbot } from '@/components/features/GlobalChatbot' // Temporarily hidden
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -65,7 +65,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
-            <GlobalChatbot />
+            {/* <GlobalChatbot /> */} {/* Temporarily hidden - will show when AI answers are optimized */}
             <Analytics />
             <SpeedInsights />
           </div>

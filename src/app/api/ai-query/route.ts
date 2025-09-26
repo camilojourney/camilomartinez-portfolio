@@ -115,30 +115,7 @@ export async function POST(req: NextRequest) {
   let schemaRetrievalError: string | undefined;
 
   try {
-    // Get client IP for rate limiting
-    const clientIP = getClientIP(req);
-    console.log(`[Rate Limit] Checking limits for IP: ${clientIP}`);
-    
-    // Check rate limit BEFORE processing the request
-    const rateLimitStatus = await checkRateLimit(clientIP);
-    
-    if (rateLimitStatus.isBlocked) {
-      console.log(`[Rate Limit] Blocked request from IP: ${clientIP} (${rateLimitStatus.questionsUsed}/${5} questions used today)`);
-      
-      // Return rate limit error with helpful information
-      return NextResponse.json({
-        error: `You have reached your daily limit of 5 questions. You have used ${rateLimitStatus.questionsUsed} questions today.`,
-        rateLimitInfo: {
-          questionsUsed: rateLimitStatus.questionsUsed,
-          questionsRemaining: 0,
-          resetDate: rateLimitStatus.resetDate,
-          dailyLimit: 5,
-        },
-        timestamp: new Date().toISOString(),
-      }, { status: 429 }); // 429 Too Many Requests
-    }
-
-    // Add request timeout handling
+    // Add request timeout handling and parse body first
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000);
     });
@@ -147,6 +124,36 @@ export async function POST(req: NextRequest) {
       req.json(),
       timeoutPromise
     ]);
+
+    // Get client IP for rate limiting
+    const clientIP = getClientIP(req);
+    console.log(`[Rate Limit] Checking limits for IP: ${clientIP}`);
+    
+    // Check if this is an AI trainer bypass request
+    const bypassRateLimit = Boolean(body?.bypassRateLimit);
+    
+    if (bypassRateLimit) {
+      console.log(`[Rate Limit] Bypassing rate limit for AI trainer evaluation`);
+    } else {
+      // Check rate limit BEFORE processing the request (only for regular user requests)
+      const rateLimitStatus = await checkRateLimit(clientIP);
+      
+      if (rateLimitStatus.isBlocked) {
+        console.log(`[Rate Limit] Blocked request from IP: ${clientIP} (${rateLimitStatus.questionsUsed}/${5} questions used today)`);
+        
+        // Return rate limit error with helpful information
+        return NextResponse.json({
+          error: `You have reached your daily limit of 5 questions. You have used ${rateLimitStatus.questionsUsed} questions today.`,
+          rateLimitInfo: {
+            questionsUsed: rateLimitStatus.questionsUsed,
+            questionsRemaining: 0,
+            resetDate: rateLimitStatus.resetDate,
+            dailyLimit: 5,
+          },
+          timestamp: new Date().toISOString(),
+        }, { status: 429 }); // 429 Too Many Requests
+      }
+    }
 
     question = body?.question;
     const debugSchema: boolean = Boolean(body?.debugSchema);
@@ -373,7 +380,7 @@ SQL: ${queryData.sql}`,
       throw new Error('Query execution failed to return results after all attempts.');
     }
 
-    // Generate natural language answer as Camilo's personal fitness assistant
+    // Generate natural language answer in third person about Camilo
     console.log('[Natural Language Response] Generating user-friendly answer...');
     let userFriendlyAnswer = '';
     
@@ -383,30 +390,33 @@ SQL: ${queryData.sql}`,
         messages: [
           {
             role: 'system',
-            content: `You are Camilo Martinez's personal fitness assistant. You have access to all of Camilo's fitness data from WHOOP and Strava.
+            content: `You are an AI assistant analyzing Camilo Martinez's fitness data from WHOOP and Strava.
 
 IMPORTANT CONTEXT:
-- You are speaking TO Camilo about HIS personal data
-- Always use "you" when referring to Camilo
-- Be conversational, personal, and supportive
-- Frame everything as "your data shows..." or "you did..."
-- If data is empty/null, acknowledge you only have Camilo's data and suggest what might be available
+- You are speaking ABOUT Camilo in third person, not TO Camilo
+- Always use "Camilo" or "he/his" when referring to the data owner
+- Be informative and analytical about his fitness metrics
+- Frame everything as "Camilo's data shows..." or "he achieved..."
+- If data is empty/null, acknowledge this is Camilo's data and what might be available
 
 RESPONSE STYLE:
-- Conversational and personal (like a knowledgeable friend)
-- Start responses acknowledging this is Camilo's personal data
+- Third person perspective (like a fitness analyst reporting on Camilo)
 - Include specific numbers and insights from the data
 - Keep responses concise but informative (2-3 sentences max)
 - Use fitness terminology appropriately
+- Professional but friendly tone
 
 EXAMPLES:
 - Instead of: "The average is 60.3%"
-- Say: "Camilo, your average recovery score is 60.3%, which indicates moderate recovery levels."
+- Say: "Camilo's average recovery score is 60.3%, which indicates moderate recovery levels."
 
 - Instead of: "Query returned 5 rows"  
-- Say: "Looking at your data, you had 5 boxing sessions with details on duration and strain levels."
+- Say: "Camilo had 5 boxing sessions with details on duration and strain levels."
 
-Your job is to transform raw query results into natural, personal responses for Camilo.`
+- Instead of: "Your highest strain was..."
+- Say: "Camilo's highest strain score was..."
+
+Your job is to transform raw query results into natural, third-person analytical responses about Camilo's fitness data.`
           },
           {
             role: 'user',
@@ -432,9 +442,16 @@ Please provide a natural, conversational response to Camilo about his fitness da
 
     const latencyMs = Date.now() - startTime;
     
-    // Increment question count for successful queries
-    const updatedRateLimit = await incrementQuestionCount(clientIP);
-    console.log(`[Rate Limit] Question count incremented for IP: ${clientIP} (${updatedRateLimit.questionsUsed}/${5} questions used today)`);
+    // Increment question count for successful queries (but not for AI trainer bypasses)
+    let updatedRateLimit;
+    if (bypassRateLimit) {
+      console.log(`[Rate Limit] Bypassing question count increment for AI trainer evaluation`);
+      // Get current status without incrementing
+      updatedRateLimit = await checkRateLimit(clientIP);
+    } else {
+      updatedRateLimit = await incrementQuestionCount(clientIP);
+      console.log(`[Rate Limit] Question count incremented for IP: ${clientIP} (${updatedRateLimit.questionsUsed}/${5} questions used today)`);
+    }
     
     const historyId = await recordQueryHistory({
       userQuestion: question,
@@ -475,10 +492,18 @@ Please provide a natural, conversational response to Camilo about his fitness da
 
     let statusCode = 500;
     const message: string = error?.message || 'An unexpected error occurred.';
-    if (message.includes('must be a non-empty string')) {
+    const normalizedMessage = message.toLowerCase();
+
+    if (normalizedMessage.includes('must be a non-empty string')) {
       statusCode = 400;
-    } else if (message.includes('permission denied')) {
+    } else if (normalizedMessage.includes('permission denied')) {
       statusCode = 403;
+    } else if (normalizedMessage.includes('rate limit')) {
+      statusCode = 429;
+    } else if (normalizedMessage.includes('validation')) {
+      statusCode = 422;
+    } else if (normalizedMessage.includes('query execution failed')) {
+      statusCode = 502;
     }
 
     // Determine the specific failure reason for better debugging
@@ -488,6 +513,8 @@ Please provide a natural, conversational response to Camilo about his fitness da
       failureReason = `Schema retrieval failed: ${schemaRetrievalError || 'Unknown schema retrieval error'}`;
     } else if (!generatedSql) {
       failureReason = `SQL generation failed: ${message}`;
+    } else if (normalizedMessage.includes('validation')) {
+      failureReason = message;
     } else {
       failureReason = `Query execution failed: ${message}`;
     }

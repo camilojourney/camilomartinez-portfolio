@@ -81,55 +81,115 @@ async function runEvaluationCycle() {
     console.log('\n🎲 Step 1: Generating Test Questions');
     console.log('-----------------------------------');
     
-    // Get number of questions from environment variable (default to 5)
-    const numQuestions = parseInt(process.env.NUM_QUESTIONS || '5');
+    // Determine how many questions to request (default to 10 for richer coverage)
+    const numQuestions = parseInt(process.env.NUM_QUESTIONS || '10', 10);
     console.log(`🎯 Generating ${numQuestions} test questions`);
-    
-    const questionCrafterPrompt = `You are a meticulous data quality analyst. Your task is to generate ${numQuestions} diverse, realistic questions to test a Text-to-SQL AI agent for a fitness tracking application.
 
-Based on the following database schema, create a JSON object with a key "questions" which is an array of question strings.
+    const targetViews = [
+      'daily_fitness_snapshot',
+      'run_performance_details',
+      'boxing_performance_details',
+      'weightlifting_performance_details'
+    ];
 
-The questions should cover a good mix of:
-1. Simple lookups and filters
-2. Aggregations and grouping
-3. Time-based queries and trends
-4. Complex joins across views (if space allows)
-5. Edge cases and comparative analysis (if space allows)
+    const questionCrafterPrompt = `You are a meticulous data quality analyst. Generate ${numQuestions} unique, natural-language questions to stress test a single-user fitness Text-to-SQL agent.
 
-Make the questions sound natural, like a user would actually ask them. Focus on fitness, recovery, performance, and health metrics.
+Every question must:
+- Be phrased from Camilo's perspective ("I" / "my")
+- Target ONE primary view from this list: ${targetViews.join(', ')}
+- Explore a fresh metric, calculation, or comparison not covered by the other questions
+
+Coverage constraints:
+1. Include at least one question for each view (${targetViews.join(', ')}).
+2. Use at least three distinct time horizons (single day, week, month, quarter, year-to-date, rolling window, etc.).
+3. Include at least two comparison or trend questions (e.g., compare activities, time periods, or metrics).
+4. Avoid repeating phrasing, metrics, or time windows.
+
+Return ONLY valid JSON exactly like this:
+{
+  "questions": [
+    {
+      "question": "string",
+      "primary_view": "${targetViews.join('" | "')}",
+      "skills": ["aggregation" | "filter" | "time_series" | "comparison" | "edge_case" | "join"]
+    }
+  ]
+}
 
 Database Schema:
 ${getSimpleSchemaForPrompt()}
 
 Detailed Schema Context:
-${getDetailedSchemaContext()}
+${getDetailedSchemaContext()}`;
 
-Return ONLY a JSON object with this structure:
-{"questions": ["question1", "question2", ...]}`;
-    
-    const questionResponse = await openai.chat.completions.create({
-      model: 'gpt-4-turbo',
-      messages: [{ role: 'user', content: questionCrafterPrompt }],
-      response_format: { type: 'json_object' },
-      temperature: 0.7
-    });
+    const maxQuestionAttempts = 3;
+    let questions: Array<{ question: string; primary_view?: string; skills?: string[] }> = [];
 
-    const questionData = JSON.parse(questionResponse.choices[0].message.content || '{"questions": []}');
-    const questions = questionData.questions || [];
-    
-    console.log(`✅ Generated ${questions.length} test questions:`);
-    questions.forEach((q: string, i: number) => {
-      console.log(`   ${i + 1}. ${q}`);
-    });
+    for (let attempt = 1; attempt <= maxQuestionAttempts; attempt++) {
+      console.log(`   🔁 Question generation attempt ${attempt}/${maxQuestionAttempts}`);
+      const questionResponse = await openai.chat.completions.create({
+        model: 'gpt-4-turbo',
+        messages: [{ role: 'user', content: questionCrafterPrompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0.85
+      });
 
-    if (questions.length === 0) {
-      throw new Error("Question generation failed - no questions created");
+      let parsed: any;
+      try {
+        parsed = JSON.parse(questionResponse.choices[0].message.content || '{"questions": []}');
+      } catch (parseError) {
+        console.warn('   ⚠️ Failed to parse question JSON, retrying...', parseError);
+        continue;
+      }
+
+      const unique = new Map<string, { question: string; primary_view?: string; skills?: string[] }>();
+      for (const entry of parsed.questions || []) {
+        if (!entry?.question) continue;
+        const text = String(entry.question).trim();
+        if (!text) continue;
+        const key = text.toLowerCase();
+        if (!unique.has(key)) {
+          unique.set(key, {
+            question: text,
+            primary_view: entry.primary_view ? String(entry.primary_view).trim() : undefined,
+            skills: Array.isArray(entry.skills) ? entry.skills : undefined
+          });
+        }
+      }
+
+      const candidateQuestions = Array.from(unique.values());
+      const coveredViews = new Set(
+        candidateQuestions
+          .map(q => (q.primary_view || '').toLowerCase())
+          .filter(Boolean)
+      );
+
+      const hasAllViews = targetViews.every(view => coveredViews.has(view));
+      const hasEnoughQuestions = candidateQuestions.length >= numQuestions;
+
+      if (hasAllViews && hasEnoughQuestions) {
+        questions = candidateQuestions.slice(0, numQuestions);
+        break;
+      }
+
+      console.warn('   ⚠️ Question set failed diversity checks. Retrying...');
     }
+
+    if (questions.length < numQuestions) {
+      throw new Error('Question generation failed to produce a diverse set after multiple attempts.');
+    }
+
+    console.log(`✅ Generated ${questions.length} test questions with full coverage:`);
+    questions.forEach((q, i) => {
+      console.log(`   ${i + 1}. [${q.primary_view ?? 'unknown'}] ${q.question}`);
+    });
+
+    const questionTexts = questions.map(q => q.question);
 
     // Update cycle with question count
     await client.query(
       'UPDATE evaluation_cycles SET total_questions = $1 WHERE id = $2',
-      [questions.length, cycleDbId]
+      [questionTexts.length, cycleDbId]
     );
 
     // --- STEP 2 & 3: EXECUTE & JUDGE ---
@@ -139,9 +199,9 @@ Return ONLY a JSON object with this structure:
     const failures: Array<{question: string, reasoning: string, sql?: string, error?: string}> = [];
     let successCount = 0;
 
-    for (let i = 0; i < questions.length; i++) {
-      const question = questions[i];
-      console.log(`\n🔍 Testing Question ${i + 1}/${questions.length}:`);
+    for (let i = 0; i < questionTexts.length; i++) {
+      const question = questionTexts[i];
+      console.log(`\n🔍 Testing Question ${i + 1}/${questionTexts.length}:`);
       console.log(`   "${question}"`);
       
       try {
@@ -154,7 +214,10 @@ Return ONLY a JSON object with this structure:
         const response = await fetch(`${baseUrl}/api/ai-query`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question }),
+          body: JSON.stringify({ 
+            question,
+            bypassRateLimit: true // Bypass rate limiting for AI trainer evaluations
+          }),
         });
 
         if (!response.ok) {
@@ -260,10 +323,10 @@ Metadata: ${JSON.stringify(queryResult.metadata || {})}`;
     console.log('\n📊 Step 4: Analyzing Results and Generating Report');
     console.log('--------------------------------------------------');
     
-    const successRate = (successCount / questions.length) * 100;
-    console.log(`📈 Overall Success Rate: ${successRate.toFixed(2)}% (${successCount}/${questions.length})`);
+    const successRate = (successCount / questionTexts.length) * 100;
+    console.log(`📈 Overall Success Rate: ${successRate.toFixed(2)}% (${successCount}/${questionTexts.length})`);
     
-    let analysisReport = `Evaluation cycle completed successfully with ${successRate.toFixed(2)}% accuracy (${successCount}/${questions.length} questions passed).`;
+    let analysisReport = `Evaluation cycle completed successfully with ${successRate.toFixed(2)}% accuracy (${successCount}/${questionTexts.length} questions passed).`;
     
     if (failures.length > 0) {
       console.log(`\n🔍 Analyzing ${failures.length} failures...`);
@@ -278,7 +341,7 @@ Please provide a comprehensive analysis in the following format:
 
 ## Evaluation Summary
 - Overall performance assessment
-- Success rate: ${successRate.toFixed(2)}% (${successCount}/${questions.length})
+- Success rate: ${successRate.toFixed(2)}% (${successCount}/${questionTexts.length})
 
 ## Failure Pattern Analysis
 Identify the top 2-3 recurring patterns of failure. For each pattern:
@@ -333,7 +396,7 @@ Focus on concrete, actionable improvements that will directly increase the succe
     return {
       cycleId,
       successRate,
-      totalQuestions: questions.length,
+      totalQuestions: questionTexts.length,
       successCount,
       failures: failures.length,
       durationSec,
