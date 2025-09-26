@@ -109,6 +109,8 @@ interface YearlyTotals {
         };
     }, [data]);
 
+    const monthlyChartScrollRef = React.useRef<HTMLDivElement>(null);
+
     // Colors for each sport
     const sportColors = {
         Weightlifting: 'url(#gradient-green)',
@@ -203,6 +205,15 @@ interface YearlyTotals {
     // Format hours to display with one decimal place
     const formatHours = (hours: number) => hours.toFixed(1);
 
+    React.useEffect(() => {
+        if (!monthlyChartScrollRef.current) return;
+        const container = monthlyChartScrollRef.current;
+        const maxScrollLeft = container.scrollWidth - container.clientWidth;
+        if (maxScrollLeft > 0) {
+            container.scrollLeft = maxScrollLeft;
+        }
+    }, [processedData.monthlyData.length]);
+
     return (
         <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8">
             <style jsx>{`
@@ -260,7 +271,7 @@ interface YearlyTotals {
                     </div>
 
                     {/* Scrollable wrapper for the chart */}
-                    <div className="overflow-x-auto">
+                    <div ref={monthlyChartScrollRef} className="overflow-x-auto">
                         <svg
                             viewBox={`0 0 ${barChartWidth} ${barChartHeight}`}
                             className="w-full h-auto min-w-[600px]"
