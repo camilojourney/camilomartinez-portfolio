@@ -7,6 +7,8 @@ interface QueryHistoryEntry {
   wasSuccessful: boolean;
   userFeedback?: number;
   latencyMs: number;
+  failureDetails?: string;
+  userFriendlyAnswer?: string;
 }
 
 /**
@@ -15,6 +17,24 @@ interface QueryHistoryEntry {
  * @returns The created record ID
  */
 export async function logQueryHistory(entry: QueryHistoryEntry): Promise<number> {
+  // Prepare details object with failure information
+  const details: any = {};
+  
+  if (!entry.wasSuccessful) {
+    if (!entry.retrievedContext) {
+      details.schema_retrieval_failed = true;
+      details.failure_stage = 'schema_retrieval';
+    }
+    if (!entry.generatedSql) {
+      details.sql_generation_failed = true;
+      details.failure_stage = details.failure_stage || 'sql_generation';
+    }
+    if (entry.failureDetails) {
+      details.error_message = entry.failureDetails;
+    }
+    details.failure_timestamp = new Date().toISOString();
+  }
+
   const result = await sql`
     INSERT INTO query_history (
       user_question,
@@ -22,14 +42,18 @@ export async function logQueryHistory(entry: QueryHistoryEntry): Promise<number>
       generated_sql,
       was_successful,
       user_feedback,
-      latency_ms
+      latency_ms,
+      details,
+      user_friendly_answer
     ) VALUES (
       ${entry.userQuestion},
       ${entry.retrievedContext},
       ${entry.generatedSql},
       ${entry.wasSuccessful},
       ${entry.userFeedback ?? 0},
-      ${entry.latencyMs}
+      ${entry.latencyMs},
+      ${Object.keys(details).length > 0 ? JSON.stringify(details) : null},
+      ${entry.userFriendlyAnswer}
     )
     RETURNING id
   `;

@@ -2,7 +2,7 @@ import { OpenAI } from 'openai';
 import pg from 'pg';
 import * as dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, resolve } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,15 +14,9 @@ dotenv.config();
 const { Pool } = pg;
 
 const openai = new OpenAI(); // Assumes OPENAI_API_KEY is in your .env file
-const pool = new Pool({ 
-  connectionString: process.env.POSTGRES_URL_NON_POOLING,
-  ssl: {
-    rejectUnauthorized: true
-  }
-});
 
 // This is the AI's "knowledge base". High-quality descriptions are critical for accuracy.
-const schemaDescriptions = [
+export const schemaDescriptions = [
   // --- VIEW-LEVEL DESCRIPTIONS ---
   { 
     type: 'view', 
@@ -55,8 +49,8 @@ const schemaDescriptions = [
   { 
     type: 'column', 
     view: 'daily_fitness_snapshot', 
-    name: 'date', 
-    description: "Type: DATE (YYYY-MM-DD). The calendar date for this daily snapshot. Used for temporal analysis and trend identification."
+    name: 'snapshot_date', 
+    description: "Type: DATE (YYYY-MM-DD). The calendar date for this daily snapshot. Used for temporal analysis and trend identification. This is the main date column for filtering and ordering daily fitness data."
   },
   { 
     type: 'column', 
@@ -396,7 +390,14 @@ const schemaDescriptions = [
   }
 ];
 
-async function createEmbeddings() {
+export async function createEmbeddings() {
+  const pool = new Pool({ 
+    connectionString: process.env.POSTGRES_URL_NON_POOLING,
+    ssl: {
+      rejectUnauthorized: true
+    }
+  });
+
   const client = await pool.connect();
   try {
     console.log('--- Starting Schema Embedding Process ---');
@@ -442,7 +443,19 @@ async function createEmbeddings() {
     console.error('An error occurred during the embedding process:', error);
   } finally {
     client.release();
+    await pool.end();
   }
 }
 
-createEmbeddings().then(() => pool.end());
+const isMainModule = process.argv[1] && resolve(process.argv[1]) === __filename;
+
+if (isMainModule) {
+  createEmbeddings()
+    .then(() => {
+      console.log('Schema embeddings refreshed successfully.');
+    })
+    .catch((error) => {
+      console.error('Embedding refresh failed:', error);
+      process.exitCode = 1;
+    });
+}

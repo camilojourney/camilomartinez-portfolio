@@ -13,6 +13,25 @@ A modern, interactive portfolio showcasing expertise in AI development, data ana
 
 📖 **[View Full API Documentation](./docs/API-DOCUMENTATION.md)** - Comprehensive guide to all 12+ endpoints including authentication, parameters, examples, and testing commands.
 
+## 📚 Documentation Library
+
+### Core Platform Guides
+- [docs/README.md](./docs/README.md) — High-level index summarizing every document in the repository.
+- [docs/AI_QUERY_ENGINE.md](./docs/AI_QUERY_ENGINE.md) — Architecture, prompts, and validation workflow for the RAG + Text-to-SQL engine.
+- [docs/MIGRATION_SUMMARY_SEPT_2025.md](./docs/MIGRATION_SUMMARY_SEPT_2025.md) — Checklist of September 2025 schema changes, cron health, and follow-up actions.
+
+### WHOOP & Strava Integrations
+- [docs/WHOOP_V2.md](./docs/WHOOP_V2.md) — Current WHOOP API v2 implementation details and token lifecycle.
+- [docs/STRAVA_INTEGRATION_COMPLETE.md](./docs/STRAVA_INTEGRATION_COMPLETE.md) — Step-by-step Strava OAuth rollout mirroring the WHOOP flow.
+- [docs/strava-data-sync.md](./docs/strava-data-sync.md) — Full data synchronization pipeline for Strava, including backfill strategy.
+- [docs/CORRELATION_DEPLOYMENT_GUIDE.md](./docs/CORRELATION_DEPLOYMENT_GUIDE.md) — Deployment runbook for linking Strava runs to WHOOP workouts.
+- [docs/ASTORIA_CONQUEST.md](./docs/ASTORIA_CONQUEST.md) — Feature overview for the Astoria street-running conquest visualization.
+
+### Chat AI & Schema Intelligence
+- [docs/chat_ai/database-schema-documentation.md](./docs/chat_ai/database-schema-documentation.md) — Column-level reference for materialized views powering the AI assistant.
+- [docs/chat_ai/vector-embeddings-documentation.md](./docs/chat_ai/vector-embeddings-documentation.md) — Strategy for pairing materialized views with pgvector indexes.
+- [docs/chat_ai/embeddings-implementation-guide.md](./docs/chat_ai/embeddings-implementation-guide.md) — End-to-end playbook for building AI-native data pipelines and embeddings.
+
 ## 🏃‍♂️ WHOOP Integration & Automated Data Collection
 
 This portfolio features a sophisticated WHOOP fitness data integration system that automatically collects and displays real-time training data with both automated maintenance and manual control capabilities.

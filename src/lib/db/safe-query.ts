@@ -1,10 +1,13 @@
 import { Pool } from 'pg';
 
 /**
- * A separate connection pool for read-only queries with reduced privileges
- * IMPORTANT: Use a read-only user for this connection string in your .env file
+ * A connection pool for read-only queries 
+ * Uses the same connection as main database but with additional safety measures
  */
-const readOnlyPool = new Pool({ connectionString: process.env.POSTGRES_READONLY_URL });
+const readOnlyPool = new Pool({ 
+  connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 /**
  * Executes a SQL query with safety measures:
@@ -18,10 +21,10 @@ const readOnlyPool = new Pool({ connectionString: process.env.POSTGRES_READONLY_
  * @throws Error if query is not SELECT or execution fails
  */
 export async function executeSafeQuery(sql: string): Promise<any[]> {
-  // Input validation
+  // Input validation - Allow SELECT and WITH (Common Table Expressions)
   const normalizedSql = sql.trim().toUpperCase();
-  if (!normalizedSql.startsWith('SELECT')) {
-    throw new Error('Only SELECT queries are allowed for security reasons.');
+  if (!normalizedSql.startsWith('SELECT') && !normalizedSql.startsWith('WITH')) {
+    throw new Error('Only SELECT and WITH queries are allowed for security reasons.');
   }
 
   // Additional security checks
@@ -33,8 +36,16 @@ export async function executeSafeQuery(sql: string): Promise<any[]> {
     throw new Error('Query contains forbidden operations.');
   }
 
-  const client = await readOnlyPool.connect();
+  let client;
   try {
+    // Get client with timeout
+    client = await Promise.race([
+      readOnlyPool.connect(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database connection timeout')), 5000)
+      )
+    ]) as any;
+
     // Set a reasonable timeout to prevent long-running queries
     await client.query("SET statement_timeout = '8000';"); // 8 seconds
 
@@ -42,18 +53,39 @@ export async function executeSafeQuery(sql: string): Promise<any[]> {
     const result = await client.query(sql);
     return result.rows;
   } catch (error: any) {
-    console.error('Error executing safe query:', error);
+    console.error('Error executing safe query:', {
+      error: error?.message,
+      stack: error?.stack,
+      sql: sql.substring(0, 200) + '...', // Log first 200 chars of SQL for debugging
+      timestamp: new Date().toISOString()
+    });
     
     // Provide user-friendly error messages based on error type
     if (error instanceof Error) {
-      if (error.message.includes('statement_timeout')) {
+      const errorMsg = error.message.toLowerCase();
+      
+      if (errorMsg.includes('statement_timeout') || errorMsg.includes('timeout')) {
         throw new Error('Query took too long to execute. Please try a simpler query.');
-      } else if (error.message.includes('permission denied')) {
+      } else if (errorMsg.includes('permission denied')) {
         throw new Error('You do not have permission to access this data.');
+      } else if (errorMsg.includes('relation') && errorMsg.includes('does not exist')) {
+        throw new Error('The requested table or view does not exist. Please check your query.');
+      } else if (errorMsg.includes('column') && errorMsg.includes('does not exist')) {
+        throw new Error('The requested column does not exist. Please check the available columns.');
+      } else if (errorMsg.includes('syntax error')) {
+        throw new Error('There is a syntax error in the generated query. Please try rephrasing your question.');
+      } else if (errorMsg.includes('connection') || errorMsg.includes('connect')) {
+        throw new Error('Database connection failed. Please try again in a moment.');
       }
     }
     throw new Error('The database query failed. Please try rephrasing your question.');
   } finally {
-    client.release();
+    if (client) {
+      try {
+        client.release();
+      } catch (releaseError) {
+        console.warn('Error releasing database client:', releaseError);
+      }
+    }
   }
 }

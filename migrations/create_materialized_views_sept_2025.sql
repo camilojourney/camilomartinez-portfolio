@@ -7,7 +7,9 @@ DROP MATERIALIZED VIEW IF EXISTS daily_fitness_snapshot;
 -- Refresh materialized views (create if not exists)
 CREATE MATERIALIZED VIEW IF NOT EXISTS daily_fitness_snapshot AS
 SELECT
-    wc.user_id, wc.start_time::date AS "date", wr.recovery_percentage AS whoop_recovery_score,
+    wc.user_id,
+    wc.start_time::date AS snapshot_date,
+    wr.recovery_percentage AS whoop_recovery_score,
     wr.hrv_rmssd_ms AS whoop_hrv, ws.sleep_performance_percentage AS whoop_sleep_performance_percent,
     (ws.total_in_bed_time_ms / 3600000.0) AS whoop_hours_in_bed, wc.strain AS whoop_day_strain,
     COALESCE(daily_workouts.whoop_workout_count, 0) AS whoop_workout_count,
