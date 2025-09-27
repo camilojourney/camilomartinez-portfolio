@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import { systemService } from '@/lib/api/config'
 
 interface LiquidNavProps {
     currentPage?: 'home' | 'my-data' | 'blog' | 'projects' | 'contact' | 'about' | 'tools'
@@ -9,6 +10,31 @@ interface LiquidNavProps {
 
 export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+
+    useEffect(() => {
+        let isMounted = true
+
+        const fetchStatus = async () => {
+            try {
+                await systemService.healthCheck()
+                if (isMounted) {
+                    setApiStatus('ok')
+                }
+            } catch (error) {
+                console.error('Backend health check failed:', error)
+                if (isMounted) {
+                    setApiStatus('error')
+                }
+            }
+        }
+
+        fetchStatus()
+
+        return () => {
+            isMounted = false
+        }
+    }, [])
 
     const navItems = [
         { href: '/', label: 'home', key: 'home' },
@@ -24,7 +50,30 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
         <>
             {/* Desktop Navigation */}
             <div className="fixed top-0 left-0 w-full z-50 p-4 pt-safe-area-inset-top md:p-6 hidden md:block">
-                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-10 py-4 max-w-4xl mx-auto shadow-2xl shadow-black/10">
+                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-6 py-4 max-w-4xl mx-auto shadow-2xl shadow-black/10">
+                    <div className="flex items-center justify-between mb-2 text-xs text-white/60 uppercase tracking-[0.2em]">
+                        <span>Camilo Martinez</span>
+                        <span className="flex items-center gap-2">
+                            <span
+                                aria-hidden
+                                className={`w-2 h-2 rounded-full ${
+                                    apiStatus === 'loading'
+                                        ? 'bg-amber-300 animate-pulse'
+                                        : apiStatus === 'ok'
+                                        ? 'bg-emerald-400'
+                                        : 'bg-rose-400 animate-pulse'
+                                }`}
+                            ></span>
+                            <span>
+                                {apiStatus === 'loading'
+                                    ? 'Checking API'
+                                    : apiStatus === 'ok'
+                                    ? 'API Online'
+                                    : 'API Unreachable'}
+                            </span>
+                        </span>
+                    </div>
+
                     <div className="flex justify-center space-x-8 text-base font-medium">
                         {navItems.map((item) => (
                             <a
@@ -64,6 +113,28 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                     {/* Mobile Menu Dropdown */}
                     {isMenuOpen && (
                         <div className="mt-4 pt-4 border-t border-white/10">
+                            <div className="flex items-center justify-between mb-3 text-xs text-white/60 uppercase tracking-[0.2em]">
+                                <span>Status</span>
+                                <span className="flex items-center gap-2">
+                                    <span
+                                        aria-hidden
+                                        className={`w-2 h-2 rounded-full ${
+                                            apiStatus === 'loading'
+                                                ? 'bg-amber-300 animate-pulse'
+                                                : apiStatus === 'ok'
+                                                ? 'bg-emerald-400'
+                                                : 'bg-rose-400 animate-pulse'
+                                        }`}
+                                    ></span>
+                                    <span>
+                                        {apiStatus === 'loading'
+                                            ? 'Checking API'
+                                            : apiStatus === 'ok'
+                                            ? 'API Online'
+                                            : 'API Unreachable'}
+                                    </span>
+                                </span>
+                            </div>
                             <div className="grid grid-cols-2 gap-2">
                                 {navItems.map((item) => (
                                     <a

@@ -2,12 +2,24 @@
 
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { aiService } from '@/lib/api/config';
 
 // Define the structure for a single message object
 interface Message {
     id: number;
     text: string;
     sender: 'user' | 'bot';
+}
+
+// FastAPI response type for AI queries
+interface AIQueryResponse {
+    status: string;
+    data?: {
+        response?: string;
+        answer?: string;
+        history_id?: number;
+    };
+    message?: string;
 }
 
 export default function Chat() {
@@ -17,6 +29,8 @@ export default function Chat() {
     const [input, setInput] = useState('');
     // State to show if the bot is "typing"
     const [isBotTyping, setIsBotTyping] = useState(false);
+    // State to track if AI service is available (fallback to hardcoded responses)
+    const [useAIService, setUseAIService] = useState(true);
     // Ref to scroll to the bottom of the chat
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
     // Track which messages are new for animation
@@ -53,12 +67,14 @@ export default function Chat() {
         return "That's a great question! I'm programmed with specific info about Camilo's professional life. Try asking about his skills, story, or past experience.";
     };
 
-    const handleSendMessage = (e: FormEvent) => {
+    const handleSendMessage = async (e: FormEvent) => {
         e.preventDefault();
         if (!input.trim()) return;
 
+        const question = input.trim();
+        
         // Add user message to the chat
-        const userMessage: Message = { id: Date.now(), text: input, sender: 'user' };
+        const userMessage: Message = { id: Date.now(), text: question, sender: 'user' };
         setMessages(prev => [...prev, userMessage]);
 
         // Mark this message for animation
@@ -77,34 +93,75 @@ export default function Chat() {
             });
         }, 500);
 
+        setInput(''); // Clear input immediately
         setIsBotTyping(true);
 
-        // Simulate bot thinking and get a response
-        setTimeout(() => {
-            const botResponseText = getBotResponse(input);
-            const botMessage: Message = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
-            setMessages(prev => [...prev, botMessage]);
+        try {
+            let botResponseText: string;
+            
+            if (useAIService) {
+                // Try using FastAPI backend first
+                const response = await aiService.query(question, true, 30) as AIQueryResponse;
+                botResponseText = response.data?.response || response.data?.answer || 'I received your question but couldn\'t generate a proper response.';
+            } else {
+                // Fallback to hardcoded responses
+                botResponseText = getBotResponse(question);
+            }
 
-            // Mark bot message for animation
-            setAnimatingMessageIds(prev => {
-                const newSet = new Set(prev);
-                newSet.add(botMessage.id);
-                return newSet;
-            });
-
-            // Remove bot message animation after it completes
+            // Add bot response
             setTimeout(() => {
+                const botMessage: Message = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
+                setMessages(prev => [...prev, botMessage]);
+
+                // Mark bot message for animation
                 setAnimatingMessageIds(prev => {
                     const newSet = new Set(prev);
-                    newSet.delete(botMessage.id);
+                    newSet.add(botMessage.id);
                     return newSet;
                 });
-            }, 500);
 
-            setIsBotTyping(false);
-        }, 1200); // 1.2 second delay
+                // Remove bot message animation after it completes
+                setTimeout(() => {
+                    setAnimatingMessageIds(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(botMessage.id);
+                        return newSet;
+                    });
+                }, 500);
 
-        setInput(''); // Clear the input field
+                setIsBotTyping(false);
+            }, 800); // Simulate thinking time
+
+        } catch (error) {
+            console.error('AI service failed, falling back to hardcoded responses:', error);
+            
+            // Fallback to hardcoded responses if AI service fails
+            setUseAIService(false);
+            const botResponseText = getBotResponse(question);
+            
+            setTimeout(() => {
+                const botMessage: Message = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
+                setMessages(prev => [...prev, botMessage]);
+
+                // Mark bot message for animation
+                setAnimatingMessageIds(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(botMessage.id);
+                    return newSet;
+                });
+
+                // Remove bot message animation after it completes
+                setTimeout(() => {
+                    setAnimatingMessageIds(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(botMessage.id);
+                        return newSet;
+                    });
+                }, 500);
+
+                setIsBotTyping(false);
+            }, 800);
+        }
     };
 
     return (

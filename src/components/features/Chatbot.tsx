@@ -2,6 +2,23 @@
 
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { aiService } from '@/lib/api/config';
+
+// Define FastAPI response types
+interface AIQueryResponse {
+  status: string;
+  data?: {
+    response?: string;
+    answer?: string;
+    history_id?: number;
+    data?: unknown;
+    explanation?: { thought: string; plan: string; sql: string };
+    result_count?: number;
+    processing_time_ms?: number;
+  };
+  message?: string;
+  timestamp: string;
+}
 
 interface Message {
   id: string;
@@ -93,37 +110,24 @@ export function Chatbot() {
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/ai-query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
-      });
+      // Use new FastAPI backend instead of Next.js API route
+      const response = await aiService.query(question, true, 30) as AIQueryResponse;
 
-      const payload = await response.json();
-
-      if (!response.ok) {
-        const assistantError: Message = {
-          id: `assistant-error-${Date.now()}`,
-          role: 'assistant',
-          content: payload?.error || 'The AI agent could not process your request.',
-          historyId: payload?.historyId,
-        };
-        setMessages([...updatedMessages, assistantError]);
-        return;
-      }
-
+      // FastAPI returns standardized response format
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: payload?.explanation?.plan
-          ? `Plan: ${payload.explanation.plan}`
-          : 'Query executed successfully.',
-        historyId: payload?.historyId,
+        content: response.data?.response || response.data?.answer || 'Query processed successfully.',
+        historyId: response.data?.history_id,
         payload: {
-          data: payload?.data,
-          explanation: payload?.explanation,
-          metadata: payload?.metadata,
-        },
+          data: response.data?.data,
+          explanation: response.data?.explanation,
+          metadata: {
+            timestamp: response.timestamp,
+            rowCount: response.data?.result_count || 0,
+            latencyMs: response.data?.processing_time_ms || 0,
+          }
+        }
       };
 
       // Simulate typing delay for better UX
@@ -131,16 +135,23 @@ export function Chatbot() {
         setMessages([...updatedMessages, assistantMessage]);
         setIsTyping(false);
       }, 800);
+
     } catch (error) {
       console.error('Failed to send message:', error);
-      setMessages([
-        ...updatedMessages,
-        {
-          id: `assistant-failure-${Date.now()}`,
-          role: 'assistant',
-          content: "Sorry, I couldn't connect. Please try again later.",
-        },
-      ]);
+      
+      const assistantError: Message = {
+        id: `assistant-failure-${Date.now()}`,
+        role: 'assistant',
+        content: error instanceof Error 
+          ? `Error: ${error.message}` 
+          : "Sorry, I couldn't connect to the AI service. Please try again later.",
+      };
+
+      // Simulate typing delay for better UX  
+      setTimeout(() => {
+        setMessages([...updatedMessages, assistantError]);
+        setIsTyping(false);
+      }, 800);
     } finally {
       setIsLoading(false);
     }
@@ -157,15 +168,12 @@ export function Chatbot() {
         prev.map((m) => (m.id === message.id ? { ...m, feedback: value } : m))
       );
 
-      const response = await fetch('/api/ai-query/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ queryId: message.historyId, feedback: value }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit feedback');
-      }
+      // TODO: Implement feedback endpoint in FastAPI backend
+      // For now, just log the feedback locally
+      console.log('Feedback submitted:', { queryId: message.historyId, feedback: value });
+      
+      // Simulate successful feedback submission
+      await new Promise(resolve => setTimeout(resolve, 500));
     } catch (error) {
       console.error('Unable to record feedback:', error);
       setMessages(previousMessages);

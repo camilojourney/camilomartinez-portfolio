@@ -1,0 +1,407 @@
+"""
+Schema Embedding Service for generating and managing embeddings of database schema descriptions.
+Replaces the TypeScript embed-schema.ts functionality with Python implementation.
+"""
+
+import logging
+import asyncio
+from typing import List, Dict, Any, Optional
+from datetime import datetime
+from sqlalchemy import text
+from app.config.database import async_session_factory
+from app.services.ai.openai_client import openai_service, OpenAIError
+
+logger = logging.getLogger(__name__)
+
+
+class SchemaEmbeddingService:
+    """
+    Service for generating and managing schema embeddings for the AI query system.
+    
+    This service handles:
+    - Schema description embedding generation
+    - Database storage and updates
+    - Batch processing of schema components
+    """
+    
+    def __init__(self):
+        """Initialize the schema embedding service."""
+        self.embedding_model = "text-embedding-3-small"
+        self.embedding_dimensions = 1536
+        
+        # Schema descriptions - matches TypeScript implementation
+        self.schema_descriptions = [
+            # View-level descriptions
+            {
+                "type": "view",
+                "name": "daily_fitness_snapshot",
+                "description": "A comprehensive daily summary of all fitness and wellness metrics. Best for analyzing trends over time and the correlation between sleep, recovery, and activity. Contains daily WHOOP data (recovery score, HRV, sleep, strain) and aggregated workout data for running, boxing, meditation, and sauna use."
+            },
+            {
+                "type": "view", 
+                "name": "run_performance_details",
+                "description": "A granular, in-depth analysis of individual running activities. Best for answering questions about performance *during* a single run, like split times, pace changes, and heart rate zones for a specific run."
+            },
+            {
+                "type": "view", 
+                "name": "boxing_performance_details",
+                "description": "A detailed log of every boxing workout. Use for specific questions about boxing session duration, strain, intensity (strain_density), and time spent in each heart rate zone."
+            },
+            {
+                "type": "view", 
+                "name": "weightlifting_performance_details",  
+                "description": "A detailed log of every weightlifting or strength training workout. Use for specific questions about lifting session duration, strain, intensity (strain_density), and cardiovascular response (heart rate zones)."
+            },
+            
+            # Column-level descriptions for daily_fitness_snapshot
+            {
+                "type": "column",
+                "view": "daily_fitness_snapshot", 
+                "name": "user_id",
+                "description": "Type: UUID. Unique identifier for the user. Used for multi-user data segregation and relationship mapping."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "snapshot_date",
+                "description": "Type: DATE (YYYY-MM-DD). The calendar date for this daily snapshot. CRITICAL: Use this column for ALL date filtering, sorting by recent/latest, time-based queries, ordering by date, finding data from specific days, weeks, months. Essential for temporal analysis, trend identification, and chronological ordering. Keywords: date, time, recent, latest, chronological, daily, when, day, week, month, yesterday, today, last week."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_recovery_score",
+                "description": "Unit: Percentage (0-100, float). Daily recovery score from WHOOP. Higher scores indicate better recovery and readiness for strain. Calculated overnight from HRV, resting heart rate, sleep performance, and respiratory rate vs baseline. Scored as Green (67–100% good), Yellow (34–66% moderate), Red (0–33% low)."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_hrv",
+                "description": "Unit: Milliseconds (ms, float). Heart Rate Variability using RMSSD calculation. Key indicator of autonomic nervous system recovery."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_sleep_performance_percent",
+                "description": "Unit: Percentage (0-100, float). Sleep quality score indicating how well sleep met the body's needs based on cycles and disturbances."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_hours_in_bed",
+                "description": "Unit: Hours (float, 3 decimal precision). Total time spent in bed including all sleep sessions (main sleep + naps) for the day, aggregated and converted from milliseconds. Comprehensive measure of total daily sleep time."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_day_strain",
+                "description": "Unit: Strain points (0-21, float). Cumulative cardiovascular load score for the day. Measures total physical exertion."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_workout_count",
+                "description": "Unit: Count (integer). Total number of distinct workout sessions recorded for the day."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_running_minutes",
+                "description": "Unit: Minutes (float, 2 decimal precision). Total time spent running. Converted from milliseconds for endurance volume tracking."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_boxing_minutes",
+                "description": "Unit: Minutes (float, 2 decimal precision). Total time spent boxing. Converted from milliseconds for combat training volume."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_weight_training_minutes",
+                "description": "Unit: Minutes (float, 2 decimal precision). Total time spent weight training. Converted from milliseconds for strength volume."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_meditation_sessions",
+                "description": "Unit: Count (integer). Number of distinct meditation sessions completed. Each session is a discrete practice period."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_meditation_minutes",
+                "description": "Unit: Minutes (float, 2 decimal precision). Total time spent meditating. Converted from milliseconds for mental wellness tracking."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "whoop_sauna_minutes",
+                "description": "Unit: Minutes (float, 2 decimal precision). Total time spent in sauna. Converted from milliseconds for heat exposure tracking."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "strava_run_count",
+                "description": "Unit: Count (integer). Total number of running activities from Strava for the day. Aggregated from individual run records."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "strava_total_run_miles",
+                "description": "Unit: Miles (float, 2 decimal precision). Cumulative running distance for the day from Strava. Sum of all running activities, converted from meters to miles."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "strava_avg_run_speed_mph",
+                "description": "Unit: Miles per hour (mph, float). Average running speed across all Strava runs for the day. Calculated from total distance divided by total moving time."
+            },
+            {
+                "type": "column", 
+                "view": "daily_fitness_snapshot", 
+                "name": "strava_total_suffer_score",
+                "description": "Unit: Suffer Score points (integer). Cumulative Strava suffer score for all runs. Measures relative effort and intensity of running activities."
+            }
+        ]
+        
+        logger.info("Schema embedding service initialized")
+
+    async def create_table_if_not_exists(self) -> None:
+        """Create schema_embeddings table if it doesn't exist."""
+        try:
+            async with async_session_factory() as session:
+                create_table_sql = """
+                CREATE TABLE IF NOT EXISTS schema_embeddings (
+                    id SERIAL PRIMARY KEY,
+                    table_name TEXT,
+                    column_name TEXT,
+                    description TEXT NOT NULL,
+                    embedding VECTOR(1536) NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+                
+                -- Create HNSW index for efficient similarity search
+                CREATE INDEX IF NOT EXISTS schema_embeddings_embedding_idx 
+                ON schema_embeddings USING hnsw (embedding vector_cosine_ops);
+                """
+                
+                await session.execute(text(create_table_sql))
+                await session.commit()
+                
+                logger.info("Schema embeddings table ready")
+                
+        except Exception as e:
+            logger.error(f"Error creating schema embeddings table: {e}")
+            raise
+
+    async def generate_embeddings(self, clear_existing: bool = True) -> Dict[str, Any]:
+        """
+        Generate embeddings for all schema descriptions.
+        
+        Args:
+            clear_existing: Whether to clear existing embeddings first
+            
+        Returns:
+            Dict with generation results and statistics
+        """
+        try:
+            logger.info("Starting schema embedding generation process...")
+            start_time = datetime.utcnow()
+            
+            # Ensure table exists
+            await self.create_table_if_not_exists()
+            
+            async with async_session_factory() as session:
+                # Clear existing embeddings if requested
+                if clear_existing:
+                    await session.execute(text("TRUNCATE TABLE schema_embeddings;"))
+                    logger.info("Cleared existing embeddings")
+                
+                # Generate embeddings for each schema item
+                successful_embeddings = 0
+                failed_embeddings = 0
+                
+                for item in self.schema_descriptions:
+                    try:
+                        # Prepare text for embedding
+                        if item["type"] == "view":
+                            input_text = f"View: {item['name']}. Description: {item['description']}"
+                            table_name = item["name"]
+                            column_name = None
+                        else:  # column
+                            input_text = f"View: {item['view']}, Column: {item['name']}. Description: {item['description']}"
+                            table_name = item["view"]
+                            column_name = item["name"]
+                        
+                        logger.info(f"Generating embedding for: {item['name']}")
+                        
+                        # Generate embedding using OpenAI service
+                        embedding_result = await openai_service.create_embedding(input_text)
+                        embedding_vector = embedding_result["embeddings"]
+                        
+                        # Convert to pgvector format
+                        embedding_str = f"[{','.join(map(str, embedding_vector))}]"
+                        
+                        # Insert into database
+                        insert_sql = """
+                        INSERT INTO schema_embeddings (table_name, column_name, description, embedding)
+                        VALUES (%s, %s, %s, %s)
+                        """
+                        
+                        await session.execute(
+                            text(insert_sql),
+                            (table_name, column_name, item["description"], embedding_str)
+                        )
+                        
+                        successful_embeddings += 1
+                        logger.debug(f"Embedded: {item['name']}")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to embed {item['name']}: {e}")
+                        failed_embeddings += 1
+                
+                # Commit all changes
+                await session.commit()
+                
+                processing_time = (datetime.utcnow() - start_time).total_seconds()
+                
+                result = {
+                    "successful_embeddings": successful_embeddings,
+                    "failed_embeddings": failed_embeddings,
+                    "total_items": len(self.schema_descriptions),
+                    "processing_time_seconds": processing_time,
+                    "completed_at": datetime.utcnow().isoformat()
+                }
+                
+                logger.info(f"Schema embedding generation completed: {result}")
+                return result
+                
+        except Exception as e:
+            logger.error(f"Error in schema embedding generation: {e}")
+            raise
+
+    async def update_single_embedding(
+        self, 
+        table_name: str, 
+        column_name: Optional[str] = None
+    ) -> bool:
+        """
+        Update a single embedding efficiently.
+        
+        Args:
+            table_name: Table/view name
+            column_name: Column name (None for view-level descriptions)
+            
+        Returns:
+            True if updated successfully, False otherwise
+        """
+        try:
+            # Find the schema description
+            target_item = None
+            for item in self.schema_descriptions:
+                if item["type"] == "view" and item["name"] == table_name and column_name is None:
+                    target_item = item
+                    break
+                elif (item["type"] == "column" and 
+                      item.get("view") == table_name and 
+                      item["name"] == column_name):
+                    target_item = item
+                    break
+            
+            if not target_item:
+                logger.error(f"Schema description not found for {table_name}.{column_name}")
+                return False
+            
+            # Prepare embedding text
+            if target_item["type"] == "view":
+                input_text = f"View: {target_item['name']}. Description: {target_item['description']}"
+            else:
+                input_text = f"View: {target_item['view']}, Column: {target_item['name']}. Description: {target_item['description']}"
+            
+            logger.info(f"Updating embedding for: {input_text[:100]}...")
+            
+            # Generate new embedding
+            embedding_result = await openai_service.create_embedding(input_text)
+            embedding_vector = embedding_result["embeddings"]
+            embedding_str = f"[{','.join(map(str, embedding_vector))}]"
+            
+            async with async_session_factory() as session:
+                # Delete existing entry
+                delete_sql = """
+                DELETE FROM schema_embeddings 
+                WHERE table_name = %s AND column_name IS NOT DISTINCT FROM %s
+                """
+                await session.execute(text(delete_sql), (table_name, column_name))
+                
+                # Insert new entry
+                insert_sql = """
+                INSERT INTO schema_embeddings (table_name, column_name, description, embedding)
+                VALUES (%s, %s, %s, %s)
+                """
+                await session.execute(
+                    text(insert_sql),
+                    (table_name, column_name, target_item["description"], embedding_str)
+                )
+                
+                await session.commit()
+                
+            logger.info(f"Successfully updated embedding for {table_name}.{column_name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error updating single embedding: {e}")
+            return False
+
+    async def get_embedding_stats(self) -> Dict[str, Any]:
+        """Get statistics about current embeddings in the database."""
+        try:
+            async with async_session_factory() as session:
+                # Get total count
+                count_result = await session.execute(
+                    text("SELECT COUNT(*) as total FROM schema_embeddings")
+                )
+                total_count = count_result.fetchone()[0]
+                
+                # Get breakdown by type
+                breakdown_result = await session.execute(text("""
+                    SELECT 
+                        CASE WHEN column_name IS NULL THEN 'view' ELSE 'column' END as type,
+                        COUNT(*) as count
+                    FROM schema_embeddings
+                    GROUP BY CASE WHEN column_name IS NULL THEN 'view' ELSE 'column' END
+                """))
+                
+                breakdown = {row[0]: row[1] for row in breakdown_result.fetchall()}
+                
+                # Get recent updates
+                recent_result = await session.execute(text("""
+                    SELECT table_name, column_name, created_at
+                    FROM schema_embeddings
+                    ORDER BY created_at DESC
+                    LIMIT 5
+                """))
+                
+                recent_updates = []
+                for row in recent_result.fetchall():
+                    recent_updates.append({
+                        "table_name": row[0],
+                        "column_name": row[1],
+                        "created_at": row[2].isoformat() if row[2] else None
+                    })
+                
+                return {
+                    "total_embeddings": total_count,
+                    "breakdown": breakdown,
+                    "recent_updates": recent_updates,
+                    "expected_total": len(self.schema_descriptions),
+                    "is_complete": total_count == len(self.schema_descriptions)
+                }
+                
+        except Exception as e:
+            logger.error(f"Error getting embedding stats: {e}")
+            return {"error": str(e)}
+
+
+# Global service instance
+schema_embedding_service = SchemaEmbeddingService()

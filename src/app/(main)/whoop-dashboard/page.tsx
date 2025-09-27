@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import LiquidNav from '@/components/shared/liquid-nav';
+import { ApiClient, analyticsService, integrationService } from '@/lib/api/config';
 
 
 interface CollectionStats {
@@ -26,6 +27,26 @@ interface CollectionStats {
     };
 }
 
+interface ViewDataResponse {
+    success: boolean;
+    counts: {
+        users?: number;
+        cycles?: number;
+        sleep?: number;
+        recovery?: number;
+        workouts?: number;
+    };
+    recent: {
+        cycles: Array<{ start_time?: string }>;
+        sleep: Array<{ start_time?: string }>;
+        recovery: Array<{ cycle_id?: string | number; recovery_percentage?: number; created_at?: string }>;
+        workouts: Array<{ start_time?: string; created_at?: string }>;
+    };
+    latest_date?: string;
+    strain: Array<{ formatted_date: string; strain: number }>;
+    timestamp: string;
+}
+
 export default function WhoopDashboard() {
     const { data: session, status } = useSession();
     const [historicalResult, setHistoricalResult] = useState<CollectionStats | null>(null);
@@ -40,14 +61,16 @@ export default function WhoopDashboard() {
         syncStatus: false
     });
 
-    const [sessionStatus, setSessionStatus] = useState(null);
+    const [sessionStatus, setSessionStatus] = useState<Record<string, any> | null>(null);
 
-    // Check session status
+    // Check session status (TODO: Migrate to FastAPI in Phase 6-7)
     const checkSessionStatus = async () => {
         try {
             console.log('🔍 Checking session status...');
-            const response = await fetch('/api/debug-session');
-            const status = await response.json();
+            // TODO: Replace with FastAPI endpoint when WHOOP integration is implemented
+            const status = await ApiClient.get<Record<string, any>>('/api/debug-session', {
+                fallback: '/api/debug-session',
+            });
             console.log('Session debug response:', status);
             setSessionStatus(status);
         } catch (error) {
@@ -89,23 +112,13 @@ export default function WhoopDashboard() {
             console.log('Session status:', !!session);
             console.log('User info:', session?.user);
             
-            // Use the admin endpoint that handles CRON_SECRET internally
-            const response = await fetch('/api/actions/historical-fetch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    mode: 'historical'
-                })
-            });
-
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-            
-            const result = await response.json();
+            // TODO: Replace with FastAPI endpoint when WHOOP integration is implemented (Phase 6-7)
+            // For now, use the existing Next.js endpoint
+            const result = await integrationService.triggerWhoopCollector({ mode: 'historical' }) as any;
             console.log('API Response:', result);
             
             // Extract the actual data from the wrapper response
-            const actualResult = result?.data || result;
+            const actualResult = (result as any)?.data || result;
             setHistoricalResult(actualResult);
 
             // Refresh debug info after collection
@@ -125,12 +138,11 @@ export default function WhoopDashboard() {
         setDailyResult(null);
 
         try {
-            const response = await fetch('/api/actions/daily-fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-
-            const result = await response.json();
+            // TODO: Replace with FastAPI endpoint when WHOOP integration is implemented (Phase 6-7)
+            const result = await integrationService.triggerWhoopDailySync({ dryRun: false }) as any;
             
             // Extract the data from the API response structure
-            const apiData = result?.data || result;
+            const apiData = (result as any)?.data || result;
             
             // Transform the userResults array into a single summary object for display
             let transformedResult = {
@@ -171,12 +183,10 @@ export default function WhoopDashboard() {
         setLoading(prev => ({ ...prev, debug: true }));
 
         try {
-            const response = await fetch('/api/view-data');
-            const result = await response.json();
+            const result = await analyticsService.getWhoopViewData() as ViewDataResponse;
 
-            // Transform the view-data response to match expected format
             setDebugInfo({
-                user: result.user || session.user,
+                user: session?.user,
                 data_counts: {
                     cycles: result.counts?.cycles || 0,
                     sleep: result.counts?.sleep || 0,
@@ -184,15 +194,15 @@ export default function WhoopDashboard() {
                     workouts: result.counts?.workouts || 0
                 },
                 latest_dates: {
-                    latest_cycle: result.recent?.cycles?.rows?.[0]?.start_time,
-                    latest_sleep: result.recent?.sleep?.rows?.[0]?.start_time,
-                    latest_recovery: result.recent?.recovery?.rows?.[0]?.created_at,
-                    latest_workout: result.recent?.workouts?.rows?.[0]?.created_at
+                    latest_cycle: result.recent?.cycles?.[0]?.start_time,
+                    latest_sleep: result.recent?.sleep?.[0]?.start_time,
+                    latest_recovery: result.recent?.recovery?.[0]?.created_at,
+                    latest_workout: result.recent?.workouts?.[0]?.start_time || result.recent?.workouts?.[0]?.created_at
                 },
-                database_status: true,
-                api_status: true,
+                database_status: !!result.success,
+                api_status: result.success,
                 schema_status: true,
-                last_sync: result.summary?.dateRange?.latest
+                last_sync: result.latest_date
             });
         } catch (error) {
             console.error('Failed to get analytics data:', error);
@@ -207,8 +217,8 @@ export default function WhoopDashboard() {
         setLoading(prev => ({ ...prev, syncStatus: true }));
 
         try {
-            const response = await fetch('/api/sync-status');
-            const result = await response.json();
+            // TODO: Replace with FastAPI endpoint when WHOOP integration is implemented (Phase 6-7)
+            const result = await integrationService.getSyncStatus() as Record<string, any>;
             setSyncStatus(result);
         } catch (error) {
             console.error('Failed to get sync status:', error);

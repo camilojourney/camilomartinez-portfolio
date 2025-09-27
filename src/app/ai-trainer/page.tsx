@@ -4,6 +4,28 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { aiService } from '@/lib/api/config';
+
+// FastAPI response types
+interface TrainerEvaluationResponse {
+  status: string;
+  data?: {
+    evaluations?: Array<{
+      id: number;
+      created_at: string;
+      updated_at: string;
+      confidence_score: number;
+      evaluation_data: {
+        total_questions?: number;
+        successful_queries?: number;
+        failed_queries?: number;
+        avg_response_time?: number;
+        error_patterns?: string[];
+        recommendations?: string[];
+      };
+    }>;
+  };
+}
 
 interface EvaluationCycle {
   id: string;
@@ -69,30 +91,31 @@ export default function AITrainerPage() {
 
   const fetchCycles = async () => {
     try {
-      const response = await fetch('/api/ai-trainer/history');
-      const data = await response.json();
-      if (data.success && data.data?.history) {
-        // Map the API response to match our interface
-        const mappedCycles = data.data.history.map((cycle: any) => ({
-          id: cycle.id.toString(),
-          status: cycle.status,
-          created_at: cycle.start_time,
-          completed_at: cycle.end_time || null,
-          total_questions: cycle.total_questions,
-          successful_queries: cycle.success_count,
-          failed_queries: (cycle.total_questions || 0) - (cycle.success_count || 0),
-          avg_response_time: cycle.duration_seconds ? cycle.duration_seconds * 1000 : 0,
-          accuracy_score: cycle.success_rate,
+      // Use new FastAPI backend for trainer history
+      const response = await aiService.getTrainerHistory(10) as TrainerEvaluationResponse;
+      
+      if (response.status === 'success' && response.data?.evaluations) {
+        // Map the FastAPI response to match our interface
+        const mappedCycles: EvaluationCycle[] = response.data.evaluations.map((evaluation: any) => ({
+          id: evaluation.id.toString(),
+          status: 'completed' as const, // FastAPI evaluations are completed when returned
+          created_at: evaluation.created_at,
+          completed_at: evaluation.updated_at,
+          total_questions: evaluation.evaluation_data?.total_questions || 0,
+          successful_queries: evaluation.evaluation_data?.successful_queries || 0,
+          failed_queries: evaluation.evaluation_data?.failed_queries || 0,
+          avg_response_time: evaluation.evaluation_data?.avg_response_time || 0,
+          accuracy_score: evaluation.confidence_score || 0,
           metadata: {
-            error_patterns: cycle.failure_analysis ? [cycle.failure_analysis] : [],
-            improvement_suggestions: cycle.failure_analysis ? extractImprovementSuggestions(cycle.failure_analysis) : []
+            error_patterns: evaluation.evaluation_data?.error_patterns || [],
+            improvement_suggestions: evaluation.evaluation_data?.recommendations || []
           }
         }));
         setCycles(mappedCycles);
-        setIsRunning(data.data.isRunning || false);
+        setIsRunning(false); // FastAPI doesn't have running state tracking yet
       }
     } catch (error) {
-      console.error('Error fetching cycles:', error);
+      console.error('Error fetching trainer history:', error);
     } finally {
       setLoading(false);
     }
@@ -101,23 +124,12 @@ export default function AITrainerPage() {
   const runEvaluationCycle = async () => {
     setIsRunning(true);
     try {
-      const response = await fetch('/api/ai-trainer/run-cycle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ numQuestions: 5 }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const result = await response.json();
+      // Use new FastAPI backend for athlete evaluation
+      const result = await aiService.evaluateAthlete(90, 'Comprehensive fitness evaluation') as any;
       
-      if (result.success) {
-        // Use the returned cycle ID for more specific tracking
-        console.log('✅ Evaluation cycle started:', result.message);
+      if (result.status === 'success') {
+        // Use the returned evaluation data
+        console.log('✅ Athlete evaluation completed:', result.message || 'Evaluation successful');
         console.log('🔍 Tracking cycle:', result.cycleId);
         pollCycleStatus(result.cycleId);
       } else {
@@ -133,65 +145,16 @@ export default function AITrainerPage() {
   const pollCycleStatus = async (cycleId?: string) => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch('/api/ai-trainer/history');
-        const data = await response.json();
+        // Use FastAPI backend for polling (though evaluations are synchronous now)
+        const response = await aiService.getTrainerHistory(10) as TrainerEvaluationResponse;
         
-        if (data.success && data.data?.history) {
-          const mappedCycles = data.data.history.map((cycle: any) => ({
-            id: cycle.id.toString(),
-            status: cycle.status,
-            created_at: cycle.start_time,
-            completed_at: cycle.end_time || null,
-            total_questions: cycle.total_questions,
-            successful_queries: cycle.success_count,
-            failed_queries: (cycle.total_questions || 0) - (cycle.success_count || 0),
-            avg_response_time: cycle.duration_seconds ? cycle.duration_seconds * 1000 : 0,
-            accuracy_score: cycle.success_rate,
-            metadata: {
-              error_patterns: cycle.failure_analysis ? [cycle.failure_analysis] : [],
-              improvement_suggestions: []
-            }
-          }));
-          
-          setCycles(mappedCycles);
-          
-          // Check if we have any running cycles
-          const runningCycles = mappedCycles.filter((c: any) => c.status === 'running');
-          
-          // If we have a specific cycle ID, check just that one
-          if (cycleId) {
-            const currentCycle = mappedCycles.find((c: any) => c.id === cycleId);
-            if (currentCycle && currentCycle.status !== 'running') {
-              setIsRunning(false);
-              clearInterval(interval);
-            }
-          } else {
-            // If no specific cycle ID, check if any cycles are running
-            if (runningCycles.length === 0) {
-              setIsRunning(false);
-              clearInterval(interval);
-            }
-          }
-          
-          // Also check the global running status if available
-          if (data.data.isRunning === false) {
-            setIsRunning(false);
-            clearInterval(interval);
-          }
-        }
+        // FastAPI evaluations are synchronous, so we just refresh the data
+        await fetchCycles();
       } catch (error) {
-        console.error('Error polling cycle status:', error);
-        // On error, stop polling after a few retries
+        console.error('Error refreshing cycles after evaluation:', error);
         setIsRunning(false);
-        clearInterval(interval);
       }
-    }, 3000); // Poll every 3 seconds
-
-    // Stop polling after 10 minutes max
-    setTimeout(() => {
-      clearInterval(interval);
-      setIsRunning(false);
-    }, 600000);
+    }, 1000);
   };
 
   const getOverviewStats = () => {

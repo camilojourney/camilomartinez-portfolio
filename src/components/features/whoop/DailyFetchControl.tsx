@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
+import { integrationService } from '@/lib/api/config';
+// TODO: Import FastAPI client when WHOOP integration is implemented (Phase 6-7)
+// import { ApiClient, API_ENDPOINTS } from '@/lib/api/config';
 
 interface DailyFetchResult {
   success: boolean;
@@ -19,6 +22,7 @@ export function DailyFetchControl() {
     setResult(null);
 
     try {
+      // TODO: Replace with FastAPI endpoint when WHOOP integration is implemented (Phase 6-7)
       const response = await fetch('/api/actions/daily-fetch', {
         method: 'POST',
         headers: {
@@ -26,9 +30,9 @@ export function DailyFetchControl() {
         },
         body: JSON.stringify({ dryRun }),
       });
-
+      
       const data = await response.json();
-      setResult(data);
+      setResult(data as DailyFetchResult);
     } catch (error) {
       setResult({
         success: false,

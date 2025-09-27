@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./app:/app/app
+    networks:
+      - camilo-network
+
+  # Redis for rate limiting and caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - camilo-network
+
+  # PostgreSQL for development (use Neon in production)
+  postgres:
+    image: pgvector/pgvector:pg15
+    environment:
+      - POSTGRES_DB=camilo_dev
+      - POSTGRES_USER=camilo
+      - POSTGRES_PASSWORD=dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - camilo-network
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  camilo-network:
+    driver: bridge

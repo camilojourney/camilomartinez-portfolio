@@ -1,19 +1,67 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
+import LiquidPage from '@/components/shared/liquid-page';
+import { systemService } from '@/lib/api/config';
 
 export default function SignInPage() {
+    const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const checkBackend = async () => {
+            try {
+                await systemService.healthCheck();
+                if (isMounted) {
+                    setApiStatus('online');
+                }
+            } catch (error) {
+                console.error('Unable to reach backend health endpoint:', error);
+                if (isMounted) {
+                    setApiStatus('offline');
+                }
+            }
+        };
+
+        checkBackend();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-            <div className="text-center">
-                <h1 className="text-3xl font-bold text-white mb-4">Sign In</h1>
+        <LiquidPage currentPage="my-data" backgroundVariant="cool">
+            <div className="text-center space-y-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>
+                    <p className="text-white/70">
+                        Connect your WHOOP account to access personalized data dashboards.
+                    </p>
+                </div>
+
                 <button
                     onClick={() => signIn('whoop', { callbackUrl: '/whoop-dashboard' })}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded transition duration-200"
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold py-3 px-6 rounded-full transition duration-200 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={apiStatus === 'checking'}
                 >
                     Sign in with WHOOP
                 </button>
+
+                <p className="text-sm text-white/60">
+                    API status:{' '}
+                    <span className={
+                        apiStatus === 'online'
+                            ? 'text-emerald-300'
+                            : apiStatus === 'offline'
+                            ? 'text-rose-300'
+                            : 'text-amber-300'
+                    }>
+                        {apiStatus === 'checking' ? 'Checking FastAPI backend…' : apiStatus === 'online' ? 'Backend reachable' : 'Backend offline'}
+                    </span>
+                </p>
             </div>
-        </div>
+        </LiquidPage>
     );
 }

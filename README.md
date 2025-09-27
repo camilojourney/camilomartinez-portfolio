@@ -2,35 +2,30 @@
 
 A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development. Built with Next.js 15 App Router and featuring a unique liquid glass design system with automated WHOOP fitness data integration and advanced GPS track visualization.
 
-## � **Quick Navigation**
+## 📚 Quick Navigation
 
-- 📖 **[Complete API Documentation](./docs/API-DOCUMENTATION.md)** - All endpoints and integration guides
-- 📚 **[Project Documentation](./docs/)** - Specifications, guides, and references
-- 🛠️ **[Development Scripts](./scripts/)** - Tools and utilities
-- 🔬 **[Research & Analysis](./research/)** - Data science work and experiments
-
-## �📚 **Complete API Documentation**
-
-📖 **[View Full API Documentation](./docs/API-DOCUMENTATION.md)** - Comprehensive guide to all 12+ endpoints including authentication, parameters, examples, and testing commands.
+- 📚 **[Backend Knowledge Base](./backend/docs/README.md)** – FastAPI routes, services, and migration status.
+- 🧠 **[Chat AI Schema Docs](./backend/docs/chat_ai/vector-embeddings-documentation.md)** – Embedding strategy, view descriptions, and RAG guidance.
+- 🗂️ **[Frontend Documentation](./docs/README.md)** – Portfolio UI notes and roadmap (front-end only).
+- 🛠️ **[Development Scripts](./scripts/)** – Tools and utilities.
+- 🔬 **[Research & Analysis](./research/)** – Data science work and experiments.
 
 ## 📚 Documentation Library
 
-### Core Platform Guides
-- [docs/README.md](./docs/README.md) — High-level index summarizing every document in the repository.
-- [docs/AI_QUERY_ENGINE.md](./docs/AI_QUERY_ENGINE.md) — Architecture, prompts, and validation workflow for the RAG + Text-to-SQL engine.
-- [docs/MIGRATION_SUMMARY_SEPT_2025.md](./docs/MIGRATION_SUMMARY_SEPT_2025.md) — Checklist of September 2025 schema changes, cron health, and follow-up actions.
-
-### WHOOP & Strava Integrations
-- [docs/WHOOP_V2.md](./docs/WHOOP_V2.md) — Current WHOOP API v2 implementation details and token lifecycle.
-- [docs/STRAVA_INTEGRATION_COMPLETE.md](./docs/STRAVA_INTEGRATION_COMPLETE.md) — Step-by-step Strava OAuth rollout mirroring the WHOOP flow.
-- [docs/strava-data-sync.md](./docs/strava-data-sync.md) — Full data synchronization pipeline for Strava, including backfill strategy.
-- [docs/CORRELATION_DEPLOYMENT_GUIDE.md](./docs/CORRELATION_DEPLOYMENT_GUIDE.md) — Deployment runbook for linking Strava runs to WHOOP workouts.
-- [docs/ASTORIA_CONQUEST.md](./docs/ASTORIA_CONQUEST.md) — Feature overview for the Astoria street-running conquest visualization.
+### Backend AI Platform
+- [backend/docs/AI_QUERY_ENGINE.md](./backend/docs/AI_QUERY_ENGINE.md) — Architecture, prompts, and validation workflow for the RAG + Text-to-SQL engine.
+- [backend/docs/AI_TRAINER_AGENT.md](./backend/docs/AI_TRAINER_AGENT.md) — Automated evaluation agent design and run-cycle orchestration.
+- [backend/docs/IMPLEMENTATION_LOG.md](./backend/docs/IMPLEMENTATION_LOG.md) — Migration timeline and phase-by-phase deliverables.
+- [backend/docs/CAMILO_AI_EXPERT_QA.md](./backend/docs/CAMILO_AI_EXPERT_QA.md) — Long-form knowledge base used for embeddings and portfolio Q&A.
 
 ### Chat AI & Schema Intelligence
-- [docs/chat_ai/database-schema-documentation.md](./docs/chat_ai/database-schema-documentation.md) — Column-level reference for materialized views powering the AI assistant.
-- [docs/chat_ai/vector-embeddings-documentation.md](./docs/chat_ai/vector-embeddings-documentation.md) — Strategy for pairing materialized views with pgvector indexes.
-- [docs/chat_ai/embeddings-implementation-guide.md](./docs/chat_ai/embeddings-implementation-guide.md) — End-to-end playbook for building AI-native data pipelines and embeddings.
+- [backend/docs/chat_ai/database-schema-documentation.md](./backend/docs/chat_ai/database-schema-documentation.md) — Column-level reference for materialized views powering the AI assistant.
+- [backend/docs/chat_ai/vector-embeddings-documentation.md](./backend/docs/chat_ai/vector-embeddings-documentation.md) — Strategy for pairing materialized views with pgvector indexes.
+- [backend/docs/chat_ai/embeddings-implementation-guide.md](./backend/docs/chat_ai/embeddings-implementation-guide.md) — End-to-end playbook for building AI-native data pipelines and embeddings.
+
+### Frontend Reference
+- [docs/README.md](./docs/README.md) — Tracking front-end documentation topics.
+- [docs/PROJECT_TECHNICALITY.md](./docs/PROJECT_TECHNICALITY.md) — Portfolio positioning and storytelling guidance.
 
 ## 🏃‍♂️ WHOOP Integration & Automated Data Collection
 
@@ -521,11 +516,19 @@ camilomartinez-portfolio/
 ├── .eslintrc.json           # ESLint config
 ├── .gitignore               # Git ignore rules
 ├── README.md                # Documentation
-├── docs/                    # Project documentation
-│   ├── API-DOCUMENTATION.md
-│   ├── ASTORIA_CONQUEST.md
-│   ├── STRAVA_INTEGRATION_COMPLETE.md
-│   └── WHOOP_V2.md
+├── docs/                    # Front-end documentation
+│   ├── PROJECT_TECHNICALITY.md
+│   └── README.md
+├── backend/docs/            # Backend knowledge base
+│   ├── AI_QUERY_ENGINE.md
+│   ├── AI_TRAINER_AGENT.md
+│   ├── CAMILO_AI_EXPERT_QA.md
+│   ├── IMPLEMENTATION_LOG.md
+│   ├── README.md
+│   └── chat_ai/
+│       ├── database-schema-documentation.md
+│       ├── embeddings-implementation-guide.md
+│       └── vector-embeddings-documentation.md
 ├── next-env.d.ts           # Next.js types
 ├── next.config.mjs          # Next.js config
 ├── package.json             # Dependencies
@@ -851,11 +854,19 @@ camilomartinez-portfolio/
 ├── .gitignore                 # Git ignore rules
 ├── .github/                   # GitHub configuration
 │   └── instructions/          # Development guidelines
-├── docs/                      # � Project documentation
-│   ├── API-DOCUMENTATION.md   # Complete API reference
-│   ├── ASTORIA_CONQUEST.md    # Project specifications
-│   ├── STRAVA_INTEGRATION_COMPLETE.md # Strava integration guide
-│   └── WHOOP_V2.md           # 🏃‍♂️ WHOOP API integration guide
+├── docs/                      # � Project documentation (frontend-focused)
+│   ├── PROJECT_TECHNICALITY.md   # Positioning, storytelling, and UX framing
+│   └── README.md                # Front-end documentation index
+├── backend/docs/              # 📚 Backend AI knowledge base
+│   ├── AI_QUERY_ENGINE.md        # RAG + Text-to-SQL architecture
+│   ├── AI_TRAINER_AGENT.md       # Evaluation agent design
+│   ├── CAMILO_AI_EXPERT_QA.md    # Long-form knowledge base content
+│   ├── IMPLEMENTATION_LOG.md     # Migration and rollout history
+│   ├── README.md                 # Backend doc index
+│   └── chat_ai/                  # Schema embedding references
+│       ├── database-schema-documentation.md
+│       ├── embeddings-implementation-guide.md
+│       └── vector-embeddings-documentation.md
 ├── README.md                  # 📖 This documentation file
 ├── research/                  # 🔬 Research & data science work
 │   ├── archive/               # Archived development files

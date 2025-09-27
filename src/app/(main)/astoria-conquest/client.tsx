@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import LiquidNav from '@/components/shared/liquid-nav';
 import { AstoriaStats } from '@/components/features/astoria-conquest/AstoriaStats';
 import { MapContainer } from '@/components/features/astoria-conquest/MapContainer';
 import { RunCard } from '@/components/features/astoria-conquest/RunCard';
@@ -46,20 +47,11 @@ export function AstoriaConquestClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex justify-between items-center">
-          <a href="/" className="text-gray-300 hover:text-white flex items-center space-x-2 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            <span>Home</span>
-          </a>
-        </div>
-      </header>
+      {/* Navigation */}
+      <LiquidNav currentPage="projects" />
 
       {/* Hero Section */}
-      <div className="relative h-[40vh] min-h-[300px] bg-black/40 mt-16">
+      <div className="relative h-[40vh] min-h-[300px] bg-black/40 mt-24 md:mt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent">
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
             <h1 className="text-5xl md:text-6xl font-bold mb-4">Astoria Conquest</h1>

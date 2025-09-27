@@ -1,4 +1,4 @@
-import { sql } from '@/lib/db/db';
+import { analyticsService } from '@/lib/api/config';
 import { Card } from '@/components/ui/Card';
 import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
 import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
@@ -10,28 +10,15 @@ export const dynamic = 'auto';
 export const dynamicParams = true;
 export const revalidate = 21600; // Revalidate every 6 hours (21600 seconds)
 
-import { DashboardStrainData, DashboardMonthlyStrainData, DashboardStrainRecoveryData, DashboardWorkoutTimeData } from '@/types/whoop';
+import { DashboardStrainData, DashboardMonthlyStrainData, DashboardStrainRecoveryData, DashboardWorkoutData, DashboardWorkoutTimeData } from '@/types/whoop';
 
 async function getStrainData(): Promise<DashboardStrainData[]> {
     try {
-        const result = await sql`
-            SELECT
-                TO_CHAR(start_time, 'YYYY-MM-DD') AS formatted_date,
-                strain::decimal as strain
-            FROM whoop_cycles
-            WHERE strain IS NOT NULL
-            ORDER BY start_time ASC
-        `;
+        const data = await analyticsService.getStrainData() as DashboardStrainData[];
         
-        // Ensure proper data serialization for client components
-        const processedData = result.rows.map(row => ({
-            formatted_date: String(row.formatted_date),
-            strain: parseFloat(String(row.strain))
-        }));
-        
-        console.log('Strain Data from DB:', processedData.length, 'records');
-        console.log('Sample data:', processedData.slice(0, 3));
-        return processedData;
+        console.log('Strain Data from FastAPI:', data.length, 'records');
+        console.log('Sample data:', data.slice(0, 3));
+        return data;
     } catch (error) {
         console.error('Error fetching strain data:', error);
         return [];
@@ -40,27 +27,11 @@ async function getStrainData(): Promise<DashboardStrainData[]> {
 
 async function getMonthlyStrainData(): Promise<DashboardMonthlyStrainData[]> {
     try {
-        const result = await sql`
-            SELECT
-                TO_CHAR(start_time, 'YYYY-MM') AS month,
-                AVG(strain::decimal) as average_strain,
-                COUNT(*) as days_count
-            FROM whoop_cycles
-            WHERE strain IS NOT NULL
-            GROUP BY TO_CHAR(start_time, 'YYYY-MM')
-            ORDER BY month ASC
-        `;
+        const data = await analyticsService.getMonthlyStrainData() as DashboardMonthlyStrainData[];
         
-        // Ensure proper data serialization for client components
-        const processedData = result.rows.map(row => ({
-            month: String(row.month),
-            average_strain: parseFloat(String(row.average_strain)),
-            days_count: parseInt(String(row.days_count))
-        }));
-        
-        console.log('Monthly Strain Data from DB:', processedData.length, 'records');
-        console.log('Sample monthly data:', processedData.slice(0, 3));
-        return processedData;
+        console.log('Monthly Strain Data from FastAPI:', data.length, 'records');
+        console.log('Sample monthly data:', data.slice(0, 3));
+        return data;
     } catch (error) {
         console.error('Error fetching monthly strain data:', error);
         return [];
@@ -69,70 +40,22 @@ async function getMonthlyStrainData(): Promise<DashboardMonthlyStrainData[]> {
 
 async function getStrainRecoveryData(): Promise<DashboardStrainRecoveryData[]> {
     try {
-        const result = await sql`
-            SELECT
-                c1.start_time::date as strain_date,
-                c1.strain,
-                r2.recovery_percentage as recovery_score
-            FROM whoop_cycles c1
-            -- Join with the next day's recovery score
-            INNER JOIN whoop_recovery r2 ON
-                -- Match recovery records that occurred after this cycle
-                r2.cycle_id IN (
-                    SELECT c2.id
-                    FROM whoop_cycles c2
-                    WHERE c2.start_time::date = (c1.start_time::date + interval '1 day')
-                )
-            WHERE
-                c1.strain IS NOT NULL
-                AND c1.strain > 0
-                AND r2.recovery_percentage IS NOT NULL
-                AND r2.recovery_percentage > 0
-            ORDER BY c1.start_time ASC
-        `;
-        return result.rows as Array<{
-            strain_date: string;
-            strain: number;
-            recovery_score: number;
-        }>;
+        const data = await analyticsService.getStrainRecoveryData() as DashboardStrainRecoveryData[];
+        return data;
     } catch (error) {
         console.error('Error fetching strain vs recovery data:', error);
         return [];
     }
 }
 
-async function getWorkoutData() {
+async function getWorkoutData(): Promise<DashboardWorkoutData[]> {
     try {
-        const result = await sql`
-            SELECT
-                id,
-                sport_name,
-                start_time,
-                end_time
-            FROM whoop_workouts
-            WHERE
-                start_time >= DATE_TRUNC('year', CURRENT_DATE)
-                AND end_time > start_time  -- Ensure valid duration
-                AND (
-                    sport_name = 'weightlifting'
-                    OR sport_name = 'weightlifting_msk'
-                    OR sport_name = 'running'
-                    OR sport_name = 'boxing'
-                )
-            ORDER BY start_time ASC
-        `;
+        const data = await analyticsService.getWorkoutData() as DashboardWorkoutData[];
 
-        if (result.rows.length > 0) {
-            // Explicitly cast the result rows to the expected type
-            return result.rows.map(row => ({
-                id: row.id as string,
-                sport_name: row.sport_name as string,
-                start_time: row.start_time as string,
-                end_time: row.end_time as string
-            }));
+        if (data?.length) {
+            return data;
         }
 
-        // If no data found, return empty array
         console.log('No workout data found');
         return [];
     } catch (error) {
@@ -143,37 +66,12 @@ async function getWorkoutData() {
 
 async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
     try {
-        // Use TO_CHAR to format the date directly in SQL to avoid JS Date object issues
-        const result = await sql`
-            SELECT
-                TO_CHAR(DATE(start_time + (timezone_offset || ' hours')::interval), 'YYYY-MM-DD') AS workout_date,
-                TO_CHAR(MIN(start_time + (timezone_offset || ' hours')::interval), 'HH24:MI') AS first_workout_time
-            FROM whoop_workouts
-            WHERE sport_name IN ('running', 'weightlifting', 'boxing', 'weightlifting_msk')
-            GROUP BY workout_date
-            ORDER BY workout_date;
-        `;
+        const data = await analyticsService.getWorkoutTimes() as DashboardWorkoutTimeData[];
         
-        console.log('Raw DB result:', JSON.stringify(result.rows.slice(0, 3)));
+        console.log('Workout times data from FastAPI:', data.length, 'records');
+        console.log('Sample workout times:', JSON.stringify(data.slice(0, 3)));
         
-        // Process the data for the chart
-        const processedData = result.rows.map(row => {
-            // Convert time to minutes for comparison
-            const [hours, minutes] = row.first_workout_time.split(':').map(Number);
-            const timeAsMinutes = hours * 60 + minutes;
-            
-            // Use the formatted string date directly
-            return {
-                date: row.workout_date, // Already formatted as YYYY-MM-DD string by SQL
-                time: row.first_workout_time,
-                timeAsMinutes
-            };
-        });
-        
-        console.log('Workout times data:', processedData.length, 'records');
-        console.log('Sample workout times:', JSON.stringify(processedData.slice(0, 3)));
-        
-        return processedData;
+        return data;
     } catch (error) {
         console.error('Error fetching workout times:', error);
         return [];

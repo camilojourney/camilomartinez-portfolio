@@ -137,6 +137,13 @@ export interface DashboardWorkoutTimeData {
     timeAsMinutes: number;
 }
 
+export interface DashboardWorkoutData {
+    id: string;
+    sport_name: string;
+    start_time: string;
+    end_time: string;
+}
+
 // API Response wrappers
 export interface WhoopCyclesResponse {
     records: WhoopCycle[];

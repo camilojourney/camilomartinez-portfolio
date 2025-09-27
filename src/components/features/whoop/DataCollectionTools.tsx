@@ -1,20 +1,39 @@
 'use client';
 
 import { useState } from 'react';
+import { ApiClient, analyticsService, integrationService } from '@/lib/api/config';
 
 export function DataCollectionTools() {
     const [loading, setLoading] = useState<string | null>(null);
     const [lastResult, setLastResult] = useState<any>(null);
 
-    const runDataCollection = async (endpoint: string, name: string) => {
+    const runDataCollection = async (
+        action: 'historical' | 'daily' | 'view' | 'check',
+        name: string
+    ) => {
         setLoading(name);
         setLastResult(null);
 
         try {
-            const response = await fetch(endpoint, {
-                method: endpoint === '/api/view-data' || endpoint === '/api/check-data' ? 'GET' : 'POST'
-            });
-            const result = await response.json();
+            let result: any;
+
+            switch (action) {
+                case 'historical':
+                    result = await integrationService.triggerWhoopCollector({ mode: 'historical' });
+                    break;
+                case 'daily':
+                    result = await integrationService.triggerWhoopDailySync({ dryRun: false });
+                    break;
+                case 'view':
+                    result = await analyticsService.getWhoopViewData();
+                    break;
+                case 'check':
+                    result = await ApiClient.get('/api/check-data', { fallback: '/api/check-data' });
+                    break;
+                default:
+                    result = { success: false, error: 'Unknown action' };
+            }
+
             setLastResult(result);
 
             // Show success message
@@ -48,7 +67,7 @@ export function DataCollectionTools() {
                         Collect your historical WHOOP data (last 30 days) and store it in the database.
                     </p>
                     <button
-                        onClick={() => runDataCollection('/api/whoop-backfill', 'Historical Data Collection')}
+                        onClick={() => runDataCollection('historical', 'Historical Data Collection')}
                         disabled={loading !== null}
                         className="w-full bg-green-500/20 hover:bg-green-500/30 border border-green-400/30 text-green-300 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
                     >
@@ -63,7 +82,7 @@ export function DataCollectionTools() {
                         Sync recent data and fill in any missing sleep/recovery information.
                     </p>
                     <button
-                        onClick={() => runDataCollection('/api/whoop-collector-daily', 'Daily Sync')}
+                        onClick={() => runDataCollection('daily', 'Daily Sync')}
                         disabled={loading !== null}
                         className="w-full bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
                     >
@@ -80,7 +99,7 @@ export function DataCollectionTools() {
                         Check what data is currently stored in the database.
                     </p>
                     <button
-                        onClick={() => runDataCollection('/api/view-data', 'View Database')}
+                        onClick={() => runDataCollection('view', 'View Database')}
                         disabled={loading !== null}
                         className="w-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
                     >
@@ -95,7 +114,7 @@ export function DataCollectionTools() {
                         Verify the database schema and data integrity.
                     </p>
                     <button
-                        onClick={() => runDataCollection('/api/check-data', 'Check Schema')}
+                        onClick={() => runDataCollection('check', 'Check Schema')}
                         disabled={loading !== null}
                         className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/30 text-cyan-300 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
                     >

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ArrowRight, Twitter, Hash, Copy, Zap, Globe, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import LiquidPage from '@/components/shared/liquid-page'
+import { aiService } from '@/lib/api/config'
 
 interface ProcessedContent {
   success: boolean
@@ -62,20 +63,9 @@ export default function SocialMediaPipelinePage() {
     setError(null)
     
     try {
-      const response = await fetch('/api/tools/social-media-pipeline', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: inputText,
-          language: language,
-        }),
-      })
+      const result = await aiService.generateSocialMediaContent(inputText, language) as ProcessedContent
 
-      const result = await response.json()
-      
-      if (!response.ok) {
+      if (result?.success === false) {
         throw new Error(result.error || 'Failed to process content')
       }
 

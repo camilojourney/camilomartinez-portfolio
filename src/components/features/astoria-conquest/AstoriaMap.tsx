@@ -1,8 +1,9 @@
 'use client';
 
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import { useRef } from 'react';
+import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { LatLngExpression } from 'leaflet';
+import { LatLngExpression, Map as LeafletMap } from 'leaflet';
 import type { Feature, FeatureCollection, LineString, Position } from 'geojson';
 
 // Fix for default Leaflet icon issue with React
@@ -16,40 +17,105 @@ L.Icon.Default.mergeOptions({
 
 import type { AstoriaMapProps } from '@/types/astoria';
 
+// Custom controls component that will be rendered inside the MapContainer
+function CustomControls() {
+  const map = useMap();
+
+  const handleZoomIn = () => {
+    map.zoomIn();
+  };
+
+  const handleZoomOut = () => {
+    map.zoomOut();
+  };
+
+  const handleCenterView = () => {
+    const center: LatLngExpression = [40.765, -73.92]; // Astoria Center
+    map.setView(center, 14);
+  };
+
+  return (
+    <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+      {/* Zoom In */}
+      <button
+        onClick={handleZoomIn}
+        className="w-10 h-10 bg-white/90 hover:bg-white border border-gray-300 rounded shadow-lg flex items-center justify-center text-gray-700 hover:text-black transition-all duration-200 hover:scale-105"
+        title="Zoom in"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+      </button>
+      
+      {/* Zoom Out */}
+      <button
+        onClick={handleZoomOut}
+        className="w-10 h-10 bg-white/90 hover:bg-white border border-gray-300 rounded shadow-lg flex items-center justify-center text-gray-700 hover:text-black transition-all duration-200 hover:scale-105"
+        title="Zoom out"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+        </svg>
+      </button>
+      
+      {/* Center View */}
+      <button
+        onClick={handleCenterView}
+        className="w-10 h-10 bg-white/90 hover:bg-white border border-gray-300 rounded shadow-lg flex items-center justify-center text-gray-700 hover:text-black transition-all duration-200 hover:scale-105"
+        title="Center view"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" strokeWidth={2} />
+          <circle cx="12" cy="12" r="3" strokeWidth={2} />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 const AstoriaMap = ({ baseMapData, coveredStreetsData, selectedRun }: AstoriaMapProps) => {
   const center: LatLngExpression = [40.765, -73.92]; // Astoria Center
 
   return (
-    <MapContainer center={center} zoom={14} style={{ height: '100%', width: '100%' }}>
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; CARTO'
-      />
-      <GeoJSON 
-        data={baseMapData as FeatureCollection} 
-        style={{ color: '#444444', weight: 1.5, opacity: 0.8 }} 
-      />
-      <GeoJSON 
-        data={coveredStreetsData as FeatureCollection} 
-        style={{ color: '#00FFFF', weight: 3, opacity: 1 }}
-      />
-      {selectedRun?.polyline && (
-        <GeoJSON
-          data={({
-            type: "FeatureCollection",
-            features: [{
-              type: "Feature",
-              properties: {},
-              geometry: {
-                type: "LineString",
-                coordinates: JSON.parse(selectedRun.polyline) as Position[]
-              }
-            }]
-          } as FeatureCollection<LineString>)}
-          style={{ color: '#ff00ff', weight: 4, opacity: 0.8 }}
+    <div className="relative w-full h-full">
+      <MapContainer 
+        center={center} 
+        zoom={14} 
+        style={{ height: '100%', width: '100%' }}
+        zoomControl={false} // Disable default zoom control
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; CARTO'
         />
-      )}
-    </MapContainer>
+        <GeoJSON 
+          data={baseMapData as FeatureCollection} 
+          style={{ color: '#444444', weight: 1.5, opacity: 0.8 }} 
+        />
+        <GeoJSON 
+          data={coveredStreetsData as FeatureCollection} 
+          style={{ color: '#00FFFF', weight: 3, opacity: 1 }}
+        />
+        {selectedRun?.polyline && (
+          <GeoJSON
+            data={({
+              type: "FeatureCollection",
+              features: [{
+                type: "Feature",
+                properties: {},
+                geometry: {
+                  type: "LineString",
+                  coordinates: JSON.parse(selectedRun.polyline) as Position[]
+                }
+              }]
+            } as FeatureCollection<LineString>)}
+            style={{ color: '#ff00ff', weight: 4, opacity: 0.8 }}
+          />
+        )}
+        <CustomControls />
+      </MapContainer>
+    </div>
   );
 };
 
