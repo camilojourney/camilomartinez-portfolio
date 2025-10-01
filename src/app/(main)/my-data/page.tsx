@@ -83,20 +83,38 @@ async function getStrainRecoveryData(): Promise<DashboardStrainRecoveryData[]> {
         const cycles = response?.recent?.cycles || [];
         const recovery = response?.recent?.recovery || [];
         
-        // Match cycles with recovery data
-        const strainRecoveryData = cycles
-            .filter((cycle: any) => cycle.strain != null)
-            .map((cycle: any) => {
-                const recoveryItem = recovery.find((r: any) => r.cycle_id === cycle.id);
-                return {
-                    strain_date: cycle.formatted_date,
-                    strain: parseFloat(cycle.strain) || 0,
-                    recovery_score: recoveryItem ? parseFloat(recoveryItem.recovery_percentage) || 0 : 0
-                };
-            })
-            .filter((item: any) => item.recovery_score > 0);
+        // Create a map of recovery by cycle_id for easy lookup
+        const recoveryMap = new Map();
+        recovery.forEach((r: any) => {
+            recoveryMap.set(r.cycle_id, parseFloat(r.recovery_percentage) || 0);
+        });
         
-        console.log('Strain vs Recovery Data:', strainRecoveryData.length, 'records');
+        // Sort cycles by date to ensure proper order
+        const sortedCycles = cycles
+            .filter((cycle: any) => cycle.strain != null)
+            .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+        
+        // Match each day's recovery with PREVIOUS day's strain
+        const strainRecoveryData: DashboardStrainRecoveryData[] = [];
+        
+        for (let i = 1; i < sortedCycles.length; i++) {
+            const currentCycle = sortedCycles[i];
+            const previousCycle = sortedCycles[i - 1];
+            
+            const currentRecovery = recoveryMap.get(currentCycle.id);
+            const previousStrain = parseFloat(previousCycle.strain) || 0;
+            
+            if (currentRecovery > 0 && previousStrain > 0) {
+                strainRecoveryData.push({
+                    strain_date: currentCycle.formatted_date, // Date for the recovery measurement
+                    strain: previousStrain, // Previous day's strain
+                    recovery_score: currentRecovery // Current day's recovery
+                });
+            }
+        }
+        
+        console.log('Strain vs Recovery Data (previous day correlation):', strainRecoveryData.length, 'records');
+        console.log('Sample correlation data:', strainRecoveryData.slice(0, 3));
         return strainRecoveryData;
     } catch (error) {
         console.error('Error fetching strain vs recovery data:', error);
