@@ -359,20 +359,26 @@ export const aiService = {
 /**
  * System service functions
  */
+interface SystemHealthResponse {
+  status: string;
+  source?: string;
+  [key: string]: unknown;
+}
+
 export const systemService = {
   /**
    * Basic health check
    */
-  async healthCheck() {
+  async healthCheck(): Promise<SystemHealthResponse> {
     // If no backend URL is configured, use Next.js API route fallback
     if (!API_BASE_URL) {
-      return ApiClient.get('/health').catch(() => {
+      return ApiClient.get<SystemHealthResponse>('/health').catch(() => {
         // If fallback also fails, return a default response
         return { status: 'ok', source: 'frontend-only' };
       });
     }
     
-    return ApiClient.get(API_ENDPOINTS.SYSTEM.HEALTH, {
+    return ApiClient.get<SystemHealthResponse>(API_ENDPOINTS.SYSTEM.HEALTH, {
       fallback: '/health',
     }).catch(() => {
       // If both FastAPI and fallback fail, return frontend-only status

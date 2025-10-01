@@ -19,12 +19,8 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
             try {
                 const response = await systemService.healthCheck()
                 if (isMounted) {
-                    // If response indicates frontend-only mode, show as OK but different status
-                    if (response?.source === 'frontend-only') {
-                        setApiStatus('ok')
-                    } else {
-                        setApiStatus('ok')
-                    }
+                    // Always show as OK if health check succeeds (whether FastAPI or fallback)
+                    setApiStatus('ok')
                 }
             } catch (error) {
                 console.error('Backend health check failed:', error)
