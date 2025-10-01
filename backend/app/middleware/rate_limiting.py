@@ -1,4 +1,4 @@
-w"""
+"""
 Rate limiting middleware for FastAPI.
 Integrates with the rate limiting service to enforce query limits.
 """

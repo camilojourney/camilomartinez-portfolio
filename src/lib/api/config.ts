@@ -90,7 +90,7 @@ export const API_ENDPOINTS = {
     WORKOUT_TIMES: '/api/analytics/workout-times',     // Workout time patterns
     
     // Legacy endpoints (to be deprecated)
-    VIEW_DATA: '/api/analytics/view-data',            // was: /api/view-data
+    VIEW_DATA: '/api/view-data',                      // Original working endpoint
     USER_STATS: '/api/analytics/user-stats',          // new FastAPI endpoint
     PERFORMANCE_TRENDS: '/api/analytics/trends',      // new FastAPI endpoint
   },
@@ -458,32 +458,32 @@ export const integrationService = {
 export const analyticsService = {
   // Dashboard data functions for /my-data page
   async getStrainData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_DATA, {
-      fallback: '/api/analytics/strain-data'
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.VIEW_DATA, {
+      fallback: '/api/view-data'
     });
   },
 
   async getMonthlyStrainData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.MONTHLY_STRAIN, {
-      fallback: '/api/analytics/monthly-strain'
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.VIEW_DATA, {
+      fallback: '/api/view-data'
     });
   },
 
   async getStrainRecoveryData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_RECOVERY, {
-      fallback: '/api/analytics/strain-recovery'
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.VIEW_DATA, {
+      fallback: '/api/view-data'
     });
   },
 
   async getWorkoutData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_DATA, {
-      fallback: '/api/analytics/workout-data'
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.VIEW_DATA, {
+      fallback: '/api/view-data'
     });
   },
 
   async getWorkoutTimes() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_TIMES, {
-      fallback: '/api/analytics/workout-times'
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.VIEW_DATA, {
+      fallback: '/api/view-data'
     });
   },
 

@@ -14,11 +14,19 @@ import { DashboardStrainData, DashboardMonthlyStrainData, DashboardStrainRecover
 
 async function getStrainData(): Promise<DashboardStrainData[]> {
     try {
-        const data = await analyticsService.getStrainData() as DashboardStrainData[];
+        const response = await analyticsService.getStrainData() as any;
         
-        console.log('Strain Data from FastAPI:', data.length, 'records');
-        console.log('Sample data:', data.slice(0, 3));
-        return data;
+        // Extract strain data from /api/view-data response
+        const strainData = response?.strain || [];
+        
+        console.log('Strain Data from API:', strainData.length, 'records');
+        console.log('Sample data:', strainData.slice(0, 3));
+        
+        // Convert to expected format
+        return strainData.map((item: any) => ({
+            formatted_date: item.formatted_date,
+            strain: parseFloat(item.strain) || 0
+        }));
     } catch (error) {
         console.error('Error fetching strain data:', error);
         return [];
@@ -27,11 +35,40 @@ async function getStrainData(): Promise<DashboardStrainData[]> {
 
 async function getMonthlyStrainData(): Promise<DashboardMonthlyStrainData[]> {
     try {
-        const data = await analyticsService.getMonthlyStrainData() as DashboardMonthlyStrainData[];
+        const response = await analyticsService.getMonthlyStrainData() as any;
         
-        console.log('Monthly Strain Data from FastAPI:', data.length, 'records');
-        console.log('Sample monthly data:', data.slice(0, 3));
-        return data;
+        // Extract and aggregate monthly data from strain data
+        const strainData = response?.strain || [];
+        
+        if (!strainData.length) {
+            console.log('No strain data for monthly aggregation');
+            return [];
+        }
+        
+        // Group by month and calculate averages
+        const monthlyMap = new Map();
+        
+        strainData.forEach((item: any) => {
+            const date = new Date(item.formatted_date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            
+            if (!monthlyMap.has(monthKey)) {
+                monthlyMap.set(monthKey, { total: 0, count: 0 });
+            }
+            
+            const month = monthlyMap.get(monthKey);
+            month.total += parseFloat(item.strain) || 0;
+            month.count += 1;
+        });
+        
+        const monthlyData = Array.from(monthlyMap.entries()).map(([month, data]) => ({
+            month,
+            average_strain: Math.round((data.total / data.count) * 100) / 100,
+            days_count: data.count
+        }));
+        
+        console.log('Monthly Strain Data processed:', monthlyData.length, 'months');
+        return monthlyData;
     } catch (error) {
         console.error('Error fetching monthly strain data:', error);
         return [];
@@ -40,8 +77,27 @@ async function getMonthlyStrainData(): Promise<DashboardMonthlyStrainData[]> {
 
 async function getStrainRecoveryData(): Promise<DashboardStrainRecoveryData[]> {
     try {
-        const data = await analyticsService.getStrainRecoveryData() as DashboardStrainRecoveryData[];
-        return data;
+        const response = await analyticsService.getStrainRecoveryData() as any;
+        
+        // Extract cycles and recovery data
+        const cycles = response?.recent?.cycles || [];
+        const recovery = response?.recent?.recovery || [];
+        
+        // Match cycles with recovery data
+        const strainRecoveryData = cycles
+            .filter((cycle: any) => cycle.strain != null)
+            .map((cycle: any) => {
+                const recoveryItem = recovery.find((r: any) => r.cycle_id === cycle.id);
+                return {
+                    strain_date: cycle.formatted_date,
+                    strain: parseFloat(cycle.strain) || 0,
+                    recovery_score: recoveryItem ? parseFloat(recoveryItem.recovery_percentage) || 0 : 0
+                };
+            })
+            .filter((item: any) => item.recovery_score > 0);
+        
+        console.log('Strain vs Recovery Data:', strainRecoveryData.length, 'records');
+        return strainRecoveryData;
     } catch (error) {
         console.error('Error fetching strain vs recovery data:', error);
         return [];
@@ -50,10 +106,21 @@ async function getStrainRecoveryData(): Promise<DashboardStrainRecoveryData[]> {
 
 async function getWorkoutData(): Promise<DashboardWorkoutData[]> {
     try {
-        const data = await analyticsService.getWorkoutData() as DashboardWorkoutData[];
-
-        if (data?.length) {
-            return data;
+        const response = await analyticsService.getWorkoutData() as any;
+        
+        // Extract workout data from /api/view-data response
+        const workouts = response?.recent?.workouts || [];
+        
+        if (workouts?.length) {
+            const workoutData = workouts.map((workout: any) => ({
+                id: workout.id,
+                sport_name: workout.sport_name || 'Workout',
+                start_time: workout.start_time,
+                end_time: workout.end_time
+            }));
+            
+            console.log('Workout data found:', workoutData.length, 'workouts');
+            return workoutData;
         }
 
         console.log('No workout data found');
@@ -66,12 +133,27 @@ async function getWorkoutData(): Promise<DashboardWorkoutData[]> {
 
 async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
     try {
-        const data = await analyticsService.getWorkoutTimes() as DashboardWorkoutTimeData[];
+        const response = await analyticsService.getWorkoutTimes() as any;
         
-        console.log('Workout times data from FastAPI:', data.length, 'records');
-        console.log('Sample workout times:', JSON.stringify(data.slice(0, 3)));
+        // Extract workout data and convert to time format
+        const workouts = response?.recent?.workouts || [];
         
-        return data;
+        const workoutTimes = workouts.map((workout: any) => {
+            const startTime = new Date(workout.start_time);
+            const hours = startTime.getHours();
+            const minutes = startTime.getMinutes();
+            
+            return {
+                date: startTime.toISOString().split('T')[0], // YYYY-MM-DD format
+                time: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
+                timeAsMinutes: hours * 60 + minutes
+            };
+        });
+        
+        console.log('Workout times data processed:', workoutTimes.length, 'records');
+        console.log('Sample workout times:', JSON.stringify(workoutTimes.slice(0, 3)));
+        
+        return workoutTimes;
     } catch (error) {
         console.error('Error fetching workout times:', error);
         return [];
