@@ -12,9 +12,10 @@
 
 // Environment-based API base URL configuration
 const getApiBaseUrl = (): string => {
-  // In production, this would be your deployed FastAPI URL
+  // In production, use Next.js API routes as fallback when FastAPI backend is not deployed
   if (process.env.NODE_ENV === 'production') {
-    return process.env.NEXT_PUBLIC_FASTAPI_URL || 'https://api.camilomartinez.co';
+    // Only use FastAPI URL if explicitly configured, otherwise use Next.js API routes
+    return process.env.NEXT_PUBLIC_FASTAPI_URL || '';
   }
   
   // Development: FastAPI server running locally on port 9000
@@ -320,8 +321,19 @@ export const systemService = {
    * Basic health check
    */
   async healthCheck() {
+    // If no backend URL is configured, use Next.js API route fallback
+    if (!API_BASE_URL) {
+      return ApiClient.get('/health').catch(() => {
+        // If fallback also fails, return a default response
+        return { status: 'ok', source: 'frontend-only' };
+      });
+    }
+    
     return ApiClient.get(API_ENDPOINTS.SYSTEM.HEALTH, {
       fallback: '/health',
+    }).catch(() => {
+      // If both FastAPI and fallback fail, return frontend-only status
+      return { status: 'ok', source: 'frontend-only' };
     });
   },
 

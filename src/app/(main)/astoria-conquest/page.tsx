@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { AstoriaConquestClient } from './client';
 import { metadata as pageMetadata } from './metadata';
 
+
 export const metadata: Metadata = pageMetadata;
 
 import type { StravaRun } from '@/types/astoria';

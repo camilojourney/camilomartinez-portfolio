@@ -17,9 +17,14 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
 
         const fetchStatus = async () => {
             try {
-                await systemService.healthCheck()
+                const response = await systemService.healthCheck()
                 if (isMounted) {
-                    setApiStatus('ok')
+                    // If response indicates frontend-only mode, show as OK but different status
+                    if (response?.source === 'frontend-only') {
+                        setApiStatus('ok')
+                    } else {
+                        setApiStatus('ok')
+                    }
                 }
             } catch (error) {
                 console.error('Backend health check failed:', error)

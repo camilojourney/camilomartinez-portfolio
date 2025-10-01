@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ArrowRight, Twitter, Hash, Copy, Zap, Globe, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import LiquidPage from '@/components/shared/liquid-page'
-import { aiService } from '@/lib/api/config'
+import { ApiClient } from '@/lib/api/config'
 
 interface ProcessedContent {
   success: boolean
@@ -63,7 +63,12 @@ export default function SocialMediaPipelinePage() {
     setError(null)
     
     try {
-      const result = await aiService.generateSocialMediaContent(inputText, language) as ProcessedContent
+      // TODO: This tool should use FastAPI AI endpoints for text processing
+      // For now, keeping the existing Next.js endpoint until AI tools are migrated
+      const result = await ApiClient.post<ProcessedContent>('/api/tools/social-media-pipeline', {
+        text: inputText,
+        language,
+      }, { fallback: '/api/tools/social-media-pipeline' })
 
       if (result?.success === false) {
         throw new Error(result.error || 'Failed to process content')
