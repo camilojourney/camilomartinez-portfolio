@@ -10,34 +10,30 @@ export async function GET() {
         const recovery = await sql`SELECT COUNT(*) as count FROM whoop_recovery`;
         const workouts = await sql`SELECT COUNT(*) as count FROM whoop_workouts`;
 
-        // Get recent records with correct column names
+        // Get ALL recent records - no date restrictions
         const recentCycles = await sql`
             SELECT id, start_time, end_time, strain,
                    TO_CHAR(start_time, 'YYYY-MM-DD') AS formatted_date
             FROM whoop_cycles
-            ORDER BY start_time DESC
-            LIMIT 10
+            ORDER BY start_time DESC;
         `;
 
         const recentRecovery = await sql`
             SELECT cycle_id, recovery_percentage
             FROM whoop_recovery
-            ORDER BY cycle_id DESC
-            LIMIT 10;
+            ORDER BY cycle_id DESC;
         `;
 
         const recentSleep = await sql`
             SELECT id, start_time, end_time, sleep_performance_percentage
             FROM whoop_sleep
             ORDER BY start_time DESC
-            LIMIT 10;
         `;
 
         const recentWorkouts = await sql`
             SELECT id, start_time, end_time, sport_name, strain
             FROM whoop_workouts
-            ORDER BY start_time DESC
-            LIMIT 10;
+            ORDER BY start_time DESC;
         `;
 
         // Get the most recent dates to check data freshness
@@ -46,15 +42,14 @@ export async function GET() {
             FROM whoop_cycles
         `;
 
-        // Get strain data for recent month to verify August data
+        // Get ALL strain data - no date restrictions
         const strainData = await sql`
             SELECT
                 TO_CHAR(start_time, 'YYYY-MM-DD') AS formatted_date,
                 strain
             FROM whoop_cycles
             WHERE strain IS NOT NULL
-            AND start_time >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
-            ORDER BY start_time DESC
+            ORDER BY start_time ASC
         `;
 
         return NextResponse.json({
