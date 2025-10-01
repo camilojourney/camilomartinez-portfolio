@@ -98,24 +98,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 };
             }
 
-            // Check token expiration with different buffers for different scenarios
-            // For regular page loads, only refresh if token is actually expired
-            // For critical operations, be more proactive
-            const MINIMAL_REFRESH_BUFFER = 60; // 1 minute for regular operations
-            const isTokenExpired = token.expiresAt &&
+            // Only try to refresh tokens if they're significantly expired (more than 1 day)
+            // This prevents constant refresh attempts during normal browsing
+            const REFRESH_BUFFER = 24 * 60 * 60; // 24 hours - only refresh if token is more than a day expired
+            const isTokenSignificantlyExpired = token.expiresAt &&
                 typeof token.expiresAt === 'number' &&
-                Date.now() >= (token.expiresAt - MINIMAL_REFRESH_BUFFER) * 1000;
+                Date.now() >= (token.expiresAt + REFRESH_BUFFER) * 1000;
 
-            // If token is still valid, return it
-            if (token.expiresAt &&
-                typeof token.expiresAt === 'number' &&
-                !isTokenExpired) {
+            // If token is not significantly expired, just return it (even if technically expired)
+            // This allows viewing stored data without constant refresh attempts
+            if (!isTokenSignificantlyExpired) {
                 return token;
             }
 
-            // Token is expired or about to expire, try to refresh
+            // Token is significantly expired, try to refresh (but only once)
+            if (token.error === "RefreshAccessTokenError") {
+                // Already tried and failed, don't keep trying
+                return token;
+            }
+
             try {
-                console.log('🔄 Token expired, attempting refresh...');
+                console.log('🔄 Refreshing WHOOP access token...');
                 
                 const tokenService = new TokenRefreshService();
                 const refreshedTokens = await tokenService.refreshWhoopToken(token.refreshToken as string);
@@ -140,12 +143,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     error: undefined, // Clear any previous errors
                 };
             } catch (error) {
-                // Only log once per session to avoid spam
-                if (!token.error) {
-                    console.warn('⚠️ Please re-authenticate - visit /signin');
-                }
+                console.warn('⚠️ Refresh token expired - re-authentication required');
                 
-                // Return token with error flag
+                // Return token with error flag to prevent further attempts
                 return {
                     ...token,
                     error: "RefreshAccessTokenError",
@@ -153,9 +153,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
         },
         async session({ session, token }) {
-            // If there's a refresh token error, the user needs to re-authenticate
+            // Only log the warning occasionally to avoid spam
             if (token.error === 'RefreshAccessTokenError') {
-                console.warn('⚠️ Session has refresh token error - access token may be invalid');
+                // Reduce logging frequency - only log every ~10th time
+                const shouldLog = Math.random() < 0.1;
+                if (shouldLog) {
+                    console.warn('⚠️ Session has refresh token error - access token may be invalid');
+                }
             }
             
             return {
