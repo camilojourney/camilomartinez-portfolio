@@ -111,60 +111,72 @@ export const API_ENDPOINTS = {
 export class ApiClient {
   private static baseUrl = API_BASE_URL;
 
-  /**
-   * Make a request to the FastAPI backend
-   */
-  static async request<T>(
-    endpoint: string,
-    options: RequestInit & RequestConfig = {}
-  ): Promise<T> {
-    const { fallback, ...fetchOptions } = options;
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const defaultHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    const token = this.getAuthToken();
-    if (token) {
-      defaultHeaders['Authorization'] = `Bearer ${token}`;
-    }
-
-    const config: RequestInit = {
-      ...fetchOptions,
-      headers: {
-        ...defaultHeaders,
-        ...(fetchOptions.headers ?? {}),
-      },
-    };
-
-    try {
-      const response = await fetch(url, config);
-
-      if (!response.ok) {
-        if (fallback) {
-          return await this.requestFallback<T>(fallback, config);
-        }
-        const text = await response.text();
-        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${text}`);
-      }
-
-      if (response.status === 204) {
-        return undefined as T;
-      }
-
-      const text = await response.text();
-      return text ? (JSON.parse(text) as T) : (undefined as T);
-    } catch (error) {
-      if (fallback) {
-        return await this.requestFallback<T>(fallback, config);
-      }
-      console.error(`API request failed for ${endpoint}:`, error);
-      throw error;
-    }
+/**
+ * Make a request to the FastAPI backend
+ */
+static async request<T>(
+  endpoint: string,
+  options: RequestInit & RequestConfig = {}
+): Promise<T> {
+  const { fallback, ...fetchOptions } = options;
+  
+  // If no base URL is configured (production without deployed backend), try fallback immediately
+  if (!this.baseUrl && fallback) {
+    console.log(`No backend URL configured, using fallback: ${fallback}`);
+    return this.requestFallback<T>(fallback, fetchOptions);
+  }
+  
+  // If no base URL and no fallback, throw a helpful error
+  if (!this.baseUrl) {
+    throw new Error(`Backend not available and no fallback provided for ${endpoint}`);
   }
 
-  /**
+  const url = `${this.baseUrl}${endpoint}`;
+
+  const defaultHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  const token = this.getAuthToken();
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
+
+  const config: RequestInit = {
+    ...fetchOptions,
+    headers: {
+      ...defaultHeaders,
+      ...(fetchOptions.headers ?? {}),
+    },
+  };
+
+  try {
+    const response = await fetch(url, config);
+
+    if (!response.ok) {
+      if (fallback) {
+        console.log(`Backend request failed (${response.status}), trying fallback: ${fallback}`);
+        return await this.requestFallback<T>(fallback, config);
+      }
+      const text = await response.text();
+      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${text}`);
+    }
+
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const text = await response.text();
+    return text ? (JSON.parse(text) as T) : (undefined as T);
+  } catch (error) {
+    if (fallback) {
+      console.log(`Backend request error, trying fallback: ${fallback}`, error);
+      return await this.requestFallback<T>(fallback, config);
+    }
+    console.error(`API request failed for ${endpoint}:`, error);
+    throw error;
+  }
+}  /**
    * GET request helper
    */
   static async get<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
@@ -263,18 +275,41 @@ export const aiService = {
    * Send a chat query to the AI service
    */
   async query(query: string, includeContext = true, contextDays = 30) {
-    return ApiClient.post(API_ENDPOINTS.AI.CHAT_QUERY, {
-      query,
-      include_context: includeContext,
-      context_days: contextDays,
-    });
+    try {
+      return await ApiClient.post(API_ENDPOINTS.AI.CHAT_QUERY, {
+        query,
+        include_context: includeContext,
+        context_days: contextDays,
+      });
+    } catch (error) {
+      // Fallback to Next.js chat API with format conversion
+      console.log('FastAPI unavailable, using Next.js chat API fallback');
+      const chatResponse = await ApiClient.post('/api/chat', {
+        messages: [{ role: 'user', content: query }]
+      }) as any;
+      
+      // Convert Next.js chat response to FastAPI format
+      return {
+        success: true,
+        data: {
+          response: chatResponse.content || 'No response received',
+          answer: chatResponse.content || 'No response received',
+          history_id: `fallback-${Date.now()}`,
+          processing_time_ms: 0,
+          result_count: 1,
+        },
+        timestamp: new Date().toISOString(),
+      };
+    }
   },
 
   /**
    * Get chat history
    */
   async getHistory(limit = 20, days = 30) {
-    return ApiClient.get(`${API_ENDPOINTS.AI.CHAT_HISTORY}?limit=${limit}&days=${days}`);
+    return ApiClient.get(`${API_ENDPOINTS.AI.CHAT_HISTORY}?limit=${limit}&days=${days}`, {
+      fallback: `/api/ai-query/history?limit=${limit}&days=${days}`
+    });
   },
 
   /**
@@ -285,6 +320,8 @@ export const aiService = {
       analysis_period: analysisPeriod,
       user_goals: userGoals,
       save_evaluation: true,
+    }, {
+      fallback: '/api/ai-trainer/run-cycle'
     });
   },
 
@@ -292,14 +329,18 @@ export const aiService = {
    * Get trainer evaluation history
    */
   async getTrainerHistory(limit = 10) {
-    return ApiClient.get(`${API_ENDPOINTS.AI.TRAINER_HISTORY}?limit=${limit}`);
+    return ApiClient.get(`${API_ENDPOINTS.AI.TRAINER_HISTORY}?limit=${limit}`, {
+      fallback: `/api/ai-trainer/history?limit=${limit}`
+    });
   },
 
   /**
    * Health check for AI services
    */
   async healthCheck() {
-    return ApiClient.get(API_ENDPOINTS.AI.AI_HEALTH);
+    return ApiClient.get(API_ENDPOINTS.AI.AI_HEALTH, {
+      fallback: '/api/health'
+    });
   },
 
   /**
@@ -309,6 +350,8 @@ export const aiService = {
     return ApiClient.post(API_ENDPOINTS.AI.SOCIAL_MEDIA_PIPELINE, {
       text,
       language,
+    }, {
+      fallback: '/api/social-media-pipeline'
     });
   },
 };
@@ -409,28 +452,40 @@ export const integrationService = {
 export const analyticsService = {
   // Dashboard data functions for /my-data page
   async getStrainData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_DATA);
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_DATA, {
+      fallback: '/api/view-data'
+    });
   },
 
   async getMonthlyStrainData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.MONTHLY_STRAIN);
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.MONTHLY_STRAIN, {
+      fallback: '/api/view-data'
+    });
   },
 
   async getStrainRecoveryData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_RECOVERY);
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_RECOVERY, {
+      fallback: '/api/view-data'
+    });
   },
 
   async getWorkoutData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_DATA);
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_DATA, {
+      fallback: '/api/view-data'
+    });
   },
 
   async getWorkoutTimes() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_TIMES);
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_TIMES, {
+      fallback: '/api/view-data'
+    });
   },
 
   // Legacy endpoints (to be deprecated)
   async getWhoopViewData() {
-    return ApiClient.get(API_ENDPOINTS.ANALYTICS.VIEW_DATA);
+    return ApiClient.get(API_ENDPOINTS.ANALYTICS.VIEW_DATA, {
+      fallback: '/api/view-data'
+    });
   },
 
   async getUserStats() {
