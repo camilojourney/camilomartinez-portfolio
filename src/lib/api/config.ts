@@ -459,31 +459,31 @@ export const analyticsService = {
   // Dashboard data functions for /my-data page
   async getStrainData() {
     return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_DATA, {
-      fallback: '/api/view-data'
+      fallback: '/api/analytics/strain-data'
     });
   },
 
   async getMonthlyStrainData() {
     return ApiClient.get(API_ENDPOINTS.ANALYTICS.MONTHLY_STRAIN, {
-      fallback: '/api/view-data'
+      fallback: '/api/analytics/monthly-strain'
     });
   },
 
   async getStrainRecoveryData() {
     return ApiClient.get(API_ENDPOINTS.ANALYTICS.STRAIN_RECOVERY, {
-      fallback: '/api/view-data'
+      fallback: '/api/analytics/strain-recovery'
     });
   },
 
   async getWorkoutData() {
     return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_DATA, {
-      fallback: '/api/view-data'
+      fallback: '/api/analytics/workout-data'
     });
   },
 
   async getWorkoutTimes() {
     return ApiClient.get(API_ENDPOINTS.ANALYTICS.WORKOUT_TIMES, {
-      fallback: '/api/view-data'
+      fallback: '/api/analytics/workout-times'
     });
   },
 
