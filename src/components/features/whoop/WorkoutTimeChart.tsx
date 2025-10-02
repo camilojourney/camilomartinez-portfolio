@@ -139,9 +139,18 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   const height = 300;
   const padding = { top: 40, right: 20, bottom: 40, left: 60 };
   
-  // Fixed time range from 6 AM to 12 PM
-  const minTimeValue = 6 * 60;  // 6:00 AM in minutes
-  const maxTimeValue = 12 * 60; // 12:00 PM in minutes;
+  // Dynamic time range based on actual data to show all workouts
+  const timeValues = sortedData.map(d => d.timeAsMinutes);
+  const minDataTime = Math.min(...timeValues);
+  const maxDataTime = Math.max(...timeValues);
+  
+  // Expand range slightly for better visualization, but ensure we see all data
+  const timeRangeBuffer = 60; // 1 hour buffer
+  const minTimeValue = Math.max(0, Math.min(minDataTime - timeRangeBuffer, 6 * 60)); // Don't go below midnight, prefer 6 AM
+  const maxTimeValue = Math.min(24 * 60, Math.max(maxDataTime + timeRangeBuffer, 12 * 60)); // Don't go above midnight, prefer 12 PM
+  
+  console.log('Time range:', formatTime(minTimeValue), 'to', formatTime(maxTimeValue));
+  console.log('Data time range:', formatTime(minDataTime), 'to', formatTime(maxDataTime));
 
   // Scale X position based on data index - use validData length for consistency
   const xScale = (index: number) => {
@@ -173,9 +182,35 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
 
   return (
     <div className="w-full overflow-hidden">
-      <h2 className="text-2xl text-center text-cyan-400 mb-6">
-        Workout Start Times ⏰
-      </h2>
+      {/* Dynamic header based on data analysis */}
+      {(() => {
+        const last30Days = sortedData.slice(-30);
+        const workoutsBeforeGoal = last30Days.filter(point => point.timeAsMinutes <= goalTimeInMinutes).length;
+        const successRate = (workoutsBeforeGoal / last30Days.length) * 100;
+        
+        const isWinning = successRate >= 50;
+        const statusEmoji = isWinning ? "🏆" : "💪";
+        const statusText = isWinning ? "Crushing the Morning Challenge!" : "Building Morning Momentum";
+        
+        return (
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/30 rounded-full px-4 py-2 mb-3">
+              <span className="text-sm text-amber-400">
+                🌅 Am I winning my early morning battle?
+              </span>
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-yellow-400 bg-clip-text text-transparent mb-2">
+              The Morning Workout Challenge
+            </h2>
+            <p className="text-xl text-white/80 flex items-center justify-center gap-2">
+              <span>{statusEmoji}</span>
+              <span>{statusText}</span>
+              <span className="text-cyan-400 font-semibold">({successRate.toFixed(1)}% success rate)</span>
+            </p>
+            <p className="text-white/60 mt-1">Win The Morning, Win The Day</p>
+          </div>
+        );
+      })()}
       
       <div ref={scrollContainerRef} className="overflow-x-auto pb-4 relative">
         <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto" style={{ minWidth: "700px" }}>
@@ -189,33 +224,44 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           strokeWidth="1" 
         />
         
-        {/* Time labels and grid lines (Y-axis) */}
-        {Array.from({ length: 7 }, (_, i) => (6 + i) * 60).map(time => (
-          <g key={time}>
-            {/* Horizontal grid line */}
-            <line 
-              x1={padding.left} 
-              y1={yScale(time)} 
-              x2={width - padding.right} 
-              y2={yScale(time)} 
-              stroke="rgba(255,255,255,0.1)" 
-              strokeWidth="1" 
-              strokeDasharray="4"
-            />
-            {/* Time label */}
-            <text 
-              x={padding.left - 10} 
-              y={yScale(time)} 
-              textAnchor="end" 
-              dominantBaseline="middle" 
-              fill="rgba(255,255,255,0.6)" 
-              fontSize="12"
-              className="font-medium"
-            >
-              {formatTime(time)}
-            </text>
-          </g>
-        ))}
+        {/* Time labels and grid lines (Y-axis) - Dynamic based on time range */}
+        {(() => {
+          const timeLabels = [];
+          const startHour = Math.floor(minTimeValue / 60);
+          const endHour = Math.ceil(maxTimeValue / 60);
+          
+          // Generate hourly labels within the visible range
+          for (let hour = startHour; hour <= endHour; hour++) {
+            timeLabels.push(hour * 60);
+          }
+          
+          return timeLabels.map(time => (
+            <g key={time}>
+              {/* Horizontal grid line */}
+              <line 
+                x1={padding.left} 
+                y1={yScale(time)} 
+                x2={width - padding.right} 
+                y2={yScale(time)} 
+                stroke="rgba(255,255,255,0.1)" 
+                strokeWidth="1" 
+                strokeDasharray="4"
+              />
+              {/* Time label */}
+              <text 
+                x={padding.left - 10} 
+                y={yScale(time)} 
+                textAnchor="end" 
+                dominantBaseline="middle" 
+                fill="rgba(255,255,255,0.6)" 
+                fontSize="12"
+                className="font-medium"
+              >
+                {formatTime(time)}
+              </text>
+            </g>
+          ));
+        })()}
         
         {/* X-axis */}
         <line 
@@ -241,16 +287,18 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           </text>
         ))}
         
-        {/* Goal time line (yellow dotted) */}
-        <line 
-          x1={padding.left} 
-          y1={yScale(goalTimeInMinutes)} 
-          x2={width - padding.right} 
-          y2={yScale(goalTimeInMinutes)} 
-          stroke="yellow" 
-          strokeWidth="1" 
-          strokeDasharray="4" 
-        />
+        {/* Goal time line (yellow dotted) - Only show if within visible range */}
+        {goalTimeInMinutes >= minTimeValue && goalTimeInMinutes <= maxTimeValue && (
+          <line 
+            x1={padding.left} 
+            y1={yScale(goalTimeInMinutes)} 
+            x2={width - padding.right} 
+            y2={yScale(goalTimeInMinutes)} 
+            stroke="yellow" 
+            strokeWidth="2" 
+            strokeDasharray="6,4" 
+          />
+        )}
         
         {/* Data points with enhanced visualization */}
         {sortedData.map((point, i) => {
