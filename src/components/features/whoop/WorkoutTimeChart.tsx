@@ -224,16 +224,15 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           strokeWidth="1" 
         />
         
-        {/* Time labels and grid lines (Y-axis) - Dynamic based on time range */}
+        {/* Time labels and grid lines (Y-axis) - Fixed schedule: 6 AM, 9 AM, 12 PM, 1 PM */}
         {(() => {
-          const timeLabels = [];
-          const startHour = Math.floor(minTimeValue / 60);
-          const endHour = Math.ceil(maxTimeValue / 60);
-          
-          // Generate hourly labels within the visible range
-          for (let hour = startHour; hour <= endHour; hour++) {
-            timeLabels.push(hour * 60);
-          }
+          // Fixed time markers: 6 AM, 9 AM, 12 PM (noon), 1 PM
+          const timeLabels = [
+            6 * 60,   // 6:00 AM
+            9 * 60,   // 9:00 AM  
+            12 * 60,  // 12:00 PM (noon)
+            13 * 60   // 1:00 PM
+          ];
           
           return timeLabels.map(time => (
             <g key={time}>
