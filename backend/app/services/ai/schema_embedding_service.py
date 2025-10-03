@@ -5,6 +5,8 @@ Replaces the TypeScript embed-schema.ts functionality with Python implementation
 
 import logging
 import asyncio
+import os
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from sqlalchemy import text
@@ -31,7 +33,29 @@ class SchemaEmbeddingService:
         
         # Schema descriptions - matches TypeScript implementation
         self.schema_descriptions = [
-            # View-level descriptions
+            # Personal Profile & Background (NEW)
+            {
+                "type": "profile",
+                "name": "camilo_background",
+                "description": "Camilo Martinez's personal and professional background, including origins, education, work philosophy, and core values. Use this for questions about who Camilo is, his background, education, work ethic, and professional journey."
+            },
+            {
+                "type": "profile", 
+                "name": "camilo_technical_expertise",
+                "description": "Camilo's technical skills, programming expertise, development philosophy, and technology stack preferences. Use this for questions about his technical capabilities, programming experience, preferred tools, and development approach."
+            },
+            {
+                "type": "profile", 
+                "name": "camilo_projects",
+                "description": "Camilo's project portfolio, including current and past significant projects, technologies used, challenges solved, and impact achieved. Use this for questions about his work, project experience, and professional accomplishments."
+            },
+            {
+                "type": "profile", 
+                "name": "camilo_fitness_philosophy",
+                "description": "Camilo's approach to fitness, health, and wellness including training philosophy, health metrics focus, WHOOP and Strava usage, and holistic wellness approach. Use this for questions about his fitness methodology and health tracking approach."
+            },
+            
+            # Database Schema Descriptions (EXISTING)
             {
                 "type": "view",
                 "name": "daily_fitness_snapshot",
@@ -222,13 +246,21 @@ class SchemaEmbeddingService:
                 successful_embeddings = 0
                 failed_embeddings = 0
                 
-                for item in self.schema_descriptions:
+                # Load and add personal profile embeddings
+                profile_embeddings = await self._load_profile_embeddings()
+                all_descriptions = self.schema_descriptions + profile_embeddings
+                
+                for item in all_descriptions:
                     try:
                         # Prepare text for embedding
                         if item["type"] == "view":
                             input_text = f"View: {item['name']}. Description: {item['description']}"
                             table_name = item["name"]
                             column_name = None
+                        elif item["type"] == "profile":
+                            input_text = f"Profile: {item['name']}. Description: {item['description']}"
+                            table_name = "camilo_profile"
+                            column_name = item["name"]
                         else:  # column
                             input_text = f"View: {item['view']}, Column: {item['name']}. Description: {item['description']}"
                             table_name = item["view"]

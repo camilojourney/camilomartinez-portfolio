@@ -1,113 +1,183 @@
-# Scripts Organization
+# 🔧 Scripts Organization
 
-This folder contains all development and maintenance scripts organized by function.
+> **Last Updated**: October 2, 2025  
+> **Purpose**: Automation, data pipelines, and maintenance utilities
+
+All scripts are organized by their purpose and usage pattern. Standardized on JavaScript/Python for consistency with the backend ecosystem.
+
+---
 
 ## 📁 Folder Structure
 
-### `data/` - Data Processing & Analysis
-- `activity-correlation-etl.ts` - ETL process for cross-platform activity correlations
-- `analyze-sleep-data.js` - Sleep data analysis from WHOOP
-- `fetch-real-enhanced-data.js` - **Main enhanced Strava data fetcher with real API calls**
-- `generate-astoria-base-map.py` - Generate Astoria map visualization
-- `get-workout-data.js` - WHOOP workout data extraction
-- `load-astoria-streets.js` - Load Astoria street data into database
-- `refresh-strava-tokens.js` - Automatic Strava token refresh system
-- `run-correlation-etl.js` - Execute activity correlation ETL process
-- `simple-historical-import.js` - Historical data import from WHOOP
-- `simple-strava-historical.js` - Historical Strava data import
-- `strava-historical-import.js` - Complete Strava historical import
-- `strava-setup-complete.js` - Strava integration setup
-- `strava-sync-status.js` - Check Strava sync status
-- `strava-weekly-sync.js` - Weekly Strava data sync
-- `test-strava-sync.js` - Test Strava synchronization
+### `pipelines/` - Repeatable Data Workflows ⚙️
 
-### `testing/` - Test & Validation Scripts
-- `check-cron-health.js` - Monitor cron job health and execution
-- `check-database-schema.js` - Validate database schema
-- `check-recent-data.js` - Check for recent data in database
-- `check-strava-setup.js` - Validate Strava integration
-- `check-whoop-schema.js` - Validate WHOOP database schema
-- `get-token.js` - Extract WHOOP access token for API testing
-- `simple-strava-check.js` - Simple Strava connection test
-- `test-data-insertion.js` - Test database insertion functionality
-- `test-single-import.js` - Test single record import
-- `test-strava-integration.js` - Complete Strava integration test
-- `test-token-status.js` - Check WHOOP token status
+**Scheduled, repeatable processes** that run regularly (cron jobs, automated syncs):
 
-### `dev/` - Development Utilities
-- `whoop-cli.js` - WHOOP command-line interface
+- `strava-weekly-sync.js` - **Weekly Strava data synchronization** (scheduled)
+- `refresh-strava-tokens.js` - **Automatic Strava OAuth token refresh** (scheduled)
+- `activity-correlation-etl.js` - **ETL for cross-platform activity correlations**
+- `run-correlation-etl.js` - **Execute correlation ETL pipeline**
+- `refresh-materialized-views.js` - **Refresh database materialized views** (scheduled)
 
-### `db/` - Database Operations
-- `apply-migration.js` - Apply database migrations with validation
-- `check-vector-support.js` - Verify vector extension support
-- `enable-vector-support.js` - Enable PostgreSQL vector extension
+**Usage Pattern**: These scripts are designed to run automatically on a schedule. They are idempotent and can be run repeatedly safely.
+
+```bash
+# Example: Run weekly Strava sync
+node scripts/pipelines/strava-weekly-sync.js
+
+# Example: Refresh database views
+node scripts/pipelines/refresh-materialized-views.js
+```
+
+---
+
+### `one-off/` - Data Fixes & Analysis 🔨
+
+**One-time tasks** for data analysis, historical imports, and special projects:
+
+- `analyze-sleep-data.js` - Analyze WHOOP sleep patterns and trends
+- `fetch-all-strava-data-complete-with-splits.js` - Complete historical Strava import
+- `fix-sleep-cycle-relationships.js` - One-time fix for sleep-cycle foreign keys
+- `load-astoria-streets.js` - Load Astoria street network data
+- `export-astoria-street-network.py` - Export Astoria map data
+- `generate_astoria_base_map.py` - Generate Astoria base map visualization
+- `update_astoria_progress.py` - Update Astoria conquest progress
+
+**Usage Pattern**: Run once for specific tasks, data migrations, or analysis. Not designed for repeated execution.
+
+```bash
+# Example: Analyze sleep data
+node scripts/one-off/analyze-sleep-data.js
+
+# Example: Generate Astoria map
+python scripts/one-off/generate_astoria_base_map.py
+```
+
+---
+
+### `db/` - Database Operations 🗄️
+
+**Database utilities** for migrations, schema management, and setup:
+
+- `apply-migration.js` - Apply SQL migrations to database
+- `run-migration.js` - Run specific migration files
 - `get-database-schema.js` - Export complete database schema
-- `run-strava-migrations.js` - Run all Strava migrations
-- `setup-astoria-database.sql` - Initial database setup
+- `check-vector-support.js` - Verify pgvector extension support
+- `enable-vector-support.js` - Enable PostgreSQL vector extension
+- `enable-postgis.js` - Enable PostGIS extension (legacy)
+- `setup-astoria-database.sql` - Initial Astoria database setup
 
-## 🚀 Usage
+**Usage Pattern**: Database administration and schema management. Use sparingly and with caution.
+
+```bash
+# Example: Export current schema
+node scripts/db/get-database-schema.js
+
+# Example: Check vector support
+node scripts/db/check-vector-support.js
+```
+
+**Note**: For standard migrations, use Alembic in `/backend/alembic/`. These scripts are for special database operations only.
+
+---
+
+### `testing/` - Testing & Debugging 🧪
+
+**Validation, debugging, and development tools**:
+
+- `check-database-schema.js` - Validate database schema integrity
+- `check-rate-limit.js` - Test rate limiting functionality
+- `check-recent-data.js` - Verify recent data in database
+- `diagnose-whoop-cron.js` - Diagnose WHOOP sync cron job issues
+- `debug-strava-response.js` - Debug Strava API responses
+- `activity-correlation.js` - Test activity correlation logic
+- `whoop-cli.js` - **WHOOP CLI for development** (interactive)
+
+**Usage Pattern**: Development and debugging. Run as needed to test functionality or diagnose issues.
+
+```bash
+# Example: Check recent data
+node scripts/testing/check-recent-data.js
+
+# Example: Test rate limiting
+node scripts/testing/check-rate-limit.js
+
+# Example: WHOOP CLI
+node scripts/testing/whoop-cli.js
+```
+
+---
+
+## 🚀 Quick Reference
 
 ### Most Common Operations
 
 ```bash
-# Check system health
-node scripts/testing/check-cron-health.js
+# 📊 Data Sync (Scheduled)
+node scripts/pipelines/strava-weekly-sync.js
+node scripts/pipelines/refresh-strava-tokens.js
+node scripts/pipelines/refresh-materialized-views.js
+
+# 🔍 Health Checks & Diagnostics
 node scripts/testing/check-recent-data.js
-
-# Enhanced data fetching (MAIN PRODUCTION SCRIPT)
-node scripts/data/fetch-real-enhanced-data.js
-
-# Monitor integrations
-node scripts/data/strava-sync-status.js
-node scripts/testing/get-token.js
-
-# Database operations
-node scripts/db/get-database-schema.js
 node scripts/testing/check-database-schema.js
+node scripts/testing/diagnose-whoop-cron.js
 
-# Historical data imports
-node scripts/data/simple-historical-import.js
-node scripts/data/strava-historical-import.js
+# 🗄️ Database Operations
+node scripts/db/get-database-schema.js
+node scripts/db/check-vector-support.js
 
-# Activity correlation ETL
-node scripts/data/run-correlation-etl.js
+# 🔨 One-Time Tasks
+node scripts/one-off/analyze-sleep-data.js
+python scripts/one-off/generate_astoria_base_map.py
 ```
 
-### Testing & Debugging
+---
 
+## 📋 Best Practices
+
+### When to Use Each Category
+
+| Category | Use When | Examples |
+|----------|----------|----------|
+| **pipelines/** | Setting up scheduled jobs, automating regular tasks | Cron jobs, nightly syncs, view refreshes |
+| **one-off/** | Historical imports, data fixes, special analyses | Migration scripts, data backfills |
+| **db/** | Database admin tasks | Schema exports, extension setup |
+| **testing/** | Debugging issues, validating functionality | Checking sync status, diagnosing problems |
+
+### Running Scripts
+
+**All scripts should be run from the project root:**
 ```bash
-# Test API connections
-node scripts/testing/check-strava-setup.js
-node scripts/testing/test-strava-integration.js
-node scripts/testing/test-token-status.js
-
-# Database validation
-node scripts/testing/check-whoop-schema.js
-node scripts/testing/test-data-insertion.js
+cd /Users/camilo/camilomartinez-portfolio
+node scripts/[category]/[script-name].js
 ```
 
-### Development Utilities
+**Environment Requirements:**
+- ✅ Valid `.env` file with all required variables
+- ✅ Database connection available
+- ✅ API tokens valid (for integration scripts)
 
-```bash
-# WHOOP CLI for development
-node scripts/dev/whoop-cli.js
+---
 
-# Database migrations
-node scripts/db/apply-migration.js
-```
+## 🔧 Recent Changes (October 2025)
 
-## 📝 Notes
+### Reorganization Summary
+- ✅ **Consolidated** from 4 folders (data/, db/, dev/, testing/) to 4 organized categories (pipelines/, one-off/, db/, testing/)
+- ✅ **Clarified purpose** of each script category
+- ✅ **Moved repeatable workflows** to `pipelines/` (5 scripts)
+- ✅ **Moved one-time tasks** to `one-off/` (7 scripts)  
+- ✅ **Retained database utilities** in `db/` (8 scripts)
+- ✅ **Enhanced testing tools** in `testing/` (7 scripts)
 
-- **Run from project root:** All scripts should be executed from the project root directory
-- **Environment variables:** Scripts require proper `.env` configuration
-- **Database scripts:** Ensure database connection is available
-- **Token scripts:** WHOOP scripts require valid authentication tokens
-- **Import paths:** Scripts use relative imports: `../../src/lib/...`
+### Why This Structure?
+This organization makes it immediately clear:
+- **What runs automatically** (pipelines)
+- **What's for special tasks** (one-off)
+- **What's for database work** (db)
+- **What's for debugging** (testing)
 
-## 🔧 Recent Updates (September 2025)
+---
 
-- **Enhanced Data Collection:** Added `fetch-real-enhanced-data.js` as main production script for Strava data with coordinates, splits, and enhanced metrics
-- **Script Organization:** Reorganized scripts into logical categories (data/, testing/, db/, dev/)
-- **Cleaned up:** Removed obsolete debugging scripts and temporary files
-- **Activity Correlations:** Added ETL process for cross-platform activity matching
-- **Updated:** Added cron health monitoring and enhanced token management tools
+*For database schema migrations, use Alembic in `/backend/alembic/` instead of these scripts.*
+

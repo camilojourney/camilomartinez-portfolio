@@ -135,6 +135,7 @@ export interface DashboardWorkoutTimeData {
     date: string;
     time: string;
     timeAsMinutes: number;
+    workoutType: string; // Standardized workout type
 }
 
 export interface DashboardWorkoutData {

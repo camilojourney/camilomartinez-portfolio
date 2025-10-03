@@ -37,6 +37,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             "/redoc",
             "/openapi.json",
             "/api/system/health",
+            # Temporarily bypass trainer endpoints for development
+            "/api/ai/trainer/evaluate",
+            "/api/ai/trainer/history",
+            # Bypass chat endpoints for testing the full flow
+            "/api/ai/chat/query",
+            "/api/ai/chat/completion",
+            "/api/ai/chat/history",
         }
     
     async def dispatch(self, request: Request, call_next) -> Response:

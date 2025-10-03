@@ -190,9 +190,12 @@ class OpenAIService:
             embed_params = {
                 "model": self.embedding_model,
                 "input": input_texts,
-                "user": user_id,
             }
             
+            # Only add user parameter if user_id is provided
+            if user_id:
+                embed_params["user"] = user_id
+                
             if dimensions:
                 embed_params["dimensions"] = dimensions
                 

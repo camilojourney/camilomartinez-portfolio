@@ -81,6 +81,22 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
     const trendLineStart = { x: 0, y: intercept };
     const trendLineEnd = { x: 21, y: slope * 21 + intercept };
 
+    // Calculate strain prediction for 60% recovery target
+    const strainFor60Recovery = useMemo(() => {
+        if (slope === 0) return null; // Can't predict if no slope
+        
+        // Using linear regression: recovery = slope * strain + intercept
+        // Solve for strain when recovery = 60: strain = (60 - intercept) / slope
+        const targetRecovery = 60;
+        const predictedStrain = (targetRecovery - intercept) / slope;
+        
+        // Only return if the prediction is reasonable (between 0-21 strain range)
+        if (predictedStrain >= 0 && predictedStrain <= 21) {
+            return predictedStrain;
+        }
+        return null;
+    }, [slope, intercept]);
+
     // Stats for display
     const stats = useMemo(() => {
         const totalPoints = processedData.length;
@@ -280,7 +296,7 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
             </div>
 
             {/* Legend and Analysis */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 {/* Legend */}
                 <div>
                     <h3 className="text-base sm:text-lg font-medium text-white mb-2 sm:mb-4">Recovery Zones</h3>
@@ -327,6 +343,31 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                             }
                         </p>
                     </div>
+                </div>
+
+                {/* Strain Prediction for 60% Recovery - Small, Right-aligned */}
+                <div>
+                    <h3 className="text-base sm:text-lg font-medium text-white mb-2 sm:mb-4 flex items-center gap-2">
+                        <span>🎯</span>
+                        60% Recovery Target
+                    </h3>
+                    {strainFor60Recovery !== null ? (
+                        <div className="space-y-2">
+                            <div className="text-xl font-bold text-cyan-400">
+                                {strainFor60Recovery.toFixed(1)} strain
+                            </div>
+                            <div className="text-xs text-white/50">
+                                R² = {(correlation * correlation).toFixed(3)}
+                            </div>
+                            <div className="text-xs text-white/40">
+                                Based on your personal pattern
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-amber-400 text-xs">
+                            Insufficient correlation
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

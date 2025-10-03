@@ -42,18 +42,19 @@ Central index for the Python FastAPI backend after migrating the Next.js serverl
 - **Alembic** (`backend/alembic/`)
   - Migration environment (`env.py`), templates, and upgrade scripts.
 
-## 🔁 Planned Migration Phases
+##  Documentation Index (canonical docs now in /docs/)
 
-Documented in `backend/docs/IMPLEMENTATION_LOG.md` with per-phase status for rate limiting, Strava/WHOOP integrations, analytics dashboards, and automation services.
-
-## 📚 Documentation Index (current canonical docs)
-
-- `AI_QUERY_ENGINE.md` – Current RAG + Text-to-SQL system architecture, prompts, and guardrails.
-- `AI_TRAINER_AGENT.md` – Automated evaluation pipeline, including the `run-evaluation-cycle.ts` workflow.
-- `CAMILO_AI_EXPERT_QA.md` – Long-form knowledge base used for embedding seeding and portfolio content.
-- `IMPLEMENTATION_LOG.md` – Phase-by-phase migration log covering FastAPI backend bring-up and system hardening.
-- `chat_ai/database-schema-documentation.md` – Daily snapshot + performance view column descriptions.
-- `chat_ai/vector-embeddings-documentation.md` – pgvector strategy, index selection, and similarity tuning guidance.
-- `chat_ai/embeddings-implementation-guide.md` – End-to-end instructions for maintaining the schema embedding flywheel.
+- `docs/ai/RAG_SYSTEM.md` – RAG pipeline architecture and implementation
+- `docs/ai/TRAINING.md` – AI training and evaluation systems
+- `docs/ai/EMBEDDINGS.md` – Vector embeddings strategy and optimization
+- `docs/ai/QUERY_ENGINE.md` – Text-to-SQL engine architecture
+- `docs/ai/TRAINER_AGENT.md` – Automated evaluation pipeline
+- `docs/knowledge/CAMILO_PROFILE.md` – Professional profile for AI embeddings
+- `docs/data/DATABASE_SCHEMA.md` – Database schema and data architecture
+- `docs/data/DATA_INTEGRATIONS.md` – External API integrations
+- `docs/frontend/ARCHITECTURE.md` – Frontend architecture guide
+- `docs/backend/ARCHITECTURE.md` – Backend architecture guide
+- `docs/integrations/TECHNOLOGY_INTEGRATIONS.md` – Technology integrations
+- `docs/operations/DEPLOYMENT_RUNBOOK.md` – Deployment and operations
 
 Keep this README up to date whenever routes or services move so the frontend and backend stay in sync.

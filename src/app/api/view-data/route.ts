@@ -33,6 +33,7 @@ export async function GET() {
         const recentWorkouts = await sql`
             SELECT id, start_time, end_time, sport_name, strain
             FROM whoop_workouts
+            WHERE sport_name IN ('running', 'cycling', 'boxing', 'weightlifting', 'weightlifting_msk')
             ORDER BY start_time DESC;
         `;
 

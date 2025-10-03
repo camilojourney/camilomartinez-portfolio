@@ -156,6 +156,28 @@ async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
         // Extract workout data and convert to time format
         const workouts = response?.recent?.workouts || [];
         
+        // Function to standardize workout type names
+        const standardizeWorkoutType = (sportName: string): string => {
+            const lowercaseName = sportName.toLowerCase();
+            
+            // Group weightlifting variations
+            if (lowercaseName.includes('weightlifting') || lowercaseName === 'weightlifting_msk') {
+                return 'Weightlifting';
+            }
+            
+            // Keep specific types as-is
+            switch (lowercaseName) {
+                case 'running':
+                    return 'Running';
+                case 'cycling':
+                    return 'Cycling';
+                case 'boxing':
+                    return 'Boxing';
+                default:
+                    return 'Other';
+            }
+        };
+        
         const workoutTimes = workouts.map((workout: any) => {
             const startTime = new Date(workout.start_time);
             const hours = startTime.getHours();
@@ -164,7 +186,8 @@ async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
             return {
                 date: startTime.toISOString().split('T')[0], // YYYY-MM-DD format
                 time: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
-                timeAsMinutes: hours * 60 + minutes
+                timeAsMinutes: hours * 60 + minutes,
+                workoutType: standardizeWorkoutType(workout.sport_name || 'unknown')
             };
         });
         

@@ -71,7 +71,7 @@ cp .env.example .env
 alembic upgrade head
 
 # Start development server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 9000
 ```
 
 ### Environment Variables

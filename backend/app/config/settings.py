@@ -15,14 +15,14 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     
     # Database Configuration (using your existing Neon setup)
-    DATABASE_URL: str = "postgresql://username:password@localhost:5432/database"
+    DATABASE_URL: str
     DATABASE_URL_SYNC: Optional[str] = None  # For migrations
     
     # Redis Configuration
-    REDIS_URL: str = "redis://localhost:6379"
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # OpenAI Configuration
-    OPENAI_API_KEY: str = "demo-key-for-development"
+    OPENAI_API_KEY: str
     OPENAI_MODEL: str = "gpt-4-turbo-preview"
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
     
@@ -30,17 +30,17 @@ class Settings(BaseSettings):
     DEEPL_API_KEY: Optional[str] = None
     
     # Strava API (from your existing config)
-    STRAVA_CLIENT_ID: str = "demo-strava-client-id"
-    STRAVA_CLIENT_SECRET: str = "demo-strava-client-secret"
+    STRAVA_CLIENT_ID: str
+    STRAVA_CLIENT_SECRET: str
     STRAVA_ACCESS_TOKEN: Optional[str] = None
     STRAVA_REFRESH_TOKEN: Optional[str] = None
     
     # WHOOP API (from your existing config)
-    WHOOP_CLIENT_ID: str = "demo-whoop-client-id"
-    WHOOP_CLIENT_SECRET: str = "demo-whoop-client-secret"
+    WHOOP_CLIENT_ID: str
+    WHOOP_CLIENT_SECRET: str
     
     # Authentication & Security
-    SECRET_KEY: str = "demo-secret-key-change-in-production"
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
@@ -51,14 +51,14 @@ class Settings(BaseSettings):
     RATE_LIMIT_BYPASS_SECRET: Optional[str] = None
     
     # Cron Job Security (from your existing config)
-    CRON_SECRET: str = "demo-cron-secret"
+    CRON_SECRET: str
     
     # External Services
     NEXTAUTH_URL: str = "http://localhost:3000"
     VERCEL_OIDC_TOKEN: Optional[str] = None
     
     # Development
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "https://localhost:3000"]
+    CORS_ORIGINS: str = '["http://localhost:3000", "http://127.0.0.1:3000"]'
     LOG_LEVEL: str = "INFO"
     
     class Config:
@@ -77,6 +77,16 @@ class Settings(BaseSettings):
     def redis_url_parsed(self) -> str:
         """Ensure Redis URL is properly formatted."""
         return self.REDIS_URL
+    
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Parse CORS_ORIGINS string into a list."""
+        import json
+        try:
+            return json.loads(self.CORS_ORIGINS)
+        except (json.JSONDecodeError, TypeError):
+            # Fallback to default origins
+            return ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 
 # Create global settings instance

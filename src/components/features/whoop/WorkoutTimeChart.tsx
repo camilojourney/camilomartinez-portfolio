@@ -7,6 +7,7 @@ type WorkoutTimeDataPoint = {
   date: string;
   time: string;
   timeAsMinutes: number; // Minutes since midnight for easier comparison
+  workoutType: string; // Standardized workout type
 };
 
 type WorkoutTimeChartProps = {
@@ -20,6 +21,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     dateLabel: string;
     timeLabel: string;
     rawTime: string;
+    workoutType: string;
     x: number;
     y: number;
     isBeforeGoal: boolean;
@@ -137,20 +139,13 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   // Calculate chart dimensions and scales
   const width = 1000;
   const height = 300;
-  const padding = { top: 40, right: 20, bottom: 40, left: 60 };
+  const padding = { top: 30, right: 20, bottom: 40, left: 60 };
   
-  // Dynamic time range based on actual data to show all workouts
-  const timeValues = sortedData.map(d => d.timeAsMinutes);
-  const minDataTime = Math.min(...timeValues);
-  const maxDataTime = Math.max(...timeValues);
+  // Fixed time range for morning workout focus: 6 AM to 12 PM (noon)
+  const minTimeValue = 6 * 60;  // 6:00 AM in minutes
+  const maxTimeValue = 12 * 60; // 12:00 PM (noon) in minutes
   
-  // Expand range slightly for better visualization, but ensure we see all data
-  const timeRangeBuffer = 60; // 1 hour buffer
-  const minTimeValue = Math.max(0, Math.min(minDataTime - timeRangeBuffer, 6 * 60)); // Don't go below midnight, prefer 6 AM
-  const maxTimeValue = Math.min(24 * 60, Math.max(maxDataTime + timeRangeBuffer, 12 * 60)); // Don't go above midnight, prefer 12 PM
-  
-  console.log('Time range:', formatTime(minTimeValue), 'to', formatTime(maxTimeValue));
-  console.log('Data time range:', formatTime(minDataTime), 'to', formatTime(maxDataTime));
+  console.log('Fixed time range: 6:00 AM to 12:00 PM for morning workout focus');
 
   // Scale X position based on data index - use validData length for consistency
   const xScale = (index: number) => {
@@ -200,14 +195,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
               </span>
             </div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-yellow-400 bg-clip-text text-transparent mb-2">
-              The Morning Workout Challenge
+              Win The Morning, Win The Day
             </h2>
-            <p className="text-xl text-white/80 flex items-center justify-center gap-2">
-              <span>{statusEmoji}</span>
-              <span>{statusText}</span>
-              <span className="text-cyan-400 font-semibold">({successRate.toFixed(1)}% success rate)</span>
-            </p>
-            <p className="text-white/60 mt-1">Win The Morning, Win The Day</p>
+
           </div>
         );
       })()}
@@ -231,7 +221,6 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             6 * 60,   // 6:00 AM
             9 * 60,   // 9:00 AM  
             12 * 60,  // 12:00 PM (noon)
-            13 * 60   // 1:00 PM
           ];
           
           return timeLabels.map(time => (
@@ -314,9 +303,25 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             const isRecentPoint = i >= sortedData.length - 10;
             const pointSize = isRecentPoint ? 6 : 5;
             
-            // Apply stroke for emphasis on recent points
-            const strokeColor = isRecentPoint ? (isBeforeGoal ? "#22c55e" : "#ef4444") : "none";
-            const strokeWidth = isRecentPoint ? 1.5 : 0;
+            // Apply stroke for emphasis on recent points + workout type indicators
+            const baseStrokeColor = isRecentPoint ? (isBeforeGoal ? "#22c55e" : "#ef4444") : "none";
+            const baseStrokeWidth = isRecentPoint ? 1.5 : 0;
+            
+            // Add workout type stroke patterns (subtle indicators)
+            const getWorkoutTypeStroke = (workoutType: string) => {
+              switch (workoutType) {
+                case 'Running':
+                  return { strokeDasharray: "0", strokeWidth: baseStrokeWidth + 0.5 }; // Solid, thicker
+                case 'Weightlifting':
+                  return { strokeDasharray: "3,2", strokeWidth: baseStrokeWidth + 0.5 }; // Dashed
+                case 'Boxing':
+                  return { strokeDasharray: "1,1", strokeWidth: baseStrokeWidth + 0.5 }; // Dotted
+                default: // Other
+                  return { strokeDasharray: "5,3,1,3", strokeWidth: baseStrokeWidth }; // Dash-dot
+              }
+            };
+            
+            const workoutStrokeStyle = getWorkoutTypeStroke(point.workoutType);
             
             return (
               <g key={i}>
@@ -331,14 +336,15 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                   strokeDasharray="2"
                 />
                 
-                {/* Data point */}
+                {/* Data point with workout type styling */}
                 <circle 
                   cx={xScale(i)} 
                   cy={yScale(point.timeAsMinutes)} 
                   r={pointSize} 
                   fill={isBeforeGoal ? "#4ade80" : "#f87171"} 
-                  stroke={strokeColor}
-                  strokeWidth={strokeWidth}
+                  stroke={baseStrokeColor}
+                  strokeWidth={workoutStrokeStyle.strokeWidth}
+                  strokeDasharray={workoutStrokeStyle.strokeDasharray}
                   opacity="0.8"
                   onMouseEnter={e => {
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -348,6 +354,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                       dateLabel: format(dateObj, 'EEE, MMM d, yyyy'),
                       timeLabel,
                       rawTime: point.time,
+                      workoutType: point.workoutType,
                       x: rect.left + rect.width / 2,
                       y: rect.top,
                       isBeforeGoal
@@ -379,6 +386,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                 {hoveredWorkout.timeLabel}
                 <span className="text-white/40"> ({hoveredWorkout.rawTime})</span>
               </div>
+              <div className="text-cyan-400 font-medium mb-1">
+                {hoveredWorkout.workoutType}
+              </div>
               <div className="text-white/60">
                 {hoveredWorkout.isBeforeGoal ? '✅ Before 8:30 AM' : '⏰ After 8:30 AM'}
               </div>
@@ -389,6 +399,36 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
 
       {/* Legend and Stats */}
       <div className="space-y-4">
+        {/* Workout Type Legend */}
+        <div className="flex justify-center items-center gap-6 p-3 bg-black/10 rounded-lg">
+          <div className="text-white/60 text-sm font-medium">Workout Types:</div>
+          <div className="flex items-center gap-1">
+            <svg width="12" height="12" className="mr-1">
+              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="2" opacity="0.8" />
+            </svg>
+            <span className="text-white/70 text-xs">Running</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <svg width="12" height="12" className="mr-1">
+              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="2" strokeDasharray="3,2" opacity="0.8" />
+            </svg>
+            <span className="text-white/70 text-xs">Weightlifting</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <svg width="12" height="12" className="mr-1">
+              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="2" strokeDasharray="1,1" opacity="0.8" />
+            </svg>
+            <span className="text-white/70 text-xs">Boxing</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <svg width="12" height="12" className="mr-1">
+              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5,3,1,3" opacity="0.8" />
+            </svg>
+            <span className="text-white/70 text-xs">Other</span>
+          </div>
+        </div>
+
+        {/* Main Legend */}
         <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-[#4ade80] border border-white/20"></div>
@@ -404,33 +444,99 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           </div>
         </div>
 
-        {/* Monthly Average Stats */}
+        {/* Monthly Average Stats with Improvement Tracking */}
         {(() => {
-          // Get last 30 days of data
+          // Get last 30 days of data (current month)
           const last30Days = sortedData.slice(-30);
           const totalWorkouts = last30Days.length;
           const workoutsBeforeGoal = last30Days.filter(point => point.timeAsMinutes <= goalTimeInMinutes).length;
-          const successRate = (workoutsBeforeGoal / totalWorkouts) * 100;
+          const currentMonthSuccessRate = (workoutsBeforeGoal / totalWorkouts) * 100;
           
-          // Calculate average time
+          // Calculate average time for current month
           const averageMinutes = last30Days.reduce((sum, point) => sum + point.timeAsMinutes, 0) / totalWorkouts;
           const avgHours = Math.floor(averageMinutes / 60);
           const avgMins = Math.round(averageMinutes % 60);
           const averageTime = `${avgHours.toString().padStart(2, '0')}:${avgMins.toString().padStart(2, '0')}`;
           
+          // Calculate improvement percentage: Current month vs Previous 6 months average
+          const improvementData = (() => {
+            // Need at least 60 data points (2+ months) to make a meaningful comparison
+            if (sortedData.length < 60) {
+              return { hasEnoughData: false, improvement: 0, trend: 'neutral' };
+            }
+            
+            // Get previous period data (excluding current month)
+            // Use available data up to 6 months, but work with what we have
+            const availableHistoricalData = sortedData.slice(0, -30); // Everything except last 30 days
+            
+            if (availableHistoricalData.length < 30) { // Need at least 30 historical workouts
+              return { hasEnoughData: false, improvement: 0, trend: 'neutral' };
+            }
+            
+            // Take the most recent historical data (up to last 6 months worth)
+            const maxHistoricalPoints = Math.min(availableHistoricalData.length, 180); // Up to 6 months
+            const previousPeriod = availableHistoricalData.slice(-maxHistoricalPoints);
+            
+            // Calculate success rate for previous period
+            const previousWorkoutsBeforeGoal = previousPeriod.filter(point => point.timeAsMinutes <= goalTimeInMinutes).length;
+            const previousSuccessRate = (previousWorkoutsBeforeGoal / previousPeriod.length) * 100;
+            
+            // Calculate improvement percentage
+            const improvement = currentMonthSuccessRate - previousSuccessRate;
+            const trend = improvement > 5 ? 'improving' : improvement < -5 ? 'declining' : 'stable';
+            
+            return { 
+              hasEnoughData: true, 
+              improvement, 
+              trend,
+              previousSuccessRate,
+              currentSuccessRate: currentMonthSuccessRate,
+              comparisonPeriod: Math.round(previousPeriod.length / 30) // How many months of data used
+            };
+          })();
+          
           return (
-            <div className="flex justify-center items-center gap-8 p-4 bg-black/20 rounded-xl">
+            <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
               <div className="text-center">
                 <div className="text-white/60 text-sm mb-1">Last 30 Days Average</div>
                 <div className="text-xl font-semibold text-cyan-400">{averageTime}</div>
               </div>
               <div className="text-center">
                 <div className="text-white/60 text-sm mb-1">Success Rate</div>
-                <div className="text-xl font-semibold text-cyan-400">{successRate.toFixed(1)}%</div>
+                <div className="text-xl font-semibold text-cyan-400">{currentMonthSuccessRate.toFixed(1)}%</div>
               </div>
               <div className="text-center">
                 <div className="text-white/60 text-sm mb-1">Early Workouts</div>
                 <div className="text-xl font-semibold text-cyan-400">{workoutsBeforeGoal} of {totalWorkouts}</div>
+              </div>
+              
+              {/* Improvement metric as 4th column */}
+              <div className="text-center">
+                <div className="text-white/60 text-sm mb-1">6-Month Trend</div>
+                {improvementData.hasEnoughData ? (
+                  <div>
+                    <div className={`text-xl font-semibold flex items-center justify-center gap-1 ${
+                      improvementData.trend === 'improving' 
+                        ? 'text-green-400'
+                        : improvementData.trend === 'declining'
+                        ? 'text-red-400'
+                        : 'text-blue-400'
+                    }`}>
+                      <span>
+                        {improvementData.improvement > 0 ? '+' : ''}{improvementData.improvement.toFixed(1)}%
+                      </span>
+                      <span className="text-lg">
+                        {improvementData.trend === 'improving' ? '📈' : 
+                         improvementData.trend === 'declining' ? '📉' : '📊'}
+                      </span>
+                    </div>
+                    <div className="text-xs text-white/40 mt-1">
+                      {improvementData.previousSuccessRate?.toFixed(1) || '0.0'}% → {improvementData.currentSuccessRate?.toFixed(1) || '0.0'}%
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-amber-400">Need 2mo+ data</div>
+                )}
               </div>
             </div>
           );
