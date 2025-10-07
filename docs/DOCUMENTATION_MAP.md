@@ -323,74 +323,46 @@ migrations/
 
 ## 🔧 Scripts (`/scripts/`)
 
-**Automation and utility scripts** organized by purpose (30+ files):
+Lean utility layer broken into three focused directories:
 
-### `/scripts/data/` - Data Processing (12 files)
-
-Scripts for ETL, data analysis, and synchronization:
-
-```
-scripts/data/
-├── activity-correlation-etl.js           # Correlation ETL pipeline
-├── activity-correlation.js               # Correlation analysis
-├── analyze-sleep-data.js                 # Sleep data analysis
-├── debug-strava-response.js              # Strava debugging
-├── export-astoria-street-network.py      # Astoria map export
-├── fetch-all-strava-data-complete-with-splits.js  # Strava sync
-├── generate_astoria_base_map.py          # Map generation
-├── load-astoria-streets.js               # Street loading
-├── refresh-strava-tokens.js              # Token refresh
-├── run-correlation-etl.js                # Run ETL
-├── strava-weekly-sync.js                 # Weekly sync
-└── update_astoria_progress.py            # Progress tracking
-```
-
-**Purpose**: Data ingestion, transformation, and analysis scripts for WHOOP and Strava data.
-
-### `/scripts/db/` - Database Operations (9 files)
-
-Database management and migration scripts:
+### `/scripts/db/` – Database administration
 
 ```
 scripts/db/
-├── apply-migration.js                    # Apply SQL migrations
-├── check-vector-support.js               # Verify pgvector
-├── enable-postgis.js                     # Enable PostGIS
-├── enable-vector-support.js              # Enable pgvector
-├── fix-sleep-cycle-relationships.js      # Data fix
-├── get-database-schema.js                # Schema export
-├── refresh-materialized-views.js         # Refresh views
-├── run-migration.js                      # Migration runner
-└── setup-astoria-database.sql            # Astoria DB setup
+├── enable-vector-support.js        # Install pgvector extension
+├── enable-postgis.js               # Install PostGIS extension
+├── check-vector-support.js         # Verify pgvector availability
+├── get-database-schema.js          # Export schema snapshot
+└── setup-astoria-database.sql      # Seed Astoria-specific tables
 ```
 
-**Purpose**: Database setup, migrations, and maintenance operations.
+**Purpose**: One-time or low-frequency database enablement and verification tasks.
 
-### `/scripts/dev/` - Development Tools (1 file)
-
-Development utilities and CLI tools:
+### `/scripts/one-off/` – Special utilities
 
 ```
-scripts/dev/
-└── whoop-cli.js                          # WHOOP CLI tool
+scripts/one-off/
+├── generate_astoria_base_map.py    # Create baseline GeoJSON for Astoria project
+├── update_astoria_progress.py      # Refresh Astoria progress data (invoked by Celery)
+└── analyze-sleep-data.js           # Ad-hoc WHOOP sleep exploration
 ```
 
-**Purpose**: Development helpers and command-line interfaces.
+**Purpose**: Rare operations tied to the Astoria conquest project or exploratory analysis.
 
-### `/scripts/testing/` - Testing & Validation (4+ files)
-
-Testing and diagnostic scripts:
+### `/scripts/testing/` – Diagnostics & health checks
 
 ```
 scripts/testing/
-├── check-database-schema.js              # Schema validation
-├── check-rate-limit.js                   # Rate limit testing
-├── check-recent-data.js                  # Data validation
-├── diagnose-whoop-cron.js                # WHOOP job diagnostics
-└── ...
+├── check-database-schema.js        # Ensure tables/views exist pre-deploy
+├── check-rate-limit.js             # Exercise rate limiting middleware
+├── check-recent-data.js            # Verify latest WHOOP/Strava ingests
+├── diagnose-whoop-cron.js          # Troubleshoot WHOOP automation
+├── debug-strava-response.js        # Inspect raw Strava API payloads
+├── activity-correlation.js         # Validate Strava↔WHOOP matching logic
+└── whoop-cli.js                    # Manual WHOOP sync/testing CLI
 ```
 
-**Purpose**: Testing, diagnostics, and validation scripts.
+**Purpose**: Manual diagnostics and validation scripts for day-to-day development.
 
 ---
 
@@ -456,11 +428,10 @@ docs/
 │   ├── TRAINING.md
 │   ├── EVALUATION.md
 │   └── PROMPTS.md
-├── backend/                              # Backend docs (7 files)
+├── backend/                              # Backend docs (6 files)
 │   ├── README.md
 │   ├── DEVELOPER_GUIDE.md
 │   ├── ALEMBIC_GUIDE.md
-│   ├── KNOWLEDGE_BASE.md
 │   ├── agents/
 │   │   ├── AGENT_ARCHITECTURE.md
 │   │   └── AUTO_EMBEDDING_AGENT.md
@@ -507,7 +478,7 @@ docs/
 │           └── README.md
 ```
 
-**Total Documentation**: 40+ markdown files organized across 9 domains
+**Total Documentation**: 54 markdown files organized across 9 domains
 
 For detailed documentation structure, see the sections below.
 

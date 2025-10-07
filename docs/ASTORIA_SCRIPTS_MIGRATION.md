@@ -126,24 +126,13 @@ OSMNX_CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "osmnx-cache"
 
 ---
 
-## 📝 **Documentation Updates Needed**
+## 📝 **Documentation Touchpoints**
 
-The following documentation files still reference the old paths and need updating:
+The new layout is now reflected across the documentation hub:
 
-### **1. Scripts Audit**
-- **File:** `docs/SCRIPTS_AUDIT.md`
-- **Lines:** 210, 222, 255, 256, 399, 494, 533
-- **Update:** Change all references from `scripts/one-off/` to `backend/app/scripts/astoria/`
-
-### **2. Scripts README**
-- **File:** `docs/operations/scripts/README.md`
-- **Lines:** 24, 99, 100
-- **Update:** Change command examples to use new path
-
-### **3. Workers Migration Summary**
-- **File:** `docs/updates/2025-10_WORKERS_MIGRATION_SUMMARY.md`
-- **Line:** 34
-- **Update:** Update path reference
+- `docs/operations/scripts/README.md` — Audit snapshot, command examples, and connection maps updated to use `backend/app/scripts/astoria/`.
+- `docs/backend/workers/README.md` — Celery runbooks reference the new script imports.
+- `docs/updates/2025-10_WORKERS_MIGRATION_SUMMARY.md` — Migration narrative calls out the consolidated workers guide.
 
 ---
 
@@ -264,9 +253,8 @@ print(result)
 - [x] Created `backend/app/scripts/astoria/update_progress.py` (moved + updated)
 - [x] Updated `backend/app/workers/tasks/astoria.py` (Celery task)
 - [x] Updated `package.json` (npm scripts)
-- [ ] Update `docs/SCRIPTS_AUDIT.md` (documentation)
-- [ ] Update `docs/operations/scripts/README.md` (documentation)
-- [ ] Update `docs/updates/2025-10_WORKERS_MIGRATION_SUMMARY.md` (documentation)
+- [x] Update `docs/operations/scripts/README.md` (documentation audit)
+- [x] Update `docs/updates/2025-10_WORKERS_MIGRATION_SUMMARY.md` (documentation)
 - [ ] Test scripts manually
 - [ ] Test Celery task execution
 - [ ] Delete old files from `scripts/one-off/` (after verification)
@@ -298,4 +286,4 @@ Always calculate paths dynamically!
 
 ---
 
-*For questions, see the [Scripts Audit documentation](./SCRIPTS_AUDIT.md).*
+*For questions, see the updated [Scripts Operations Guide](./operations/scripts/README.md).*

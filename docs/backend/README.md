@@ -19,7 +19,8 @@
 - [🧱 Layered Responsibilities](#-layered-responsibilities)
 - [🔐 Cross-Cutting Concerns](#-cross-cutting-concerns)
 - [✅ Quality Gates](#-quality-gates)
-- [🔗 References](#-references)
+- [🧭 Module & File Index](#-module--file-index)
+- [🔗 References & Further Reading](#-references--further-reading)
 
 ---
 
@@ -161,13 +162,49 @@ CI enforces lint + tests via `.github/workflows/backend.yml`.
 
 ---
 
-## 🔗 References
-- `docs/backend/API_REFERENCE.md` – Endpoint catalog and payload schemas.
-- `docs/backend/SERVICES.md` – Service layer contracts and orchestration details.
-- `docs/backend/DEPLOYMENT.md` – Railway deployment procedures.
-- `docs/backend/ALEMBIC_GUIDE.md` – **Database migrations comprehensive guide**.
-- `docs/data/SCHEMA.md` – Database tables and relationships.
-- `docs/ai/RAG_SYSTEM.md` – AI pipeline invoked by backend services.
+## 🧭 Module & File Index
+
+### API Routers (`backend/app/routers`)
+- `ai.py` – Chat, embeddings, trainer workflows.
+- `system.py` – Health checks, rate limiting diagnostics, bypass token tooling.
+- `integrations.py` – Strava & WHOOP integration endpoints (webhooks, sync triggers).
+- `analytics.py` – Analytics and reporting endpoints (in progress scaffolding).
+- `auth.py` – Authentication and session management.
+
+### Core Services (`backend/app/services`)
+- `ai/` – OpenAI client wrappers, RAG orchestration, trainer automation.
+- `data_sync/` – Import pipelines and background data processing.
+- `analytics/` – Aggregations and insight generation.
+- `security/` – Rate limiting, auth, and guardrails.
+
+### Persistence & Infrastructure
+- `backend/app/models/` – SQLAlchemy ORM models for WHOOP, Strava, AI, and rate limiting.
+- `backend/app/repositories/` – Data access patterns and transactional logic.
+- `backend/app/config/` – Settings, database engine/session, Redis clients.
+- `backend/app/utils/` & `middleware/` – Shared helpers, logging, error handling.
+
+### Migrations & Automations
+- `backend/alembic/` – Migration environment and versioned scripts.
+- `backend/app/workers/` – Celery tasks for Strava sync, database refreshes, Astoria updates.
+- `backend/app/scripts/` – Python utilities invoked by workers (e.g., Astoria map generation).
+
+### Related Frontend Assets
+- `public/data/astoria-conquest/*.geojson` – Generated data powering Astoria map.
+- `src/app/(main)/projects/astoria/page.tsx` – Frontend visualization consuming backend outputs.
+
+---
+
+## 🔗 References & Further Reading
+- `docs/backend/DEVELOPER_GUIDE.md` – Environment setup, CLI workflows, and API quick start.
+- `docs/backend/ALEMBIC_GUIDE.md` – Database migration workflow, conventions, and troubleshooting.
+- `docs/backend/workers/README.md` – Celery topology, schedules, monitoring, and manual execution.
+- `docs/backend/agents/AGENT_ARCHITECTURE.md` – Multi-agent orchestration patterns for AI services.
+- `docs/backend/agents/AUTO_EMBEDDING_AGENT.md` – Autonomous embedding agent implementation.
+- `docs/ai/RAG_SYSTEM.md` – Retrieval pipeline architecture invoked by backend AI endpoints.
+- `docs/ai/EMBEDDINGS.md` – Embedding taxonomy, refresh cadence, and ingestion rules.
+- `docs/data/SCHEMA.md` – Authoritative PostgreSQL schema reference.
+- `docs/operations/CRON_JOBS.md` – Schedules and maintenance windows for automated jobs.
+- `docs/operations/scripts/README.md` – Script catalogue, connection maps, and audit snapshot.
 
 ---
 

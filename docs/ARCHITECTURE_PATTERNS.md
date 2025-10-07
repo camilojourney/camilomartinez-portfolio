@@ -8,16 +8,159 @@
 
 ## Table of Contents
 
-1. [Architecture Pattern Overview](#architecture-pattern-overview)
-2. [Monolithic Architecture](#1-monolithic-architecture)
-3. [Microservices Architecture](#2-microservices-architecture)
-4. [Monorepo Architecture](#3-monorepo-architecture)
-5. [Serverless Architecture](#4-serverless-architecture)
-6. [Event-Driven Architecture](#5-event-driven-architecture)
-7. [Clean/Hexagonal Architecture](#6-cleanhexagonal-architecture)
-8. [Our Current Architecture](#our-current-architecture-hybrid)
-9. [Decision Matrix](#decision-matrix-choosing-an-architecture)
-10. [Migration Paths](#migration-paths)
+- [Quick Reference Card](#quick-reference-card)
+- [Architecture Pattern Overview](#architecture-pattern-overview)
+- [Monolithic Architecture](#1-monolithic-architecture)
+- [Microservices Architecture](#2-microservices-architecture)
+- [Monorepo Architecture](#3-monorepo-architecture)
+- [Serverless Architecture](#4-serverless-architecture)
+- [Event-Driven Architecture](#5-event-driven-architecture)
+- [Clean/Hexagonal Architecture](#6-cleanhexagonal-architecture)
+- [Our Current Architecture](#our-current-architecture-hybrid)
+- [Decision Matrix](#decision-matrix-choosing-an-architecture)
+- [Migration Paths](#migration-paths)
+
+---
+
+## Quick Reference Card
+
+> One-page cheat sheet for choosing the right architecture pattern before diving into the deep-dive sections below.
+
+### Decision Tree
+
+```
+START: New Project
+│
+├─ Team Size < 5?
+│  └─ YES → Monolith or Serverless
+│
+├─ Team Size 5-20?
+│  ├─ Multiple related apps (web + mobile + api)?
+│  │  └─ YES → Monorepo
+│  └─ NO → Modular Monolith
+│
+└─ Team Size > 20?
+   ├─ Complex domain (multiple bounded contexts)?
+   │  └─ YES → Microservices
+   └─ NO → Monorepo or Modular Monolith
+```
+
+### Pattern Cheat Sheet
+
+| Pattern | Team Size | Best For | Avoid When |
+|---------|-----------|----------|------------|
+| **Monolith** | 1-10 | MVP, simple apps | Team > 50 |
+| **Microservices** | 20+ | Complex domains, scale | Team < 5 |
+| **Monorepo** | 5-50 | Related projects | Independent teams |
+| **Serverless** | Any | Spiky traffic, events | Long processes |
+| **Event-Driven** | 10+ | Async workflows | Simple CRUD |
+
+### Tech Stack Templates
+
+**Solo/Small Team**
+```
+Frontend:  Next.js / React
+Backend:   FastAPI / Django / Rails
+Database:  PostgreSQL
+Deploy:    Vercel + Railway
+```
+
+**Medium/Large Team**
+```
+Frontend:  Next.js
+API Gateway: Kong / NGINX
+Services: FastAPI + Node.js + Go (polyglot)
+Queue: Kafka / RabbitMQ
+Database: PostgreSQL (per service)
+Deploy: Kubernetes / Docker Swarm
+```
+
+**Startup Monorepo**
+```
+Tooling: Turborepo / Nx
+Apps: web/ + api/ + mobile/
+Packages: types/ + ui/ + database/
+Deploy: Vercel (frontend) + Railway (backend)
+```
+
+**Event-Driven / Serverless**
+```
+Functions: AWS Lambda / Vercel Functions
+Database: DynamoDB / Supabase
+Queue: SQS / EventBridge
+Deploy: AWS SAM / Serverless Framework
+```
+
+### Migration Signals
+
+**Monolith → Microservices**
+- ✅ Team > 20 people
+- ✅ Deploy conflicts or blocking releases
+- ✅ Divergent scaling profiles between modules
+- ✅ Clear bounded contexts identified
+- ❌ Avoid if boundaries unclear or DevOps maturity low
+
+**Scripts → Workers**
+- ✅ Need retries/monitoring/observability
+- ✅ Multiple chained tasks with dependencies
+- ✅ Cron logic becoming complex
+- ❌ Keep scripts if ad-hoc, one-off, or developer-operated
+
+### Real-World Examples
+
+| Company | Architecture | Why |
+|---------|--------------|-----|
+| **Basecamp** | Monolith (Rails) | Small team, focused product |
+| **Shopify** | Modular Monolith | Shared codebase, disciplined teams |
+| **Netflix** | Microservices (600+) | Massive scale, independent teams |
+| **Google** | Monorepo | Shared tooling, code visibility |
+| **Airbnb** | Microservices + Monorepo | Autonomy with shared platform |
+
+### Cost Comparison (Indicative)
+
+| Pattern | Infrastructure | Operational | Development |
+|---------|----------------|-------------|-------------|
+| Monolith | $ | $ | $ |
+| Modular Monolith | $$ | $ | $$ |
+| Microservices | $$$$ | $$$ | $$$ |
+| Serverless | $ (pay-per-use) | $ | $$ |
+
+### Snapshot: Camilo's Stack
+
+**Pattern**: Hybrid Modular Monolith + Worker Microservices
+
+```
+Frontend:  Next.js (Vercel)
+API:       FastAPI (Railway) - Modular monolith
+Workers:   Celery (Railway) - Microservice-like
+Database:  PostgreSQL + Redis
+```
+
+- ✅ Team of 1 → API stays monolithic.
+- ✅ Workers split out for retries, scheduling, and observability.
+- ✅ Shared database keeps analytics and AI pipelines consistent.
+- 📈 Future: introduce API gateway + dedicated microservices once team/scale grows.
+
+### Quick Commands
+
+```bash
+# Start Celery worker + beat
+cd backend
+poetry run celery -A app.workers.celery_app worker -B --loglevel=info
+
+# Inspect running tasks
+celery -A app.workers.celery_app inspect active
+
+# Launch Flower dashboard
+poetry run celery -A app.workers.celery_app flower  # http://localhost:5555
+```
+
+### Further Reading
+
+- `docs/ARCHITECTURE.md` – Full system blueprint and data flows.
+- `docs/backend/workers/README.md` – Celery topology, schedules, and troubleshooting.
+- `docs/updates/2025-10_WORKERS_MIGRATION_SUMMARY.md` – Background workers migration narrative.
+- `docs/operations/scripts/README.md` – Script catalogue and automation audit.
 
 ---
 
