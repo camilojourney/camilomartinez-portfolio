@@ -219,37 +219,55 @@ class SchemaEmbeddingService:
             logger.error(f"Error creating schema embeddings table: {e}")
             raise
 
-    async def generate_embeddings(self, clear_existing: bool = True) -> Dict[str, Any]:
+    async def generate_embeddings(
+        self,
+        clear_existing: bool = True,
+        only_profile: bool = False
+    ) -> Dict[str, Any]:
         """
-        Generate embeddings for all schema descriptions.
-        
+        Generate embeddings for schema descriptions and/or profile.
+
         Args:
             clear_existing: Whether to clear existing embeddings first
-            
+            only_profile: If True, only regenerate profile embeddings (ignores clear_existing)
+
         Returns:
             Dict with generation results and statistics
         """
         try:
-            logger.info("Starting schema embedding generation process...")
+            logger.info(f"Starting schema embedding generation (only_profile={only_profile})...")
             start_time = datetime.utcnow()
-            
+
             # Ensure table exists
             await self.create_table_if_not_exists()
-            
+
             async with async_session_factory() as session:
-                # Clear existing embeddings if requested
-                if clear_existing:
+                # Handle profile-only mode
+                if only_profile:
+                    # Clear only profile embeddings
+                    await session.execute(text("DELETE FROM schema_embeddings WHERE table_name = 'camilo_profile';"))
+                    logger.info("Cleared existing profile embeddings only")
+                elif clear_existing:
+                    # Clear all embeddings
                     await session.execute(text("TRUNCATE TABLE schema_embeddings;"))
-                    logger.info("Cleared existing embeddings")
-                
+                    logger.info("Cleared all existing embeddings")
+
                 # Generate embeddings for each schema item
                 successful_embeddings = 0
                 failed_embeddings = 0
-                
-                # Load and add personal profile embeddings
-                profile_embeddings = await self._load_profile_embeddings()
-                all_descriptions = self.schema_descriptions + profile_embeddings
-                
+
+                # Determine what to embed
+                if only_profile:
+                    # Only load and embed profile
+                    profile_embeddings = await self._load_profile_embeddings()
+                    all_descriptions = profile_embeddings
+                    logger.info(f"Profile-only mode: embedding {len(all_descriptions)} profile sections")
+                else:
+                    # Load and add personal profile embeddings from CAMILO_PROFILE.md
+                    profile_embeddings = await self._load_profile_embeddings()
+                    all_descriptions = self.schema_descriptions + profile_embeddings
+                    logger.info(f"Full mode: embedding {len(self.schema_descriptions)} schema items + {len(profile_embeddings)} profile sections")
+
                 for item in all_descriptions:
                     try:
                         # Prepare text for embedding
@@ -384,6 +402,91 @@ class SchemaEmbeddingService:
         except Exception as e:
             logger.error(f"Error updating single embedding: {e}")
             return False
+
+    async def _load_profile_embeddings(self) -> List[Dict[str, Any]]:
+        """
+        Load personal profile content from CAMILO_PROFILE.md and prepare embeddings.
+
+        Returns:
+            List of profile embedding descriptions
+        """
+        try:
+            # Path to the profile markdown file
+            profile_path = Path(__file__).parent.parent.parent.parent.parent / "docs" / "knowledge" / "CAMILO_PROFILE.md"
+
+            if not profile_path.exists():
+                logger.warning(f"CAMILO_PROFILE.md not found at {profile_path}")
+                return []
+
+            # Read the profile content
+            with open(profile_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            logger.info(f"Loaded CAMILO_PROFILE.md ({len(content)} characters)")
+
+            # Parse sections from the markdown
+            embeddings = []
+
+            # Split by major sections (##)
+            sections = content.split('\n## ')
+
+            for section in sections[1:]:  # Skip the title/metadata
+                lines = section.split('\n', 1)
+                if len(lines) < 2:
+                    continue
+
+                section_title = lines[0].strip()
+                section_content = lines[1].strip() if len(lines) > 1 else ""
+
+                # Skip very short sections or metadata
+                if len(section_content) < 50:
+                    continue
+
+                # Create embedding entry for this section
+                # Map section titles to profile categories
+                section_lower = section_title.lower()
+
+                if any(keyword in section_lower for keyword in ['identity', 'background']):
+                    name = "camilo_background"
+                    description = f"{section_title}: {section_content[:500]}"
+                elif any(keyword in section_lower for keyword in ['technical', 'skills', 'mastery']):
+                    name = "camilo_technical_expertise"
+                    description = f"{section_title}: {section_content[:500]}"
+                elif any(keyword in section_lower for keyword in ['projects', 'signature']):
+                    name = "camilo_projects"
+                    description = f"{section_title}: {section_content[:500]}"
+                elif any(keyword in section_lower for keyword in ['health', 'fitness', 'performance']):
+                    name = "camilo_fitness_philosophy"
+                    description = f"{section_title}: {section_content[:500]}"
+                elif any(keyword in section_lower for keyword in ['education', 'learning']):
+                    name = "camilo_education"
+                    description = f"{section_title}: {section_content[:500]}"
+                elif any(keyword in section_lower for keyword in ['values', 'practices']):
+                    name = "camilo_values"
+                    description = f"{section_title}: {section_content[:500]}"
+                elif any(keyword in section_lower for keyword in ['communication', 'style']):
+                    name = "camilo_communication"
+                    description = f"{section_title}: {section_content[:500]}"
+                elif any(keyword in section_lower for keyword in ['focus', 'goals', 'current']):
+                    name = "camilo_current_focus"
+                    description = f"{section_title}: {section_content[:500]}"
+                else:
+                    # Generic profile section
+                    name = f"camilo_{section_title.lower().replace(' ', '_').replace('&', 'and')[:50]}"
+                    description = f"{section_title}: {section_content[:500]}"
+
+                embeddings.append({
+                    "type": "profile",
+                    "name": name,
+                    "description": description
+                })
+
+            logger.info(f"Extracted {len(embeddings)} profile sections from CAMILO_PROFILE.md")
+            return embeddings
+
+        except Exception as e:
+            logger.error(f"Error loading profile embeddings: {e}")
+            return []
 
     async def get_embedding_stats(self) -> Dict[str, Any]:
         """Get statistics about current embeddings in the database."""

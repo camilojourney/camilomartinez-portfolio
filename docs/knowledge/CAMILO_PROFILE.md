@@ -108,7 +108,7 @@
 ---
 
 ## 🎯 Current Focus & Goals (2025)
-- Launching AI-first personal analytics product showcasing 0.1% engineering craft.
+- Launching AI-first personal analytics product that highlights thoughtful engineering and attention to detail.
 - Advancing RAG reliability through evaluation, fine-tuning experiments, and hybrid retrieval.
 - Building reusable documentation + AI ops frameworks for future teams/clients.
 - Exploring multi-modal fitness analytics and personalized coaching loops.
@@ -116,12 +116,19 @@
 ---
 
 ## 🔗 External Presence
-- **Website/Portfolio**: `https://camilomartinez.com`
+- **Website/Portfolio**: `https://camilomartinez.co`
 - **GitHub**: `https://github.com/camilojourney`
-- **LinkedIn**: `https://www.linkedin.com/in/camilomartinez`
+- **LinkedIn**: `https://www.linkedin.com/in/camilomartinez-ai`
 - **Public Writing**: Technical articles on AI, productivity, fitness optimization (Notion/LinkedIn).
 
 ---
+
+## 📚 Favorite Books
+- **Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones** — James Clear (2018). Practical framework for tiny changes that compound into lasting behavior.
+- **Four Thousand Weeks: Time Management for Mortals** — Oliver Burkeman (2021). Grounded philosophy for using a finite life well.
+- **Managing Oneself (Harvard Business Review Classics)** — Peter F. Drucker (2005). A concise guide to self-knowledge and professional effectiveness.
+- **The Lessons of History** — Will & Ariel Durant (1968). Big-picture patterns and perennial insights distilled from *The Story of Civilization*.
+- **The 5 Types of Wealth: Time, Social, Mental, Physical, Financial** — Sahil Bloom (2024). A transformative guide to designing your dream life and balancing the key forms of wealth.
 
 ## 📝 Revision Log
 - **2025-10-02**: Initial consolidation into enterprise knowledge system.

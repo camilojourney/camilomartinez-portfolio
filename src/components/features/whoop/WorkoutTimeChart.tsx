@@ -136,8 +136,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
   };
   
-  // Calculate chart dimensions and scales
-  const width = 1000;
+  // Calculate chart dimensions and scales - use percentage-based width for mobile
   const height = 300;
   const padding = { top: 30, right: 20, bottom: 40, left: 60 };
   
@@ -147,9 +146,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   
   console.log('Fixed time range: 6:00 AM to 12:00 PM for morning workout focus');
 
-  // Scale X position based on data index - use validData length for consistency
-  const xScale = (index: number) => {
-    const chartWidth = width - padding.left - padding.right;
+  // Scale X position based on data index - use percentage for responsive design
+  const xScale = (index: number, containerWidth: number) => {
+    const chartWidth = containerWidth - padding.left - padding.right;
     if (sortedData.length <= 1) {
       return padding.left + chartWidth;
     }
@@ -165,11 +164,28 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     return height - padding.bottom - (normalized * chartHeight);
   };
   
+  // Use a ref to track container width for responsive scaling
+  const [containerWidth, setContainerWidth] = React.useState(1000);
+  const chartRef = React.useRef<SVGSVGElement>(null);
+
+  React.useEffect(() => {
+    const updateWidth = () => {
+      if (chartRef.current) {
+        const width = chartRef.current.parentElement?.clientWidth || 1000;
+        setContainerWidth(Math.max(width, 700)); // Minimum 700px
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
   const displayMonths = monthGroups.map(group => {
     const centerIndex = Math.round((group.startIndex + group.endIndex) / 2);
     return {
       month: group.month,
-      x: xScale(centerIndex)
+      x: xScale(centerIndex, containerWidth)
     };
   });
 
@@ -182,11 +198,11 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         const last30Days = sortedData.slice(-30);
         const workoutsBeforeGoal = last30Days.filter(point => point.timeAsMinutes <= goalTimeInMinutes).length;
         const successRate = (workoutsBeforeGoal / last30Days.length) * 100;
-        
+
         const isWinning = successRate >= 50;
         const statusEmoji = isWinning ? "🏆" : "💪";
         const statusText = isWinning ? "Crushing the Morning Challenge!" : "Building Morning Momentum";
-        
+
         return (
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/30 rounded-full px-4 py-2 mb-3">
@@ -201,38 +217,38 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           </div>
         );
       })()}
-      
+
       <div ref={scrollContainerRef} className="overflow-x-auto pb-4 relative">
-        <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="mx-auto" style={{ minWidth: "700px" }}>
+        <svg ref={chartRef} width="100%" height={height} viewBox={`0 0 ${containerWidth} ${height}`} className="mx-auto" style={{ minWidth: "700px" }}>
         {/* Y-axis and labels */}
-        <line 
-          x1={padding.left} 
-          y1={padding.top} 
-          x2={padding.left} 
-          y2={height - padding.bottom} 
-          stroke="gray" 
-          strokeWidth="1" 
+        <line
+          x1={padding.left}
+          y1={padding.top}
+          x2={padding.left}
+          y2={height - padding.bottom}
+          stroke="gray"
+          strokeWidth="1"
         />
-        
+
         {/* Time labels and grid lines (Y-axis) - Fixed schedule: 6 AM, 9 AM, 12 PM, 1 PM */}
         {(() => {
           // Fixed time markers: 6 AM, 9 AM, 12 PM (noon), 1 PM
           const timeLabels = [
             6 * 60,   // 6:00 AM
-            9 * 60,   // 9:00 AM  
+            9 * 60,   // 9:00 AM
             12 * 60,  // 12:00 PM (noon)
           ];
-          
+
           return timeLabels.map(time => (
             <g key={time}>
               {/* Horizontal grid line */}
-              <line 
-                x1={padding.left} 
-                y1={yScale(time)} 
-                x2={width - padding.right} 
-                y2={yScale(time)} 
-                stroke="rgba(255,255,255,0.1)" 
-                strokeWidth="1" 
+              <line
+                x1={padding.left}
+                y1={yScale(time)}
+                x2={containerWidth - padding.right}
+                y2={yScale(time)}
+                stroke="rgba(255,255,255,0.1)"
+                strokeWidth="1"
                 strokeDasharray="4"
               />
               {/* Time label */}
@@ -252,13 +268,13 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         })()}
         
         {/* X-axis */}
-        <line 
-          x1={padding.left} 
-          y1={height - padding.bottom} 
-          x2={width - padding.right} 
-          y2={height - padding.bottom} 
-          stroke="gray" 
-          strokeWidth="1" 
+        <line
+          x1={padding.left}
+          y1={height - padding.bottom}
+          x2={containerWidth - padding.right}
+          y2={height - padding.bottom}
+          stroke="gray"
+          strokeWidth="1"
         />
         
         {/* Month labels (X-axis) */}
@@ -277,14 +293,14 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         
         {/* Goal time line (yellow dotted) - Only show if within visible range */}
         {goalTimeInMinutes >= minTimeValue && goalTimeInMinutes <= maxTimeValue && (
-          <line 
-            x1={padding.left} 
-            y1={yScale(goalTimeInMinutes)} 
-            x2={width - padding.right} 
-            y2={yScale(goalTimeInMinutes)} 
-            stroke="yellow" 
-            strokeWidth="2" 
-            strokeDasharray="6,4" 
+          <line
+            x1={padding.left}
+            y1={yScale(goalTimeInMinutes)}
+            x2={containerWidth - padding.right}
+            y2={yScale(goalTimeInMinutes)}
+            stroke="yellow"
+            strokeWidth="2"
+            strokeDasharray="6,4"
           />
         )}
         
@@ -326,22 +342,22 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             return (
               <g key={i}>
                 {/* Add vertical position line for clarity */}
-                <line 
-                  x1={xScale(i)}
+                <line
+                  x1={xScale(i, containerWidth)}
                   y1={yScale(point.timeAsMinutes)}
-                  x2={xScale(i)}
+                  x2={xScale(i, containerWidth)}
                   y2={height - padding.bottom}
                   stroke={isBeforeGoal ? "#22c55e20" : "#ef444420"}
                   strokeWidth="1"
                   strokeDasharray="2"
                 />
-                
+
                 {/* Data point with workout type styling */}
-                <circle 
-                  cx={xScale(i)} 
-                  cy={yScale(point.timeAsMinutes)} 
-                  r={pointSize} 
-                  fill={isBeforeGoal ? "#4ade80" : "#f87171"} 
+                <circle
+                  cx={xScale(i, containerWidth)}
+                  cy={yScale(point.timeAsMinutes)}
+                  r={pointSize}
+                  fill={isBeforeGoal ? "#4ade80" : "#f87171"}
                   stroke={baseStrokeColor}
                   strokeWidth={workoutStrokeStyle.strokeWidth}
                   strokeDasharray={workoutStrokeStyle.strokeDasharray}

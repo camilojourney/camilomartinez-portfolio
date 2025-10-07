@@ -15,6 +15,7 @@ from app.services.ai.rag_service import rag_service, RAGError
 from app.services.ai.query_processor import query_processor, QueryProcessingError
 from app.services.ai.trainer_service import trainer_service, TrainerError
 from app.services.ai.schema_embedding_service import schema_embedding_service
+from app.services.ai.auto_embedding_agent import auto_embedding_agent
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -253,26 +254,39 @@ async def get_query_history(
 @router.post("/schema/embeddings/generate", response_model=APIResponse)
 async def generate_schema_embeddings(
     clear_existing: bool = True,
+    only_profile: bool = False,
     user_id: Optional[str] = Depends(get_user_id)
 ):
     """
-    Generate embeddings for all schema descriptions.
-    
+    Generate embeddings for schema descriptions and/or profile.
+
     **Admin endpoint** - Replaces TypeScript embed-schema.ts script
+
+    Args:
+        clear_existing: Clear all embeddings before regenerating (ignored if only_profile=True)
+        only_profile: Only regenerate profile embeddings from CAMILO_PROFILE.md (faster, cheaper)
+        user_id: User ID from auth token
+
+    Examples:
+        - Full regeneration: POST /schema/embeddings/generate?clear_existing=true
+        - Profile only: POST /schema/embeddings/generate?only_profile=true
     """
     try:
-        logger.info(f"Schema embedding generation requested by user {user_id}")
-        
+        mode = "profile-only" if only_profile else "full"
+        logger.info(f"Schema embedding generation requested by user {user_id} (mode={mode})")
+
         result = await schema_embedding_service.generate_embeddings(
-            clear_existing=clear_existing
+            clear_existing=clear_existing,
+            only_profile=only_profile
         )
-        
+
+        mode_msg = "profile embeddings" if only_profile else "embeddings"
         return APIResponse(
             status="success",
             data=result,
-            message=f"Generated {result['successful_embeddings']} embeddings successfully"
+            message=f"Generated {result['successful_embeddings']} {mode_msg} successfully"
         )
-        
+
     except Exception as e:
         raise handle_ai_service_error(e, "schema embedding generation")
 
@@ -282,14 +296,92 @@ async def get_schema_embedding_stats():
     """Get statistics about current schema embeddings."""
     try:
         stats = await schema_embedding_service.get_embedding_stats()
-        
+
         return APIResponse(
             status="success",
             data=stats
         )
-        
+
     except Exception as e:
         raise handle_ai_service_error(e, "schema embedding stats")
+
+
+# Autonomous Embedding Agent Endpoints
+
+@router.post("/agent/embedding/start", response_model=APIResponse)
+async def start_embedding_agent(
+    user_id: Optional[str] = Depends(get_user_id)
+):
+    """
+    Start the autonomous embedding agent.
+
+    The agent will automatically:
+    - Monitor CAMILO_PROFILE.md for changes and re-embed when modified
+    - Monitor database schema changes and trigger full re-embedding
+    - Track embedding history and avoid redundant work
+
+    **Admin endpoint** - Implements agentic RAG architecture
+    """
+    try:
+        logger.info(f"Starting autonomous embedding agent (user={user_id})")
+
+        await auto_embedding_agent.start()
+        status = auto_embedding_agent.get_agent_status()
+
+        return APIResponse(
+            status="success",
+            data=status,
+            message="Autonomous embedding agent started successfully"
+        )
+
+    except Exception as e:
+        raise handle_ai_service_error(e, "agent start")
+
+
+@router.post("/agent/embedding/stop", response_model=APIResponse)
+async def stop_embedding_agent(
+    user_id: Optional[str] = Depends(get_user_id)
+):
+    """
+    Stop the autonomous embedding agent.
+
+    **Admin endpoint**
+    """
+    try:
+        logger.info(f"Stopping autonomous embedding agent (user={user_id})")
+
+        await auto_embedding_agent.stop()
+
+        return APIResponse(
+            status="success",
+            message="Autonomous embedding agent stopped"
+        )
+
+    except Exception as e:
+        raise handle_ai_service_error(e, "agent stop")
+
+
+@router.get("/agent/embedding/status", response_model=APIResponse)
+async def get_embedding_agent_status():
+    """
+    Get current status of the autonomous embedding agent.
+
+    Returns:
+    - Running status
+    - Watched file paths
+    - Recent embedding events
+    - Memory state
+    """
+    try:
+        status = auto_embedding_agent.get_agent_status()
+
+        return APIResponse(
+            status="success",
+            data=status
+        )
+
+    except Exception as e:
+        raise handle_ai_service_error(e, "agent status")
 
 
 @router.put("/schema/embeddings/{table_name}", response_model=APIResponse)
