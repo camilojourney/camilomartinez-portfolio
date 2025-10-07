@@ -119,9 +119,25 @@ RATE_LIMIT_WINDOW=86400  # 24 hours in seconds
 - `GET /api/integrations/health` - Overall integration health
 
 ### System Operations
-- `GET /api/system/health` - Health check endpoint
-- `POST /api/system/cron/daily-fetch` - Manual daily sync trigger
-- `GET /api/system/debug/session` - Debug utilities
+```bash
+# Health check endpoint
+curl -s http://localhost:9000/api/system/health
+
+# Detailed health check (includes database and Redis status)
+curl -s http://localhost:9000/api/system/health/detailed
+
+# System status information
+curl -s http://localhost:9000/api/system/status
+
+# Debug: Check rate limit status
+curl -s http://localhost:9000/api/system/debug/rate-limit
+
+# Debug: Test rate limiting
+curl -X POST http://localhost:9000/api/system/debug/test-rate-limit
+
+# Debug: Create bypass token (for testing)
+curl -X POST "http://localhost:9000/api/system/debug/create-bypass-token?description=test"
+```
 
 ## 🧪 Testing
 

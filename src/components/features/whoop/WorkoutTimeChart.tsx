@@ -33,6 +33,23 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   console.log('- Sample data:', data && data.length > 0 ? JSON.stringify(data.slice(0, 3)) : 'No data');
   console.log('- Goal time:', goalTime);
   
+  // Catch any rendering errors early
+  try {
+    if (data && data.length > 0 && typeof data[0].timeAsMinutes !== 'number') {
+      console.error('❌ Invalid data format: timeAsMinutes must be a number', data[0]);
+      throw new Error('Invalid workout time data format');
+    }
+  } catch (err) {
+    console.error('❌ Error validating data:', err);
+    return (
+      <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
+        <div className="text-red-400 text-3xl mb-3">⚠️</div>
+        <p className="text-white/70 text-lg">Error loading workout chart</p>
+        <p className="text-white/50 text-sm mt-2">{String(err)}</p>
+      </div>
+    );
+  }
+  
   // Check for null or empty data
   if (!data || data.length === 0) {
     console.log('❌ No workout time data available for chart');
@@ -157,10 +174,13 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   };
   
   // Scale Y position based on time
+  // Visual metaphor: Morning (6 AM) at BOTTOM, Noon (12 PM) at TOP (like sun rising)
+  // SVG Y-axis: 0 is at TOP, so we invert: earlier times need LARGER Y (bottom)
   const yScale = (timeInMinutes: number) => {
     const chartHeight = height - padding.top - padding.bottom;
     const range = maxTimeValue - minTimeValue;
     const normalized = (timeInMinutes - minTimeValue) / range;
+    // Inverted scale: Earlier times (6 AM) → larger Y (bottom), Later times (12 PM) → smaller Y (top)
     return height - padding.bottom - (normalized * chartHeight);
   };
   
