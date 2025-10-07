@@ -751,6 +751,26 @@ User Query → RAG Pipeline → SQL Generation → PostgreSQL → Response
     └── Observability
 ```
 
+### `/docs/backend/ALEMBIC_GUIDE.md`
+**Purpose**: Complete guide to database migrations with Alembic
+```
+# 🗄️ Alembic Database Migrations Guide
+├── What is Alembic?
+├── Quick Start
+├── Common Commands
+├── Creating Migrations
+│   ├── Auto-Generate (recommended)
+│   └── Manual Migrations
+├── Understanding Migration Files
+├── Applying Migrations
+├── Rolling Back Changes
+├── Migration Chain
+├── Best Practices
+├── Troubleshooting
+├── Real-World Scenarios
+└── Quick Quiz
+```
+
 ---
 
 ## 📊 Data Platform Documentation (`/docs/data/`)

@@ -6,7 +6,7 @@ from textwrap import dedent
 
 # revision identifiers, used by Alembic.
 revision = "0014_create_materialized_views"
-down_revision = "0013_standardize_milli_suffix"
+down_revision = "0013_standardize_milli"  # Fixed: matches the actual revision ID in 0013
 branch_labels = None
 depends_on = None
 

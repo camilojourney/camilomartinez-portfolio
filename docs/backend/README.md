@@ -165,6 +165,7 @@ CI enforces lint + tests via `.github/workflows/backend.yml`.
 - `docs/backend/API_REFERENCE.md` – Endpoint catalog and payload schemas.
 - `docs/backend/SERVICES.md` – Service layer contracts and orchestration details.
 - `docs/backend/DEPLOYMENT.md` – Railway deployment procedures.
+- `docs/backend/ALEMBIC_GUIDE.md` – **Database migrations comprehensive guide**.
 - `docs/data/SCHEMA.md` – Database tables and relationships.
 - `docs/ai/RAG_SYSTEM.md` – AI pipeline invoked by backend services.
 
