@@ -32,7 +32,7 @@
 | **Orientation** | Rapid onboarding, vision, principles | `docs/README.md`, `docs/GETTING_STARTED.md` |
 | **System Overview** | Architecture, stack, domain boundaries | `docs/ARCHITECTURE.md`, `docs/TECH_STACK.md` |
 | **Domain Deep-Dives** | Frontend, backend, AI, data, operations, integrations | `docs/<domain>/*.md` |
-| **Execution Aids** | Runbooks, checklists, SOPs | `docs/operations/*.md`, `docs/scripts/README.md` |
+| **Execution Aids** | Runbooks, checklists, SOPs | `docs/operations/*.md`, `docs/operations/scripts/README.md` |
 | **Knowledge Base** | Personal context, history, glossary, references | `docs/knowledge/*.md` |
 
 ### Canonical Directory Map
@@ -42,10 +42,13 @@ docs/
 ├── GETTING_STARTED.md       # Zero-to-productive in 30 minutes
 ├── ARCHITECTURE.md          # System-level blueprint
 ├── TECH_STACK.md            # Technology decisions & trade-offs
+├── overview/                # Portfolio narrative and storytelling assets
+├── updates/                 # Change logs and implementation summaries
 ├── frontend/                # Next.js delivery layer
 ├── backend/                 # FastAPI services & orchestration
 ├── ai/                      # RAG, embeddings, evaluation systems
 ├── data/                    # Schema, ETL, analytics, data quality
+├── projects/                # Quarto projects and portfolio artefacts
 ├── integrations/            # WHOOP, Strava, OpenAI, future partners
 ├── operations/              # DevOps, monitoring, incident response
 └── knowledge/               # Human context, glossary, references
@@ -62,7 +65,7 @@ docs/
 2. `docs/ARCHITECTURE.md`
 3. `docs/frontend/README.md`
 4. `docs/backend/README.md`
-5. `docs/frontend/API_INTEGRATION.md` ↔ `docs/backend/API_REFERENCE.md`
+5. `docs/frontend/API_INTEGRATION.md` ↔ `docs/backend/DEVELOPER_GUIDE.md`
 
 ### 🤖 AI / ML Engineer
 1. `docs/ai/README.md`
@@ -85,6 +88,7 @@ docs/
 3. `docs/operations/CRON_JOBS.md`
 4. `docs/operations/TROUBLESHOOTING.md`
 5. `docs/operations/RUNBOOKS.md`
+6. `docs/operations/scripts/README.md`
 
 ### 🔌 Integrations Specialist
 1. `docs/integrations/README.md`
@@ -159,8 +163,8 @@ docs/
 ## 🔗 References & Crosslinks
 - `PROJECT_ARCHITECTURE_PLAN.md` – Roadmap for upcoming structural changes.
 - `DOCUMENTATION_ARCHITECTURE.md` – Rationale for the documentation system design.
-- `scripts/README.md` – Automation catalog, including documentation tooling.
-- `backend/docs` → `../docs/backend` – Symlink for IDE proximity.
+- `docs/operations/scripts/README.md` – Automation catalog, including documentation tooling.
+- `backend/README.md` → `../docs/backend` – Pointer README keeps IDE navigation nearby.
 - `src/docs` → `../docs/frontend` – Symlink for frontend developers.
 
 ---

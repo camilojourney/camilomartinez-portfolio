@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from textwrap import dedent
 
 # revision identifiers, used by Alembic.
-revision = "0011_allow_nullable_whoop_sleep_fk"
+revision = "0011_nullable_sleep_fk"
 down_revision = "0010_add_recovery_cycle_fk"
 branch_labels = None
 depends_on = None

@@ -6,7 +6,7 @@ from textwrap import dedent
 
 # revision identifiers, used by Alembic.
 revision = "0008_add_ai_trainer_tables"
-down_revision = "0007_create_question_rate_limits"
+down_revision = "0007_question_rate_limits"
 branch_labels = None
 depends_on = None
 

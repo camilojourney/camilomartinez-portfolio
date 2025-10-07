@@ -6,7 +6,7 @@ from textwrap import dedent
 
 # revision identifiers, used by Alembic.
 revision = "0010_add_recovery_cycle_fk"
-down_revision = "0009_add_whoop_sleep_relationship"
+down_revision = "0009_whoop_sleep_relation"
 branch_labels = None
 depends_on = None
 

@@ -81,13 +81,21 @@ Context diagram excerpt (C4 Level 1):
 │  - REST API (`/api/v1`)                                       │
 │  - AI gateway (`/api/ai`) with guardrails                     │
 │  - Integration managers (WHOOP, Strava, OpenAI)               │
-│  - Background jobs via APScheduler / Celery (optional)        │
 └──────────────────────────────────────────────────────────────┘
-                 │ async pg / redis                             
-                 ▼                                              
+                 │ async pg / redis
+                 ▼
+┌──────────────────────────────────────────────────────────────┐
+│                   Background Workers (Celery)                 │
+│  - Data sync tasks (Strava, WHOOP)                            │
+│  - ETL pipelines (activity correlation)                       │
+│  - Database maintenance (view refreshes)                      │
+│  - Map generation (Astoria Conquest)                          │
+└──────────────────────────────────────────────────────────────┘
+                 │ async pg / redis
+                 ▼
 ┌──────────────────────────────────────────────────────────────┐
 │                        Data & AI Substrate                   │
-│  PostgreSQL 15 + pgvector • Redis                             │
+│  PostgreSQL 15 + pgvector • Redis (Cache + Task Queue)        │
 │  - Normalized core schema                                     │
 │  - AI-serving materialized views                              │
 │  - Embedding store + evaluation telemetry                     │
@@ -97,9 +105,21 @@ Context diagram excerpt (C4 Level 1):
 
 ### Deployment Targets
 - **Frontend**: Vercel (Edge + ISR) with preview deployments per PR.
-- **Backend**: Railway (containerized FastAPI) with blue/green strategy.
+- **Backend API**: Railway (containerized FastAPI) with blue/green strategy.
+- **Workers**: Railway (Celery) with auto-scaling based on queue depth.
 - **Data**: Managed PostgreSQL (Railway) + optional read replica; Redis Cloud instance.
 - **AI Providers**: OpenAI (primary), optional Azure OpenAI failover.
+
+### Architecture Pattern
+
+**Classification**: **Hybrid Microservices** (Modular Monolith → Microservices transition)
+
+- **Frontend**: Deployed separately (Vercel)
+- **API**: Monolithic Python FastAPI application
+- **Workers**: Separate Celery service (microservice-like)
+- **Data Layer**: Shared PostgreSQL + Redis
+
+See [ARCHITECTURE_PATTERNS.md](./ARCHITECTURE_PATTERNS.md) for comprehensive guide to architecture patterns and when to use each.
 
 ---
 
@@ -112,7 +132,7 @@ Context diagram excerpt (C4 Level 1):
 | **AI Cognition** | Retrieval, reasoning, evaluation | `backend/app/services/ai`, `docs/ai/*` | Embedding manifest, prompt APIs |
 | **Data Platform** | Storage, ETL, analytics | `backend/app/models`, `docs/data/*` | DB schema migrations, dbt (planned) |
 | **Integrations** | OAuth, data ingestion, SLAs | `backend/app/integrations`, `docs/integrations/*` | Sync cadence, webhook contracts |
-| **Operations** | Deployments, monitoring, incident response | `scripts/`, `docs/operations/*` | Runbooks, SLAs |
+| **Operations** | Deployments, monitoring, incident response | `backend/app/workers`, `docs/operations/*` | Runbooks, SLAs |
 
 **Design Principle:** Layers communicate through explicit contracts (OpenAPI spec, SQL views, message schemas). Cross-layer access is prohibited without a defined interface.
 
@@ -129,23 +149,24 @@ Context diagram excerpt (C4 Level 1):
 ### Data Flow
 ```
 [WHOOP API] ─┐
-             ├─> Ingestion Workers (FastAPI background tasks) ─┐
-[Strava API] ┘                                                  │
-                                                               ▼
-                                                     PostgreSQL Core Tables
-                                                               │
-                                         ┌─────────────────────┴─────────────────────┐
-                                         ▼                                           ▼
-                            Materialized Views (AI Serving)              Analytics Schemas (BI)
-                                         │                                           │
-                                         ▼                                           ▼
-                                Embedding Service                          Dashboards / Notebooks
+             ├─> Celery Workers (Scheduled Tasks) ─┐
+[Strava API] ┘                                      │
+                                                    ▼
+                                          PostgreSQL Core Tables
+                                                    │
+                          ┌─────────────────────────┴─────────────────────┐
+                          ▼                                               ▼
+             Materialized Views (AI Serving)                Analytics Schemas (BI)
+                          │                                               │
+                          ▼                                               ▼
+                 Embedding Service                              Dashboards / Notebooks
 ```
 
 ### Governance
 - Migrations managed via Alembic; every DDL change documented in `docs/data/SCHEMA.md`.
 - Data quality checks codified in `docs/data/DATA_QUALITY.md` (Great Expectations planned).
 - ETL cadence and ownership defined in `docs/data/ETL_PROCESSES.md`.
+- Background workers documented in `backend/app/workers/README.md`.
 
 ---
 
@@ -221,12 +242,14 @@ All roadmap items must be traced in `PROJECT_ARCHITECTURE_PLAN.md` and reviewed 
 ---
 
 ## 🔗 References
+- `docs/ARCHITECTURE_PATTERNS.md` – **Comprehensive guide to architecture patterns and trade-offs**
 - `docs/TECH_STACK.md` – Technology rationale underpinning this architecture.
 - `docs/data/SCHEMA.md` – Detailed DDL, ER diagrams, and view definitions.
 - `docs/ai/RAG_SYSTEM.md` – In-depth AI pipeline with prompt templates.
 - `docs/operations/MONITORING.md` – Observability blueprint and alert catalog.
+- `backend/app/workers/README.md` – Background workers service documentation.
 - `DOCUMENTATION_ARCHITECTURE.md` – Documentation system meta-architecture.
 
 ---
 
-*Last Updated: October 2, 2025*
+*Last Updated: October 7, 2025*

@@ -1,0 +1,9 @@
+# Astoria Conquest cache files (generated)
+astoria-conquest/cache/*.pkl
+astoria-conquest/cache/*.geojson
+
+# OSMnx HTTP cache (generated)
+osmnx-cache/*.json
+
+# Keep directory structure
+!.gitkeep

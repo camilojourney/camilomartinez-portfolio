@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from textwrap import dedent
 
 # revision identifiers, used by Alembic.
-revision = "0013_standardize_milli_suffix"
+revision = "0013_standardize_milli"
 down_revision = "0012_schema_standardization"
 branch_labels = None
 depends_on = None

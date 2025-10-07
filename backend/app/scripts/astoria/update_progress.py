@@ -1,9 +1,32 @@
+"""
+Update Astoria Conquest progress map with new Strava runs.
+
+This script:
+1. Loads the cached street network graph
+2. Fetches all Strava runs with GPS polylines
+3. Matches GPS tracks to street segments
+4. Enriches with WHOOP workout data (heart rate, strain)
+5. Generates updated map visualization files
+
+Outputs:
+- public/data/astoria-conquest/astoria-covered-streets.geojson
+- public/data/astoria-conquest/astoria-progress-stats.json
+
+Usage:
+    # From backend directory
+    poetry run python app/scripts/astoria/update_progress.py
+    
+    # Or called automatically by Celery worker (weekly)
+"""
+
 import os
 import json
 import pickle
 import time
 import math
 from math import radians, sin, cos, sqrt, atan2
+from pathlib import Path
+from decimal import Decimal
 import geopandas as gpd
 import osmnx as ox
 import networkx as nx
@@ -11,29 +34,34 @@ import polyline
 import psycopg2
 from dotenv import load_dotenv
 
-load_dotenv() # Loads environment variables from .env file
+load_dotenv()  # Loads environment variables from .env file
 
 print("🔄 Starting Astoria Conquest Progress Update...")
 
 # --- CONFIGURATION ---
+# Get project root (backend/app/scripts/astoria -> go up 4 levels)
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent
+
 DB_CONNECTION_STRING = os.getenv("POSTGRES_URL_NONPRISMA") or os.getenv("DATABASE_URL")
-# Store data in backend for better organization
-CACHE_DIR = "backend/data/astoria-conquest/cache"  # Backend cache
-PUBLIC_DIR = "public/data/astoria-conquest"  # Frontend visualization
-OSMNX_CACHE_DIR = "backend/data/osmnx-cache"  # OSMnx HTTP cache
-GRAPH_PATH = os.path.join(CACHE_DIR, "astoria_graph.pkl")
+
+# Store data paths
+CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "astoria-conquest" / "cache"
+PUBLIC_DIR = PROJECT_ROOT / "public" / "data" / "astoria-conquest"
+OSMNX_CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "osmnx-cache"
+GRAPH_PATH = CACHE_DIR / "astoria_graph.pkl"
 
 # Configure OSMnx to use backend cache directory
 os.makedirs(OSMNX_CACHE_DIR, exist_ok=True)
-ox.settings.cache_folder = OSMNX_CACHE_DIR
+ox.settings.cache_folder = str(OSMNX_CACHE_DIR)
 ox.settings.use_cache = True
 
 # --- STEP 1: LOAD THE CACHED BASE MAP ---
 print("   -> Loading cached base map graph...")
-if not os.path.exists(GRAPH_PATH):
+if not GRAPH_PATH.exists():
     print("   -> 🚨 ERROR: Base graph 'astoria_graph.pkl' not found.")
-    print("   -> Please run 'generate_astoria_base_map.py' first.")
-    exit()
+    print("   -> Please run 'generate_base_map.py' first.")
+    exit(1)
 
 with open(GRAPH_PATH, 'rb') as f:
     G_final = pickle.load(f)
@@ -50,7 +78,7 @@ try:
     conn = psycopg2.connect(DB_CONNECTION_STRING)
     cur = conn.cursor()
     
-    # --- THIS IS THE UPDATED SQL QUERY ---
+    # Fetch all runs with WHOOP enrichment
     sql_query = """
         SELECT 
             sr.id, sr.name, sr.start_date, sr.distance_meters,
@@ -69,7 +97,6 @@ try:
         ORDER BY sr.start_date DESC;
     """
     cur.execute(sql_query)
-    # --- END OF UPDATED QUERY ---
 
     rows = cur.fetchall()
     # Create a list of run objects with all the data
@@ -114,7 +141,7 @@ try:
     print(f"   -> Found {len(runs_data)} runs matching the criteria.")
 except Exception as e:
     print(f"   -> 🚨 ERROR: Could not connect to database: {e}")
-    exit()
+    exit(1)
 
 # --- STEP 3: PROCESS POLYLINES AND AGGREGATE COVERED STREETS ---
 print("   -> Matching all runs to the street network...")
@@ -130,9 +157,10 @@ def haversine(lat1, lon1, lat2, lon2):
     a = sin(dphi/2)**2 + cos(phi1) * cos(phi2) * sin(dlambda/2)**2
     return 2 * R * atan2(sqrt(a), sqrt(1 - a))
 
-# --- Re-introduce the helper functions from your original script ---
 def smooth_trace(points, w=3):
-    if w <= 1 or len(points) < w: return points
+    """Smooth GPS trace using moving average."""
+    if w <= 1 or len(points) < w:
+        return points
     sm = []
     for i in range(len(points)):
         a = max(0, i - w // 2)
@@ -143,7 +171,9 @@ def smooth_trace(points, w=3):
     return sm
 
 def spatial_cluster(points, dist_threshold=32):
-    if not points: return []
+    """Cluster nearby GPS points to reduce noise."""
+    if not points:
+        return []
     clusters = []
     current_cluster = [points[0]]
     for i in range(1, len(points)):
@@ -161,24 +191,27 @@ def spatial_cluster(points, dist_threshold=32):
         avg_lon = sum(p[1] for p in current_cluster) / len(current_cluster)
         clusters.append((avg_lat, avg_lon))
     return clusters
-# --- End of helper functions ---
 
-# Create an undirected graph for simple pathfinding, just like the original script
+# Create an undirected graph for simple pathfinding
 G_u = nx.Graph(G_final)
 
 for encoded_polyline in all_polylines:
-    if not encoded_polyline: continue
+    if not encoded_polyline:
+        continue
     
-    # 1. DECODE AND PRE-PROCESS (Original Method)
+    # 1. DECODE AND PRE-PROCESS
     decoded_coords = polyline.decode(encoded_polyline)
-    clipped_coords = [(lat, lon) for lat, lon in decoded_coords if (minx <= lon <= maxx) and (miny <= lat <= maxy)]
-    if len(clipped_coords) < 2: continue
+    clipped_coords = [(lat, lon) for lat, lon in decoded_coords 
+                     if (minx <= lon <= maxx) and (miny <= lat <= maxy)]
+    if len(clipped_coords) < 2:
+        continue
     
     smoothed_coords = smooth_trace(clipped_coords, w=3)
     clustered_coords = spatial_cluster(smoothed_coords)
-    if len(clustered_coords) < 2: continue
+    if len(clustered_coords) < 2:
+        continue
 
-    # 2. MATCH TO NETWORK (Original Method)
+    # 2. MATCH TO NETWORK
     edge_triplets, snap_dists = ox.distance.nearest_edges(
         G_final,
         X=[p[1] for p in clustered_coords],
@@ -188,7 +221,8 @@ for encoded_polyline in all_polylines:
 
     candidate_nodes = []
     for (u, v, k), (lat, lon), d in zip(edge_triplets, clustered_coords, snap_dists):
-        if d is None: continue
+        if d is None:
+            continue
         du = haversine(lat, lon, G_final.nodes[u]['y'], G_final.nodes[u]['x'])
         dv = haversine(lat, lon, G_final.nodes[v]['y'], G_final.nodes[v]['x'])
         candidate_nodes.append(u if du <= dv else v)
@@ -198,9 +232,10 @@ for encoded_polyline in all_polylines:
         if not snapped_nodes or n != snapped_nodes[-1]:
             snapped_nodes.append(n)
             
-    # 3. RECONSTRUCT PATH (Original Method)
+    # 3. RECONSTRUCT PATH
     for a, b in zip(snapped_nodes[:-1], snapped_nodes[1:]):
-        if a == b: continue
+        if a == b:
+            continue
         try:
             path = nx.shortest_path(G_u, a, b, weight='length')
             for u, v in zip(path[:-1], path[1:]):
@@ -214,7 +249,6 @@ print(f"   -> Found {len(all_covered_edges)} unique street segments covered in t
 # --- STEP 4: GENERATE AND SAVE UPDATED FILES ---
 print("   -> Generating and saving updated progress files...")
 
-# Helper function to get edge geometry
 def get_edge_geometry(u, v, G):
     """Get the geometry of an edge, trying both directions."""
     edge_data = G.get_edge_data(u, v) or G.get_edge_data(v, u)
@@ -250,7 +284,7 @@ for u, v in all_covered_edges:
 if current_path and len(current_path) > 1:
     continuous_paths.append(current_path)
 
-# Create a mask for covered edges using both node-based and geometry-based matching
+# Create a mask for covered edges
 covered_edges_mask = edges_gdf.apply(
     lambda row: (
         tuple(sorted((row.name[0], row.name[1]))) in all_covered_edges
@@ -262,7 +296,6 @@ covered_edges_mask = edges_gdf.apply(
 covered_edges_gdf = edges_gdf[covered_edges_mask].copy()
 
 # Calculate accurate coverage statistics
-total_length_meters = edges_gdf['length'].sum()
 covered_length_meters = 0
 
 for u, v in all_covered_edges:
@@ -274,11 +307,10 @@ for u, v in all_covered_edges:
         covered_length_meters += edge_length
 
 # Convert to miles
-total_length_miles = total_length_meters / 1609.34
 covered_length_miles = covered_length_meters / 1609.34
 percent_complete = (covered_length_miles / total_length_miles) * 100 if total_length_miles > 0 else 0
 
-# Calculate coverage density (ratio of GPS points to street segments)
+# Calculate coverage density
 coverage_density = len(all_covered_edges) / float(len(edges_gdf)) if len(edges_gdf) > 0 else 0
 
 stats = {
@@ -297,8 +329,8 @@ stats = {
 }
 
 # Overwrite the progress files
-covered_streets_path = os.path.join(PUBLIC_DIR, "astoria-covered-streets.geojson")
-stats_path = os.path.join(PUBLIC_DIR, "astoria-progress-stats.json")
+covered_streets_path = PUBLIC_DIR / "astoria-covered-streets.geojson"
+stats_path = PUBLIC_DIR / "astoria-progress-stats.json"
 
 # Export covered streets as GeoJSON
 covered_edges_gdf.to_file(
@@ -309,7 +341,6 @@ covered_edges_gdf.to_file(
 
 # Convert Decimal objects to float for JSON serialization
 def decimal_default(obj):
-    from decimal import Decimal
     if isinstance(obj, Decimal):
         return float(obj)
     raise TypeError

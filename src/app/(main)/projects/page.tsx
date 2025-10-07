@@ -1,9 +1,15 @@
 "use client"
 
+import dynamic from 'next/dynamic'
 import { Card } from '@/components/ui/Card'
 import { ArrowRight } from 'lucide-react'
-import LiquidNav from '@/components/shared/liquid-nav'
 import Link from 'next/link'
+
+// Dynamically import LiquidNav to avoid SSR issues
+const LiquidNav = dynamic(() => import('@/components/shared/liquid-nav'), {
+    ssr: false,
+    loading: () => null
+})
 
 interface ProjectCardProps {
     title: string

@@ -13,6 +13,11 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
     const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading')
 
     useEffect(() => {
+        //Skip API calls during build time
+        if (typeof window === 'undefined') {
+            return
+        }
+
         let isMounted = true
 
         const fetchStatus = async () => {

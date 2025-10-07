@@ -433,7 +433,7 @@ astoria_conquest_data/
 
 ## 📚 Documentation (`/docs/`)
 
-**Comprehensive documentation** in enterprise structure (36 files):
+**Comprehensive documentation** in enterprise structure (40+ files):
 
 ### Structure Overview
 
@@ -444,6 +444,11 @@ docs/
 ├── GETTING_STARTED.md                    # Developer onboarding
 ├── TECH_STACK.md                         # Technology decisions
 ├── DOCUMENTATION_MAP.md                  # This file!
+├── overview/                             # Portfolio storytelling & marketing copy
+│   └── PORTFOLIO_OVERVIEW.md
+├── updates/                              # Change logs and implementation summaries
+│   ├── 2025-01_IMPLEMENTATION_SUMMARY.md
+│   └── 2025-10_WORKERS_MIGRATION_SUMMARY.md
 ├── ai/                                   # AI platform docs (6 files)
 │   ├── README.md
 │   ├── RAG_SYSTEM.md
@@ -451,8 +456,16 @@ docs/
 │   ├── TRAINING.md
 │   ├── EVALUATION.md
 │   └── PROMPTS.md
-├── backend/                              # Backend docs (1 file)
-│   └── README.md
+├── backend/                              # Backend docs (7 files)
+│   ├── README.md
+│   ├── DEVELOPER_GUIDE.md
+│   ├── ALEMBIC_GUIDE.md
+│   ├── KNOWLEDGE_BASE.md
+│   ├── agents/
+│   │   ├── AGENT_ARCHITECTURE.md
+│   │   └── AUTO_EMBEDDING_AGENT.md
+│   └── workers/
+│       └── README.md
 ├── data/                                 # Data platform docs (5 files)
 │   ├── README.md
 │   ├── SCHEMA.md
@@ -477,15 +490,24 @@ docs/
 │   ├── GLOSSARY.md
 │   ├── PROJECT_HISTORY.md
 │   └── REFERENCES.md
-└── operations/                           # Operations docs (5 files)
-    ├── README.md
-    ├── RUNBOOKS.md
-    ├── MONITORING.md
-    ├── TROUBLESHOOTING.md
-    └── CRON_JOBS.md
+├── operations/                           # Operations docs & runbooks
+│   ├── README.md
+│   ├── RUNBOOKS.md
+│   ├── MONITORING.md
+│   ├── TROUBLESHOOTING.md
+│   ├── CRON_JOBS.md
+│   ├── SCRIPTS_CLEANUP_PLAN.md
+│   └── scripts/
+│       └── README.md
+└── projects/                             # Quarto projects & storytelling assets
+│   └── quarto/
+│       ├── SETUP_GUIDE.md
+│       ├── PROJECT_TEMPLATE.md
+│       └── social-media-pipeline/
+│           └── README.md
 ```
 
-**Total Documentation**: 36 markdown files organized across 7 domains
+**Total Documentation**: 40+ markdown files organized across 9 domains
 
 For detailed documentation structure, see the sections below.
 

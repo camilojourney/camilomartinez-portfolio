@@ -1,4 +1,4 @@
-<!-- backend/docs/README.md -->
+<!-- Migrated from backend/docs/README.md -->
 # Backend Knowledge Base
 
 Central index for the Python FastAPI backend after migrating the Next.js serverless APIs. Use this guide to find every major service, router, migration, and automation script that powers the AI-driven fitness platform.
@@ -42,19 +42,17 @@ Central index for the Python FastAPI backend after migrating the Next.js serverl
 - **Alembic** (`backend/alembic/`)
   - Migration environment (`env.py`), templates, and upgrade scripts.
 
-##  Documentation Index (canonical docs now in /docs/)
+## Documentation Index (canonical docs now in /docs/)
 
-- `docs/ai/RAG_SYSTEM.md` – RAG pipeline architecture and implementation
-- `docs/ai/TRAINING.md` – AI training and evaluation systems
-- `docs/ai/EMBEDDINGS.md` – Vector embeddings strategy and optimization
-- `docs/ai/QUERY_ENGINE.md` – Text-to-SQL engine architecture
-- `docs/ai/TRAINER_AGENT.md` – Automated evaluation pipeline
-- `docs/knowledge/CAMILO_PROFILE.md` – Professional profile for AI embeddings
-- `docs/data/DATABASE_SCHEMA.md` – Database schema and data architecture
-- `docs/data/DATA_INTEGRATIONS.md` – External API integrations
-- `docs/frontend/ARCHITECTURE.md` – Frontend architecture guide
-- `docs/backend/ARCHITECTURE.md` – Backend architecture guide
-- `docs/integrations/TECHNOLOGY_INTEGRATIONS.md` – Technology integrations
-- `docs/operations/DEPLOYMENT_RUNBOOK.md` – Deployment and operations
+- `docs/backend/README.md` – Layered architecture, lifecycle, and quality gates.
+- `docs/backend/DEVELOPER_GUIDE.md` – Environment setup, common commands, and API quick start.
+- `docs/backend/ALEMBIC_GUIDE.md` – Database migration workflow and conventions.
+- `docs/backend/workers/README.md` – Celery worker topology, schedules, and troubleshooting.
+- `docs/backend/agents/AGENT_ARCHITECTURE.md` – Multi-agent orchestration patterns.
+- `docs/backend/agents/AUTO_EMBEDDING_AGENT.md` – Autonomous embedding agent implementation.
+- `docs/ai/RAG_SYSTEM.md` – Retrieval pipeline powering AI endpoints.
+- `docs/data/SCHEMA.md` – Authoritative database schema reference.
+- `docs/operations/CRON_JOBS.md` – Scheduled jobs + maintenance cadence.
+- `docs/operations/scripts/README.md` – Utility scripts catalogue and usage patterns.
 
 Keep this README up to date whenever routes or services move so the frontend and backend stay in sync.

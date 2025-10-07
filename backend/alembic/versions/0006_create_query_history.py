@@ -6,7 +6,7 @@ from textwrap import dedent
 
 # revision identifiers, used by Alembic.
 revision = "0006_create_query_history"
-down_revision = "0005_simplify_activity_correlations"
+down_revision = "0005_simplify_activity"
 branch_labels = None
 depends_on = None
 

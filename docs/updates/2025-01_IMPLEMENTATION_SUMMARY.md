@@ -89,7 +89,7 @@ POST /api/ai/agent/embedding/stop
 #### Files Created
 
 1. [backend/app/services/ai/auto_embedding_agent.py](backend/app/services/ai/auto_embedding_agent.py) - Main agent implementation (450+ lines)
-2. [backend/docs/AUTO_EMBEDDING_AGENT.md](backend/docs/AUTO_EMBEDDING_AGENT.md) - Complete documentation
+2. [docs/backend/agents/AUTO_EMBEDDING_AGENT.md](../backend/agents/AUTO_EMBEDDING_AGENT.md) - Complete documentation
 3. Updated [backend/pyproject.toml](backend/pyproject.toml) - Added watchdog dependency
 
 ## How to Use Everything
@@ -189,7 +189,7 @@ http://localhost:3000/my-data
 ## Documentation
 
 All comprehensive docs created:
-- ✅ [AUTO_EMBEDDING_AGENT.md](backend/docs/AUTO_EMBEDDING_AGENT.md) - Complete technical guide
+- ✅ [AUTO_EMBEDDING_AGENT.md](../backend/agents/AUTO_EMBEDDING_AGENT.md) - Complete technical guide
 - ✅ [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - This file
 - ✅ Inline code comments with architecture explanations
 

@@ -214,7 +214,7 @@ poetry run python app/jobs/run_trainer_cycle.py --limit 20
 - `docs/ai/EMBEDDINGS.md` – Embedding pipelines and drift mitigation.
 - `docs/integrations/README.md` – WHOOP/Strava/OpenAI credential setup.
 - `docs/operations/RUNBOOKS.md` – Deployment, monitoring, and incident response.
-- `scripts/README.md` – Automation entry points for the entire stack.
+- `docs/operations/scripts/README.md` – Automation entry points for the entire stack.
 
 ---
 
