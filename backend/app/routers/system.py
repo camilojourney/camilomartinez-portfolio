@@ -9,8 +9,11 @@ import time
 from datetime import datetime
 
 from app.config.database import get_db_session
-from app.services.rate_limiting import rate_limit_service
-from app.utils.rate_limiting import get_client_ip, get_user_id_from_request
+from app.utils.rate_limiting import (
+    rate_limit_service,
+    get_client_ip,
+    get_user_id_from_request,
+)
 from app.config.settings import settings
 
 router = APIRouter()

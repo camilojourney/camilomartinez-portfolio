@@ -1,10 +1,8 @@
 """
-AI Services module for OpenAI integration, RAG operations, and trainer evaluation.
+AI Services module for OpenAI integration and RAG operations.
 """
 
 from .openai_client import OpenAIService
 from .rag_service import RAGService
-from .trainer_service import TrainerService
-from .translation_service import TranslationService
 
-__all__ = ["OpenAIService", "RAGService", "TrainerService", "TranslationService"]
+__all__ = ["OpenAIService", "RAGService"]

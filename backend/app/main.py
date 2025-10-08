@@ -15,6 +15,7 @@ from app.middleware.rate_limiting import RateLimitMiddleware
 from app.middleware.logging import LoggingMiddleware
 # Import all routers
 from app.routers.ai import router as ai_router
+from app.routers.ai_admin import router as ai_admin_router
 from app.routers.integrations import router as integrations_router
 from app.routers.analytics import router as analytics_router
 from app.routers.system import router as system_router
@@ -101,7 +102,12 @@ def create_app() -> FastAPI:
         prefix="/api/ai",
         tags=["AI & Analytics"]
     )
-    
+
+    app.include_router(
+        ai_admin_router,
+        tags=["AI Admin (HITL)"]
+    )
+
     app.include_router(
         integrations_router,
         prefix="/api/integrations",

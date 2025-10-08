@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pgvector.sqlalchemy import Vector
 
 from app.config.database import get_database_session, async_session_factory
-from app.models.ai_query import EmbeddingDocument
+from app.models.ai_query import Embedding, QueryHistory
 from app.services.ai.openai_client import openai_service, OpenAIError
 
 logger = logging.getLogger(__name__)
@@ -178,104 +178,106 @@ class RAGService:
     async def embed_document(
         self,
         content: str,
-        document_type: str,
-        document_id: str,
+        embedding_type: str,
         metadata: Optional[Dict[str, Any]] = None,
         user_id: Optional[str] = None,
+        is_validated: bool = True,
     ) -> Dict[str, Any]:
         """
         Process a document by chunking and creating embeddings.
-        
+
+        UPDATED: Now uses unified Embedding model instead of EmbeddingDocument.
+
         Args:
             content: Document content to embed
-            document_type: Type classification (e.g., 'fitness_data', 'user_query', 'knowledge_base')
-            document_id: Unique identifier for the document
-            metadata: Additional metadata to store with chunks
+            embedding_type: Type classification ('schema', 'profile', 'learning', 'hyde')
+            metadata: Additional metadata to store (document_id, table_name, etc.)
             user_id: User ID for access control
-            
+            is_validated: Whether embedding is pre-validated (default True for non-learning types)
+
         Returns:
             Dict with embedding results and statistics
-            
+
         Raises:
             RAGError: For processing or storage errors
         """
         try:
             if not content or not content.strip():
                 raise RAGError("Document content cannot be empty")
-                
-            logger.info(f"Processing document {document_id} of type {document_type}")
-            
-            # Create document hash for duplicate detection
+
+            logger.info(f"Processing document of type {embedding_type}")
+
+            # Create content hash for duplicate detection
             content_hash = hashlib.sha256(content.encode()).hexdigest()
-            
-            # Check for existing document
+
+            # Check for existing embedding with same content and type
             async with get_database_session() as session:
                 existing = await session.execute(
-                    select(EmbeddingDocument).where(
-                        EmbeddingDocument.content_hash == content_hash,
-                        EmbeddingDocument.document_type == document_type
+                    select(Embedding).where(
+                        Embedding.metadata_['content_hash'].astext == content_hash,
+                        Embedding.embedding_type == embedding_type
                     )
                 )
                 if existing.scalar_one_or_none():
-                    logger.info(f"Document {document_id} already exists with hash {content_hash[:8]}")
-                    return {"status": "exists", "document_id": document_id, "chunks_created": 0}
-                
+                    logger.info(f"Embedding already exists with hash {content_hash[:8]}")
+                    return {"status": "exists", "chunks_created": 0}
+
                 # Chunk the document
                 base_metadata = {
-                    "document_type": document_type,
-                    "document_id": document_id,
-                    "user_id": user_id,
+                    "content_hash": content_hash,
+                    "embedding_type": embedding_type,
+                    "created_at": datetime.utcnow().isoformat()
                 }
                 if metadata:
                     base_metadata.update(metadata)
-                    
+
                 chunks = self.chunker.chunk_text(content, base_metadata)
-                
+
                 if not chunks:
                     raise RAGError("No valid chunks created from document content")
-                    
+
                 # Create embeddings for all chunks
                 chunk_texts = [chunk["text"] for chunk in chunks]
                 embeddings = await openai_service.create_embeddings_batch(
                     chunk_texts,
                     user_id=user_id
                 )
-                
-                # Store chunks and embeddings in database
+
+                # Store chunks and embeddings in database using new unified model
                 created_chunks = 0
-                
-                for chunk, embedding in zip(chunks, embeddings):
-                    doc = EmbeddingDocument(
+
+                for chunk, embedding_vector in zip(chunks, embeddings):
+                    chunk_metadata = chunk.copy()
+                    chunk_metadata.pop("text", None)  # Remove text from metadata
+
+                    doc = Embedding(
                         content=chunk["text"],
-                        embedding=embedding,
-                        document_type=document_type,
-                        document_id=document_id,
-                        metadata=chunk,
-                        content_hash=hashlib.sha256(chunk["text"].encode()).hexdigest(),
-                        user_id=user_id,
+                        embedding=embedding_vector,
+                        embedding_type=embedding_type,
+                        metadata=chunk_metadata,
+                        is_validated=is_validated,
                         created_at=datetime.utcnow()
                     )
                     session.add(doc)
                     created_chunks += 1
-                    
+
                 await session.commit()
-                
-                logger.info(f"Successfully embedded document {document_id}: {created_chunks} chunks created")
-                
+
+                logger.info(f"Successfully embedded document: {created_chunks} chunks created")
+
                 return {
                     "status": "created",
-                    "document_id": document_id,
                     "chunks_created": created_chunks,
                     "total_tokens": sum(len(text.split()) for text in chunk_texts),
                     "content_hash": content_hash[:8]
                 }
-                
+
         except OpenAIError as e:
             logger.error(f"OpenAI error during document embedding: {e}")
             raise RAGError(f"Failed to create embeddings: {e}")
-            
+
         except Exception as e:
-            logger.error(f"Error embedding document {document_id}: {e}")
+            logger.error(f"Error embedding document: {e}")
             raise RAGError(f"Document embedding failed: {e}")
 
     async def similarity_search(
@@ -283,62 +285,60 @@ class RAGService:
         query: str,
         limit: int = 5,
         similarity_threshold: float = 0.7,
-        document_types: Optional[List[str]] = None,
-        user_id: Optional[str] = None,
+        embedding_types: Optional[List[str]] = None,
+        only_validated: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         Perform similarity search for relevant document chunks.
-        
+
+        UPDATED: Now uses unified Embedding model and can filter by validation status.
+
         Args:
             query: Search query text
             limit: Maximum number of results to return
             similarity_threshold: Minimum cosine similarity score (0.0 to 1.0)
-            document_types: Filter by document types
-            user_id: Filter by user ID for access control
-            
+            embedding_types: Filter by embedding types (e.g., ['schema', 'hyde'])
+            only_validated: Whether to only return validated embeddings (default True)
+
         Returns:
             List of matching document chunks with similarity scores
-            
+
         Raises:
             RAGError: For search errors
         """
         try:
             if not query or not query.strip():
                 raise RAGError("Search query cannot be empty")
-                
+
             logger.info(f"Performing similarity search for: '{query[:50]}...'")
-            
+
             # Create query embedding
-            embedding_result = await openai_service.create_embedding(query, user_id=user_id)
+            embedding_result = await openai_service.create_embedding(query)
             query_embedding = embedding_result["embeddings"]
-            
+
             # Build search query with filters
             async with get_database_session() as session:
                 # Base similarity search using cosine distance
                 query_stmt = select(
-                    EmbeddingDocument,
-                    (1 - EmbeddingDocument.embedding.cosine_distance(query_embedding)).label('similarity')
+                    Embedding,
+                    (1 - Embedding.embedding.cosine_distance(query_embedding)).label('similarity')
                 ).where(
-                    (1 - EmbeddingDocument.embedding.cosine_distance(query_embedding)) >= similarity_threshold
+                    (1 - Embedding.embedding.cosine_distance(query_embedding)) >= similarity_threshold
                 )
-                
+
                 # Apply filters
-                if document_types:
-                    query_stmt = query_stmt.where(EmbeddingDocument.document_type.in_(document_types))
-                    
-                if user_id:
-                    # Allow access to user's own documents or public documents
-                    query_stmt = query_stmt.where(
-                        (EmbeddingDocument.user_id == user_id) |
-                        (EmbeddingDocument.user_id.is_(None))
-                    )
-                    
+                if embedding_types:
+                    query_stmt = query_stmt.where(Embedding.embedding_type.in_(embedding_types))
+
+                if only_validated:
+                    query_stmt = query_stmt.where(Embedding.is_validated == True)
+
                 # Order by similarity and limit results
                 query_stmt = query_stmt.order_by(text('similarity DESC')).limit(limit)
-                
+
                 results = await session.execute(query_stmt)
                 matches = results.fetchall()
-                
+
                 # Format results
                 formatted_results = []
                 for doc, similarity in matches:
@@ -346,9 +346,10 @@ class RAGService:
                         "id": doc.id,
                         "content": doc.content,
                         "similarity": float(similarity),
-                        "document_type": doc.document_type,
-                        "document_id": doc.document_id,
-                        "metadata": doc.metadata or {},
+                        "embedding_type": doc.embedding_type,
+                        "metadata": doc.metadata_ or {},
+                        "is_validated": doc.is_validated,
+                        "confidence_score": doc.confidence_score,
                         "created_at": doc.created_at.isoformat() if doc.created_at else None,
                     }
                     formatted_results.append(result)
@@ -371,68 +372,69 @@ class RAGService:
     ) -> str:
         """
         Perform vector similarity search against schema embeddings for query context.
-        
-        This method replicates the TypeScript performVectorSearch functionality
-        for schema-aware context retrieval in AI query processing.
-        
+
+        UPDATED: Now uses unified embeddings table with embedding_type='schema'.
+
         Args:
             query: Natural language question to find relevant schema context for
             limit: Maximum number of relevant schema descriptions to return
-            
+
         Returns:
             String containing relevant schema descriptions, separated by newlines
-            
+
         Raises:
             RAGError: For search or processing errors
         """
         try:
             logger.info(f"Schema vector search for: '{query[:50]}...'")
-            
+
             # Generate query embedding
             embedding_result = await openai_service.create_embedding(query)
             query_embedding = embedding_result["embeddings"]
-            
+
             async with async_session_factory() as session:
-                # Vector similarity search against schema_embeddings table
+                # Vector similarity search against embeddings table (schema type only)
                 # Using raw SQL for pgvector operations (more reliable than SQLAlchemy)
-                sql_query = """
-                SELECT CONCAT('View: ', table_name, ', Column: ', column_name, '. Description: ', description) as context
-                FROM schema_embeddings
-                ORDER BY embedding <=> %s
-                LIMIT %s
-                """
-                
+                sql_query = text("""
+                SELECT CONCAT('View: ', metadata->>'table_name', ', Column: ', metadata->>'column_name', '. Description: ', content) as context,
+                       metadata->>'table_name' as table_name,
+                       metadata->>'column_name' as column_name
+                FROM embeddings
+                WHERE embedding_type = 'schema' AND is_validated = true
+                ORDER BY embedding <=> CAST(:embedding AS vector)
+                LIMIT :limit
+                """)
+
                 # Convert embedding to pgvector format
                 embedding_str = f"[{','.join(map(str, query_embedding))}]"
-                
+
                 result = await session.execute(
-                    text(sql_query),
-                    (embedding_str, limit)
+                    sql_query,
+                    {"embedding": embedding_str, "limit": limit}
                 )
-                
+
                 rows = result.fetchall()
-                
+
                 if not rows:
-                    raise RAGError("No schema embeddings found. The schema_embeddings table may be empty.")
-                
+                    raise RAGError("No schema embeddings found. The embeddings table may be empty or have no schema type.")
+
                 logger.info(f"Found {len(rows)} schema matches")
-                
+
                 # Collect contexts and detect temporal needs
                 contexts = []
                 context_set = set()
                 view_names = set()
-                
+
                 for row in rows:
-                    context = row[0]  # Access by index for raw SQL result
+                    context = row[0]  # context column
+                    table_name = row[1]  # table_name from metadata
                     if context not in context_set:
                         contexts.append(context)
                         context_set.add(context)
-                        
-                        # Extract view names for temporal enhancement
-                        import re
-                        match = re.search(r'View:\s*([^,]+)', context, re.IGNORECASE)
-                        if match:
-                            view_names.add(match.group(1).strip())
+
+                        # Store view names for temporal enhancement
+                        if table_name:
+                            view_names.add(table_name)
                 
                 # Check if query needs temporal context
                 temporal_keywords = [
@@ -459,25 +461,28 @@ class RAGService:
                         if view_name in always_include_temporal:
                             for column_name in always_include_temporal[view_name]:
                                 try:
-                                    temporal_sql = """
-                                    SELECT CONCAT('View: ', table_name, ', Column: ', column_name, '. Description: ', description) AS context
-                                    FROM schema_embeddings
-                                    WHERE table_name = %s AND column_name = %s
+                                    temporal_sql = text("""
+                                    SELECT CONCAT('View: ', metadata->>'table_name', ', Column: ', metadata->>'column_name', '. Description: ', content) AS context
+                                    FROM embeddings
+                                    WHERE embedding_type = 'schema'
+                                      AND is_validated = true
+                                      AND metadata->>'table_name' = :view_name
+                                      AND metadata->>'column_name' = :column_name
                                     LIMIT 1
-                                    """
-                                    
+                                    """)
+
                                     temporal_result = await session.execute(
-                                        text(temporal_sql),
-                                        (view_name, column_name)
+                                        temporal_sql,
+                                        {"view_name": view_name, "column_name": column_name}
                                     )
-                                    
+
                                     temporal_rows = temporal_result.fetchall()
                                     for temporal_row in temporal_rows:
                                         temporal_context = temporal_row[0]
                                         if temporal_context not in context_set:
                                             contexts.append(temporal_context)
                                             context_set.add(temporal_context)
-                                            
+
                                 except Exception as e:
                                     logger.warning(f"Failed to include temporal column {view_name}.{column_name}: {e}")
                 
@@ -516,7 +521,8 @@ class RAGService:
                 query=query,
                 limit=10,  # Get more docs to build context
                 similarity_threshold=0.6,  # Lower threshold for broader context
-                user_id=user_id
+                embedding_types=None,  # Search all types
+                only_validated=True  # Only validated embeddings
             )
             
             if not relevant_docs:
@@ -548,8 +554,8 @@ class RAGService:
                         
                 context_parts.append(content)
                 sources.append({
-                    "document_id": doc["document_id"],
-                    "document_type": doc["document_type"],
+                    "embedding_id": doc["id"],
+                    "embedding_type": doc["embedding_type"],
                     "similarity": doc["similarity"],
                     "created_at": doc["created_at"]
                 })
@@ -574,109 +580,196 @@ class RAGService:
             logger.error(f"Error building context for query: {e}")
             raise RAGError(f"Context retrieval failed: {e}")
 
-    async def delete_document(
+    async def delete_embeddings_by_type(
         self,
-        document_id: str,
-        document_type: Optional[str] = None,
-        user_id: Optional[str] = None,
+        embedding_type: str,
+        metadata_filter: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Delete all chunks for a specific document.
-        
+        Delete embeddings by type and optional metadata filters.
+
+        UPDATED: Uses unified Embedding model.
+
         Args:
-            document_id: Document identifier
-            document_type: Optional type filter
-            user_id: User ID for access control
-            
+            embedding_type: Type to delete ('schema', 'profile', 'learning', 'hyde')
+            metadata_filter: Optional JSONB metadata filters
+
         Returns:
             Dict with deletion statistics
         """
         try:
             async with get_database_session() as session:
-                # Build delete query with filters
-                delete_query = select(EmbeddingDocument).where(
-                    EmbeddingDocument.document_id == document_id
+                # Build delete query
+                delete_query = select(Embedding).where(
+                    Embedding.embedding_type == embedding_type
                 )
-                
-                if document_type:
-                    delete_query = delete_query.where(EmbeddingDocument.document_type == document_type)
-                    
-                if user_id:
-                    delete_query = delete_query.where(EmbeddingDocument.user_id == user_id)
-                    
-                # Get documents to delete (for counting)
+
+                # Add metadata filters if provided
+                if metadata_filter:
+                    for key, value in metadata_filter.items():
+                        delete_query = delete_query.where(
+                            Embedding.metadata_[key].astext == str(value)
+                        )
+
+                # Get embeddings to delete (for counting)
                 results = await session.execute(delete_query)
-                docs_to_delete = results.fetchall()
-                
+                docs_to_delete = results.scalars().all()
+
                 if not docs_to_delete:
-                    return {"status": "not_found", "deleted_chunks": 0}
-                    
-                # Delete the documents
+                    return {"status": "not_found", "deleted_count": 0}
+
+                # Delete the embeddings
                 for doc in docs_to_delete:
-                    await session.delete(doc[0])
-                    
+                    await session.delete(doc)
+
                 await session.commit()
-                
+
                 deleted_count = len(docs_to_delete)
-                logger.info(f"Deleted {deleted_count} chunks for document {document_id}")
-                
+                logger.info(f"Deleted {deleted_count} embeddings of type {embedding_type}")
+
                 return {
                     "status": "deleted",
-                    "document_id": document_id,
-                    "deleted_chunks": deleted_count
+                    "embedding_type": embedding_type,
+                    "deleted_count": deleted_count
                 }
-                
-        except Exception as e:
-            logger.error(f"Error deleting document {document_id}: {e}")
-            raise RAGError(f"Document deletion failed: {e}")
 
-    async def get_document_stats(self, user_id: Optional[str] = None) -> Dict[str, Any]:
+        except Exception as e:
+            logger.error(f"Error deleting embeddings: {e}")
+            raise RAGError(f"Embedding deletion failed: {e}")
+
+    async def get_embedding_stats(self) -> Dict[str, Any]:
         """
-        Get statistics about stored documents and embeddings.
-        
-        Args:
-            user_id: Optional user filter
-            
+        Get statistics about stored embeddings.
+
+        UPDATED: Uses unified Embedding model.
+
         Returns:
-            Dict with document statistics
+            Dict with embedding statistics
         """
         try:
-            # Use the async session factory directly instead of the generator
             async with async_session_factory() as session:
-                # Base query
-                base_query = select(EmbeddingDocument)
-                
-                if user_id:
-                    base_query = base_query.where(
-                        (EmbeddingDocument.user_id == user_id) |
-                        (EmbeddingDocument.user_id.is_(None))
-                    )
-                    
-                # Total document count
+                # Total embedding count
                 total_result = await session.execute(
-                    select(func.count(EmbeddingDocument.id)).select_from(base_query.subquery())
+                    select(func.count(Embedding.id))
                 )
-                total_docs = total_result.scalar()
-                
-                # Count by document type
+                total_embeddings = total_result.scalar() or 0
+
+                # Count by embedding type
                 type_result = await session.execute(
                     select(
-                        EmbeddingDocument.document_type,
-                        func.count(EmbeddingDocument.id)
-                    ).group_by(EmbeddingDocument.document_type)
+                        Embedding.embedding_type,
+                        func.count(Embedding.id)
+                    ).group_by(Embedding.embedding_type)
                 )
                 type_counts = dict(type_result.fetchall())
-                
+
+                # Count validated vs pending
+                validated_result = await session.execute(
+                    select(
+                        Embedding.is_validated,
+                        func.count(Embedding.id)
+                    ).group_by(Embedding.is_validated)
+                )
+                validation_counts = dict(validated_result.fetchall())
+
                 return {
-                    "total_documents": total_docs,
-                    "documents_by_type": type_counts,
-                    "embedding_dimensions": self.embedding_dimensions,
-                    "user_filtered": user_id is not None
+                    "total_embeddings": total_embeddings,
+                    "by_type": type_counts,
+                    "validated": validation_counts.get(True, 0),
+                    "pending_validation": validation_counts.get(False, 0),
+                    "embedding_dimensions": self.embedding_dimensions
                 }
-                
+
         except Exception as e:
-            logger.error(f"Error getting document stats: {e}")
+            logger.error(f"Error getting embedding stats: {e}")
             raise RAGError(f"Stats retrieval failed: {e}")
+
+    async def generate_and_store_hyde_embedding(
+        self,
+        question: str,
+        context_used: str,
+        source_query_id: int
+    ) -> int:
+        """
+        Generates and stores a HyDE (Hypothetical Document Embedding) for missing context.
+
+        This method is called by the Self-Improving Agent when it detects MISSING_CONTEXT failures.
+
+        Args:
+            question: The user's question that failed
+            context_used: Context that was retrieved (insufficient)
+            source_query_id: ID of the query that triggered this
+
+        Returns:
+            Embedding ID of created HyDE embedding
+
+        Raises:
+            RAGError: For generation or storage errors
+        """
+        try:
+            logger.info(f"Generating HyDE embedding for query {source_query_id}")
+
+            # Generate hypothetical perfect document using GPT-4
+            hyde_prompt = f"""Generate an ideal database schema description that would perfectly
+enable answering: "{question}"
+
+Context already available: {context_used[:300] if context_used else 'None'}
+
+Generate ONLY the missing schema description that would have helped answer this question.
+
+Format as:
+"View: [view_name], Column: [column_name]. Description: [detailed description with data type, use cases, and examples]"
+
+Be specific about:
+- Data types
+- When to use this column
+- Example values
+- Relationships to other columns
+
+If multiple columns are needed, create separate descriptions for each."""
+
+            response = await openai_service.create_chat_completion(
+                messages=[{"role": "user", "content": hyde_prompt}],
+                temperature=0.3,  # Moderate creativity for quality descriptions
+                max_tokens=400
+            )
+
+            hypothetical_document = response["content"].strip()
+
+            # Create embedding from hypothetical document
+            embedding_result = await openai_service.create_embedding(hypothetical_document)
+
+            # Store in embeddings table
+            async with get_database_session() as session:
+                new_embedding = Embedding(
+                    content=hypothetical_document,
+                    embedding=embedding_result["embeddings"],
+                    embedding_type="hyde",
+                    metadata={
+                        "method": "hyde",
+                        "question": question[:200],
+                        "generated_at": datetime.utcnow().isoformat(),
+                        "pattern_type": "MISSING_CONTEXT"
+                    },
+                    confidence_score=0.85,  # Default confidence for HyDE
+                    source_query_id=source_query_id,
+                    is_validated=False  # Requires HITL approval
+                )
+
+                session.add(new_embedding)
+                await session.commit()
+                await session.refresh(new_embedding)
+
+                logger.info(f"Created HyDE embedding {new_embedding.id} for query {source_query_id}")
+                return new_embedding.id
+
+        except OpenAIError as e:
+            logger.error(f"OpenAI error generating HyDE: {e}")
+            raise RAGError(f"Failed to generate HyDE embedding: {e}")
+
+        except Exception as e:
+            logger.error(f"Error generating HyDE embedding: {e}")
+            raise RAGError(f"HyDE embedding generation failed: {e}")
 
 
 # Global service instance

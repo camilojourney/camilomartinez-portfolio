@@ -12,6 +12,7 @@ from datetime import datetime
 from sqlalchemy import text
 from app.config.database import async_session_factory
 from app.services.ai.openai_client import openai_service, OpenAIError
+from app.models.ai_query import Embedding
 
 logger = logging.getLogger(__name__)
 
@@ -19,13 +20,16 @@ logger = logging.getLogger(__name__)
 class SchemaEmbeddingService:
     """
     Service for generating and managing schema embeddings for the AI query system.
-    
+
+    UPDATED: Now uses unified Embedding model with embedding_type='schema' or 'profile'.
+
     This service handles:
     - Schema description embedding generation
-    - Database storage and updates
+    - Profile embedding generation
+    - Database storage and updates using unified embeddings table
     - Batch processing of schema components
     """
-    
+
     def __init__(self):
         """Initialize the schema embedding service."""
         self.embedding_model = "text-embedding-3-small"
@@ -242,15 +246,15 @@ class SchemaEmbeddingService:
             await self.create_table_if_not_exists()
 
             async with async_session_factory() as session:
-                # Handle profile-only mode
+                # Handle profile-only mode (UPDATED: Use embeddings table)
                 if only_profile:
                     # Clear only profile embeddings
-                    await session.execute(text("DELETE FROM schema_embeddings WHERE table_name = 'camilo_profile';"))
+                    await session.execute(text("DELETE FROM embeddings WHERE embedding_type = 'profile';"))
                     logger.info("Cleared existing profile embeddings only")
                 elif clear_existing:
-                    # Clear all embeddings
-                    await session.execute(text("TRUNCATE TABLE schema_embeddings;"))
-                    logger.info("Cleared all existing embeddings")
+                    # Clear all schema and profile embeddings
+                    await session.execute(text("DELETE FROM embeddings WHERE embedding_type IN ('schema', 'profile');"))
+                    logger.info("Cleared all existing schema and profile embeddings")
 
                 # Generate embeddings for each schema item
                 successful_embeddings = 0
@@ -270,43 +274,53 @@ class SchemaEmbeddingService:
 
                 for item in all_descriptions:
                     try:
-                        # Prepare text for embedding
+                        # Prepare text for embedding and metadata
                         if item["type"] == "view":
                             input_text = f"View: {item['name']}. Description: {item['description']}"
-                            table_name = item["name"]
-                            column_name = None
+                            embedding_type = "schema"
+                            metadata = {
+                                "table_name": item["name"],
+                                "column_name": None,
+                                "item_type": "view"
+                            }
                         elif item["type"] == "profile":
                             input_text = f"Profile: {item['name']}. Description: {item['description']}"
-                            table_name = "camilo_profile"
-                            column_name = item["name"]
+                            embedding_type = "profile"
+                            metadata = {
+                                "table_name": "camilo_profile",
+                                "column_name": item["name"],
+                                "item_type": "profile"
+                            }
                         else:  # column
                             input_text = f"View: {item['view']}, Column: {item['name']}. Description: {item['description']}"
-                            table_name = item["view"]
-                            column_name = item["name"]
-                        
+                            embedding_type = "schema"
+                            metadata = {
+                                "table_name": item["view"],
+                                "column_name": item["name"],
+                                "item_type": "column"
+                            }
+
                         logger.info(f"Generating embedding for: {item['name']}")
-                        
+
                         # Generate embedding using OpenAI service
                         embedding_result = await openai_service.create_embedding(input_text)
                         embedding_vector = embedding_result["embeddings"]
-                        
-                        # Convert to pgvector format
-                        embedding_str = f"[{','.join(map(str, embedding_vector))}]"
-                        
-                        # Insert into database
-                        insert_sql = """
-                        INSERT INTO schema_embeddings (table_name, column_name, description, embedding)
-                        VALUES (%s, %s, %s, %s)
-                        """
-                        
-                        await session.execute(
-                            text(insert_sql),
-                            (table_name, column_name, item["description"], embedding_str)
+
+                        # Create Embedding object using SQLAlchemy ORM (UPDATED)
+                        new_embedding = Embedding(
+                            content=item["description"],
+                            embedding=embedding_vector,  # pgvector handles the conversion
+                            embedding_type=embedding_type,
+                            metadata_=metadata,
+                            is_validated=True,  # Schema embeddings are pre-validated
+                            created_at=datetime.utcnow()
                         )
-                        
+
+                        session.add(new_embedding)
+
                         successful_embeddings += 1
                         logger.debug(f"Embedded: {item['name']}")
-                        
+
                     except Exception as e:
                         logger.error(f"Failed to embed {item['name']}: {e}")
                         failed_embeddings += 1
@@ -378,20 +392,20 @@ class SchemaEmbeddingService:
             
             async with async_session_factory() as session:
                 # Delete existing entry
-                delete_sql = """
+                delete_sql = text("""
                 DELETE FROM schema_embeddings 
-                WHERE table_name = %s AND column_name IS NOT DISTINCT FROM %s
-                """
-                await session.execute(text(delete_sql), (table_name, column_name))
+                WHERE table_name = :table_name AND column_name IS NOT DISTINCT FROM :column_name
+                """)
+                await session.execute(delete_sql, {"table_name": table_name, "column_name": column_name})
                 
                 # Insert new entry
-                insert_sql = """
+                insert_sql = text("""
                 INSERT INTO schema_embeddings (table_name, column_name, description, embedding)
-                VALUES (%s, %s, %s, %s)
-                """
+                VALUES (:table_name, :column_name, :description, :embedding)
+                """)
                 await session.execute(
-                    text(insert_sql),
-                    (table_name, column_name, target_item["description"], embedding_str)
+                    insert_sql,
+                    {"table_name": table_name, "column_name": column_name, "description": target_item["description"], "embedding": embedding_str}
                 )
                 
                 await session.commit()

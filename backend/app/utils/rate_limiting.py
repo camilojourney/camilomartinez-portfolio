@@ -1,104 +1,93 @@
 """
-Utility functions for rate limiting operations.
-Includes client IP extraction, bypass token management, and helper functions.
+Utilities and lightweight service stubs for rate limiting operations.
+
+The original implementation relied on a dedicated rate-limiting service module.
+To keep the runtime happy without reintroducing that dependency, we expose a
+minimal in-memory service here alongside the helper utilities that other
+modules expect.
 """
 
-from fastapi import Request, Header, Depends
-from typing import Optional, Dict, Any
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
 import ipaddress
-import secrets
 import logging
-from datetime import datetime
+import secrets
+
+from fastapi import Header, Request
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Request helper utilities
+# ---------------------------------------------------------------------------
 
 
 def get_client_ip(request: Request) -> Optional[str]:
     """
-    Extract client IP address from FastAPI request.
-    Handles various proxy headers and direct connections.
+    Extract client IP address from FastAPI requests, respecting common proxy
+    headers before falling back to the direct client host.
     """
-    
-    # Priority order for IP extraction
+
     ip_headers = [
-        "x-forwarded-for",      # Most common proxy header
-        "x-real-ip",            # Nginx real IP
-        "x-client-ip",          # Alternative client IP
-        "cf-connecting-ip",     # Cloudflare
-        "x-forwarded",          # Standard forwarded
-        "forwarded-for",        # Alternative format
-        "forwarded"             # RFC 7239
+        "x-forwarded-for",
+        "x-real-ip",
+        "x-client-ip",
+        "cf-connecting-ip",
+        "x-forwarded",
+        "forwarded-for",
+        "forwarded",
     ]
-    
-    # Check proxy headers
+
     for header in ip_headers:
         ip_value = request.headers.get(header)
-        if ip_value:
-            # Handle comma-separated IPs (multiple proxies)
-            first_ip = ip_value.split(",")[0].strip()
-            if _is_valid_ip(first_ip):
-                return first_ip
-    
-    # Fall back to direct client connection
+        if not ip_value:
+            continue
+        first_ip = ip_value.split(",")[0].strip()
+        if _is_valid_ip(first_ip):
+            return first_ip
+
     if hasattr(request, "client") and request.client:
         return request.client.host
-    
+
     return None
 
 
 def get_bypass_token(
     authorization: Optional[str] = Header(None),
-    x_bypass_token: Optional[str] = Header(None, alias="X-Bypass-Token")
+    x_bypass_token: Optional[str] = Header(None, alias="X-Bypass-Token"),
 ) -> Optional[str]:
-    """
-    Extract bypass token from request headers.
-    Supports both Authorization: Bypass <token> and X-Bypass-Token formats.
-    """
-    
-    # Check Authorization header
+    """Extract bypass token from supported headers."""
+
     if authorization and authorization.startswith("Bypass "):
-        return authorization[7:]  # Remove "Bypass " prefix
-    
-    # Check X-Bypass-Token header
+        return authorization[7:]
+
     if x_bypass_token:
         return x_bypass_token
-    
+
     return None
 
 
 def get_user_id_from_request(request: Request) -> Optional[int]:
     """
-    Extract user ID from authenticated request.
-    This will be enhanced when JWT authentication is implemented.
+    Extract user id using the provisional `x-user-id` header that we leverage
+    during development. Real authentication will replace this in the future.
     """
-    
-    # For now, check test header
+
     user_id_header = request.headers.get("x-user-id")
-    if user_id_header:
-        try:
-            return int(user_id_header)
-        except ValueError:
-            logger.warning(f"Invalid user ID header: {user_id_header}")
-            return None
-    
-    # TODO: Extract from JWT token when authentication is implemented
-    # if hasattr(request.state, "user"):
-    #     return request.state.user.id
-    
-    return None
+    if not user_id_header:
+        return None
+
+    try:
+        return int(user_id_header)
+    except ValueError:
+        logger.warning("Invalid user ID header: %s", user_id_header)
+        return None
 
 
 def generate_bypass_token(prefix: str = "bypass") -> str:
-    """
-    Generate a secure bypass token for internal services.
-    
-    Args:
-        prefix: Token prefix for identification
-        
-    Returns:
-        Secure token string
-    """
-    
+    """Generate a secure bypass token identifier."""
+
     random_part = secrets.token_urlsafe(32)
     return f"{prefix}_{random_part}"
 
@@ -108,14 +97,12 @@ def format_rate_limit_response(
     limit: int,
     current_count: int,
     remaining: int,
-    reset_date,
+    reset_date: datetime,
     message: Optional[str] = None,
-    bypass_used: bool = False
+    bypass_used: bool = False,
 ) -> Dict[str, Any]:
-    """
-    Format rate limit response for consistent API responses.
-    """
-    
+    """Return a consistent response payload for rate limit checks."""
+
     return {
         "allowed": allowed,
         "limit": limit,
@@ -124,123 +111,72 @@ def format_rate_limit_response(
         "reset_date": reset_date.isoformat() if reset_date else None,
         "bypass_used": bypass_used,
         "message": message or ("Request allowed" if allowed else "Rate limit exceeded"),
-        "retry_after": "24 hours" if not allowed else None
+        "retry_after": "24 hours" if not allowed else None,
     }
 
 
 def create_rate_limit_headers(
     limit: int,
     remaining: int,
-    reset_date,
-    bypass_used: bool = False
+    reset_date: datetime,
+    bypass_used: bool = False,
 ) -> Dict[str, str]:
-    """
-    Create rate limiting headers for HTTP responses.
-    Follows standard rate limiting header conventions.
-    """
-    
+    """Build HTTP headers describing the current rate limit state."""
+
     headers = {
         "X-RateLimit-Limit": str(limit),
         "X-RateLimit-Remaining": str(remaining),
         "X-RateLimit-Reset": reset_date.isoformat() if reset_date else "",
     }
-    
+
     if bypass_used:
         headers["X-RateLimit-Bypass"] = "true"
-    
+
     if remaining <= 0:
-        headers["Retry-After"] = "86400"  # 24 hours in seconds
-    
+        headers["Retry-After"] = "86400"
+
     return headers
 
 
 def is_rate_limited_path(path: str) -> bool:
-    """
-    Check if a request path should be rate limited.
-    
-    Args:
-        path: Request path to check
-        
-    Returns:
-        True if path should be rate limited
-    """
-    
-    # Paths that require rate limiting
+    """Determine whether the request path should be subject to rate limiting."""
+
     rate_limited_paths = {
         "/api/ai/query",
         "/api/ai/query/",
-        "/api/ai/trainer/run-cycle", 
+        "/api/ai/trainer/run-cycle",
         "/api/ai/trainer/run-cycle/",
         "/api/chatbot",
         "/api/chatbot/",
         "/api/chat",
-        "/api/chat/"
+        "/api/chat/",
     }
-    
-    # Check exact matches
+
     if path in rate_limited_paths:
         return True
-    
-    # Check path prefixes
-    rate_limited_prefixes = [
-        "/api/ai/",
-    ]
-    
-    return any(path.startswith(prefix) for prefix in rate_limited_prefixes)
+
+    prefixes = ["/api/ai/"]
+    return any(path.startswith(prefix) for prefix in prefixes)
 
 
 def should_bypass_rate_limiting(path: str) -> bool:
-    """
-    Check if a request path should bypass rate limiting entirely.
-    
-    Args:
-        path: Request path to check
-        
-    Returns:
-        True if rate limiting should be bypassed
-    """
-    
-    # Paths that bypass rate limiting
+    """Return True when the request path should bypass rate limiting entirely."""
+
     bypass_paths = {
         "/health",
         "/",
         "/docs",
-        "/redoc", 
+        "/redoc",
         "/openapi.json",
         "/api/system/health",
-        "/api/system/status"
+        "/api/system/status",
     }
-    
-    # Check exact matches
+
     if path in bypass_paths:
         return True
-    
-    # Check path prefixes that bypass rate limiting
-    bypass_prefixes = [
-        "/static/",
-        "/assets/",
-        "/favicon.ico"
-    ]
-    
+
+    bypass_prefixes = ["/static/", "/assets/"]
     return any(path.startswith(prefix) for prefix in bypass_prefixes)
-
-
-def _is_valid_ip(ip_string: str) -> bool:
-    """
-    Validate IP address format.
-    
-    Args:
-        ip_string: IP address string to validate
-        
-    Returns:
-        True if valid IP address
-    """
-    
-    try:
-        ipaddress.ip_address(ip_string)
-        return True
-    except ValueError:
-        return False
 
 
 def log_rate_limit_event(
@@ -250,22 +186,11 @@ def log_rate_limit_event(
     bypass_token: Optional[str] = None,
     limit: Optional[int] = None,
     count: Optional[int] = None,
-    **kwargs
-):
-    """
-    Log rate limiting events for monitoring and debugging.
-    
-    Args:
-        event_type: Type of event (check, increment, bypass, etc.)
-        ip_address: Client IP address
-        user_id: User ID if authenticated
-        bypass_token: Bypass token if used (will be redacted)
-        limit: Rate limit value
-        count: Current count
-        **kwargs: Additional data to log
-    """
-    
-    log_data = {
+    **extra: Any,
+) -> None:
+    """Convenience wrapper for structured logging of rate limit interactions."""
+
+    payload = {
         "event": f"rate_limit_{event_type}",
         "ip_address": ip_address,
         "user_id": user_id,
@@ -273,10 +198,151 @@ def log_rate_limit_event(
         "limit": limit,
         "count": count,
         "timestamp": datetime.utcnow().isoformat(),
-        **kwargs
+        **extra,
     }
-    
-    # Remove None values
-    log_data = {k: v for k, v in log_data.items() if v is not None}
-    
-    logger.info(f"Rate limiting event: {event_type}", extra=log_data)
+
+    payload = {k: v for k, v in payload.items() if v is not None}
+    logger.info("Rate limiting event: %s", event_type, extra=payload)
+
+
+def _is_valid_ip(ip_string: str) -> bool:
+    """Return True when the supplied value is a valid IPv4/IPv6 address."""
+
+    try:
+        ipaddress.ip_address(ip_string)
+        return True
+    except ValueError:
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Lightweight in-memory service (no-op rate limiting)
+# ---------------------------------------------------------------------------
+
+DEFAULT_DAILY_LIMIT = 100
+RESET_WINDOW = timedelta(hours=24)
+
+
+@dataclass
+class RateLimitRecord:
+    question_count: int = 0
+    daily_limit: int = DEFAULT_DAILY_LIMIT
+    is_premium: bool = False
+    last_reset_date: datetime = field(default_factory=datetime.utcnow)
+
+
+@dataclass
+class RateLimitResult:
+    allowed: bool
+    message: str
+    limit: int
+    current_count: int
+    remaining: int
+    reset_date: datetime
+    bypass_used: bool = False
+
+
+@dataclass
+class RateLimitStatus:
+    current_limit: int
+    current_count: int
+    remaining: int
+    reset_date: datetime
+    is_bypassed: bool = False
+    ip_limits: Optional[RateLimitRecord] = None
+    user_limits: Optional[RateLimitRecord] = None
+
+
+@dataclass
+class BypassToken:
+    token: str
+    description: str
+    created_at: datetime = field(default_factory=datetime.utcnow)
+
+
+class RateLimitService:
+    """
+    Minimal no-op rate limit service. It satisfies the interface expected by
+    the middleware and debug routers but does not persist anything or block
+    requests. This keeps the application running without the original service.
+    """
+
+    def __init__(self, daily_limit: int = DEFAULT_DAILY_LIMIT):
+        self.daily_limit = daily_limit
+
+    async def check_rate_limit(
+        self,
+        db,  # unused placeholder kept for compatibility
+        ip_address: Optional[str] = None,
+        user_id: Optional[int] = None,
+        bypass_token: Optional[str] = None,
+    ) -> RateLimitResult:
+        reset_at = datetime.utcnow() + RESET_WINDOW
+        message = "Rate limiting currently disabled"
+        return RateLimitResult(
+            allowed=True,
+            message=message,
+            limit=self.daily_limit,
+            current_count=0,
+            remaining=self.daily_limit,
+            reset_date=reset_at,
+            bypass_used=bool(bypass_token),
+        )
+
+    async def increment_usage(
+        self,
+        db,
+        ip_address: Optional[str] = None,
+        user_id: Optional[int] = None,
+        bypass_token: Optional[str] = None,
+    ) -> None:
+        return None
+
+    async def get_rate_limit_status(
+        self,
+        db,
+        ip_address: Optional[str] = None,
+        user_id: Optional[int] = None,
+    ) -> RateLimitStatus:
+        reset_at = datetime.utcnow() + RESET_WINDOW
+        record = RateLimitRecord(last_reset_date=datetime.utcnow())
+        return RateLimitStatus(
+            current_limit=self.daily_limit,
+            current_count=0,
+            remaining=self.daily_limit,
+            reset_date=reset_at,
+            is_bypassed=False,
+            ip_limits=record if ip_address else None,
+            user_limits=record if user_id else None,
+        )
+
+    async def create_bypass_token(
+        self,
+        db,
+        description: str,
+    ) -> BypassToken:
+        token = generate_bypass_token(prefix="stub")
+        return BypassToken(token=token, description=description)
+
+
+rate_limit_service = RateLimitService()
+
+__all__ = [
+    # Helpers
+    "get_client_ip",
+    "get_bypass_token",
+    "get_user_id_from_request",
+    "generate_bypass_token",
+    "format_rate_limit_response",
+    "create_rate_limit_headers",
+    "is_rate_limited_path",
+    "should_bypass_rate_limiting",
+    "log_rate_limit_event",
+    # Service exports
+    "rate_limit_service",
+    "RateLimitService",
+    "RateLimitResult",
+    "RateLimitStatus",
+    "RateLimitRecord",
+    "BypassToken",
+]

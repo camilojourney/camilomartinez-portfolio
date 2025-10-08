@@ -12,7 +12,7 @@ from typing import Optional
 import time
 
 from app.config.database import async_session_factory
-from app.services.rate_limiting import rate_limit_service
+from app.utils.rate_limiting import rate_limit_service
 
 logger = logging.getLogger(__name__)
 

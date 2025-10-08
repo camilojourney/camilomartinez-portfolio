@@ -5,8 +5,6 @@ from .user import *
 from .strava import *
 from .whoop import *
 from .ai_query import *
-from .rate_limiting import *
-
 __all__ = [
     # User models
     "User", "UserCreate", "UserResponse",
@@ -23,7 +21,4 @@ __all__ = [
     "QueryHistory", "QueryHistoryCreate", "QueryHistoryResponse",
     "SchemaEmbedding", "SchemaEmbeddingCreate",
     "AITrainerEvaluation", "AITrainerEvaluationResponse",
-    
-    # Rate limiting models
-    "QuestionRateLimit", "RateLimitCheck", "RateLimitResponse"
 ]

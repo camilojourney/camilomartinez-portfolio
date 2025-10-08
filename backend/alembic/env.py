@@ -8,8 +8,7 @@ from app.config.database import Base
 from app.models.user import User
 from app.models.strava import StravaUser, StravaRun
 from app.models.whoop import WHOOPUser, WHOOPCycle, WHOOPSleep, WHOOPRecovery, WHOOPWorkout
-from app.models.ai_query import QueryHistory, EvaluationCycle, SchemaEmbedding
-from app.models.rate_limiting import QuestionRateLimit, UserRateLimit, RateLimitBypass
+from app.models.ai_query import QueryHistory, Embedding  # Updated: removed old models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

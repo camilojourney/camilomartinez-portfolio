@@ -51,10 +51,10 @@ export default function ContactPage() {
                                         <div>
                                             <h3 className="text-white font-medium mb-1">Email</h3>
                                             <a 
-                                                href="mailto:camilo@example.com" 
+                                                href="mailto:juancamilomabe@gmail.com" 
                                                 className="text-white/70 hover:text-cyan-300 transition-colors duration-300"
                                             >
-                                                camilo@example.com
+                                                juancamilomabe@gmail.com
                                             </a>
                                         </div>
                                     </div>
@@ -72,24 +72,6 @@ export default function ContactPage() {
                                             <p className="text-white/70">New York City, NY</p>
                                         </div>
                                     </div>
-
-                                    {/* Phone */}
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-400/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                                            <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-white font-medium mb-1">Phone</h3>
-                                            <a 
-                                                href="tel:+1234567890" 
-                                                className="text-white/70 hover:text-green-300 transition-colors duration-300"
-                                            >
-                                                +1 (234) 567-8900
-                                            </a>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -104,7 +86,7 @@ export default function ContactPage() {
                                 <div className="space-y-6">
                                     {/* LinkedIn */}
                                     <a 
-                                        href="https://linkedin.com/in/camilo-martinez" 
+                                        href="https://www.linkedin.com/in/camilomartinez-ai/" 
                                         className="flex items-start gap-4 group hover:bg-white/[0.02] rounded-xl p-3 -m-3 transition-all duration-300"
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -127,7 +109,7 @@ export default function ContactPage() {
 
                                     {/* GitHub */}
                                     <a 
-                                        href="https://github.com/camilo-martinez" 
+                                        href="https://github.com/camilojourney" 
                                         className="flex items-start gap-4 group hover:bg-white/[0.02] rounded-xl p-3 -m-3 transition-all duration-300"
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -145,29 +127,6 @@ export default function ContactPage() {
                                                 </svg>
                                             </div>
                                             <p className="text-white/70 text-sm">Code repositories & open source projects</p>
-                                        </div>
-                                    </a>
-
-                                    {/* Portfolio Website */}
-                                    <a 
-                                        href="https://camilomartinez.dev" 
-                                        className="flex items-start gap-4 group hover:bg-white/[0.02] rounded-xl p-3 -m-3 transition-all duration-300"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 border border-cyan-400/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:border-cyan-300/40 transition-colors duration-300">
-                                            <svg className="w-5 h-5 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                            </svg>
-                                        </div>
-                                        <div className="flex-grow">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="text-white font-medium group-hover:text-cyan-300 transition-colors duration-300">Portfolio</h3>
-                                                <svg className="w-4 h-4 text-white/40 group-hover:text-cyan-300/80 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                </svg>
-                                            </div>
-                                            <p className="text-white/70 text-sm">Complete portfolio & project showcase</p>
                                         </div>
                                     </a>
                                 </div>
@@ -189,7 +148,7 @@ export default function ContactPage() {
                             
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <a
-                                    href="mailto:camilo@example.com?subject=Project%20Inquiry"
+                                    href="mailto:juancamilomabe@gmail.com?subject=Project%20Inquiry"
                                     className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,7 +158,7 @@ export default function ContactPage() {
                                 </a>
                                 
                                 <a
-                                    href="https://linkedin.com/in/camilo-martinez"
+                                    href="https://www.linkedin.com/in/camilomartinez-ai/"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-blue-400/30 hover:to-indigo-400/30 hover:border-blue-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-blue-500/20"
