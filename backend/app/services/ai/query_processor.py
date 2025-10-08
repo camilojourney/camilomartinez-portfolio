@@ -17,6 +17,7 @@ from app.models.strava import StravaRun
 from app.models.whoop import WHOOPSleep, WHOOPWorkout, WHOOPRecovery
 from app.services.ai.openai_client import openai_service, OpenAIError
 from app.services.ai.rag_service import rag_service, RAGError
+from app.services.ai.self_improving_agent import self_improving_agent
 
 logger = logging.getLogger(__name__)
 
@@ -675,9 +676,8 @@ Recent activities:"""
                         max_tokens=1000,
                         response_format={"type": "json_object"}
                     )
-                    
+
                     # Parse the response
-                    import json
                     thinker_data = json.loads(thinker_response["content"])
                     
                     required_keys = ["thought", "plan", "sql"]
@@ -932,6 +932,17 @@ Recent activities:"""
                         )
                         session.add(history_entry)
                         await session.commit()
+                        
+                        # Trigger automatic learning from this failure
+                        try:
+                            result = await self_improving_agent.learn_from_feedback(
+                                query_id=history_entry.id
+                            )
+                            logger.info(f"Self-improving agent triggered for query {history_entry.id}: {result.get('status')}")
+                        except Exception as learn_e:
+                            # Don't let learning failures crash the query response
+                            logger.error(f"Failed to trigger self-improving agent: {learn_e}")
+                            
                 except Exception as hist_e:
                     logger.error(f"Failed to log failed query: {hist_e}")
 

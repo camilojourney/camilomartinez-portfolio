@@ -250,9 +250,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           strokeWidth="1"
         />
 
-        {/* Time labels and grid lines (Y-axis) - Fixed schedule: 6 AM, 9 AM, 12 PM, 1 PM */}
+        {/* Time labels and grid lines (Y-axis) - Fixed schedule: 6 AM, 9 AM, 12 PM */}
         {(() => {
-          // Fixed time markers: 6 AM, 9 AM, 12 PM (noon), 1 PM
+          // Fixed time markers: 6 AM, 9 AM, 12 PM (noon)
           const timeLabels = [
             6 * 60,   // 6:00 AM
             9 * 60,   // 9:00 AM

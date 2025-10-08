@@ -127,7 +127,11 @@ interface YearlyTotals {
             return processedData.monthlyData;
         }
 
-        return processedData.monthlyData.slice(firstIndex, lastIndex + 1);
+        // Return slice from first to last active month (chronological order)
+        // This ensures months appear in calendar order: Jan -> Dec
+        const sliced = processedData.monthlyData.slice(firstIndex, lastIndex + 1);
+        console.log('Visible months:', sliced.map(m => m.name).join(', '));
+        return sliced;
     }, [processedData.monthlyData]);
 
     const monthlyChartScrollRef = React.useRef<HTMLDivElement>(null);

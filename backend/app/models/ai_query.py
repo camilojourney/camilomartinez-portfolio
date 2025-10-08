@@ -51,7 +51,6 @@ class QueryHistory(Base):
 
     # Request & Response
     user_question = Column(Text, nullable=False)  # Keep original name for compatibility
-    question = Column(Text)  # Alias for user_question
     retrieved_context = Column(Text)
     generated_sql = Column(Text)
     execution_result = Column(JSONB)
