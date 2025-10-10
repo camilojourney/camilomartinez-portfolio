@@ -58,11 +58,12 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   const validData = React.useMemo(() => data.filter(point => {
     try {
       if (!point.date) return false;
-      
+
       // Exclude "Other" workout type
       if (point.workoutType === 'Other') return false;
-      
-      const parsed = parse(String(point.date), 'yyyy-MM-dd', new Date());
+
+      // FIX: Use parseISO which handles both 'yyyy-MM-dd' AND ISO 8601 timestamps
+      const parsed = parseISO(String(point.date));
       return !isNaN(parsed.getTime());
     } catch {
       return false;
@@ -261,8 +262,8 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         {/* Data points with enhanced visualization */}
         {sortedData.map((point, i) => {
           try {
-            // Parse date safely
-            const dateObj = parse(String(point.date), 'yyyy-MM-dd', new Date());
+            // FIX: Use parseISO to handle both 'yyyy-MM-dd' AND ISO 8601 timestamps
+            const dateObj = parseISO(String(point.date));
 
             const formattedDate = format(dateObj, 'MMM dd');
             
