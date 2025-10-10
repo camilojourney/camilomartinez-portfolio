@@ -210,9 +210,14 @@ ORDER BY
 # Load data
 df = pd.read_sql_query(query, engine)
 
+# CRITICAL: Convert cycle_date to datetime immediately after loading
+# SQL DATE type gets read as object/string by pandas
+df['cycle_date'] = pd.to_datetime(df['cycle_date'])
+
 print(f"✅ Data loaded successfully")
 print(f"📊 Dataset shape: {df.shape[0]} days × {df.shape[1]} features")
 print(f"📅 Date range: {df['cycle_date'].min()} to {df['cycle_date'].max()}")
+print(f"🗓️  cycle_date dtype: {df['cycle_date'].dtype}")  # Verify it's datetime64
 ```
 
 

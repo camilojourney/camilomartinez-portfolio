@@ -140,7 +140,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   const yScale = (timeInMinutes: number) => {
     const chartHeight = height - padding.top - padding.bottom;
     const range = maxTimeValue - minTimeValue;
-    const normalized = (timeInMinutes - minTimeValue) / range;
+    // Clamp timeInMinutes to be within minTimeValue and maxTimeValue
+    const clampedTime = Math.max(minTimeValue, Math.min(maxTimeValue, timeInMinutes));
+    const normalized = (clampedTime - minTimeValue) / range;
     return height - padding.bottom - (normalized * chartHeight);
   };
   

@@ -210,9 +210,11 @@ interface YearlyTotals {
     // Scale functions
     const yScale = (hours: number) => (barChartHeight - padding.top - padding.bottom) * (1 - hours / maxHours);
 
-    // Calculate total hours for donut chart
+    // Calculate total hours for donut chart (excluding session counts)
     // This line adds up all the hours from your data to display in the center of the chart
-    const totalHoursYear = Object.values(processedData.yearlyTotals).reduce((sum, hours) => sum + hours, 0);
+    const totalHoursYear = processedData.yearlyTotals.Weightlifting +
+                           processedData.yearlyTotals.Running +
+                           processedData.yearlyTotals.Boxing;
 
     // Calculate percentages and angles for donut chart
     const donutData = useMemo(() => {
@@ -225,7 +227,11 @@ interface YearlyTotals {
         }> = [];
         let startAngle = -Math.PI / 2; // Start at the 9 o'clock position
 
-        for (const [sport, hours] of Object.entries(processedData.yearlyTotals)) {
+        // Only include the 3 main sports (exclude session counts)
+        const sports = ['Weightlifting', 'Running', 'Boxing'] as const;
+
+        for (const sport of sports) {
+            const hours = processedData.yearlyTotals[sport];
             const percentage = hours / totalHoursYear;
             const endAngle = startAngle + percentage * 2 * Math.PI;
 
