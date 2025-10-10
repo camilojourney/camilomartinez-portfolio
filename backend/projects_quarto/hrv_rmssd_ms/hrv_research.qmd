@@ -85,6 +85,9 @@ load_dotenv()
 print("✅ Libraries loaded successfully")
 ```
 
+
+We preceed to load the data from a PostgreSQL database. The SQL query aggregates daily features from multiple tables, ensuring one row per day with relevant metrics. 
+
 ```{python}
 #| label: load-data
 #| code-summary: "Load HRV feature data from PostgreSQL"
@@ -212,6 +215,7 @@ print(f"📊 Dataset shape: {df.shape[0]} days × {df.shape[1]} features")
 print(f"📅 Date range: {df['cycle_date'].min()} to {df['cycle_date'].max()}")
 ```
 
+
 ```{python}
 #| label: data-overview
 #| code-summary: "Display dataset structure and summary statistics"
@@ -323,6 +327,14 @@ print(f"Range:        {df['hrv_rmssd_ms'].max() - df['hrv_rmssd_ms'].min():.2f} 
 print(f"CV:           {(df['hrv_rmssd_ms'].std() / df['hrv_rmssd_ms'].mean() * 100):.2f}%")
 ```
 
+My HRV data shows steady resilience with improving recovery trends:
+	•	You’re maintaining a strong, stable baseline around 66 ms, showing consistent recovery.
+	•	The gradual rise from August to October signals improving fitness or recovery habits (better sleep, balanced training).
+	•	The June dip likely reflects fatigue or stress—moments where recovery lagged behind strain.
+	•	The October peak suggests optimal recovery and readiness.
+
+also the cv (standard deviation / mean) is at 16.19% which is a healthy variability level, indicating good autonomic nervous system function.
+
 ```{python}
 #| label: hrv-distribution
 #| code-summary: "Analyze HRV distribution"
@@ -359,6 +371,12 @@ if p_value > 0.05:
 else:
     print("⚠️  HRV may not be normally distributed (p < 0.05)")
 ```
+
+	•	Not normal: Shapiro-Wilk p = 0.0348 → reject normality at 5%.
+	•	Shape: Nearly centered (mean 66.7 ≈ median 65.9) but with non-normal tails (Q-Q plot deviates at both ends). Likely mild right-skew/heavy tails.
+	•	Implication: Use robust stats & tests: median/IQR, Spearman (ρ) over Pearson when relating features, non-parametric tests, or bootstrap CIs.
+	•	For modeling: Tree models are fine. For linear models, consider transforming HRV or predictors (e.g., Box-Cox/Yeo-Johnson) and check residuals.
+
 
 ## 1.2 Feature Distributions & Outlier Detection
 
@@ -573,36 +591,60 @@ df_sleep = df.copy()
 for col in sleep_cols:
     df_sleep[col.replace('_ms', '_hrs')] = df_sleep[col] / (1000 * 60 * 60)
 
-# Create grouped bar plot
+# Create grouped bar plot with improved labels
 sleep_stage_corrs = []
+# Use cleaner, more readable labels
+label_mapping = {
+    'total_light_sleep_time_ms': 'Light Sleep',
+    'total_slow_wave_sleep_time_ms': 'Deep Sleep (SWS)',
+    'total_rem_sleep_time_ms': 'REM Sleep',
+    'total_awake_time_ms': 'Awake Time'
+}
+
 for col in sleep_cols:
     col_hrs = col.replace('_ms', '_hrs')
     corr, _ = pearsonr(df_sleep[col_hrs].dropna(), df_sleep['hrv_rmssd_ms'].dropna())
     sleep_stage_corrs.append({
-        'Sleep Stage': col.replace('total_', '').replace('_time_ms', '').replace('_', ' ').title(),
+        'Sleep Stage': label_mapping[col],
         'Correlation': corr
     })
 
 sleep_corr_df = pd.DataFrame(sleep_stage_corrs)
 
-fig, ax = plt.subplots(figsize=(10, 6))
+# Create figure with more padding
+fig, ax = plt.subplots(figsize=(12, 7))  # Increased from (10, 6)
 bars = ax.bar(sleep_corr_df['Sleep Stage'], sleep_corr_df['Correlation'], 
-              color=['#00D9FF', '#FF6B6B', '#FFD93D', '#6BCB77'], alpha=0.8)
+              color=['#00D9FF', '#FF6B6B', '#FFD93D', '#6BCB77'], 
+              alpha=0.8, width=0.6, edgecolor='white', linewidth=1.5)
 
-ax.axhline(y=0, color='white', linestyle='-', linewidth=1)
-ax.set_ylabel('Correlation with HRV', fontsize=12, fontweight='bold')
-ax.set_title('Sleep Stage Correlations with HRV', fontsize=14, fontweight='bold')
-ax.grid(axis='y', alpha=0.3)
+ax.axhline(y=0, color='white', linestyle='-', linewidth=1.5, alpha=0.5)
+ax.set_ylabel('Correlation with HRV', fontsize=14, fontweight='bold', labelpad=15)
+ax.set_xlabel('Sleep Stage', fontsize=14, fontweight='bold', labelpad=15)
+ax.set_title('Sleep Stage Correlations with HRV', fontsize=16, fontweight='bold', pad=20)
+ax.grid(axis='y', alpha=0.3, linestyle='--')
 
-# Add value labels
+# Improved value labels - positioned directly on top of bars
 for bar, val in zip(bars, sleep_corr_df['Correlation']):
     height = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width()/2., height + 0.01 if height > 0 else height - 0.01,
-            f'{val:.3f}', ha='center', va='bottom' if height > 0 else 'top', 
-            fontsize=11, fontweight='bold')
+    # Position labels just above the top of each bar
+    ax.text(bar.get_x() + bar.get_width()/2., 
+            height,  # Exactly at the bar height
+            f'{val:.3f}', 
+            ha='center', 
+            va='bottom',  # Align bottom of text with top of bar
+            fontsize=13, 
+            fontweight='bold',
+            color='white',
+            bbox=dict(boxstyle='round,pad=0.4', facecolor='black', alpha=0.8, edgecolor='white', linewidth=1))
 
-plt.xticks(rotation=45, ha='right')
-plt.tight_layout()
+# Improved x-axis labels - no rotation needed with cleaner names
+ax.tick_params(axis='both', which='major', labelsize=12, length=6, width=1.5)
+plt.xticks(rotation=0)  # Horizontal labels for better readability
+
+# Add more padding around the plot
+plt.tight_layout(pad=2.0)  # Increased padding
+plt.subplots_adjust(left=0.12, right=0.95, top=0.92, bottom=0.12)
+
 plt.show()
 ```
 
@@ -836,11 +878,14 @@ print("="*80)
 # Remove rows with NaN values created by lagging (first row will have NaN lags)
 df_clean = df.dropna()
 
+# Convert cycle_date to datetime if it isn't already
+df_clean['cycle_date'] = pd.to_datetime(df_clean['cycle_date'])
+
 # Calculate 80/20 split point
 split_index = int(len(df_clean) * 0.8)
-split_date = df_clean.iloc[split_index]['cycle_date']
+split_date = pd.to_datetime(df_clean.iloc[split_index]['cycle_date'])
 
-# Split data chronologically
+# Split data chronologically (datetime to datetime comparison)
 train_df = df_clean[df_clean['cycle_date'] < split_date].copy()
 test_df = df_clean[df_clean['cycle_date'] >= split_date].copy()
 
