@@ -1,3 +1,4 @@
+// Project metadata and types for portfolio showcase
 export type ProjectStatus = 'live' | 'prototype' | 'in-progress' | 'concept';
 
 export interface ProjectMeta {
