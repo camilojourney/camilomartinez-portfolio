@@ -531,33 +531,33 @@ interface YearlyTotals {
                         ) : (
                             <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
                                 {/* Create the conic gradient donut */}
-                                <div
-                                    className="w-[85%] h-[85%] rounded-full relative animate-fadeIn"
-                                    style={{
-                                        background: donutData.length > 0
-                                            ? `conic-gradient(
-                                                ${donutData.map((segment, i) => {
-                                                const startPercentage = i === 0 ? 0 : donutData
-                                                    .slice(0, i)
-                                                    .reduce((sum, s) => sum + s.percentage, 0) * 100;
+                                <div className="relative w-[85%] h-[85%] animate-fadeIn">
+                                    {/* Outer circle with conic gradient */}
+                                    <div
+                                        className="absolute inset-0 rounded-full"
+                                        style={{
+                                            background: donutData.length > 0
+                                                ? `conic-gradient(from 0deg, ${donutData.map((segment, i) => {
+                                                    const startPercentage = i === 0 ? 0 : donutData
+                                                        .slice(0, i)
+                                                        .reduce((sum, s) => sum + s.percentage, 0) * 100;
+                                                    const endPercentage = startPercentage + segment.percentage * 100;
+                                                    return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]} ${startPercentage}% ${endPercentage}%`;
+                                                }).join(', ')})`
+                                                : '#4ade80',
+                                            boxShadow: '0 0 20px rgba(0,0,0,0.3) inset, 0 4px 12px rgba(0,0,0,0.4)',
+                                        }}
+                                    />
 
-                                                const endPercentage = startPercentage + segment.percentage * 100;
+                                    {/* Inner circle cutout (creates donut hole) */}
+                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-[#1a1625] shadow-2xl"
+                                         style={{
+                                             boxShadow: '0 0 0 2px rgba(255,255,255,0.1), inset 0 2px 8px rgba(0,0,0,0.6)'
+                                         }}
+                                    />
 
-                                                return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]} ${startPercentage}% ${endPercentage}%`;
-                                            }).join(', ')}
-                                            )`
-                                            : '#4ade80',  // Fallback solid color to debug
-                                        WebkitMaskImage: 'radial-gradient(circle, transparent 49%, black 50%)',
-                                        maskImage: 'radial-gradient(circle, transparent 49%, black 50%)',
-                                        WebkitMaskComposite: 'source-out',
-                                        maskComposite: 'exclude',
-                                        animation: 'fadeIn 0.5s ease-out forwards',
-                                        boxShadow: '0 0 20px rgba(0,0,0,0.3) inset',
-                                        border: '2px solid rgba(255,255,255,0.1)'  // Debug border
-                                    }}
-                                >
-                                    {/* Inner circle that displays the total in the middle of the donut */}
-                                    <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-black/40 rounded-full flex items-center justify-center flex-col animate-scaleIn shadow-inner border border-white/20">
+                                    {/* Content overlay (displays total) */}
+                                    <div className="absolute inset-0 m-auto w-[50%] h-[50%] rounded-full flex items-center justify-center flex-col animate-scaleIn">
                                         {/* "TOTAL" text */}
                                         <span className="text-white/90 text-base font-medium mb-[-2px]">
                                             TOTAL
