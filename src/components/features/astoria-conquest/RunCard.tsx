@@ -1,54 +1,43 @@
 'use client';
 
+import { HEART_RATE_ZONE_DEFINITIONS } from '@/lib/astoria/zones'
+import type { RunCardData } from '@/types/astoria'
+
 interface RunCardProps {
-  run: {
-    run_number: number;
-    name: string;
-    date: string;
-    distance_meters: number;
-    duration_seconds: number;
-    average_speed_mps: number;
-    suffer_score: number;
-    whoop_strain: number;
-    avg_heart_rate: number;
-    max_heart_rate: number;
-    kilojoules: number;
-    heart_rate_zones: {
-      rest: number;
-      light: number;
-      moderate: number;
-      hard: number;
-      peak: number;
-      max: number;
-    };
-  };
-  isSelected: boolean;
-  onClick: () => void;
+  run: RunCardData
+  isSelected: boolean
+  onClick: () => void
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
 export function RunCard({ run, isSelected, onClick }: RunCardProps) {
-  const date = new Date(run.date);
-  
-  // Use consistent date formatting to avoid hydration mismatches
-  const formatDate = (date: Date) => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    const year = date.getFullYear();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, '0');
-    
-    return `${month} ${day}, ${year} at ${displayHours}:${displayMinutes} ${ampm}`;
-  };
-  
-  const formattedDate = formatDate(date);
+  const date = new Date(run.date)
+
+  const formattedDate = (() => {
+    const month = MONTHS[date.getMonth()]
+    const day = date.getDate()
+    const year = date.getFullYear()
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    const displayHours = hours % 12 || 12
+    const displayMinutes = minutes.toString().padStart(2, '0')
+    return `${month} ${day}, ${year} at ${displayHours}:${displayMinutes} ${ampm}`
+  })()
+
+  const totalZoneSeconds = Object.values(run.heart_rate_zones).reduce((acc, value) => acc + value, 0)
+
+  const formatDuration = (seconds: number) => {
+    const mins = seconds / 60
+    if (mins < 1) {
+      return `${seconds.toFixed(0)} sec`
+    }
+    return `${mins.toFixed(1)} min`
+  }
 
   return (
-    <div 
+    <div
       className={`p-4 rounded-lg transition-all cursor-pointer ${
         isSelected ? 'bg-cyan-500/20 border border-cyan-500' : 'bg-black/20 hover:bg-black/30'
       }`}
@@ -69,7 +58,9 @@ export function RunCard({ run, isSelected, onClick }: RunCardProps) {
         </div>
         <div>
           <span className="text-gray-400">Time: </span>
-          <span className="text-white">{Math.floor(run.duration_seconds / 60)}:{(run.duration_seconds % 60).toString().padStart(2, '0')}</span>
+          <span className="text-white">
+            {Math.floor(run.duration_seconds / 60)}:{(run.duration_seconds % 60).toString().padStart(2, '0')}
+          </span>
         </div>
         <div>
           <span className="text-gray-400">Avg Speed: </span>
@@ -77,42 +68,51 @@ export function RunCard({ run, isSelected, onClick }: RunCardProps) {
         </div>
         <div>
           <span className="text-gray-400">Suffer Score: </span>
-          <span className="text-white">{run.suffer_score}</span>
+          <span className="text-white">{run.suffer_score ?? 'N/A'}</span>
         </div>
         <div>
           <span className="text-gray-400">WHOOP Strain: </span>
-          <span className="text-white">{run.whoop_strain?.toFixed(1) || 'N/A'}</span>
+          <span className="text-white">{run.whoop_strain ? run.whoop_strain.toFixed(1) : 'N/A'}</span>
         </div>
         <div>
           <span className="text-gray-400">Avg HR: </span>
-          <span className="text-white">{run.avg_heart_rate || 'N/A'} bpm</span>
+          <span className="text-white">{run.avg_heart_rate ? `${run.avg_heart_rate} bpm` : 'N/A'}</span>
         </div>
       </div>
 
-      {/* Heart Rate Zone Mini-Graph */}
-      <div className="mt-2">
-        <div className="h-1 w-full rounded-full overflow-hidden bg-gray-700 flex">
-          {Object.entries(run.heart_rate_zones).map(([zone, minutes]) => {
-            const colors = {
-              rest: 'bg-blue-500',
-              light: 'bg-green-500',
-              moderate: 'bg-yellow-500',
-              hard: 'bg-orange-500',
-              peak: 'bg-red-500',
-              max: 'bg-purple-500'
-            } as const;
-            const totalMinutes = Object.values(run.heart_rate_zones).reduce((a, b) => a + b, 0);
-            const percentage = (minutes / totalMinutes) * 100;
+      <div className="mt-3 space-y-2">
+        <div className="h-2 w-full rounded-full overflow-hidden bg-gray-700 flex">
+          {HEART_RATE_ZONE_DEFINITIONS.map((zone) => {
+            const seconds = run.heart_rate_zones[zone.key]
+            if (!seconds || totalZoneSeconds === 0) {
+              return null
+            }
+            const percentage = (seconds / totalZoneSeconds) * 100
             return (
               <div
-                key={zone}
-                className={`${colors[zone as keyof typeof colors]} h-full transition-all`}
+                key={zone.key}
+                className={`${zone.barClass} h-full transition-all`}
                 style={{ width: `${percentage}%` }}
+                title={`${zone.label}: ${formatDuration(seconds)} (${percentage.toFixed(1)}%)`}
               />
-            );
+            )
           })}
+        </div>
+
+        <div className="grid grid-cols-1 gap-1 text-xs text-gray-400">
+          {HEART_RATE_ZONE_DEFINITIONS.map((zone) => (
+            <div key={zone.key} className="flex items-center gap-2">
+              <span className={`inline-flex h-2 w-2 rounded-full ${zone.dotClass}`} aria-hidden />
+              <span>
+                {zone.label} · {zone.name}{' '}
+                {totalZoneSeconds > 0 && run.heart_rate_zones[zone.key]
+                  ? `(${formatDuration(run.heart_rate_zones[zone.key])})`
+                  : ''}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
-  );
+  )
 }

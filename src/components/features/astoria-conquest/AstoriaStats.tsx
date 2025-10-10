@@ -1,16 +1,13 @@
 'use client';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { 
-  AstoriaStats as AstoriaStatsType, 
-  StravaRun, 
-  HeartRateZonesData 
+import type {
+  AstoriaStats as AstoriaStatsType,
+  StravaRun,
+  HeartRateZoneKey,
+  HeartRateZonesDisplay,
 } from '@/types/astoria';
-
-type ZoneKey = keyof HeartRateZonesData;
-type ZoneColor = {
-  [K in ZoneKey]: string;
-};
+import { HEART_RATE_ZONE_DEFINITIONS, aggregateZoneDurations } from '@/lib/astoria/zones';
 
 interface RunStats {
   total_runs: number;
@@ -20,13 +17,7 @@ interface RunStats {
   avg_suffer_score: number;
   avg_whoop_strain: number;
   total_kilojoules: number;
-  zones_distribution: {
-    zone1_seconds: number;
-    zone2_seconds: number;
-    zone3_seconds: number;
-    zone4_seconds: number;
-    zone5_seconds: number;
-  };
+  zones_distribution: HeartRateZonesDisplay;
 }
 
 interface AstoriaStatsProps {
@@ -64,6 +55,8 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
   };
 
   // Calculate aggregate statistics
+  const zoneTotals = aggregateZoneDurations(runs)
+
   const runStats: RunStats = {
     total_runs: runs.length,
     total_distance: runs.reduce((sum, run) => sum + (run.distance_meters || 0), 0) / 1000, // Convert to km
@@ -72,26 +65,11 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
     avg_suffer_score: runs.reduce((sum, run) => sum + (run.suffer_score || 0), 0) / runs.length,
     avg_whoop_strain: runs.reduce((sum, run) => sum + (run.whoop_strain || 0), 0) / runs.length,
     total_kilojoules: runs.reduce((sum, run) => sum + (run.kilojoules || 0), 0),
-    zones_distribution: {
-      zone1_seconds: runs.reduce((sum, run) => sum + (run.heart_rate_zones?.zone1_seconds || 0), 0),
-      zone2_seconds: runs.reduce((sum, run) => sum + (run.heart_rate_zones?.zone2_seconds || 0), 0),
-      zone3_seconds: runs.reduce((sum, run) => sum + (run.heart_rate_zones?.zone3_seconds || 0), 0),
-      zone4_seconds: runs.reduce((sum, run) => sum + (run.heart_rate_zones?.zone4_seconds || 0), 0),
-      zone5_seconds: runs.reduce((sum, run) => sum + (run.heart_rate_zones?.zone5_seconds || 0), 0)
-    }
+    zones_distribution: zoneTotals,
   };
 
   const weeklyData = weeklyMilesData();
-
-  const zoneColors: { [key: string]: string } = {
-    zone1: 'bg-blue-500',   // Recovery
-    zone2: 'bg-green-500',  // Endurance
-    zone3: 'bg-yellow-500', // Tempo
-    zone4: 'bg-orange-500', // Threshold
-    zone5: 'bg-red-500'     // VO2 Max
-  };
-
-  const totalSeconds = Object.values(runStats.zones_distribution).reduce((a, b) => a + b, 0);
+  const totalZoneSeconds = Object.values(zoneTotals).reduce((a, b) => a + b, 0);
 
   return (
     <div className="space-y-6 p-4">
@@ -172,22 +150,51 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
           value={(runStats.total_kilojoules / 1000).toFixed(1)} 
           unit="kKJ"
         />
-        <div className="col-span-full">
-          <h3 className="text-sm font-medium text-gray-400 mb-2">Heart Rate Zones Distribution</h3>
-          <div className="h-4 w-full rounded-full overflow-hidden bg-gray-700 flex">
-            {Object.entries(runStats.zones_distribution).map(([zone, seconds], index) => {
-              const zoneNumber = zone.replace('zone', '').replace('_seconds', '');
-              const colorKey = `zone${zoneNumber}`;
-              const percentage = (seconds / totalSeconds) * 100;
+        <div className="col-span-full space-y-4">
+          <div>
+            <h3 className="text-sm font-medium text-gray-400 mb-2">Heart Rate Zones Distribution</h3>
+            <div className="h-4 w-full rounded-full overflow-hidden bg-gray-700 flex">
+              {HEART_RATE_ZONE_DEFINITIONS.map((zone) => {
+                const seconds = zoneTotals[zone.key];
+                if (!seconds || totalZoneSeconds === 0) {
+                  return null;
+                }
+                const percentage = (seconds / totalZoneSeconds) * 100;
+                const minutes = seconds / 60;
+                return (
+                  <div
+                    key={zone.key}
+                    className={`${zone.barClass} h-full transition-all`}
+                    style={{ width: `${percentage}%` }}
+                    title={`${zone.label}: ${minutes.toFixed(1)} minutes (${percentage.toFixed(1)}%)`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {HEART_RATE_ZONE_DEFINITIONS.map((zone) => {
+              const seconds = zoneTotals[zone.key];
               const minutes = seconds / 60;
-              
+              const percentage = totalZoneSeconds ? (seconds / totalZoneSeconds) * 100 : 0;
+
               return (
-                <div
-                  key={zone}
-                  className={`${zoneColors[colorKey]} h-full transition-all`}
-                  style={{ width: `${percentage}%` }}
-                  title={`Zone ${zoneNumber}: ${minutes.toFixed(1)} minutes (${percentage.toFixed(1)}%)`}
-                />
+                <div key={zone.key} className="bg-black/15 border border-white/10 rounded-xl p-4 flex gap-3">
+                  <span className={`inline-flex w-1.5 rounded-full ${zone.barClass}`} aria-hidden />
+                  <div className="space-y-1">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-white font-semibold">{zone.label}</span>
+                      <span className="text-white/70 text-sm">{zone.name}</span>
+                    </div>
+                    <p className="text-xs text-white/60">{zone.subtitle}</p>
+                    <p className="text-xs text-white/50">{zone.intensity} · {zone.heartRate}</p>
+                    <p className="text-xs text-white/60">{zone.description}</p>
+                    <p className="text-xs text-white/50">
+                      {minutes.toFixed(1)} minutes ({percentage.toFixed(1)}%)
+                    </p>
+                  </div>
+                </div>
               );
             })}
           </div>

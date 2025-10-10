@@ -1,19 +1,22 @@
 export interface HeartRateZonesData {
-  zone1_seconds: number;
-  zone2_seconds: number;
-  zone3_seconds: number;
-  zone4_seconds: number;
-  zone5_seconds: number;
+  zone0_seconds?: number;
+  zone1_seconds?: number;
+  zone2_seconds?: number;
+  zone3_seconds?: number;
+  zone4_seconds?: number;
+  zone5_seconds?: number;
+  zone6_seconds?: number;
+  rest?: number;
+  light?: number;
+  moderate?: number;
+  hard?: number;
+  peak?: number;
+  max?: number;
 }
 
-export interface HeartRateZonesDisplay {
-  rest: number;
-  light: number;
-  moderate: number;
-  hard: number;
-  peak: number;
-  max: number;
-}
+export type HeartRateZoneKey = 'zone0' | 'zone1' | 'zone2' | 'zone3' | 'zone4' | 'zone5';
+
+export type HeartRateZonesDisplay = Record<HeartRateZoneKey, number>;
 
 export interface StravaRun {
   id: number;

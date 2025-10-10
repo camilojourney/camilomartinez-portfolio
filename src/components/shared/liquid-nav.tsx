@@ -5,7 +5,7 @@ import { Menu, X } from 'lucide-react'
 import { systemService } from '@/lib/api/config'
 
 interface LiquidNavProps {
-    currentPage?: 'home' | 'my-data' | 'blog' | 'projects' | 'contact' | 'about' | 'tools'
+    currentPage?: 'home' | 'apps' | 'projects' | 'blog' | 'about' | 'contact' | 'bookshelf' | 'tools' | 'my-data'
 }
 
 export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
@@ -43,55 +43,38 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
     }, [])
 
     const navItems = [
-        { href: '/', label: 'home', key: 'home' },
-        { href: '/my-data', label: 'my data', key: 'my-data' },
-        { href: '/blog', label: 'blog', key: 'blog' },
+        { href: '/projects', label: 'projects', key: 'projects' },
         { href: '/about', label: 'about', key: 'about' },
-        { href: '/tools', label: 'tools', key: 'tools' },
+        { href: '/blog', label: 'blog', key: 'blog' },
         { href: '/contact', label: 'contact', key: 'contact' },
     ]
+
+    const normalizedCurrentPage = (() => {
+        if (!currentPage) return undefined
+        if (currentPage === 'home' || currentPage === 'apps' || currentPage === 'tools' || currentPage === 'my-data' || currentPage === 'bookshelf') {
+            return 'projects'
+        }
+        return navItems.some(item => item.key === currentPage) ? currentPage : undefined
+    })()
 
     return (
         <>
             {/* Desktop Navigation */}
-            <div className="fixed top-0 left-0 w-full z-50 p-4 pt-safe-area-inset-top md:p-6 hidden md:block">
-                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-6 py-4 max-w-4xl mx-auto shadow-2xl shadow-black/10">
-                    <div className="flex items-center justify-between mb-2 text-xs text-white/60 uppercase tracking-[0.2em]">
-                        <span>Camilo Martinez</span>
-                        <span className="flex items-center gap-2">
-                            <span
-                                aria-hidden
-                                className={`w-2 h-2 rounded-full ${
-                                    apiStatus === 'loading'
-                                        ? 'bg-amber-300 animate-pulse'
-                                        : apiStatus === 'ok'
-                                        ? 'bg-emerald-400'
-                                        : 'bg-rose-400 animate-pulse'
-                                }`}
-                            ></span>
-                            <span>
-                                {apiStatus === 'loading'
-                                    ? 'Checking API'
-                                    : apiStatus === 'ok'
-                                    ? 'API Online'
-                                    : 'API Unreachable'}
-                            </span>
-                        </span>
-                    </div>
-
+            <div className="fixed top-0 left-0 w-full z-50 p-4 pt-safe-area-inset-top md:p-5 hidden md:block">
+                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 max-w-4xl mx-auto shadow-2xl shadow-black/10">
                     <div className="flex justify-center space-x-8 text-base font-medium">
                         {navItems.map((item) => (
                             <a
                                 key={item.key}
                                 href={item.href}
                                 className={`nav-item transition-all duration-300 relative px-4 py-2 rounded-lg ${
-                                    currentPage === item.key 
+                                    normalizedCurrentPage === item.key 
                                         ? 'text-white bg-white/10' 
                                         : 'text-white/70 hover:text-white hover:bg-white/5'
                                 }`}
                             >
                                 {item.label}
-                                {currentPage === item.key && (
+                                {normalizedCurrentPage === item.key && (
                                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"></div>
                                 )}
                             </a>
@@ -102,11 +85,9 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
 
             {/* Mobile Navigation */}
             <div className="fixed top-0 left-0 w-full z-50 p-4 md:hidden">
-                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-6 py-4 shadow-2xl shadow-black/10">
+                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl shadow-black/10">
                     <div className="flex justify-between items-center">
-                        <a href="/" className="text-white font-semibold text-lg">
-                            Camilo Martinez
-                        </a>
+                        <span className="text-white font-semibold text-lg">Menu</span>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="text-white/70 hover:text-white transition-colors p-2"
@@ -118,28 +99,6 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                     {/* Mobile Menu Dropdown */}
                     {isMenuOpen && (
                         <div className="mt-4 pt-4 border-t border-white/10">
-                            <div className="flex items-center justify-between mb-3 text-xs text-white/60 uppercase tracking-[0.2em]">
-                                <span>Status</span>
-                                <span className="flex items-center gap-2">
-                                    <span
-                                        aria-hidden
-                                        className={`w-2 h-2 rounded-full ${
-                                            apiStatus === 'loading'
-                                                ? 'bg-amber-300 animate-pulse'
-                                                : apiStatus === 'ok'
-                                                ? 'bg-emerald-400'
-                                                : 'bg-rose-400 animate-pulse'
-                                        }`}
-                                    ></span>
-                                    <span>
-                                        {apiStatus === 'loading'
-                                            ? 'Checking API'
-                                            : apiStatus === 'ok'
-                                            ? 'API Online'
-                                            : 'API Unreachable'}
-                                    </span>
-                                </span>
-                            </div>
                             <div className="grid grid-cols-2 gap-2">
                                 {navItems.map((item) => (
                                     <a
@@ -147,7 +106,7 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                                         href={item.href}
                                         onClick={() => setIsMenuOpen(false)}
                                         className={`nav-item transition-all duration-300 px-4 py-3 rounded-lg text-center capitalize ${
-                                            currentPage === item.key 
+                                            normalizedCurrentPage === item.key 
                                                 ? 'text-white bg-white/10 border border-white/20' 
                                                 : 'text-white/70 hover:text-white hover:bg-white/5'
                                         }`}

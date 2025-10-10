@@ -1,28 +1,3 @@
-function ArrowIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M2.07102 11.3494L0.963068 10.2415L9.2017 1.98864H2.83807L2.85227 0.454545H11.8438V9.46023H10.2955L10.3097 3.09659L2.07102 11.3494Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function RSSIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248S0 22.546 0 20.752s1.456-3.248 3.252-3.248 3.251 1.454 3.251 3.248zm-6.503-12.572v4.811c6.05.062 10.96 4.966 11.022 11.009h4.817c-.062-8.71-7.118-15.758-15.839-15.82zm0-3.368c10.58.046 19.152 8.594 19.183 19.188h4.817c-.03-13.231-10.755-23.954-24-24v4.812z" />
-    </svg>
-  )
-}
-
 function GitHubIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -72,21 +47,10 @@ export default function Footer() {
         <ul className="grid grid-cols-2 gap-2 md:flex md:flex-row md:space-y-0 md:space-x-6 md:justify-center text-white/80">
           <li>
             <a
-              className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-orange-400 p-2 rounded-xl hover:bg-white/[0.06]"
-              rel="noopener noreferrer"
-              target="_blank"
-              href="/rss"
-            >
-              <RSSIcon />
-              <p className="ml-3 h-7 text-sm md:text-base">rss</p>
-            </a>
-          </li>
-          <li>
-            <a
               className="group flex items-center justify-start md:justify-center transition-all duration-300 hover:text-white p-2 rounded-xl hover:bg-white/[0.06]"
               rel="noopener noreferrer"
               target="_blank"
-              href="https://github.com/camilomartinez777"
+              href="https://github.com/camilojourney"
             >
               <GitHubIcon />
               <p className="ml-3 h-7 text-sm md:text-base">github</p>
@@ -141,25 +105,25 @@ export default function Footer() {
         {/* Divider with gradient */}
         <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-6"></div>
 
-        <div className="flex justify-center space-x-4 mb-4">
+        <div className="flex flex-wrap items-center justify-center gap-3 text-white/60 text-sm text-center">
           <a 
             href="/privacy-policy" 
-            className="text-white/60 text-sm hover:text-white/90 transition-colors"
+            className="hover:text-white/90 transition-colors"
           >
             Privacy Policy
           </a>
           <span className="text-white/30">•</span>
           <a 
             href="/terms-of-service" 
-            className="text-white/60 text-sm hover:text-white/90 transition-colors"
+            className="hover:text-white/90 transition-colors"
           >
             Terms of Service
           </a>
+          <span className="text-white/30">•</span>
+          <span>
+            © {new Date().getFullYear()} Camilo Martinez. Built with Next.js 15.
+          </span>
         </div>
-
-        <p className="text-center text-white/60 text-sm font-light">
-          © {new Date().getFullYear()} Camilo Martinez. Built with Next.js 15.
-        </p>
       </div>
     </footer>
   )

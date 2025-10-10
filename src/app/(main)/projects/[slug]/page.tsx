@@ -19,6 +19,7 @@ interface ProjectData {
     githubUrl?: string
     imageUrl: string
     galleryImages?: string[]
+    appLink?: string
 }
 
 // Mock project data - in a real app, this would come from a CMS or database
@@ -48,6 +49,28 @@ const projects: ProjectData[] = [
             '/images/chatbot-2.png',
             '/images/chatbot-3.png'
         ]
+    },
+    {
+        slug: 'ai-advisor-board',
+        title: 'AI Advisor Board',
+        summary: 'Multi-agent advisory system where specialized directors collaborate through structured deliberation.',
+        fullDescription: 'AI Advisor Board simulates a leadership meeting by assigning LLM agents to roles such as Sales, Customer Success, Product, and Research. Each director contributes domain expertise, challenges assumptions, and drafts a unified recommendation using structured prompts and critique loops.',
+        problem: 'Executives need to synthesize perspectives from multiple stakeholders quickly, but real meetings are expensive and constrained by scheduling.',
+        solution: 'Built autonomous directors with shared memory and turn-based debate. Each round the agents surface risks, customer sentiment, and data-backed insights before converging on an action plan.',
+        outcome: 'Produces actionable briefs in minutes, highlighting risks, objections, and follow-up actions. Early pilots reduced prep time for leadership syncs by 70%.',
+        techStack: ['Next.js', 'TypeScript', 'OpenAI GPT-4', 'FastAPI', 'PostgreSQL', 'Tailwind CSS'],
+        features: [
+            'Role-based multi-agent coordination',
+            'Deliberation rounds with critique and revision',
+            'Memory subsystem for cross-session context',
+            'Scenario simulation and what-if analysis',
+            'Exportable executive summaries'
+        ],
+        status: 'live',
+        demoUrl: 'https://ai-advisor-board.vercel.app',
+        githubUrl: 'https://github.com/Bench-amblee/ai-advisor-board',
+        imageUrl: '/images/previews_main/agents_board.png',
+        appLink: 'https://ai-advisor-board.vercel.app'
     },
     {
         slug: 'ai-content-creator',
@@ -110,7 +133,7 @@ const projects: ProjectData[] = [
         ],
         status: 'live',
         demoUrl: '/projects/astoria-conquest',
-        imageUrl: '/images/project-astoria-conquest.png'
+        imageUrl: '/images/previews_main/astoria_conquest.png'
     },
     {
         slug: 'data-analytics-portfolio',
@@ -148,7 +171,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
     // Special handling for Astoria Conquest - render the interactive map
     if (slug === 'astoria-conquest') {
-        const AstoriaConquestPage = (await import('@/app/(main)/astoria-conquest/page')).default
+        const AstoriaConquestPage = (await import('@/app/(main)/apps/astoria-conquest/page')).default
         return <AstoriaConquestPage />
     }
 
@@ -157,6 +180,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         'in-progress': 'bg-amber-500/20 text-amber-300 border-amber-400/30',
         concept: 'bg-blue-500/20 text-blue-300 border-blue-400/30'
     }
+
+    const appHref = project.appLink ?? project.demoUrl
+    const isExternalAppLink = appHref?.startsWith('http')
+    const heroImageClass = slug === 'astoria-conquest'
+        ? 'object-contain object-center scale-90 md:scale-95'
+        : 'object-cover object-center'
 
     return (
         <LiquidPage currentPage="projects" backgroundVariant="cool">
@@ -222,11 +251,22 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                     </div>
 
                     {/* Main Image */}
-                    <div className="w-full h-64 md:h-96 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-2xl mb-12 flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-blue-500/5"></div>
-                        <svg className="w-24 h-24 text-cyan-300/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                    <div className="w-full h-64 md:h-96 bg-white border border-white/10 rounded-2xl mb-12 relative overflow-hidden">
+                        {project.imageUrl ? (
+                            <div className="absolute inset-0 flex items-center justify-center p-4">
+                                <Image
+                                    src={project.imageUrl}
+                                    alt={`${project.title} hero visual`}
+                                    fill
+                                    className={heroImageClass}
+                                    priority
+                                />
+                            </div>
+                        ) : (
+                            <svg className="w-24 h-24 text-cyan-300/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        )}
                     </div>
 
                     {/* Project Details Grid */}
@@ -301,6 +341,17 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                         <p className="text-white/70 mb-6 leading-relaxed">
                             I'd love to discuss the technical details, challenges overcome, or similar projects I could build for you.
                         </p>
+                        {appHref && (
+                            <Link
+                                href={appHref}
+                                {...(isExternalAppLink ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-medium text-white/80 transition-all duration-300 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-100"
+                            >
+                                <span>View Live App</span>
+                                <span aria-hidden className="text-lg">{isExternalAppLink ? '↗' : '→'}</span>
+                            </Link>
+                        )}
+
                         <Link
                             href="/contact"
                             className="liquid-glass-cta-btn backdrop-blur-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20 inline-flex items-center gap-3"
@@ -323,6 +374,7 @@ export async function generateStaticParams() {
         { slug: 'interactive-chatbot' },
         { slug: 'ai-content-creator' },
         { slug: 'ai-coaching-app' },
+        { slug: 'ai-advisor-board' },
         { slug: 'astoria-conquest' },
         { slug: 'data-analytics-portfolio' }
     ]

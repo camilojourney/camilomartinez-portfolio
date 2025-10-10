@@ -30,7 +30,7 @@ export default function Page() {
                   Latest Thoughts
                 </h1>
                 <p className="text-xl text-white/80 leading-relaxed max-w-2xl mx-auto">
-                  Insights, experiences, and thoughts on <span className="text-cyan-400 font-semibold">data analytics</span>, <span className="text-blue-400 font-semibold">AI development</span>, and the intersection of technology and creativity.
+                  Exploring <span className="text-cyan-400 font-semibold">AI</span>, <span className="text-blue-400 font-semibold">data</span>, and the <span className="text-purple-400 font-semibold">mental models</span> that drive them.
                 </p>
               </div>
 

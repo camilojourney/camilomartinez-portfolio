@@ -960,88 +960,34 @@ Recent activities:"""
         user_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Return a deterministic, human-friendly answer when the advanced
-        pipeline fails. This keeps the demos responsive while the full
-        system is still under construction.
+        Return an honest error response when the query pipeline fails.
+        No fake data - just tell the user we couldn't process their request.
         """
 
-        logger.info("Using fallback response pipeline")
-        normalized = question.lower()
-        today = datetime.utcnow().date()
-
-        if "recovery" in normalized and "yesterday" in normalized:
-            data = [{
-                "snapshot_date": (today - timedelta(days=1)).isoformat(),
-                "recovery_score": 78,
-                "status": "moderate",
-            }]
-            answer = (
-                "Yesterday Camilo posted a recovery score of 78%. "
-                "Keep the load moderate today, emphasise hydration, and prioritise sleep tonight."
-            )
-            sql = (
-                "SELECT snapshot_date, recovery_score, status "
-                "FROM daily_fitness_snapshot "
-                "WHERE snapshot_date = CURRENT_DATE - INTERVAL '1 day' "
-                "LIMIT 1;"
-            )
-
-        elif "sleep" in normalized:
-            data = [{
-                "sleep_date": today.isoformat(),
-                "sleep_performance": "86%",
-                "total_sleep_hours": 7.75,
-                "rem_minutes": 110,
-            }]
-            answer = (
-                "Camilo logged 7 hours and 45 minutes of sleep last night (86% performance) "
-                "with over 110 minutes of REM. Maintain the same routine for consistent recovery."
-            )
-            sql = (
-                "SELECT sleep_date, sleep_performance, total_sleep_hours, rem_minutes "
-                "FROM sleep_summary "
-                "ORDER BY sleep_date DESC LIMIT 1;"
-            )
-
-        elif "strain" in normalized or "training load" in normalized:
-            data = [{
-                "activity_date": today.isoformat(),
-                "strain": 9.4,
-                "optimal_range": "8.0 - 10.0",
-            }]
-            answer = (
-                "Today's strain is tracking at 9.4 which sits in the optimal 8-10 range. "
-                "If any additional work is planned keep it aerobic to stay in the green."
-            )
-            sql = (
-                "SELECT activity_date, strain_score AS strain "
-                "FROM daily_training_load "
-                "WHERE activity_date = CURRENT_DATE "
-                "LIMIT 1;"
-            )
-
-        else:
-            data = []
-            answer = (
-                "I'm ready whenever you want to dig into recovery, sleep, or training load. "
-                "Ask about those metrics to see how Camilo is trending."
-            )
-            sql = None
+        logger.warning(f"Fallback response triggered for question: {question}")
 
         return {
-            "response": answer,
-            "data": data,
+            "response": (
+                "I wasn't able to process that query. This could mean:\n"
+                "- The data you're asking about isn't available yet\n"
+                "- The question couldn't be translated to a database query\n"
+                "- There was a technical issue\n\n"
+                "Try rephrasing your question or ask about specific metrics like recovery scores, "
+                "sleep data, or training activities."
+            ),
+            "data": [],
             "explanation": {
-                "thought": "Heuristic fallback after pipeline failure",
-                "plan": "Return cached personal metrics to keep UX responsive",
-                "sql": sql,
+                "thought": "Query processing failed",
+                "plan": "Unable to generate valid SQL or retrieve data",
+                "sql": None,
             },
-            "result_count": len(data),
+            "result_count": 0,
             "processing_time_ms": 0,
             "history_id": None,
             "metadata": {
                 "user_id": user_id or "demo_user",
                 "fallback": True,
+                "error": True,
             },
         }
 

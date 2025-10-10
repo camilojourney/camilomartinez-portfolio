@@ -7,6 +7,8 @@ import { AstoriaStats } from '@/components/features/astoria-conquest/AstoriaStat
 import { MapContainer } from '@/components/features/astoria-conquest/MapContainer';
 import { RunCard } from '@/components/features/astoria-conquest/RunCard';
 import { RunSelector } from '@/components/features/astoria-conquest/RunSelector';
+import Link from 'next/link';
+import { extractZoneDurations } from '@/lib/astoria/zones';
 import type { 
   StravaRun, 
   RunCardData,
@@ -36,9 +38,15 @@ export function AstoriaConquestClient({
   runStats 
 }: AstoriaConquestClientProps) {
   const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
-  
-  const selectedRun = selectedRunId 
-    ? runs.find(run => run.id === selectedRunId)
+
+  const sortedRuns = [...runs].sort((a, b) => {
+    const orderA = typeof a.run_number === 'number' ? a.run_number : new Date(a.date).getTime();
+    const orderB = typeof b.run_number === 'number' ? b.run_number : new Date(b.date).getTime();
+    return orderA - orderB;
+  });
+
+  const selectedRun = selectedRunId
+    ? sortedRuns.find(run => run.id === selectedRunId) ?? null
     : null;
 
   const displayedStats: AstoriaStatsType = selectedRun
@@ -48,12 +56,21 @@ export function AstoriaConquestClient({
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       {/* Navigation */}
-      <LiquidNav currentPage="projects" />
+      <LiquidNav currentPage="apps" />
 
       {/* Hero Section */}
       <div className="relative h-[40vh] min-h-[300px] bg-black/40 mt-24 md:mt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent">
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+            <div className="mb-4">
+              <Link
+                href="/projects/astoria-conquest"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium text-white/70 transition-colors duration-300 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-200"
+              >
+                <span>Read how I built this</span>
+                <span aria-hidden className="text-lg">→</span>
+              </Link>
+            </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-4">Astoria Conquest</h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">
               Running every street in Astoria, Queens. Follow my journey as I explore the neighborhood, one run at a time.
@@ -87,7 +104,7 @@ export function AstoriaConquestClient({
 
         {/* Run Selector */}
         <RunSelector
-          runs={runs}
+          runs={sortedRuns}
           selectedRunId={selectedRunId}
           onRunSelect={setSelectedRunId}
         />
@@ -112,25 +129,12 @@ export function AstoriaConquestClient({
 
           {/* Run Cards */}
           <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
-            {(selectedRun ? [selectedRun] : runs).map((run: StravaRun) => {
+            {(selectedRun ? [selectedRun] : sortedRuns).map((run: StravaRun) => {
               const runData: RunCardData = {
                 ...run,
-                heart_rate_zones: {
-                  rest: run.heart_rate_zones.zone1_seconds,
-                  light: run.heart_rate_zones.zone2_seconds,
-                  moderate: run.heart_rate_zones.zone3_seconds,
-                  hard: run.heart_rate_zones.zone4_seconds,
-                  peak: run.heart_rate_zones.zone5_seconds,
-                  max: Math.max(
-                    run.heart_rate_zones.zone1_seconds,
-                    run.heart_rate_zones.zone2_seconds,
-                    run.heart_rate_zones.zone3_seconds,
-                    run.heart_rate_zones.zone4_seconds,
-                    run.heart_rate_zones.zone5_seconds
-                  )
-                }
+                heart_rate_zones: extractZoneDurations(run.heart_rate_zones),
               };
-              
+
               return (
                 <RunCard 
                   key={run.id} 

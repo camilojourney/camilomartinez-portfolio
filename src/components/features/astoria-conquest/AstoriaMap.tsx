@@ -3,8 +3,9 @@
 import { useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { LatLngExpression, Map as LeafletMap } from 'leaflet';
-import type { Feature, FeatureCollection, LineString, Position } from 'geojson';
+import { LatLngExpression } from 'leaflet';
+import type { FeatureCollection, LineString, Position } from 'geojson';
+import polyline from '@mapbox/polyline';
 
 // Fix for default Leaflet icon issue with React
 import L from 'leaflet';
@@ -77,11 +78,39 @@ function CustomControls() {
 const AstoriaMap = ({ baseMapData, coveredStreetsData, selectedRun }: AstoriaMapProps) => {
   const center: LatLngExpression = [40.765, -73.92]; // Astoria Center
 
+  const selectedRunFeature = (() => {
+    if (!selectedRun?.polyline) {
+      return null;
+    }
+
+    try {
+      const decoded = polyline.decode(selectedRun.polyline);
+      const coordinates: Position[] = decoded.map(([lat, lng]) => [lng, lat]);
+
+      return {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates,
+            },
+          },
+        ],
+      } as FeatureCollection<LineString>;
+    } catch (error) {
+      console.error('Failed to decode run polyline', error);
+      return null;
+    }
+  })();
+
   return (
     <div className="relative w-full h-full">
-      <MapContainer 
-        center={center} 
-        zoom={14} 
+      <MapContainer
+        center={center}
+        zoom={14}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false} // Disable default zoom control
       >
@@ -89,28 +118,22 @@ const AstoriaMap = ({ baseMapData, coveredStreetsData, selectedRun }: AstoriaMap
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; CARTO'
         />
-        <GeoJSON 
-          data={baseMapData as FeatureCollection} 
-          style={{ color: '#444444', weight: 1.5, opacity: 0.8 }} 
+        <GeoJSON
+          data={baseMapData as FeatureCollection}
+          style={{ color: '#444444', weight: 1.5, opacity: 0.8 }}
         />
-        <GeoJSON 
-          data={coveredStreetsData as FeatureCollection} 
-          style={{ color: '#00FFFF', weight: 3, opacity: 1 }}
-        />
-        {selectedRun?.polyline && (
+        {/* Show either the selected run OR all covered streets */}
+        {selectedRunFeature ? (
           <GeoJSON
-            data={({
-              type: "FeatureCollection",
-              features: [{
-                type: "Feature",
-                properties: {},
-                geometry: {
-                  type: "LineString",
-                  coordinates: JSON.parse(selectedRun.polyline) as Position[]
-                }
-              }]
-            } as FeatureCollection<LineString>)}
-            style={{ color: '#ff00ff', weight: 4, opacity: 0.8 }}
+            key="selected-run"
+            data={selectedRunFeature}
+            style={{ color: '#ff4ff8', weight: 4, opacity: 0.9 }}
+          />
+        ) : (
+          <GeoJSON
+            key="all-covered"
+            data={coveredStreetsData as FeatureCollection}
+            style={{ color: '#00FFFF', weight: 3, opacity: 1 }}
           />
         )}
         <CustomControls />

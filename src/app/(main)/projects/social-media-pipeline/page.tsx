@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, Twitter, Hash, Copy, Zap, Globe, Play, MessageCircle, Heart, Share } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import LiquidPage from '@/components/shared/liquid-page'
@@ -56,14 +58,14 @@ export default function SocialMediaPipelineProjectPage() {
           AI-powered content transformation that preserves your authentic voice while maximizing engagement
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/tools/social-media-pipeline"
+          <Link
+            href="/apps/social-media-pipeline"
             className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-medium rounded-xl transition-all duration-300 transform hover:scale-105"
           >
             <Zap className="w-5 h-5" />
-            <span>Try the Tool</span>
+            <span>View Live App</span>
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </Link>
           <a
             href="https://github.com/camilojourney/camilomartinez-portfolio"
             target="_blank"
@@ -75,6 +77,18 @@ export default function SocialMediaPipelineProjectPage() {
           </a>
         </div>
       </section>
+
+      <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl overflow-hidden mb-16">
+        <div className="relative w-full h-64 md:h-80 bg-slate-950">
+          <Image
+            src="/images/previews_main/socia_media_creation.png"
+            alt="Social media pipeline content generation preview"
+            fill
+            className="object-contain object-center md:scale-95 scale-95"
+            priority
+          />
+        </div>
+      </div>
 
       {/* The Problem & Solution */}
       <section className="mb-16">
@@ -360,14 +374,14 @@ export default function SocialMediaPipelineProjectPage() {
             Transform your thoughts into engaging content while preserving what makes you unique.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/tools/social-media-pipeline"
+            <Link
+              href="/apps/social-media-pipeline"
               className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-medium rounded-xl transition-all duration-300 transform hover:scale-105"
             >
               <Zap className="w-5 h-5" />
-              <span>Try the Social Media Pipeline</span>
+              <span>View Live App</span>
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
             <a
               href="/docs/social-media-pipeline-implementation.html"
               target="_blank"

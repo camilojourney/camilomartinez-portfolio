@@ -4,7 +4,7 @@ import Footer from '@/components/shared/footer'
 
 interface LiquidPageProps {
     children?: any
-    currentPage?: 'home' | 'blog' | 'contact' | 'about' | 'projects' | 'tools' | 'my-data'
+    currentPage?: 'home' | 'blog' | 'contact' | 'about' | 'projects' | 'tools' | 'my-data' | 'bookshelf' | 'apps'
     backgroundVariant?: 'default' | 'warm' | 'cool' | 'purple'
     className?: string
 }

@@ -9,12 +9,29 @@ export const metadata: Metadata = pageMetadata;
 
 import type { StravaRun } from '@/types/astoria';
 
-interface RunData extends Partial<StravaRun> {
+interface RunData {
   id: number;
+  run_number?: number;
   name: string;
   date: string;
   distance_meters: number;
   duration_seconds: number;
+  polyline?: string;
+  average_speed_mps?: number;
+  total_elevation_gain?: number;
+  avg_heart_rate?: number;
+  max_heart_rate?: number;
+  suffer_score?: number;
+  whoop_strain?: number;
+  kilojoules?: number;
+  heart_rate_zones?: {
+    rest?: number;
+    light?: number;
+    moderate?: number;
+    hard?: number;
+    peak?: number;
+    max?: number;
+  };
 }
 
 interface StatsData {
@@ -73,9 +90,10 @@ export default async function AstoriaConquestPage() {
   const rawStats = JSON.parse(statsJson) as StatsData;
   
   // Transform runs to match StravaRun interface
-  const transformedRuns: StravaRun[] = (rawStats.runs || []).map((run, index) => ({
+  // Use the run_number from the data if available, otherwise assign based on date order
+  const transformedRuns: StravaRun[] = (rawStats.runs || []).map((run) => ({
     id: run.id,
-    run_number: index + 1,
+    run_number: run.run_number || 0, // Use the run_number from the data
     name: run.name,
     date: run.date,
     start_date: run.date,
@@ -86,16 +104,17 @@ export default async function AstoriaConquestPage() {
     max_speed: 0, // This could be calculated from splits if available
     avg_heart_rate: run.avg_heart_rate || 0,
     max_heart_rate: run.max_heart_rate || 0,
-    suffer_score: 0,
-    whoop_strain: 0,
-    kilojoules: 0,
-    polyline: "",
+    suffer_score: run.suffer_score || 0,
+    whoop_strain: run.whoop_strain || 0,
+    kilojoules: run.kilojoules || 0,
+    polyline: run.polyline || "",
     heart_rate_zones: {
-      zone1_seconds: 0,
-      zone2_seconds: 0,
-      zone3_seconds: 0,
-      zone4_seconds: 0,
-      zone5_seconds: 0
+      zone1_seconds: run.heart_rate_zones?.rest || 0,
+      zone2_seconds: run.heart_rate_zones?.light || 0,
+      zone3_seconds: run.heart_rate_zones?.moderate || 0,
+      zone4_seconds: run.heart_rate_zones?.hard || 0,
+      zone5_seconds: run.heart_rate_zones?.peak || 0,
+      zone6_seconds: run.heart_rate_zones?.max || 0
     }
   }));
 

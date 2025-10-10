@@ -1,13 +1,13 @@
 import LiquidNav from '@/components/shared/liquid-nav'
 
-export default function MyDataLayout({
+export default function FitnessDashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
     <>
-      <LiquidNav currentPage="my-data" />
+      <LiquidNav currentPage="apps" />
       {children}
     </>
   )

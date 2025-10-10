@@ -32,7 +32,7 @@ export default function SignInPage() {
     }, []);
 
     return (
-        <LiquidPage currentPage="my-data" backgroundVariant="cool">
+        <LiquidPage currentPage="apps" backgroundVariant="cool">
             <div className="text-center space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>

@@ -8,19 +8,31 @@ export default async function sitemap() {
     lastModified: post.metadata.publishedAt,
   }))
 
-  let routes = [
+  const staticRoutes = [
     '',
     '/about',
-    '/blog', 
+    '/apps',
+    '/apps/fitness-dashboard',
+    '/apps/astoria-conquest',
+    '/apps/social-media-pipeline',
+    '/apps/trading-bot',
+    '/apps/think-clear',
+    '/blog',
     '/contact',
     '/live-data',
-    '/my-data',
     '/projects',
-    '/tools',
+    '/projects/fitness-dashboard',
+    '/projects/astoria-conquest',
+    '/projects/social-media-pipeline',
+    '/projects/ai-advisor-board',
+    '/projects/rag-system',
+    '/projects/trading-bot',
     '/whoop-dashboard',
-    '/privacy-policy', 
-    '/terms-of-service'
-  ].map((route) => ({
+    '/privacy-policy',
+    '/terms-of-service',
+  ]
+
+  let routes = staticRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString().split('T')[0],
   }))

@@ -241,7 +241,7 @@ export default function WhoopDashboard() {
     if (status === 'loading') {
         return (
             <div className="min-h-screen relative overflow-hidden">
-                <LiquidNav currentPage="my-data" />
+                <LiquidNav currentPage="apps" />
                 {/* Animated Background */}
                 <div className="fixed inset-0 -z-10">
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
@@ -264,7 +264,7 @@ export default function WhoopDashboard() {
 
     return (
         <div className="min-h-screen relative overflow-hidden">
-            <LiquidNav currentPage="my-data" />
+            <LiquidNav currentPage="apps" />
             {/* Animated Background */}
             <div className="fixed inset-0 -z-10">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
@@ -707,10 +707,10 @@ export default function WhoopDashboard() {
                                 </h3>
                                 <div className="flex flex-wrap gap-4">
                                     <a
-                                        href="/my-data"
+                                        href="/apps/fitness-dashboard"
                                         className="liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white font-light py-3 px-6 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/25"
                                     >
-                                        📈 View My Data
+                                        📈 Open Fitness Dashboard
                                     </a>
                                 </div>
                             </div>
