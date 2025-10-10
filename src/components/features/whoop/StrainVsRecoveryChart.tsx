@@ -138,18 +138,6 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
 
     return (
         <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8">
-            {/* Header */}
-            <div className="mb-4 sm:mb-8">
-                <h2 className="text-2xl sm:text-3xl font-light text-white mb-2 sm:mb-3 flex items-center gap-3">
-                    <span className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></span>
-                    Strain vs. Recovery: The Core Performance Loop
-                </h2>
-                <p className="text-white/70 font-light text-base sm:text-lg leading-relaxed">
-                    Each dot represents one day, showing how training intensity impacts recovery capacity.
-                    The trend line reveals the fundamental relationship between effort and restoration.
-                </p>
-            </div>
-
             {/* Stats Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
                 <div className="text-center p-1 sm:p-2">

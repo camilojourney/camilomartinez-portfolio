@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState } from 'react';
 
 interface ActivityHeatmapProps {
     data: Array<{
@@ -42,15 +42,11 @@ const TOOLTIP_OFFSET_PX = 28;
 
 export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const [hoveredDay, setHoveredDay] = useState<DayData | null>(null);
-    const [hoveredCellRef, setHoveredCellRef] = useState<HTMLElement | null>(null);
     const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
-    const [selectedCellRef, setSelectedCellRef] = useState<HTMLElement | null>(null);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [tooltipTransform, setTooltipTransform] = useState('translate(-50%, -100%)');
     const [hoveredMonth, setHoveredMonth] = useState<HoveredMonth | null>(null);
     const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
-    
-    const tooltipRef = React.useRef<HTMLDivElement>(null);
+
     const mainContainerRef = React.useRef<HTMLDivElement>(null);
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
     const calendarContainerRef = React.useRef<HTMLDivElement>(null);
@@ -242,31 +238,41 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const totalActiveDays = calendarData.filter(day => day.count > 0).length;
     const strainDays = calendarData.filter(day => day.strain > 0);
     const averageStrain = strainDays.length > 0 ? strainDays.reduce((sum, day) => sum + day.strain, 0) / strainDays.length : 0;
-    const maxStrainDay = calendarData.reduce((max, day) => day.strain > max.strain ? day : max, { strain: 0, date: '', count: 0 });
+    
+    // Calculate percentage of weeks that met the 10+ strain goal
+    const TARGET_STRAIN = 10;
+    const weeksAtGoal = weeklyStrainData.filter(week => week.averageStrain >= TARGET_STRAIN).length;
+    const totalWeeks = weeklyStrainData.length;
+    const weeklySuccessRate = totalWeeks > 0 ? (weeksAtGoal / totalWeeks) * 100 : 0;
+    
     const availableYears = getAvailableYears();
 
     // Event Handlers
     const handleMouseEnter = (day: DayData, event: React.MouseEvent) => {
-        if (day.date) {
-            setHoveredDay(day);
-            const rect = (event.target as HTMLElement).getBoundingClientRect();
-            setTooltipPosition({
-                x: rect.left + rect.width / 2,
-                y: rect.top,
-            });
+        if (day.date && mainContainerRef.current) {
+            if (hoveredDay?.date !== day.date) {
+                setHoveredDay(day);
+
+                const containerRect = mainContainerRef.current.getBoundingClientRect();
+                const cellRect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+
+                // Calculate position relative to the container
+                const x = cellRect.left - containerRect.left + cellRect.width / 2;
+                const y = cellRect.top - containerRect.top;
+
+                setTooltipPosition({ x, y });
+            }
         }
     };
-    
+
     const handleMouseLeave = () => {
         setHoveredDay(null);
-        setHoveredCellRef(null);
-        // Clear the position on leave
         setTooltipPosition(null);
     };
-    const handleClick = (day: DayData, event: React.MouseEvent) => {
+
+    const handleClick = (day: DayData) => {
         if (day.date) {
             setSelectedDay(prev => (prev?.date === day.date ? null : day));
-            setSelectedCellRef(prev => (prev === event.target ? null : event.target as HTMLElement));
         }
     };
 
@@ -321,66 +327,11 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
         };
     }, [weeks.length, weeklyStrainData.length, selectedYear]);
 
-    // *****************************************************************
-    // ***** REVISED useLayoutEffect FOR HEATMAP TOOLTIP CENTERING *****
-    // *****************************************************************
-    useLayoutEffect(() => {
-        const activeCellRef = selectedCellRef || hoveredCellRef;
-        if (activeCellRef && tooltipRef.current && mainContainerRef.current && scrollContainerRef.current) {
-            const tooltipElement = tooltipRef.current;
-            const mainContainerRect = mainContainerRef.current.getBoundingClientRect();
-            const scrollContainerScrollLeft = scrollContainerRef.current.scrollLeft;
-            const activeCellRect = activeCellRef.getBoundingClientRect();
-
-            // Calculate tooltip's desired center position relative to the calendar's content
-            const targetLeft = activeCellRect.left + (activeCellRect.width / 2);
-            
-            // Initial positioning for measurement
-            tooltipElement.style.left = `${targetLeft}px`;
-            tooltipElement.style.top = `${activeCellRect.top}px`;
-            tooltipElement.style.transform = `translate(-50%, -100%)`; // Default vertical position
-
-            // A small timeout to allow initial render before measuring
-            setTimeout(() => {
-                if (!tooltipRef.current || !mainContainerRef.current) return;
-                const currentTooltipRect = tooltipRef.current.getBoundingClientRect();
-                
-                let xOffsetCorrection = 0;
-
-                // Check for collision with the mainContainer's right edge
-                const rightOverflow = currentTooltipRect.right - mainContainerRect.right;
-                if (rightOverflow > 0) {
-                    xOffsetCorrection = -(rightOverflow + 8); // Move left + padding
-                }
-
-                // Check for collision with the mainContainer's left edge
-                const leftOverflow = mainContainerRect.left - currentTooltipRect.left;
-                if (leftOverflow > 0) {
-                    xOffsetCorrection = leftOverflow + 8; // Move right + padding
-                }
-                
-                // Apply the final transform with any necessary horizontal corrections
-                setTooltipTransform(`translate(calc(-50% + ${xOffsetCorrection}px), -100%)`);
-            }, 0);
-        } else {
-            setTooltipTransform('translate(-50%, -100%)'); // Reset if no active cell
-        }
-    }, [selectedDay, hoveredDay, selectedCellRef, hoveredCellRef]);
-
-
     return (
         <div ref={mainContainerRef} className="liquid-glass-card relative backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8">
             {/* Header, Year Selector, Stats Summary (Unchanged) */}
-            <div className="mb-8">
-                <h2 className="text-3xl font-light text-white mb-3 flex items-center gap-3">
-                    <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
-                    Fitness Activity {selectedYear === new Date().getFullYear() ? 'This Year' : selectedYear}
-                </h2>
-                <p className="text-white/70 font-light text-lg leading-relaxed">
-                    Each square represents a day, with brighter greens showing higher strain levels (max: 21).
-                </p>
-            </div>
-            <div className="mt-6 mb-8 flex items-center justify-center">
+
+            <div className="mt-1 mb-3 flex items-center justify-center">
                 <div className="flex items-center gap-1 bg-white/[0.03] p-2 rounded-2xl">
                     {availableYears.map(year => (
                         <button key={year} onClick={() => setSelectedYear(year)} className={`px-4 py-2 rounded-xl text-sm ${selectedYear === year ? 'bg-green-400 text-black' : 'text-white/70 hover:bg-white/5'}`}>
@@ -392,7 +343,11 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
             <div className="grid grid-cols-3 gap-6 mb-8">
                 <div className="text-center"><div className="text-3xl font-light text-green-400">{totalActiveDays}</div><div className="text-white/60 text-sm">Active Days</div></div>
                 <div className="text-center"><div className="text-3xl font-light text-green-400">{(averageStrain || 0).toFixed(1)}</div><div className="text-white/60 text-sm">Avg Strain</div></div>
-                <div className="text-center"><div className="text-3xl font-light text-green-400">{(maxStrainDay.strain || 0).toFixed(1)}</div><div className="text-white/60 text-sm">Peak Strain</div></div>
+                <div className="text-center">
+                    <div className="text-3xl font-light text-green-400">{weeklySuccessRate.toFixed(0)}%</div>
+                    <div className="text-white/60 text-sm">Weeks at Goal</div>
+                    <div className="text-white/40 text-xs mt-1">{weeksAtGoal}/{totalWeeks} weeks ≥10</div>
+                </div>
             </div>
             
             {/* Calendar */}
@@ -428,7 +383,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                                 className={`w-3 h-3 rounded-sm transition-transform hover:scale-125 cursor-pointer ${day.date ? (day.strain > 0 ? getStrainColor(day.strain) : 'bg-gray-900/50') : 'bg-transparent'} ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-green-400' : ''}`}
                                                 onMouseEnter={e => handleMouseEnter(day, e)}
                                                 onMouseLeave={handleMouseLeave}
-                                                onClick={e => handleClick(day, e)}
+                                                onClick={() => handleClick(day)}
                                             />
                                         ))}
                                     </div>
@@ -513,20 +468,27 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                                                 backgroundColor: weekData.averageStrain >= 9.9 ? 'rgb(34 197 94)' : 'rgb(239 68 68)'
                                                             }}
                                                             onMouseEnter={e => {
-                                                                const rect = e.currentTarget.getBoundingClientRect();
-                                                                const startDate = new Date(weekData.firstDate + 'T00:00:00');
-                                                                const endDate = new Date(startDate);
-                                                                endDate.setDate(startDate.getDate() + 6);
-                                                                const weekLabel = `Week of ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-                                                                const dotRect = e.currentTarget.getBoundingClientRect();
-                                                                setHoveredMonth({
-                                                                    label: weekLabel,
-                                                                    average_strain: weekData.averageStrain,
-                                                                    weekStart: weekData.firstDate,
-                                                                    weekEnd: endDate.toISOString().split('T')[0],
-                                                                    x: dotRect.left + dotRect.width / 2,
-                                                                    y: dotRect.top
-                                                                });
+                                                                if (mainContainerRef.current) {
+                                                                    const containerRect = mainContainerRef.current.getBoundingClientRect();
+                                                                    const dotRect = e.currentTarget.getBoundingClientRect();
+                                                                    const startDate = new Date(weekData.firstDate + 'T00:00:00');
+                                                                    const endDate = new Date(startDate);
+                                                                    endDate.setDate(startDate.getDate() + 6);
+                                                                    const weekLabel = `Week of ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+                                                                    // Calculate position relative to the container
+                                                                    const x = dotRect.left - containerRect.left + dotRect.width / 2;
+                                                                    const y = dotRect.top - containerRect.top;
+
+                                                                    setHoveredMonth({
+                                                                        label: weekLabel,
+                                                                        average_strain: weekData.averageStrain,
+                                                                        weekStart: weekData.firstDate,
+                                                                        weekEnd: endDate.toISOString().split('T')[0],
+                                                                        x,
+                                                                        y
+                                                                    });
+                                                                }
                                                             }}
                                                             onMouseLeave={() => setHoveredMonth(null)}
                                                         />
@@ -610,12 +572,11 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
             {/* *************************************************************** */}
             {hoveredDay && tooltipPosition && (
                 <div
-                    className="fixed pointer-events-none z-[9999]"
+                    className="absolute pointer-events-none z-[9999]"
                     style={{
                         left: tooltipPosition.x,
-                        top: tooltipPosition.y - TOOLTIP_OFFSET_PX,
-                        transform: 'translateX(-50%)',
-                        transition: 'opacity 0.2s ease',
+                        top: tooltipPosition.y,
+                        transform: 'translate(-50%, calc(-100% - 8px))',
                     }}
                 >
                     <div className="bg-black/95 backdrop-blur-sm border-2 border-green-400 rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
@@ -647,11 +608,11 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
             {/* Weekly Chart Tooltip */}
             {hoveredMonth && (
                 <div
-                    className="fixed pointer-events-none z-[10000]"
+                    className="absolute pointer-events-none z-[10000]"
                     style={{
                         left: hoveredMonth.x,
-                        top: hoveredMonth.y - TOOLTIP_OFFSET_PX,
-                        transform: 'translateX(-50%)'
+                        top: hoveredMonth.y,
+                        transform: 'translate(-50%, calc(-100% - 8px))'
                     }}
                 >
                     <div className="bg-black/95 backdrop-blur-sm border-2 border-yellow-400 rounded-lg p-3 shadow-2xl min-w-[160px]">

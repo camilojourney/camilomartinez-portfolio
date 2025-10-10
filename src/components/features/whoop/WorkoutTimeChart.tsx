@@ -17,6 +17,7 @@ type WorkoutTimeChartProps = {
 
 const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [hoveredWorkout, setHoveredWorkout] = React.useState<{
     dateLabel: string;
     timeLabel: string;
@@ -25,22 +26,15 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     x: number;
     y: number;
     isBeforeGoal: boolean;
+    showBelow: boolean;
   } | null>(null);
 
-  // Enhanced debugging
-  console.log('WorkoutTimeChart initialization');
-  console.log('- Data length:', data?.length || 0);
-  console.log('- Sample data:', data && data.length > 0 ? JSON.stringify(data.slice(0, 3)) : 'No data');
-  console.log('- Goal time:', goalTime);
-  
   // Catch any rendering errors early
   try {
     if (data && data.length > 0 && typeof data[0].timeAsMinutes !== 'number') {
-      console.error('❌ Invalid data format: timeAsMinutes must be a number', data[0]);
       throw new Error('Invalid workout time data format');
     }
   } catch (err) {
-    console.error('❌ Error validating data:', err);
     return (
       <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
         <div className="text-red-400 text-3xl mb-3">⚠️</div>
@@ -50,9 +44,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     );
   }
   
-  // Check for null or empty data
   if (!data || data.length === 0) {
-    console.log('❌ No workout time data available for chart');
     return (
       <div className="border-2 border-dashed border-amber-500/30 rounded-lg p-8 text-center">
         <div className="text-amber-400 text-3xl mb-3">⏰</div>
@@ -62,40 +54,22 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     );
   }
 
-  // More robust validation of date strings
+  // Filter valid data and exclude "Other" workout type
   const validData = React.useMemo(() => data.filter(point => {
     try {
-      if (!point.date) {
-        console.warn('Found data point with missing date');
-        return false;
-      }
+      if (!point.date) return false;
       
-      // Try to parse the date and verify it's valid
+      // Exclude "Other" workout type
+      if (point.workoutType === 'Other') return false;
+      
       const parsed = parse(String(point.date), 'yyyy-MM-dd', new Date());
-      const isValid = !isNaN(parsed.getTime());
-      
-      if (!isValid) {
-        console.error(`Invalid date format: ${point.date}`);
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      console.error(`Error filtering data point with date: ${point?.date}`, error);
+      return !isNaN(parsed.getTime());
+    } catch {
       return false;
     }
   }), [data]);
   
-  console.log(`WorkoutTimeChart filtered data: ${validData.length}/${data.length} valid entries`);
-  
-  // Display warning if we lost data points during filtering
-  if (validData.length < data.length) {
-    console.warn(`❗ Filtered out ${data.length - validData.length} invalid data points`);
-  }
-  
-  // Handle case with no valid data
   if (validData.length === 0) {
-    console.error('❌ No valid data points after filtering');
     return (
       <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
         <div className="text-red-400 text-3xl mb-3">⚠️</div>
@@ -140,11 +114,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     return groups;
   }, [sortedData]);
 
-  // Convert goal time to minutes for comparison
   const [goalHours, goalMinutes] = goalTime.split(':').map(Number);
   const goalTimeInMinutes = goalHours * 60 + goalMinutes;
   
-  // Enhanced time formatting helper with AM/PM
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -153,38 +125,25 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
   };
   
-  // Calculate chart dimensions and scales - use percentage-based width for mobile
   const height = 300;
   const padding = { top: 30, right: 20, bottom: 40, left: 60 };
-  
-  // Fixed time range for morning workout focus: 6 AM to 12 PM (noon)
-  const minTimeValue = 6 * 60;  // 6:00 AM in minutes
-  const maxTimeValue = 12 * 60; // 12:00 PM (noon) in minutes
-  
-  console.log('Fixed time range: 6:00 AM to 12:00 PM for morning workout focus');
+  const minTimeValue = 6 * 60;
+  const maxTimeValue = 12 * 60;
 
-  // Scale X position based on data index - use percentage for responsive design
   const xScale = (index: number, containerWidth: number) => {
     const chartWidth = containerWidth - padding.left - padding.right;
-    if (sortedData.length <= 1) {
-      return padding.left + chartWidth;
-    }
+    if (sortedData.length <= 1) return padding.left + chartWidth;
     const step = chartWidth / (sortedData.length - 1);
     return padding.left + index * step;
   };
   
-  // Scale Y position based on time
-  // Visual metaphor: Morning (6 AM) at BOTTOM, Noon (12 PM) at TOP (like sun rising)
-  // SVG Y-axis: 0 is at TOP, so we invert: earlier times need LARGER Y (bottom)
   const yScale = (timeInMinutes: number) => {
     const chartHeight = height - padding.top - padding.bottom;
     const range = maxTimeValue - minTimeValue;
     const normalized = (timeInMinutes - minTimeValue) / range;
-    // Inverted scale: Earlier times (6 AM) → larger Y (bottom), Later times (12 PM) → smaller Y (top)
     return height - padding.bottom - (normalized * chartHeight);
   };
   
-  // Use a ref to track container width for responsive scaling
   const [containerWidth, setContainerWidth] = React.useState(1000);
   const chartRef = React.useRef<SVGSVGElement>(null);
 
@@ -209,36 +168,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     };
   });
 
-  console.log('Generated month markers:', displayMonths.length);
-
   return (
-    <div className="w-full overflow-hidden">
-      {/* Dynamic header based on data analysis */}
-      {(() => {
-        const last30Days = sortedData.slice(-30);
-        const workoutsBeforeGoal = last30Days.filter(point => point.timeAsMinutes <= goalTimeInMinutes).length;
-        const successRate = (workoutsBeforeGoal / last30Days.length) * 100;
-
-        const isWinning = successRate >= 50;
-        const statusEmoji = isWinning ? "🏆" : "💪";
-        const statusText = isWinning ? "Crushing the Morning Challenge!" : "Building Morning Momentum";
-
-        return (
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/30 rounded-full px-4 py-2 mb-3">
-              <span className="text-sm text-amber-400">
-                🌅 Am I winning my early morning battle?
-              </span>
-            </div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-yellow-400 bg-clip-text text-transparent mb-2">
-              Win The Morning, Win The Day
-            </h2>
-
-          </div>
-        );
-      })()}
-
-      <div ref={scrollContainerRef} className="overflow-x-auto pb-4 relative">
+    <div ref={containerRef} className="w-full overflow-hidden relative">
+      <div ref={scrollContainerRef} className="overflow-x-auto pb-4">
         <svg ref={chartRef} width="100%" height={height} viewBox={`0 0 ${containerWidth} ${height}`} className="mx-auto" style={{ minWidth: "700px" }}>
         {/* Y-axis and labels */}
         <line
@@ -332,36 +264,13 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
 
             const formattedDate = format(dateObj, 'MMM dd');
             
-            // Determine if workout is before goal time
             const isBeforeGoal = point.timeAsMinutes <= goalTimeInMinutes;
-            
-            // Calculate point size (make recent points larger)
             const isRecentPoint = i >= sortedData.length - 10;
-            const pointSize = isRecentPoint ? 6 : 5;
-            
-            // Apply stroke for emphasis on recent points + workout type indicators
-            const baseStrokeColor = isRecentPoint ? (isBeforeGoal ? "#22c55e" : "#ef4444") : "none";
-            const baseStrokeWidth = isRecentPoint ? 1.5 : 0;
-            
-            // Add workout type stroke patterns (subtle indicators)
-            const getWorkoutTypeStroke = (workoutType: string) => {
-              switch (workoutType) {
-                case 'Running':
-                  return { strokeDasharray: "0", strokeWidth: baseStrokeWidth + 0.5 }; // Solid, thicker
-                case 'Weightlifting':
-                  return { strokeDasharray: "3,2", strokeWidth: baseStrokeWidth + 0.5 }; // Dashed
-                case 'Boxing':
-                  return { strokeDasharray: "1,1", strokeWidth: baseStrokeWidth + 0.5 }; // Dotted
-                default: // Other
-                  return { strokeDasharray: "5,3,1,3", strokeWidth: baseStrokeWidth }; // Dash-dot
-              }
-            };
-            
-            const workoutStrokeStyle = getWorkoutTypeStroke(point.workoutType);
+            const baseColor = isBeforeGoal ? "#4ade80" : "#f87171";
+            const strokeColor = isRecentPoint ? (isBeforeGoal ? "#22c55e" : "#ef4444") : "none";
             
             return (
               <g key={i}>
-                {/* Add vertical position line for clarity */}
                 <line
                   x1={xScale(i, containerWidth)}
                   y1={yScale(point.timeAsMinutes)}
@@ -371,49 +280,153 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                   strokeWidth="1"
                   strokeDasharray="2"
                 />
+                {/* Workout type markers */}
+                {point.workoutType === 'Running' && (
+                  <g
+                    onMouseEnter={e => {
+                      if (containerRef.current) {
+                        const containerRect = containerRef.current.getBoundingClientRect();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const parsedTime = parse(point.time, 'HH:mm', new Date());
+                        const timeLabel = format(parsedTime, 'h:mm a');
 
-                {/* Data point with workout type styling */}
-                <circle
-                  cx={xScale(i, containerWidth)}
-                  cy={yScale(point.timeAsMinutes)}
-                  r={pointSize}
-                  fill={isBeforeGoal ? "#4ade80" : "#f87171"}
-                  stroke={baseStrokeColor}
-                  strokeWidth={workoutStrokeStyle.strokeWidth}
-                  strokeDasharray={workoutStrokeStyle.strokeDasharray}
-                  opacity="0.8"
-                  onMouseEnter={e => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const parsedTime = parse(point.time, 'HH:mm', new Date());
-                    const timeLabel = format(parsedTime, 'h:mm a');
-                    setHoveredWorkout({
-                      dateLabel: format(dateObj, 'EEE, MMM d, yyyy'),
-                      timeLabel,
-                      rawTime: point.time,
-                      workoutType: point.workoutType,
-                      x: rect.left + rect.width / 2,
-                      y: rect.top,
-                      isBeforeGoal
-                    });
-                  }}
-                  onMouseLeave={() => setHoveredWorkout(null)}
-                />
+                        // Calculate position relative to container
+                        const x = rect.left - containerRect.left + rect.width / 2;
+                        const y = rect.top - containerRect.top;
+
+                        // Check if tooltip would be cut off at the top (120px is approx tooltip height)
+                        const showBelow = y < 120;
+
+                        setHoveredWorkout({
+                          dateLabel: format(dateObj, 'EEE, MMM d, yyyy'),
+                          timeLabel,
+                          rawTime: point.time,
+                          workoutType: point.workoutType,
+                          x,
+                          y,
+                          isBeforeGoal,
+                          showBelow
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => setHoveredWorkout(null)}
+                  >
+                    {/* Star shape */}
+                    <path
+                      d={`M ${xScale(i, containerWidth)} ${yScale(point.timeAsMinutes) - 6} 
+                          L ${xScale(i, containerWidth) + 2} ${yScale(point.timeAsMinutes) - 2}
+                          L ${xScale(i, containerWidth) + 6} ${yScale(point.timeAsMinutes) - 1}
+                          L ${xScale(i, containerWidth) + 3} ${yScale(point.timeAsMinutes) + 2}
+                          L ${xScale(i, containerWidth) + 4} ${yScale(point.timeAsMinutes) + 6}
+                          L ${xScale(i, containerWidth)} ${yScale(point.timeAsMinutes) + 4}
+                          L ${xScale(i, containerWidth) - 4} ${yScale(point.timeAsMinutes) + 6}
+                          L ${xScale(i, containerWidth) - 3} ${yScale(point.timeAsMinutes) + 2}
+                          L ${xScale(i, containerWidth) - 6} ${yScale(point.timeAsMinutes) - 1}
+                          L ${xScale(i, containerWidth) - 2} ${yScale(point.timeAsMinutes) - 2} Z`}
+                      fill={baseColor}
+                      stroke={strokeColor}
+                      strokeWidth={isRecentPoint ? 1.5 : 0}
+                      opacity="0.8"
+                    />
+                  </g>
+                )}
+                {point.workoutType === 'Weightlifting' && (
+                  <circle
+                    cx={xScale(i, containerWidth)}
+                    cy={yScale(point.timeAsMinutes)}
+                    r={isRecentPoint ? 6 : 5}
+                    fill={baseColor}
+                    stroke={strokeColor}
+                    strokeWidth={isRecentPoint ? 1.5 : 0}
+                    opacity="0.8"
+                    onMouseEnter={e => {
+                      if (containerRef.current) {
+                        const containerRect = containerRef.current.getBoundingClientRect();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const parsedTime = parse(point.time, 'HH:mm', new Date());
+                        const timeLabel = format(parsedTime, 'h:mm a');
+
+                        // Calculate position relative to container
+                        const x = rect.left - containerRect.left + rect.width / 2;
+                        const y = rect.top - containerRect.top;
+
+                        // Check if tooltip would be cut off at the top (120px is approx tooltip height)
+                        const showBelow = y < 120;
+
+                        setHoveredWorkout({
+                          dateLabel: format(dateObj, 'EEE, MMM d, yyyy'),
+                          timeLabel,
+                          rawTime: point.time,
+                          workoutType: point.workoutType,
+                          x,
+                          y,
+                          isBeforeGoal,
+                          showBelow
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => setHoveredWorkout(null)}
+                  />
+                )}
+                {point.workoutType === 'Boxing' && (
+                  <g
+                    onMouseEnter={e => {
+                      if (containerRef.current) {
+                        const containerRect = containerRef.current.getBoundingClientRect();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const parsedTime = parse(point.time, 'HH:mm', new Date());
+                        const timeLabel = format(parsedTime, 'h:mm a');
+
+                        // Calculate position relative to container
+                        const x = rect.left - containerRect.left + rect.width / 2;
+                        const y = rect.top - containerRect.top;
+
+                        // Check if tooltip would be cut off at the top (120px is approx tooltip height)
+                        const showBelow = y < 120;
+
+                        setHoveredWorkout({
+                          dateLabel: format(dateObj, 'EEE, MMM d, yyyy'),
+                          timeLabel,
+                          rawTime: point.time,
+                          workoutType: point.workoutType,
+                          x,
+                          y,
+                          isBeforeGoal,
+                          showBelow
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => setHoveredWorkout(null)}
+                  >
+                    {/* Triangle shape */}
+                    <path
+                      d={`M ${xScale(i, containerWidth)} ${yScale(point.timeAsMinutes) - 6}
+                          L ${xScale(i, containerWidth) + 6} ${yScale(point.timeAsMinutes) + 4}
+                          L ${xScale(i, containerWidth) - 6} ${yScale(point.timeAsMinutes) + 4} Z`}
+                      fill={baseColor}
+                      stroke={strokeColor}
+                      strokeWidth={isRecentPoint ? 1.5 : 0}
+                      opacity="0.8"
+                    />
+                  </g>
+                )}
               </g>
             );
-          } catch (error) {
-            console.error(`Error rendering point for date: ${point.date}`, error);
-            return null; // Skip rendering this point
+          } catch {
+            return null;
           }
         })}
         </svg>
 
         {hoveredWorkout && (
           <div
-            className="fixed pointer-events-none z-[10000]"
+            className="absolute pointer-events-none z-[10000]"
             style={{
               left: hoveredWorkout.x,
               top: hoveredWorkout.y,
-              transform: 'translate(-50%, calc(-100% - 16px))'
+              transform: hoveredWorkout.showBelow 
+                ? 'translate(-50%, 12px)' 
+                : 'translate(-50%, calc(-100% - 12px))'
             }}
           >
             <div className="bg-black/95 backdrop-blur-sm border-2 border-cyan-400 rounded-lg px-3 py-2 shadow-2xl text-xs min-w-[160px]">
@@ -439,28 +452,34 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         <div className="flex justify-center items-center gap-6 p-3 bg-black/10 rounded-lg">
           <div className="text-white/60 text-sm font-medium">Workout Types:</div>
           <div className="flex items-center gap-1">
-            <svg width="12" height="12" className="mr-1">
-              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="2" opacity="0.8" />
+            <svg width="14" height="14" className="mr-1">
+              <path
+                d="M 7 1 L 8.5 4.5 L 12 5 L 9.5 7.5 L 10 11 L 7 9 L 4 11 L 4.5 7.5 L 2 5 L 5.5 4.5 Z"
+                fill="#4ade80"
+                stroke="#22c55e"
+                strokeWidth="1"
+                opacity="0.8"
+              />
             </svg>
             <span className="text-white/70 text-xs">Running</span>
           </div>
           <div className="flex items-center gap-1">
-            <svg width="12" height="12" className="mr-1">
-              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="2" strokeDasharray="3,2" opacity="0.8" />
+            <svg width="14" height="14" className="mr-1">
+              <circle cx="7" cy="7" r="5" fill="#4ade80" stroke="#22c55e" strokeWidth="1.5" opacity="0.8" />
             </svg>
             <span className="text-white/70 text-xs">Weightlifting</span>
           </div>
           <div className="flex items-center gap-1">
-            <svg width="12" height="12" className="mr-1">
-              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="2" strokeDasharray="1,1" opacity="0.8" />
+            <svg width="14" height="14" className="mr-1">
+              <path
+                d="M 7 2 L 12 12 L 2 12 Z"
+                fill="#4ade80"
+                stroke="#22c55e"
+                strokeWidth="1.5"
+                opacity="0.8"
+              />
             </svg>
             <span className="text-white/70 text-xs">Boxing</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <svg width="12" height="12" className="mr-1">
-              <circle cx="6" cy="6" r="4" fill="#4ade80" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="5,3,1,3" opacity="0.8" />
-            </svg>
-            <span className="text-white/70 text-xs">Other</span>
           </div>
         </div>
 

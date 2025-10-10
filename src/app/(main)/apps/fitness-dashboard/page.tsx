@@ -4,6 +4,8 @@ import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
 import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
 import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
 import WorkoutTimeChart from '@/components/features/whoop/WorkoutTimeChart';
+import LiquidNav from '@/components/shared/liquid-nav';
+import Link from 'next/link';
 
 // Configure Incremental Static Regeneration (ISR) with 6-hour revalidation
 export const dynamic = 'auto';
@@ -210,6 +212,9 @@ export default async function MyDataPage() {
 
     return (
         <div className="min-h-screen relative overflow-hidden">
+            {/* Navigation */}
+            <LiquidNav currentPage="apps" />
+
             {/* Animated Background */}
             <div className="fixed inset-0 -z-10">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
@@ -224,7 +229,9 @@ export default async function MyDataPage() {
                 <div className="max-w-7xl mx-auto">
                     {/* Hero Section */}
                     <div className="text-center mb-20">
-                        <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
+                        {/* Link to project page at top */}
+
+                        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
                             My Data Dashboard
                         </h1>
                         <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-8 py-4 mb-8">
@@ -266,15 +273,17 @@ export default async function MyDataPage() {
                                     </h2>
                                     <div className="space-y-4 text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-6">
                                         <p>
-                                            <span className="text-cyan-400 font-semibold">The 10 Strain Challenge:</span> Every month, I set myself a goal to maintain an average strain of at least 10. But this isn't just about numbers—it's about keeping my body in motion and staying committed to daily movement.
+I need the peak strain to be changed for a percentage of the weeks on the current week or current year in which I had an aggregation of strain more than 10, which is the goal.                                             Movement goes beyond counting steps — it's about <span className="font-bold text-white">real effort</span>. WHOOP's strain score combines <span className="font-bold text-white">heart rate and activity</span> to show how hard you actually push.
                                         </p>
                                         <p>
-                                            A strain of 10 represents that sweet spot where I'm pushing my body enough to see progress, but not so hard that I burn out. It means I'm consistently challenging myself through workouts, runs, and active recovery. 
-                                            <span className="text-yellow-400 font-semibold"> The yellow dotted line shows this target</span>—my North Star for staying active.
+                                            Each month, I aim for an <span className="font-bold text-white">average strain of 10</span> — that sweet spot between progress and burnout. <span className="text-yellow-400 font-semibold">The yellow dotted line</span> marks my North Star for daily movement.
+                                        </p>
+                                        <p className="text-white/60 text-base italic">
+                                            Below: Each square = one day. Brighter greens = higher strain (max: 21).
                                         </p>
                                  
                                         <p className="text-cyan-400 font-semibold text-center">
-                                            Skills Demonstrated: React Visualization, Real-time Data Processing, SQL Aggregation, Goal Tracking
+                                            Skills: React Visualization · Real-time Data Processing · SQL Aggregation · Goal Tracking
                                         </p>
                                     </div>
                                 </div>
@@ -297,6 +306,10 @@ export default async function MyDataPage() {
                                         <h2 className="text-4xl font-bold text-center text-white mb-6">
                                             Win The Morning, Win The Day
                                         </h2>
+                                        <p className="text-center text-white/80 text-base max-w-2xl mx-auto">
+                                            In <span className="font-bold text-white">October 2025</span>, I committed to working out <span className="font-bold text-white">before 8:30 AM</span> every day. 
+                                            This is my <span className="font-bold text-cyan-400">public accountability board</span> — tracking every workout, every morning, for everyone to see.
+                                        </p>
                                     </div>
                                 </div>
                                 
@@ -318,44 +331,52 @@ export default async function MyDataPage() {
                                 </div>
                             </Card>
 
-                            {/* Component 2: The Astoria Conquest */}
-                            <Card className="p-8 border-white/10 hover:border-green-400/30 transition-all duration-300">
+                            {/* Component 2: Strain vs. Recovery */}
+                            <Card className="p-8 border-white/10 hover:border-cyan-400/30 transition-all duration-300">
                                 <div className="mb-8 text-center">
-                                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-500/20 to-teal-500/20 border border-green-400/30 rounded-full px-6 py-3 mb-6">
-                                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                        <span className="text-green-300 font-semibold tracking-wide">How close am I to conquering Astoria?</span>
+                                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-6 py-3 mb-6">
+                                        <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                                        <span className="text-cyan-300 font-semibold tracking-wide">How does training impact recovery?</span>
                                     </div>
                                     <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                                        The Astoria Conquest
+                                        Strain vs. Recovery: The Core Performance Loop
                                     </h2>
                                     <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
-                                        Live geospatial goal tracking my mission to run every street in Astoria, Queens. Interactive map with real-time progress updates.
-                                        <span className="block mt-2 text-green-400 font-semibold">Astoria Conquest: 78% Complete • 45.2 miles remaining</span>
-                                        <span className="block mt-1 text-green-300 text-sm">Skills: Geospatial Data Processing, Mapbox/Leaflet.js, Advanced API Integration</span>
+                                        Each dot represents <span className="font-bold text-white">one day</span>, showing how <span className="font-bold text-cyan-400">training intensity</span> impacts <span className="font-bold text-blue-400">recovery capacity</span>. The trend line reveals the fundamental relationship between <span className="font-bold text-white">effort and restoration</span>.
                                     </p>
                                 </div>
                                 <StrainVsRecoveryChart data={strainRecoveryData} />
                             </Card>
 
-                            {/* Component 3: Other Key Charts */}
-                            <Card className="p-8 border-white/10 hover:border-purple-400/30 transition-all duration-300">
-                                <div className="mb-8 text-center">
-                                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full px-6 py-3 mb-6">
-                                        <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
-                                        <span className="text-purple-300 font-semibold tracking-wide">How do I distribute my training time?</span>
-                                    </div>
-                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                                        Training Analytics
-                                    </h2>
-                                    <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
-                                        Time-series analysis showing training distribution across different sports and workout types.
-                                        <span className="block mt-2 text-purple-400 font-semibold">Sleep Performance vs. Daily Recovery • Workout Type Distribution</span>
-                                        <span className="block mt-1 text-purple-300 text-sm">Skills: Time-series Analysis, Data Storytelling, Advanced Visualizations</span>
-                                    </p>
+                            {/* Component 3: Training Analytics - Description Outside */}
+                            <div className="mb-4 text-center">
+                                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full px-6 py-3 mb-4">
+                                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                                    <span className="text-purple-300 font-semibold tracking-wide">How do I distribute my training time?</span>
                                 </div>
+                                <h2 className="text-3xl md:text-4xl font-bold mb-3 text-white">
+                                    Training Analytics
+                                </h2>
+                                <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-0">
+                                    Time-series analysis showing <span className="font-bold text-purple-400">training distribution</span> across different sports and workout types. Each bar reveals <span className="font-bold text-white">session counts</span> and <span className="font-bold text-pink-400">total hours</span> of activity.
+                                </p>
+                            </div>
+                            <Card className="p-8 border-white/10 hover:border-purple-400/30 transition-all duration-300">
                                 <ActivityDistributionChart data={workoutData} />
                             </Card>
-                            
+
+                            {/* Call to Action - Read how I built this */}
+                            <Card className="border-white/10 bg-gradient-to-br from-cyan-500/15 to-blue-500/10 border-cyan-400/30 p-8 md:p-10 text-center space-y-4">
+                                <h3 className="text-2xl md:text-3xl font-semibold text-white">Want to see how this was built?</h3>
+                                <p className="text-white/70 text-lg">Dive into the technical architecture, challenges solved, and the data pipeline powering this dashboard.</p>
+                                <Link
+                                    href="/projects/fitness-dashboard"
+                                    className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/20 px-6 py-3 text-white font-medium transition-all duration-300 hover:scale-105 hover:border-cyan-300/60 hover:bg-cyan-500/30 hover:text-cyan-100"
+                                >
+                                    <span>Read the case study</span>
+                                    <span aria-hidden className="text-lg">→</span>
+                                </Link>
+                            </Card>
 
                         </div>
                     )}

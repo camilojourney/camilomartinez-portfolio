@@ -17,6 +17,16 @@ interface ActivityDistributionProps {
 }
 
 export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
+    const [hoveredBar, setHoveredBar] = React.useState<{
+        sport: string;
+        month: string;
+        hours: number;
+        sessions: number;
+        x: number;
+        y: number;
+    } | null>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
     // Handle empty data case
     if (!data || data.length === 0) {
         return (
@@ -39,12 +49,18 @@ export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
     Weightlifting: number;
     Running: number;
     Boxing: number;
+    WeightliftingSessions: number;
+    RunningSessions: number;
+    BoxingSessions: number;
 }
 
 interface YearlyTotals {
     Weightlifting: number;
     Running: number;
     Boxing: number;
+    WeightliftingSessions: number;
+    RunningSessions: number;
+    BoxingSessions: number;
 }
 
 // Process data to calculate hours per sport per month
@@ -59,14 +75,20 @@ interface YearlyTotals {
             name: month,
             Weightlifting: 0,
             Running: 0,
-            Boxing: 0
+            Boxing: 0,
+            WeightliftingSessions: 0,
+            RunningSessions: 0,
+            BoxingSessions: 0
         }));
 
         // Initialize yearly totals
         const yearlyTotals: YearlyTotals = {
             Weightlifting: 0,
             Running: 0,
-            Boxing: 0
+            Boxing: 0,
+            WeightliftingSessions: 0,
+            RunningSessions: 0,
+            BoxingSessions: 0
         };
 
         // Process each workout
@@ -99,8 +121,16 @@ interface YearlyTotals {
             // Add hours to monthly data
             monthlyData[monthIndex][sportCategory] += durationHours;
 
+            // Increment session count
+            const sessionKey = `${sportCategory}Sessions` as keyof MonthlyData;
+            (monthlyData[monthIndex][sessionKey] as number) += 1;
+
             // Add to yearly total
             yearlyTotals[sportCategory] += durationHours;
+            
+            // Increment yearly session count
+            const yearlySessionKey = `${sportCategory}Sessions` as keyof YearlyTotals;
+            (yearlyTotals[yearlySessionKey] as number) += 1;
         });
 
         return {
@@ -241,7 +271,7 @@ interface YearlyTotals {
     }, [visibleMonthlyData.length]);
 
     return (
-        <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8">
+        <div ref={containerRef} className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8 relative">
             <style jsx>{`
                 @keyframes grow {
                     from { transform: scaleY(0); }
@@ -271,15 +301,6 @@ interface YearlyTotals {
                 }
             `}</style>
 
-            <div className="mb-4 sm:mb-8">
-                <h2 className="text-2xl sm:text-3xl font-light text-white mb-2 sm:mb-3 flex items-center gap-3">
-                    <span className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></span>
-                    Training Hours Distribution
-                </h2>
-                <p className="text-white/70 font-light text-base sm:text-lg leading-relaxed">
-                    Monthly training hours by sport type, showing my focus on weightlifting, running, and boxing throughout the year.
-                </p>
-            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Monthly Bar Chart (2/3 width) */}
@@ -405,12 +426,25 @@ interface YearlyTotals {
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Weightlifting)}
                                             fill={sportColors.Weightlifting}
                                             opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity"
+                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50}ms` }}
-                                        >
-                                            <title>{`${month.name}: ${formatHours(month.Weightlifting)} hours of Weightlifting`}</title>
-                                        </rect>
+                                            onMouseEnter={(e) => {
+                                                if (containerRef.current) {
+                                                    const containerRect = containerRef.current.getBoundingClientRect();
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setHoveredBar({
+                                                        sport: 'Weightlifting',
+                                                        month: month.name,
+                                                        hours: month.Weightlifting,
+                                                        sessions: month.WeightliftingSessions,
+                                                        x: rect.left - containerRect.left + rect.width / 2,
+                                                        y: rect.top - containerRect.top
+                                                    });
+                                                }
+                                            }}
+                                            onMouseLeave={() => setHoveredBar(null)}
+                                        />
 
                                         {/* Running bar */}
                                         <rect
@@ -420,12 +454,25 @@ interface YearlyTotals {
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Running)}
                                             fill={sportColors.Running}
                                             opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity"
+                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50 + 50}ms` }}
-                                        >
-                                            <title>{`${month.name}: ${formatHours(month.Running)} hours of Running`}</title>
-                                        </rect>
+                                            onMouseEnter={(e) => {
+                                                if (containerRef.current) {
+                                                    const containerRect = containerRef.current.getBoundingClientRect();
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setHoveredBar({
+                                                        sport: 'Running',
+                                                        month: month.name,
+                                                        hours: month.Running,
+                                                        sessions: month.RunningSessions,
+                                                        x: rect.left - containerRect.left + rect.width / 2,
+                                                        y: rect.top - containerRect.top
+                                                    });
+                                                }
+                                            }}
+                                            onMouseLeave={() => setHoveredBar(null)}
+                                        />
 
                                         {/* Boxing bar */}
                                         <rect
@@ -435,12 +482,25 @@ interface YearlyTotals {
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Boxing)}
                                             fill={sportColors.Boxing}
                                             opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity"
+                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50 + 100}ms` }}
-                                        >
-                                            <title>{`${month.name}: ${formatHours(month.Boxing)} hours of Boxing`}</title>
-                                        </rect>
+                                            onMouseEnter={(e) => {
+                                                if (containerRef.current) {
+                                                    const containerRect = containerRef.current.getBoundingClientRect();
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    setHoveredBar({
+                                                        sport: 'Boxing',
+                                                        month: month.name,
+                                                        hours: month.Boxing,
+                                                        sessions: month.BoxingSessions,
+                                                        x: rect.left - containerRect.left + rect.width / 2,
+                                                        y: rect.top - containerRect.top
+                                                    });
+                                                }
+                                            }}
+                                            onMouseLeave={() => setHoveredBar(null)}
+                                        />
                                     </g>
                                 );
                             })}
@@ -499,42 +559,99 @@ interface YearlyTotals {
 
                         {/* Legend */}
                         <div className="mt-6 space-y-3 w-full max-w-[300px]">
-                            {Object.entries(processedData.yearlyTotals).map(([sport, hours], i) => (
-                                <div key={i} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div
-                                            className="w-4 h-4 rounded-full"
-                                            style={{
-                                                backgroundColor: sportSolidColors[sport as keyof typeof sportSolidColors],
-                                                animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                opacity: 0
-                                            }}
-                                        ></div>
-                                        <span
-                                            className="text-white/80 text-sm md:text-base"
-                                            style={{
-                                                animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                opacity: 0
-                                            }}
-                                        >
-                                            {sport}
-                                        </span>
-                                    </div>
-                                    <span
-                                        className="text-white/80 text-sm md:text-base ml-8"
-                                        style={{
-                                            animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                            opacity: 0
-                                        }}
-                                    >
-                                        {formatHours(hours)}h
-                                    </span>
-                                </div>
-                            ))}
+                            {Object.entries(processedData.yearlyTotals)
+                                .filter(([sport]) => !sport.includes('Sessions'))
+                                .map(([sport, hours], i) => {
+                                    const sessionKey = `${sport}Sessions` as keyof YearlyTotals;
+                                    const sessions = processedData.yearlyTotals[sessionKey];
+                                    return (
+                                        <div key={i} className="flex items-center justify-between gap-8">
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <div
+                                                    className="w-4 h-4 rounded-full flex-shrink-0"
+                                                    style={{
+                                                        backgroundColor: sportSolidColors[sport as keyof typeof sportSolidColors],
+                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
+                                                        opacity: 0
+                                                    }}
+                                                ></div>
+                                                <span
+                                                    className="text-white/80 text-sm md:text-base"
+                                                    style={{
+                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
+                                                        opacity: 0
+                                                    }}
+                                                >
+                                                    {sport}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col items-end flex-shrink-0">
+                                                <span
+                                                    className="text-white/80 text-sm md:text-base"
+                                                    style={{
+                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
+                                                        opacity: 0
+                                                    }}
+                                                >
+                                                    {formatHours(hours)}h
+                                                </span>
+                                                <span
+                                                    className="text-white/50 text-xs"
+                                                    style={{
+                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
+                                                        opacity: 0
+                                                    }}
+                                                >
+                                                    {sessions} sessions
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Tooltip */}
+            {hoveredBar && (
+                <div
+                    className="absolute pointer-events-none z-[10000]"
+                    style={{
+                        left: hoveredBar.x,
+                        top: hoveredBar.y,
+                        transform: 'translate(-50%, calc(-100% - 12px))'
+                    }}
+                >
+                    <div className="bg-black/95 backdrop-blur-sm border-2 border-purple-400 rounded-lg p-3 shadow-2xl min-w-[200px]">
+                        <div className="text-white text-sm font-semibold mb-2">
+                            {hoveredBar.month} - {hoveredBar.sport}
+                        </div>
+                        <div className="border-t border-purple-400/30 pt-2 space-y-1">
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-300 text-xs">Total Hours:</span>
+                                <span className="text-purple-400 text-base font-bold">
+                                    {hoveredBar.hours.toFixed(1)}h
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-300 text-xs">Sessions:</span>
+                                <span className="text-pink-400 text-base font-bold">
+                                    {hoveredBar.sessions}
+                                </span>
+                            </div>
+                            {hoveredBar.sessions > 0 && (
+                                <div className="flex items-center justify-between border-t border-purple-400/20 pt-1 mt-1">
+                                    <span className="text-gray-400 text-xs">Avg per session:</span>
+                                    <span className="text-cyan-400 text-sm font-semibold">
+                                        {(hoveredBar.hours / hoveredBar.sessions).toFixed(1)}h
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
