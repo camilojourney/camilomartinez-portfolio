@@ -543,15 +543,17 @@ interface YearlyTotals {
 
                                                 const endPercentage = startPercentage + segment.percentage * 100;
 
-                                                return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]}
-                                                        ${startPercentage}% ${endPercentage}%`;
+                                                return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]} ${startPercentage}% ${endPercentage}%`;
                                             }).join(', ')}
                                             )`
-                                            : 'transparent',
-                                        maskImage: 'radial-gradient(transparent 49%, black 50%)',
-                                        WebkitMaskImage: 'radial-gradient(transparent 49%, black 50%)',
+                                            : '#4ade80',  // Fallback solid color to debug
+                                        WebkitMaskImage: 'radial-gradient(circle, transparent 49%, black 50%)',
+                                        maskImage: 'radial-gradient(circle, transparent 49%, black 50%)',
+                                        WebkitMaskComposite: 'source-out',
+                                        maskComposite: 'exclude',
                                         animation: 'fadeIn 0.5s ease-out forwards',
-                                        boxShadow: '0 0 20px rgba(0,0,0,0.3) inset'
+                                        boxShadow: '0 0 20px rgba(0,0,0,0.3) inset',
+                                        border: '2px solid rgba(255,255,255,0.1)'  // Debug border
                                     }}
                                 >
                                     {/* Inner circle that displays the total in the middle of the donut */}

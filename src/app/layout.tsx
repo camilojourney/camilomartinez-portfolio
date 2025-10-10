@@ -14,12 +14,12 @@ import Footer from '@/components/shared/footer'
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Camilo Martinez | AI Developer',
+    default: 'Camilo Martinez | AI Engineer',
     template: '%s | Camilo Martinez',
   },
   description: 'A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development.',
   openGraph: {
-    title: 'Camilo Martinez | AI Developer',
+    title: 'Camilo Martinez | AI Engineer',
     description: 'A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development.',
     url: baseUrl,
     siteName: 'Camilo Martinez Portfolio',
