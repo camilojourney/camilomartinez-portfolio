@@ -5,8 +5,8 @@ import LiquidNav from '@/components/shared/liquid-nav';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { projects } from '@/data/projects';
-import type { ProjectStatus } from '@/data/projects';
+import { projects } from '../../data/projects';
+import type { ProjectStatus } from '../../data/projects';
 
 type NavKey = 'projects' | 'about' | 'blog' | 'contact';
 
