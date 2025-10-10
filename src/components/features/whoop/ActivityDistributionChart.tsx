@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 // This interface matches what our database query returns
 interface WorkoutData {
@@ -26,6 +26,13 @@ export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
         y: number;
     } | null>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
+    
+    // Add client-side only rendering flag to fix hydration issues
+    const [isMounted, setIsMounted] = useState(false);
+    
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Handle empty data case
     if (!data || data.length === 0) {
@@ -510,52 +517,63 @@ interface YearlyTotals {
                 <div className="lg:col-span-1 bg-black/20 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center gap-4">
                     <h3 className="text-lg font-light text-white mb-2 text-center">Yearly Distribution</h3>
 
-                    <div className="flex flex-col items-center">
-                        {/* Conic Gradient Donut Chart */}
-                        <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
-                            {/* Create the conic gradient donut */}
-                            <div
-                                className="w-[85%] h-[85%] rounded-full relative animate-fadeIn"
-                                style={{
-                                    background: donutData.length > 0
-                                        ? `conic-gradient(
-                                            ${donutData.map((segment, i) => {
-                                            const startPercentage = i === 0 ? 0 : donutData
-                                                .slice(0, i)
-                                                .reduce((sum, s) => sum + s.percentage, 0) * 100;
-
-                                            const endPercentage = startPercentage + segment.percentage * 100;
-
-                                            return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]}
-                                                    ${startPercentage}% ${endPercentage}%`;
-                                        }).join(', ')}
-                                        )`
-                                        : 'transparent',
-                                    maskImage: 'radial-gradient(transparent 49%, black 50%)',
-                                    WebkitMaskImage: 'radial-gradient(transparent 49%, black 50%)',
-                                    animation: 'fadeIn 0.5s ease-out forwards',
-                                    boxShadow: '0 0 20px rgba(0,0,0,0.3) inset'
-                                }}
-                            >
-                                {/* Inner circle that displays the total in the middle of the donut */}
-                                <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-black/40 rounded-full flex items-center justify-center flex-col animate-scaleIn shadow-inner border border-white/20">
-                                    {/* "TOTAL" text */}
-                                    <span className="text-white/90 text-base font-medium mb-[-2px]">
-                                        TOTAL
-                                    </span>
-
-                                    {/* THIS IS THE TOTAL HOURS NUMBER displayed prominently */}
-                                    <span className="text-white text-4xl font-bold mt-1">
-                                        {formatHours(totalHoursYear)}
-                                    </span>
-
-                                    {/* "HOURS" text */}
-                                    <span className="text-white/90 text-base font-medium mt-1">
-                                        HOURS
-                                    </span>
+                                        <div className="flex flex-col items-center">
+                        {/* Conic Gradient Donut Chart - Only render client-side to avoid hydration issues */}
+                        {!isMounted ? (
+                            // Skeleton loader while mounting
+                            <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
+                                <div className="w-[85%] h-[85%] rounded-full relative bg-white/5 animate-pulse">
+                                    <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-black/40 rounded-full flex items-center justify-center flex-col">
+                                        <span className="text-white/90 text-base font-medium">LOADING</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
+                                {/* Create the conic gradient donut */}
+                                <div
+                                    className="w-[85%] h-[85%] rounded-full relative animate-fadeIn"
+                                    style={{
+                                        background: donutData.length > 0
+                                            ? `conic-gradient(
+                                                ${donutData.map((segment, i) => {
+                                                const startPercentage = i === 0 ? 0 : donutData
+                                                    .slice(0, i)
+                                                    .reduce((sum, s) => sum + s.percentage, 0) * 100;
+
+                                                const endPercentage = startPercentage + segment.percentage * 100;
+
+                                                return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]}
+                                                        ${startPercentage}% ${endPercentage}%`;
+                                            }).join(', ')}
+                                            )`
+                                            : 'transparent',
+                                        maskImage: 'radial-gradient(transparent 49%, black 50%)',
+                                        WebkitMaskImage: 'radial-gradient(transparent 49%, black 50%)',
+                                        animation: 'fadeIn 0.5s ease-out forwards',
+                                        boxShadow: '0 0 20px rgba(0,0,0,0.3) inset'
+                                    }}
+                                >
+                                    {/* Inner circle that displays the total in the middle of the donut */}
+                                    <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-black/40 rounded-full flex items-center justify-center flex-col animate-scaleIn shadow-inner border border-white/20">
+                                        {/* "TOTAL" text */}
+                                        <span className="text-white/90 text-base font-medium mb-[-2px]">
+                                            TOTAL
+                                        </span>
+
+                                        {/* THIS IS THE TOTAL HOURS NUMBER displayed prominently */}
+                                        <span className="text-white text-4xl font-bold mt-1">
+                                            {formatHours(totalHoursYear)}
+                                        </span>
+
+                                        {/* "HOURS" text */}
+                                        <span className="text-white/90 text-base font-medium mt-1">
+                                            HOURS
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Legend */}
                         <div className="mt-6 space-y-3 w-full max-w-[300px]">
