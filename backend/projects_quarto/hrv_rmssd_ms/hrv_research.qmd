@@ -652,15 +652,535 @@ print("="*80)
 
 ---
 
-# Next Steps
+# Phase 2: Data Preprocessing & Feature Engineering
 
-## Phase 2: Feature Engineering (Coming Soon)
-- Create lagged features (yesterday's workout affecting today's HRV)
-- Calculate cumulative training load
-- Engineer interaction terms
-- Normalize and scale features
+## 2.1 Missing Data Imputation
 
-## Phase 3: Statistical Modeling (Coming Soon)
+**Critical First Step**: Handle missing values BEFORE creating any derived features. Lagged and rolling window calculations will fail or produce incorrect results with NULL values.
+
+```{python}
+#| label: missing-data-imputation
+#| code-summary: "Impute missing values with appropriate strategies"
+
+# Store original dataset for comparison
+df_original = df.copy()
+
+print("🔧 MISSING DATA IMPUTATION")
+print("="*80)
+
+# Check missing data before imputation
+missing_before = df.isnull().sum()
+print("\n📊 Missing values BEFORE imputation:")
+print(missing_before[missing_before > 0])
+
+# Imputation Strategy:
+# - skin_temp_celsius: Use MEDIAN (robust to outliers)
+# - Other numeric features: Use MEDIAN (safer than mean for skewed distributions)
+
+numeric_cols_to_impute = df.select_dtypes(include=[np.number]).columns.tolist()
+
+for col in numeric_cols_to_impute:
+    if df[col].isnull().sum() > 0:
+        median_value = df[col].median()
+        df[col].fillna(median_value, inplace=True)
+        print(f"✅ {col}: Filled {missing_before[col]} missing values with median ({median_value:.2f})")
+
+# Verify no missing values remain
+missing_after = df.isnull().sum()
+print(f"\n✅ Total missing values AFTER imputation: {missing_after.sum()}")
+
+if missing_after.sum() == 0:
+    print("🎉 All missing data successfully imputed!")
+else:
+    print("⚠️  Some missing values remain:")
+    print(missing_after[missing_after > 0])
+```
+
+## 2.2 Feature Engineering (Time-Based Features)
+
+**Important**: Engineer features from the ORIGINAL, untransformed data. This keeps features in human-interpretable units (minutes, bpm, etc.).
+
+```{python}
+#| label: feature-engineering
+#| code-summary: "Create lagged features and rolling windows for time-series analysis"
+
+print("\n🔨 FEATURE ENGINEERING")
+print("="*80)
+
+# Sort by date to ensure correct time-series order
+df = df.sort_values('cycle_date').reset_index(drop=True)
+
+# ============================================================================
+# LAG FEATURES: Yesterday's values affecting today's HRV
+# ============================================================================
+
+lag_features = [
+    'total_workout_minutes',
+    'avg_workout_hr_bpm',
+    'resting_heart_rate_bpm',
+    'sleep_efficiency_percentage',
+    'total_rem_sleep_time_ms',
+    'total_slow_wave_sleep_time_ms'
+]
+
+print("\n📅 Creating LAG-1 Features (Previous Day):")
+for feature in lag_features:
+    lag_col_name = f"{feature}_lag1"
+    df[lag_col_name] = df[feature].shift(1)
+    print(f"   ✅ {lag_col_name}")
+
+# ============================================================================
+# ROLLING WINDOW FEATURES: Multi-day trends and patterns
+# ============================================================================
+
+rolling_features = [
+    ('total_workout_minutes', 7, 'mean'),
+    ('total_workout_minutes', 7, 'sum'),
+    ('resting_heart_rate_bpm', 7, 'mean'),
+    ('sleep_efficiency_percentage', 7, 'mean'),
+    ('hrv_rmssd_ms', 7, 'std'),  # HRV variability over 7 days
+]
+
+print("\n📊 Creating ROLLING WINDOW Features:")
+for feature, window, agg_func in rolling_features:
+    col_name = f"{feature}_rolling{window}d_{agg_func}"
+    
+    if agg_func == 'mean':
+        df[col_name] = df[feature].rolling(window=window, min_periods=1).mean()
+    elif agg_func == 'sum':
+        df[col_name] = df[feature].rolling(window=window, min_periods=1).sum()
+    elif agg_func == 'std':
+        df[col_name] = df[feature].rolling(window=window, min_periods=1).std()
+    
+    print(f"   ✅ {col_name}")
+
+# ============================================================================
+# CUMULATIVE TRAINING LOAD: Running total of workout time
+# ============================================================================
+
+print("\n💪 Creating CUMULATIVE TRAINING LOAD:")
+df['cumulative_workout_minutes'] = df['total_workout_minutes'].cumsum()
+print("   ✅ cumulative_workout_minutes")
+
+# ============================================================================
+# INTERACTION FEATURES: Combined effects
+# ============================================================================
+
+print("\n🔗 Creating INTERACTION Features:")
+
+# Sleep quality score (normalized composite)
+df['sleep_quality_score'] = (
+    (df['sleep_efficiency_percentage'] / 100) * 0.4 +
+    (df['total_rem_sleep_time_ms'] / df['total_rem_sleep_time_ms'].max()) * 0.3 +
+    (df['total_slow_wave_sleep_time_ms'] / df['total_slow_wave_sleep_time_ms'].max()) * 0.3
+)
+print("   ✅ sleep_quality_score (composite)")
+
+# Workout intensity index (HR zones weighted)
+df['workout_intensity_index'] = (
+    df['total_hr_zone_0_ms'] * 0.5 +
+    df['total_hr_zone_1_ms'] * 1.0 +
+    df['total_hr_zone_2_ms'] * 1.5 +
+    df['total_hr_zone_3_ms'] * 2.0 +
+    df['total_hr_zone_4_ms'] * 2.5 +
+    df['total_hr_zone_5_ms'] * 3.0
+) / 1000  # Convert ms to seconds
+print("   ✅ workout_intensity_index (weighted HR zones)")
+
+# Display summary of new features
+new_features = [col for col in df.columns if col not in df_original.columns]
+print(f"\n✅ Total new features created: {len(new_features)}")
+print(f"📊 Dataset shape: {df.shape[0]} rows × {df.shape[1]} columns (was {df_original.shape[1]})")
+```
+
+```{python}
+#| label: feature-summary
+#| code-summary: "Display summary of engineered features"
+
+print("\n📋 ENGINEERED FEATURES SUMMARY")
+print("="*80)
+
+feature_summary = []
+
+# Lag features
+lag_cols = [col for col in df.columns if '_lag1' in col]
+feature_summary.append({'Category': 'Lag Features (Day -1)', 'Count': len(lag_cols), 'Examples': ', '.join(lag_cols[:3])})
+
+# Rolling features
+rolling_cols = [col for col in df.columns if 'rolling' in col]
+feature_summary.append({'Category': 'Rolling Window (7-day)', 'Count': len(rolling_cols), 'Examples': ', '.join(rolling_cols[:3])})
+
+# Cumulative features
+cumulative_cols = [col for col in df.columns if 'cumulative' in col]
+feature_summary.append({'Category': 'Cumulative Features', 'Count': len(cumulative_cols), 'Examples': ', '.join(cumulative_cols)})
+
+# Interaction features
+interaction_cols = ['sleep_quality_score', 'workout_intensity_index']
+feature_summary.append({'Category': 'Interaction Features', 'Count': len(interaction_cols), 'Examples': ', '.join(interaction_cols)})
+
+feature_summary_df = pd.DataFrame(feature_summary)
+display(feature_summary_df)
+```
+
+## 2.3 Train-Test Split (Time-Series Aware)
+
+**Critical**: Split data BEFORE any transformations that learn from the data (scaling, normalization). Use chronological split to prevent data leakage.
+
+```{python}
+#| label: train-test-split
+#| code-summary: "Chronological split for time-series validation"
+
+print("\n✂️  TRAIN-TEST SPLIT (Chronological)")
+print("="*80)
+
+# Remove rows with NaN values created by lagging (first row will have NaN lags)
+df_clean = df.dropna()
+
+# Calculate 80/20 split point
+split_index = int(len(df_clean) * 0.8)
+split_date = df_clean.iloc[split_index]['cycle_date']
+
+# Split data chronologically
+train_df = df_clean[df_clean['cycle_date'] < split_date].copy()
+test_df = df_clean[df_clean['cycle_date'] >= split_date].copy()
+
+print(f"📊 DATASET SPLIT:")
+print(f"   Training Set:   {len(train_df)} days ({len(train_df)/len(df_clean)*100:.1f}%)")
+print(f"   Test Set:       {len(test_df)} days ({len(test_df)/len(df_clean)*100:.1f}%)")
+print(f"   Split Date:     {split_date}")
+print(f"   Train Range:    {train_df['cycle_date'].min()} → {train_df['cycle_date'].max()}")
+print(f"   Test Range:     {test_df['cycle_date'].min()} → {test_df['cycle_date'].max()}")
+
+# Verify no data leakage
+if train_df['cycle_date'].max() >= test_df['cycle_date'].min():
+    print("⚠️  WARNING: Potential data leakage detected!")
+else:
+    print("✅ No data leakage: Training data ends before test data begins")
+
+# Visualize split
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=train_df['cycle_date'],
+    y=train_df['hrv_rmssd_ms'],
+    mode='markers',
+    name='Training Data',
+    marker=dict(color='#00D9FF', size=6, opacity=0.7),
+))
+
+fig.add_trace(go.Scatter(
+    x=test_df['cycle_date'],
+    y=test_df['hrv_rmssd_ms'],
+    mode='markers',
+    name='Test Data',
+    marker=dict(color='#FF6B6B', size=6, opacity=0.7),
+))
+
+fig.add_vline(
+    x=split_date,
+    line_dash="dash",
+    line_color="yellow",
+    annotation_text="Train/Test Split",
+    annotation_position="top"
+)
+
+fig.update_layout(
+    title="Train-Test Split: Chronological Separation",
+    xaxis_title="Date",
+    yaxis_title="HRV (ms)",
+    template="plotly_dark",
+    height=500
+)
+
+fig.show()
+```
+
+```{python}
+#| label: verify-preprocessing
+#| code-summary: "Final verification of preprocessing pipeline"
+
+print("\n✅ PREPROCESSING PIPELINE COMPLETE")
+print("="*80)
+
+print(f"\n1️⃣  Missing Data:")
+print(f"   • Original missing values: {df_original.isnull().sum().sum()}")
+print(f"   • After imputation: {df.isnull().sum().sum()}")
+
+print(f"\n2️⃣  Feature Engineering:")
+print(f"   • Original features: {df_original.shape[1]}")
+print(f"   • Engineered features: {df.shape[1] - df_original.shape[1]}")
+print(f"   • Total features: {df.shape[1]}")
+
+print(f"\n3️⃣  Data Split:")
+print(f"   • Training samples: {len(train_df)}")
+print(f"   • Test samples: {len(test_df)}")
+print(f"   • No data leakage: ✅")
+
+print(f"\n📈 Ready for modeling with {df.shape[1]} features!")
+```
+
+## 2.4 Data Transformation & Scaling
+
+**Strategy**: Create TWO separate datasets optimized for different model families:
+1. **Tree-based models (XGBoost, Random Forest)**: Use raw data (no transformations needed)
+2. **Linear models (Lasso, Ridge)**: Apply log transformations to highly skewed features
+
+```{python}
+#| label: transformation-strategy
+#| code-summary: "Prepare datasets for tree-based and linear models"
+
+print("\n🔀 DATA TRANSFORMATION STRATEGY")
+print("="*80)
+
+# ============================================================================
+# DATASET 1: For Tree-Based Models (XGBoost, Random Forest)
+# ============================================================================
+
+print("\n🌳 DATASET 1: Tree-Based Models (No Transformation)")
+print("-" * 80)
+
+# Tree models are robust to skewed distributions - use raw features
+train_tree = train_df.copy()
+test_tree = test_df.copy()
+
+print(f"✅ Training set: {train_tree.shape}")
+print(f"✅ Test set:     {test_tree.shape}")
+print("📌 Strategy: Use raw features (tree models handle skewness naturally)")
+
+# ============================================================================
+# DATASET 2: For Linear Models (Lasso, Ridge, ElasticNet)
+# ============================================================================
+
+print("\n📈 DATASET 2: Linear Models (Log Transformation)")
+print("-" * 80)
+
+# Identify highly skewed features for transformation
+skewed_features = [
+    'total_workout_minutes',
+    'total_hr_zone_0_ms',
+    'total_hr_zone_1_ms',
+    'total_hr_zone_2_ms',
+    'total_hr_zone_3_ms',
+    'total_hr_zone_4_ms',
+    'total_hr_zone_5_ms',
+    'workout_intensity_index',
+    'total_workout_minutes_rolling7d_sum',
+    'cumulative_workout_minutes'
+]
+
+# Create copies for linear models
+train_linear = train_df.copy()
+test_linear = test_df.copy()
+
+print("\n🔢 Applying log(x + 1) transformation to skewed features:")
+for feature in skewed_features:
+    if feature in train_linear.columns:
+        # Apply log(x + 1) transformation
+        train_linear[f'{feature}_log'] = np.log1p(train_linear[feature])
+        test_linear[f'{feature}_log'] = np.log1p(test_linear[feature])
+        
+        # Drop original feature (keep only transformed version)
+        train_linear = train_linear.drop(columns=[feature])
+        test_linear = test_linear.drop(columns=[feature])
+        
+        print(f"   ✅ {feature} → {feature}_log")
+
+print(f"\n✅ Training set: {train_linear.shape}")
+print(f"✅ Test set:     {test_linear.shape}")
+print("📌 Strategy: Log-transform skewed workout features for linear assumptions")
+
+# ============================================================================
+# Visualize Transformation Effect
+# ============================================================================
+
+print("\n📊 Visualizing transformation effect on key features...")
+```
+
+```{python}
+#| label: transformation-visualization
+#| code-summary: "Compare distributions before/after log transformation"
+#| fig-cap: "Effect of log transformation on skewed features"
+
+# Select 4 key features to visualize
+features_to_visualize = [
+    'total_workout_minutes',
+    'total_hr_zone_3_ms',
+    'workout_intensity_index',
+    'cumulative_workout_minutes'
+]
+
+fig, axes = plt.subplots(4, 2, figsize=(14, 16))
+
+for idx, feature in enumerate(features_to_visualize):
+    if feature not in train_df.columns:
+        continue
+    
+    # Left column: Original distribution
+    ax_orig = axes[idx, 0]
+    data_orig = train_df[feature].dropna()
+    ax_orig.hist(data_orig, bins=40, alpha=0.7, color='#FF6B6B', edgecolor='white')
+    ax_orig.set_title(f'Original: {feature}', fontsize=11, fontweight='bold')
+    ax_orig.set_xlabel('Value', fontsize=9)
+    ax_orig.set_ylabel('Frequency', fontsize=9)
+    ax_orig.grid(alpha=0.3)
+    
+    # Add skewness annotation
+    skewness = data_orig.skew()
+    ax_orig.text(0.95, 0.95, f'Skewness: {skewness:.2f}', 
+                 transform=ax_orig.transAxes, ha='right', va='top',
+                 bbox=dict(boxstyle='round', facecolor='black', alpha=0.5),
+                 fontsize=9, color='white')
+    
+    # Right column: Log-transformed distribution
+    ax_log = axes[idx, 1]
+    data_log = np.log1p(data_orig)
+    ax_log.hist(data_log, bins=40, alpha=0.7, color='#00D9FF', edgecolor='white')
+    ax_log.set_title(f'Log-Transformed: log({feature} + 1)', fontsize=11, fontweight='bold')
+    ax_log.set_xlabel('Log Value', fontsize=9)
+    ax_log.set_ylabel('Frequency', fontsize=9)
+    ax_log.grid(alpha=0.3)
+    
+    # Add skewness annotation
+    skewness_log = data_log.skew()
+    ax_log.text(0.95, 0.95, f'Skewness: {skewness_log:.2f}', 
+                transform=ax_log.transAxes, ha='right', va='top',
+                bbox=dict(boxstyle='round', facecolor='black', alpha=0.5),
+                fontsize=9, color='white')
+
+plt.suptitle('Impact of Log Transformation on Skewed Features', 
+             fontsize=14, fontweight='bold', y=0.995)
+plt.tight_layout()
+plt.show()
+
+print("\n💡 TRANSFORMATION INSIGHTS:")
+print("   • Original features show heavy right-skew (long tail of high values)")
+print("   • Log transformation normalizes distributions for linear model assumptions")
+print("   • Tree models don't need this - they handle skewness naturally")
+```
+
+```{python}
+#| label: feature-scaling
+#| code-summary: "Standardize features for linear models"
+
+from sklearn.preprocessing import StandardScaler
+
+print("\n📏 FEATURE SCALING (Linear Models Only)")
+print("="*80)
+
+# Separate features and target
+feature_cols_linear = [col for col in train_linear.columns if col not in ['cycle_date', 'hrv_rmssd_ms']]
+
+X_train_linear = train_linear[feature_cols_linear]
+y_train_linear = train_linear['hrv_rmssd_ms']
+X_test_linear = test_linear[feature_cols_linear]
+y_test_linear = test_linear['hrv_rmssd_ms']
+
+# Fit scaler on training data ONLY (prevent data leakage)
+scaler = StandardScaler()
+X_train_linear_scaled = scaler.fit_transform(X_train_linear)
+X_test_linear_scaled = scaler.transform(X_test_linear)
+
+# Convert back to DataFrame for easier handling
+X_train_linear_scaled = pd.DataFrame(
+    X_train_linear_scaled, 
+    columns=feature_cols_linear,
+    index=X_train_linear.index
+)
+X_test_linear_scaled = pd.DataFrame(
+    X_test_linear_scaled, 
+    columns=feature_cols_linear,
+    index=X_test_linear.index
+)
+
+print(f"✅ Scaled {len(feature_cols_linear)} features using StandardScaler")
+print(f"   • Mean: {X_train_linear_scaled.mean().mean():.6f} (target: 0)")
+print(f"   • Std:  {X_train_linear_scaled.std().mean():.6f} (target: 1)")
+
+# For tree models, prepare feature matrices (no scaling needed)
+feature_cols_tree = [col for col in train_tree.columns if col not in ['cycle_date', 'hrv_rmssd_ms']]
+
+X_train_tree = train_tree[feature_cols_tree]
+y_train_tree = train_tree['hrv_rmssd_ms']
+X_test_tree = test_tree[feature_cols_tree]
+y_test_tree = test_tree['hrv_rmssd_ms']
+
+print(f"\n🌳 Tree model features prepared (no scaling): {len(feature_cols_tree)} features")
+```
+
+```{python}
+#| label: final-dataset-summary
+#| code-summary: "Summary of prepared datasets"
+
+print("\n📦 FINAL DATASET SUMMARY")
+print("="*80)
+
+print("\n🌳 TREE-BASED MODELS (XGBoost, Random Forest)")
+print("-" * 80)
+print(f"   Training features: {X_train_tree.shape}")
+print(f"   Test features:     {X_test_tree.shape}")
+print(f"   Training target:   {y_train_tree.shape}")
+print(f"   Test target:       {y_test_tree.shape}")
+print(f"   Transformations:   None (raw features)")
+print(f"   Scaling:           None (tree models don't need it)")
+
+print("\n📈 LINEAR MODELS (Lasso, Ridge, ElasticNet)")
+print("-" * 80)
+print(f"   Training features: {X_train_linear_scaled.shape}")
+print(f"   Test features:     {X_test_linear_scaled.shape}")
+print(f"   Training target:   {y_train_linear.shape}")
+print(f"   Test target:       {y_test_linear.shape}")
+print(f"   Transformations:   log(x+1) on {len(skewed_features)} skewed features")
+print(f"   Scaling:           StandardScaler (mean=0, std=1)")
+
+print("\n✅ Both datasets ready for modeling!")
+print("="*80)
+```
+
+```{python}
+#| label: key-decisions-summary
+#| code-summary: "Document key preprocessing decisions"
+
+print("\n📋 KEY PREPROCESSING DECISIONS")
+print("="*80)
+
+print("\n1️⃣  Missing Data Handling")
+print("   • Strategy: Median imputation (5 missing values in skin_temp_celsius)")
+print("   • Rationale: Median is robust to outliers, preserves distribution shape")
+
+print("\n2️⃣  Outlier Treatment")
+print("   ❌ NO REMOVAL: Workout outliers are legitimate high-intensity training days")
+print("   • Rationale: These are SIGNAL, not noise - critical for understanding HRV drivers")
+print("   • Spike days represent key training events we want to learn from")
+
+print("\n3️⃣  Feature Engineering")
+print("   • Lag features (n=6): Capture previous-day effects")
+print("   • Rolling windows (n=5): Smooth spiky workout data into cumulative load")
+print("   • Interaction terms (n=2): Sleep quality score, workout intensity index")
+print("   • Total new features: {0}".format(len([col for col in df.columns if col not in df_original.columns])))
+
+print("\n4️⃣  Data Split")
+print("   • Method: Chronological 80/20 split")
+print("   • Rationale: Prevents temporal data leakage in time-series data")
+print("   • Split date: {0}".format(split_date))
+
+print("\n5️⃣  Transformation Strategy")
+print("   • Tree models: Raw features (naturally handle skewness)")
+print("   • Linear models: Log-transform skewed workout features")
+print("   • Rationale: Match transformation to model assumptions")
+
+print("\n6️⃣  Scaling Strategy")
+print("   • Tree models: No scaling (tree splits are scale-invariant)")
+print("   • Linear models: StandardScaler (equal feature importance)")
+print("   • Fit on training set ONLY (prevent data leakage)")
+
+print("\n" + "="*80)
+print("🎯 Ready to proceed to Phase 3: Statistical Modeling!")
+print("="*80)
+```
+
+---
+
+# Phase 3: Statistical Modeling (Coming Soon)
 - Linear regression for interpretability
 - Random Forest for feature importance
 - XGBoost for non-linear relationships
