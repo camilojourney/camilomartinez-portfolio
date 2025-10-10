@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import LiquidPage from '@/components/shared/liquid-page'
+import StandardPage from '@/components/shared/standard-page'
+import { Card } from '@/components/ui/Card'
 
 // Project data structure
 interface ProjectData {
@@ -188,8 +189,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         : 'object-cover object-center'
 
     return (
-        <LiquidPage currentPage="projects" backgroundVariant="cool">
-            <div className="max-w-6xl w-full mx-auto">
+        <StandardPage currentPage="projects" maxWidth="wide">
+            <div className="w-full">
                 {/* Back Navigation */}
                 <div className="mb-8">
                     <Link
@@ -204,7 +205,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Main Content */}
-                <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 md:p-12 shadow-2xl shadow-black/20">
+                <Card className="border-white/10 bg-white/[0.05] p-8 md:p-12">
 
                     {/* Header Section */}
                     <div className="mb-12">
@@ -362,9 +363,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                             </svg>
                         </Link>
                     </div>
-                </div>
+                </Card>
             </div>
-        </LiquidPage>
+        </StandardPage>
     )
 }
 

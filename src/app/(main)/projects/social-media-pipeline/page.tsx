@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Twitter, Hash, Copy, Zap, Globe, Play, MessageCircle, Heart, Share } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
-import LiquidPage from '@/components/shared/liquid-page'
+import StandardPage from '@/components/shared/standard-page'
 
 export default function SocialMediaPipelineProjectPage() {
   const [activeExample, setActiveExample] = useState(0)
@@ -48,7 +48,8 @@ export default function SocialMediaPipelineProjectPage() {
   ]
 
   return (
-    <LiquidPage currentPage="projects" backgroundVariant="cool">
+    <StandardPage currentPage="projects" maxWidth="wide">
+      <div className="space-y-20">
       {/* Hero Section */}
       <section className="text-center mb-16">
         <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-cyan-200 bg-clip-text text-transparent leading-tight">
@@ -398,6 +399,7 @@ export default function SocialMediaPipelineProjectPage() {
           </p>
         </Card>
       </section>
-    </LiquidPage>
+      </div>
+    </StandardPage>
   )
 }
