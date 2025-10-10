@@ -13,9 +13,10 @@
 docs/
 *.md
 
-# Scripts and data
+# Scripts and data (but NOT src/data which contains source code)
 scripts/data/
-data/
+backend/data/
+public/data/
 backups/
 
 # Large assets
