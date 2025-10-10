@@ -293,7 +293,7 @@ I need the peak strain to be changed for a percentage of the weeks on the curren
                             </Card>
 
                             {/* Morning Workout Challenge Chart */}
-                            <Card className="p-8 border-white/10 hover:border-amber-400/30 transition-all duration-300">
+                            <Card className="p-8 pt-12 border-white/10 hover:border-amber-400/30 transition-all duration-300 overflow-visible">
                                 <div className="mb-8 text-center">
                                     <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 rounded-full px-6 py-3 mb-6">
                                         <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>

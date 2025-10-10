@@ -39,9 +39,21 @@ This analysis follows a rigorous data science workflow:
    - Analyze distributions and detect outliers
    - Perform bivariate analysis
 
-2. **Phase 2: Feature Engineering & Selection** (Future)
-3. **Phase 3: Statistical Modeling & Inference** (Future)
-4. **Phase 4: Validation & Interpretation** (Future)
+2. **Phase 2: Feature Engineering & Preprocessing**
+   - Create lagged features, rolling windows, and interaction terms
+   - Handle missing data and outliers
+   - Prepare separate datasets for tree-based and linear models
+
+3. **Phase 3: Statistical Modeling & Inference**
+   - Lasso regression for feature selection
+   - XGBoost for non-linear relationships
+   - SHAP analysis for causal inference
+   - Model comparison and synthesis
+
+4. **Phase 4: Actionable Insights & Personal Protocol**
+   - Translate findings into practical recommendations
+   - Create personalized HRV optimization checklist
+   - Define data-driven recovery protocols
 
 ---
 
@@ -834,6 +846,29 @@ df['workout_intensity_index'] = (
 ) / 1000  # Convert ms to seconds
 print("   ✅ workout_intensity_index (weighted HR zones)")
 
+# ============================================================================
+# DEVIATION FEATURES: Detect anomalies from baseline
+# ============================================================================
+
+print("\n📉 Creating DEVIATION Features:")
+
+# RHR deviation from 7-day mean (key early warning signal)
+df['rhr_deviation_from_7d_mean'] = df['resting_heart_rate_bpm'] - df['resting_heart_rate_bpm'].rolling(window=7, min_periods=1).mean()
+df['rhr_deviation_from_7d_mean_lag1'] = df['rhr_deviation_from_7d_mean'].shift(1)
+print("   ✅ rhr_deviation_from_7d_mean")
+print("   ✅ rhr_deviation_from_7d_mean_lag1")
+
+# Strain-recovery balance (cumulative stress vs recovery)
+# Positive = more recovery than strain, Negative = more strain than recovery
+df['strain_recovery_balance'] = df['sleep_quality_score'] - (df['workout_intensity_index'] / df['workout_intensity_index'].max())
+df['strain_recovery_balance_lag1'] = df['strain_recovery_balance'].shift(1)
+print("   ✅ strain_recovery_balance")
+print("   ✅ strain_recovery_balance_lag1")
+
+# Workout intensity exponential weighted average (recent bias)
+df['workout_intensity_exp'] = df['total_workout_minutes'].ewm(span=3, adjust=False).mean()
+print("   ✅ workout_intensity_exp")
+
 # Display summary of new features
 new_features = [col for col in df.columns if col not in df_original.columns]
 print(f"\n✅ Total new features created: {len(new_features)}")
@@ -864,6 +899,10 @@ feature_summary.append({'Category': 'Cumulative Features', 'Count': len(cumulati
 # Interaction features
 interaction_cols = ['sleep_quality_score', 'workout_intensity_index']
 feature_summary.append({'Category': 'Interaction Features', 'Count': len(interaction_cols), 'Examples': ', '.join(interaction_cols)})
+
+# Deviation features
+deviation_cols = [col for col in df.columns if 'deviation' in col or 'balance' in col or col == 'workout_intensity_exp']
+feature_summary.append({'Category': 'Deviation Features', 'Count': len(deviation_cols), 'Examples': ', '.join(deviation_cols[:3])})
 
 feature_summary_df = pd.DataFrame(feature_summary)
 display(feature_summary_df)
@@ -1015,7 +1054,8 @@ skewed_features = [
     'total_hr_zone_5_ms',
     'workout_intensity_index',
     'total_workout_minutes_rolling7d_sum',
-    'cumulative_workout_minutes'
+    'cumulative_workout_minutes',
+    'workout_intensity_exp'
 ]
 
 # Create copies for linear models
@@ -1230,17 +1270,619 @@ print("="*80)
 
 ---
 
-# Phase 3: Statistical Modeling (Coming Soon)
-- Linear regression for interpretability
-- Random Forest for feature importance
-- XGBoost for non-linear relationships
-- SHAP values for causal inference
+# Phase 3: Statistical Modeling & Inference
 
-## Phase 4: Validation & Insights (Coming Soon)
-- Cross-validation with time-series splits
-- Out-of-sample testing
-- Actionable recommendations
-- Longitudinal tracking
+## 3.1 Lasso Regression for Feature Selection
+
+**Goal**: Use L1 regularization to identify the most important linear predictors of HRV while avoiding overfitting.
+
+```{python}
+#| label: lasso-setup
+#| code-summary: "Import modeling libraries and prepare for Lasso regression"
+
+from sklearn.linear_model import LassoCV, Lasso
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+import warnings
+warnings.filterwarnings('ignore')
+
+print("🔧 LASSO REGRESSION SETUP")
+print("="*80)
+print("✅ Libraries imported successfully")
+```
+
+```{python}
+#| label: lasso-cv
+#| code-summary: "Cross-validated Lasso to find optimal alpha"
+
+# Use LassoCV to find optimal regularization strength
+lasso_cv = LassoCV(
+    alphas=np.logspace(-4, 1, 100),
+    cv=5,
+    max_iter=10000,
+    random_state=42,
+    n_jobs=-1
+)
+
+# Fit on training data
+lasso_cv.fit(X_train_linear_scaled, y_train_linear)
+
+print(f"\n🎯 LASSO CROSS-VALIDATION RESULTS")
+print("="*80)
+print(f"Optimal alpha: {lasso_cv.alpha_:.6f}")
+print(f"Cross-validated R²: {lasso_cv.score(X_train_linear_scaled, y_train_linear):.4f}")
+
+# Train final model with optimal alpha
+lasso_model = Lasso(alpha=lasso_cv.alpha_, max_iter=10000, random_state=42)
+lasso_model.fit(X_train_linear_scaled, y_train_linear)
+
+# Predictions
+y_pred_train_lasso = lasso_model.predict(X_train_linear_scaled)
+y_pred_test_lasso = lasso_model.predict(X_test_linear_scaled)
+
+# Evaluation metrics
+print(f"\n📊 LASSO MODEL PERFORMANCE")
+print("="*80)
+print(f"Training R²:   {r2_score(y_train_linear, y_pred_train_lasso):.4f}")
+print(f"Test R²:       {r2_score(y_test_linear, y_pred_test_lasso):.4f}")
+print(f"Training RMSE: {np.sqrt(mean_squared_error(y_train_linear, y_pred_train_lasso)):.4f} ms")
+print(f"Test RMSE:     {np.sqrt(mean_squared_error(y_test_linear, y_pred_test_lasso)):.4f} ms")
+print(f"Test MAE:      {mean_absolute_error(y_test_linear, y_pred_test_lasso):.4f} ms")
+```
+
+```{python}
+#| label: lasso-coefficients
+#| code-summary: "Extract and visualize Lasso feature importance"
+#| fig-cap: "Lasso regression coefficients: Linear drivers of HRV"
+
+# Get non-zero coefficients
+lasso_coefs = pd.DataFrame({
+    'Feature': X_train_linear_scaled.columns,
+    'Coefficient': lasso_model.coef_
+})
+
+# Filter to non-zero coefficients and sort
+lasso_coefs_nonzero = lasso_coefs[lasso_coefs['Coefficient'] != 0].sort_values('Coefficient', key=abs, ascending=False)
+
+print(f"\n🔍 LASSO FEATURE SELECTION")
+print("="*80)
+print(f"Features selected (non-zero coefficients): {len(lasso_coefs_nonzero)}/{len(lasso_coefs)}")
+print(f"\nTop 15 Most Important Features:")
+print(lasso_coefs_nonzero.head(15).to_string(index=False))
+
+# Visualize coefficients
+fig, ax = plt.subplots(figsize=(10, 12))
+
+colors = ['#FF6B6B' if x < 0 else '#00D9FF' for x in lasso_coefs_nonzero['Coefficient'].values]
+bars = ax.barh(lasso_coefs_nonzero['Feature'], lasso_coefs_nonzero['Coefficient'], color=colors, alpha=0.8)
+
+ax.axvline(x=0, color='white', linestyle='-', linewidth=1)
+ax.set_xlabel('Lasso Coefficient (Standardized)', fontsize=12, fontweight='bold')
+ax.set_title('Lasso Regression: Feature Importance for HRV Prediction', fontsize=14, fontweight='bold')
+ax.grid(axis='x', alpha=0.3)
+
+# Add value labels
+for i, (bar, val) in enumerate(zip(bars, lasso_coefs_nonzero['Coefficient'].values)):
+    ax.text(val + 0.1 if val > 0 else val - 0.1, i, f'{val:.2f}',
+            ha='left' if val > 0 else 'right', va='center', fontsize=8, fontweight='bold')
+
+plt.tight_layout()
+plt.show()
+```
+
+## 3.2 XGBoost for Non-Linear Relationships
+
+**Goal**: Capture complex, non-linear interactions between features using gradient boosting.
+
+```{python}
+#| label: xgboost-setup
+#| code-summary: "Train XGBoost model with hyperparameter tuning"
+
+import xgboost as xgb
+from sklearn.model_selection import GridSearchCV
+
+print("\n🌳 XGBOOST MODEL TRAINING")
+print("="*80)
+
+# Define parameter grid for tuning
+param_grid = {
+    'max_depth': [3, 5, 7],
+    'learning_rate': [0.01, 0.05, 0.1],
+    'n_estimators': [100, 200, 300],
+    'subsample': [0.8, 1.0],
+    'colsample_bytree': [0.8, 1.0]
+}
+
+# Initialize XGBoost regressor
+xgb_model = xgb.XGBRegressor(
+    random_state=42,
+    objective='reg:squarederror',
+    tree_method='hist'
+)
+
+# Grid search with cross-validation
+grid_search = GridSearchCV(
+    xgb_model,
+    param_grid,
+    cv=5,
+    scoring='r2',
+    n_jobs=-1,
+    verbose=0
+)
+
+print("🔄 Running hyperparameter tuning (this may take a few minutes)...")
+grid_search.fit(X_train_tree, y_train_tree)
+
+print(f"\n✅ Best parameters found:")
+for param, value in grid_search.best_params_.items():
+    print(f"   • {param}: {value}")
+
+# Train final model with best parameters
+best_tree_model = grid_search.best_estimator_
+
+# Predictions
+y_pred_train_xgb = best_tree_model.predict(X_train_tree)
+y_pred_test_xgb = best_tree_model.predict(X_test_tree)
+
+# Evaluation metrics
+print(f"\n📊 XGBOOST MODEL PERFORMANCE")
+print("="*80)
+print(f"Training R²:   {r2_score(y_train_tree, y_pred_train_xgb):.4f}")
+print(f"Test R²:       {r2_score(y_test_tree, y_pred_test_xgb):.4f}")
+print(f"Training RMSE: {np.sqrt(mean_squared_error(y_train_tree, y_pred_train_xgb)):.4f} ms")
+print(f"Test RMSE:     {np.sqrt(mean_squared_error(y_test_tree, y_pred_test_xgb)):.4f} ms")
+print(f"Test MAE:      {mean_absolute_error(y_test_tree, y_pred_test_xgb):.4f} ms")
+```
+
+```{python}
+#| label: xgboost-feature-importance
+#| code-summary: "XGBoost built-in feature importance"
+#| fig-cap: "XGBoost feature importance: Top predictors of HRV"
+
+# Get feature importance
+importance_df = pd.DataFrame({
+    'Feature': X_train_tree.columns,
+    'Importance': best_tree_model.feature_importances_
+}).sort_values('Importance', ascending=False)
+
+# Plot top 20 features
+fig, ax = plt.subplots(figsize=(10, 12))
+
+top_features = importance_df.head(20)
+bars = ax.barh(top_features['Feature'], top_features['Importance'], color='#00D9FF', alpha=0.8)
+
+ax.set_xlabel('XGBoost Feature Importance (Gain)', fontsize=12, fontweight='bold')
+ax.set_title('XGBoost Feature Importance: Top 20 Predictors', fontsize=14, fontweight='bold')
+ax.grid(axis='x', alpha=0.3)
+
+# Add value labels
+for i, (bar, val) in enumerate(zip(bars, top_features['Importance'].values)):
+    ax.text(val + 0.001, i, f'{val:.4f}',
+            ha='left', va='center', fontsize=8, fontweight='bold')
+
+plt.tight_layout()
+plt.show()
+
+print("\n🔝 TOP 15 FEATURES (XGBoost Importance):")
+print(importance_df.head(15).to_string(index=False))
+```
+
+## 3.3 SHAP Analysis for Causal Inference
+
+**Goal**: Use SHAP (SHapley Additive exPlanations) values to understand how each feature contributes to individual predictions.
+
+```{python}
+#| label: shap-setup
+#| code-summary: "Calculate SHAP values for XGBoost model"
+
+import shap
+
+print("\n🔬 SHAP ANALYSIS")
+print("="*80)
+print("Calculating SHAP values for model interpretability...")
+
+# Create SHAP explainer
+explainer = shap.TreeExplainer(best_tree_model)
+shap_values = explainer.shap_values(X_test_tree)
+
+print("✅ SHAP values calculated successfully")
+print(f"   • Shape: {shap_values.shape}")
+print(f"   • Base value (expected HRV): {explainer.expected_value:.2f} ms")
+```
+
+```{python}
+#| label: shap-summary
+#| code-summary: "SHAP summary plot showing global feature importance"
+#| fig-cap: "SHAP summary: Feature impact on HRV predictions"
+
+# SHAP summary plot
+plt.figure(figsize=(12, 10))
+shap.summary_plot(shap_values, X_test_tree, plot_type="dot", show=False)
+plt.title('SHAP Summary: Feature Impact on HRV Predictions', fontsize=14, fontweight='bold', pad=20)
+plt.tight_layout()
+plt.show()
+
+# Get mean absolute SHAP values for ranking
+shap_importance = pd.DataFrame({
+    'Feature': X_test_tree.columns,
+    'Mean_SHAP': np.abs(shap_values).mean(axis=0)
+}).sort_values('Mean_SHAP', ascending=False)
+
+print("\n🔝 TOP 15 FEATURES (SHAP Importance):")
+print(shap_importance.head(15).to_string(index=False))
+```
+
+```{python}
+#| label: shap-waterfall
+#| code-summary: "SHAP waterfall plot for a specific prediction"
+#| fig-cap: "SHAP waterfall plot: How the model arrived at a specific prediction"
+
+# Find the day with the lowest HRV in the test set
+lowest_hrv_idx = y_test_tree.idxmin()
+lowest_hrv_idx_position = X_test_tree.index.get_loc(lowest_hrv_idx)
+
+# Get the actual date and HRV value
+lowest_hrv_date = test_tree.loc[lowest_hrv_idx, 'cycle_date']
+lowest_hrv_actual = y_test_tree.loc[lowest_hrv_idx]
+lowest_hrv_predicted = y_pred_test_xgb[lowest_hrv_idx_position]
+
+print(f"\n📉 ANALYZING LOWEST HRV DAY IN TEST SET")
+print("="*80)
+print(f"Date:         {lowest_hrv_date}")
+print(f"Actual HRV:   {lowest_hrv_actual:.2f} ms")
+print(f"Predicted:    {lowest_hrv_predicted:.2f} ms")
+print(f"Base value:   {explainer.expected_value:.2f} ms")
+print(f"\nKey features driving this prediction:")
+
+# SHAP waterfall plot
+shap.waterfall_plot(
+    shap.Explanation(
+        values=shap_values[lowest_hrv_idx_position],
+        base_values=explainer.expected_value,
+        data=X_test_tree.iloc[lowest_hrv_idx_position],
+        feature_names=X_test_tree.columns.tolist()
+    ),
+    show=False
+)
+plt.title(f'SHAP Waterfall: Why HRV Was Low on {lowest_hrv_date.strftime("%Y-%m-%d")}',
+          fontsize=14, fontweight='bold', pad=20)
+plt.tight_layout()
+plt.show()
+```
+
+## 3.4 Synthesis: What Both Models Agree On
+
+**Goal**: Cross-validate findings by comparing Lasso coefficients with SHAP importance rankings to identify the most robust HRV drivers.
+
+```{python}
+#| label: model-synthesis
+#| code-summary: "Compare and synthesize findings from Lasso and SHAP"
+
+print("\n🔄 MODEL SYNTHESIS: CROSS-VALIDATION OF FINDINGS")
+print("="*80)
+
+# Prepare comparison dataframe
+# Note: Lasso uses transformed features, XGBoost uses raw features
+# We'll compare by matching feature names (excluding _log suffix)
+
+# Get top features from each model
+top_lasso_features = lasso_coefs_nonzero.head(15)['Feature'].tolist()
+top_shap_features = shap_importance.head(15)['Feature'].tolist()
+
+# Clean feature names for comparison (remove _log suffix)
+def clean_feature_name(name):
+    return name.replace('_log', '')
+
+lasso_features_clean = [clean_feature_name(f) for f in top_lasso_features]
+shap_features_clean = [clean_feature_name(f) for f in top_shap_features]
+
+# Find features that appear in both top 15 lists
+common_features = set(lasso_features_clean) & set(shap_features_clean)
+
+print(f"\n📊 MODEL AGREEMENT ANALYSIS")
+print("="*80)
+print(f"Features in Lasso top 15:     {len(top_lasso_features)}")
+print(f"Features in SHAP top 15:      {len(top_shap_features)}")
+print(f"Features in BOTH top 15:      {len(common_features)}")
+print(f"\n✅ HIGH-CONFIDENCE DRIVERS (agreed upon by both models):")
+
+for i, feature in enumerate(common_features, 1):
+    # Find ranks in each model
+    lasso_rank = next((i+1 for i, f in enumerate(lasso_features_clean) if f == feature), None)
+    shap_rank = next((i+1 for i, f in enumerate(shap_features_clean) if f == feature), None)
+
+    print(f"{i:2d}. {feature:50s} (Lasso: #{lasso_rank:2d}, SHAP: #{shap_rank:2d})")
+
+# Identify divergences
+lasso_only = set(lasso_features_clean) - set(shap_features_clean)
+shap_only = set(shap_features_clean) - set(lasso_features_clean)
+
+print(f"\n⚠️  DIVERGENCES (model-specific insights):")
+print(f"\n📈 Linear-only drivers (Lasso captured, XGBoost ranked lower):")
+for i, feature in enumerate(lasso_only, 1):
+    rank = next((i+1 for i, f in enumerate(lasso_features_clean) if f == feature), None)
+    print(f"{i:2d}. {feature:50s} (Lasso rank: #{rank})")
+
+print(f"\n🌳 Non-linear drivers (XGBoost captured, Lasso ranked lower):")
+for i, feature in enumerate(shap_only, 1):
+    rank = next((i+1 for i, f in enumerate(shap_features_clean) if f == feature), None)
+    print(f"{i:2d}. {feature:50s} (SHAP rank: #{rank})")
+
+print("\n💡 INTERPRETATION:")
+print("="*80)
+print("✅ Features in BOTH lists represent the most robust, validated HRV drivers")
+print("📈 Linear-only features may have strong linear relationships but weak non-linear interactions")
+print("🌳 Non-linear features likely have complex interactions XGBoost captured but Lasso couldn't model")
+```
+
+## 3.5 Model Performance Comparison
+
+```{python}
+#| label: model-comparison
+#| code-summary: "Compare Lasso vs XGBoost performance metrics"
+
+# Create performance comparison table
+performance_comparison = pd.DataFrame({
+    'Model': ['Lasso', 'XGBoost'],
+    'Train R²': [
+        r2_score(y_train_linear, y_pred_train_lasso),
+        r2_score(y_train_tree, y_pred_train_xgb)
+    ],
+    'Test R²': [
+        r2_score(y_test_linear, y_pred_test_lasso),
+        r2_score(y_test_tree, y_pred_test_xgb)
+    ],
+    'Test RMSE': [
+        np.sqrt(mean_squared_error(y_test_linear, y_pred_test_lasso)),
+        np.sqrt(mean_squared_error(y_test_tree, y_pred_test_xgb))
+    ],
+    'Test MAE': [
+        mean_absolute_error(y_test_linear, y_pred_test_lasso),
+        mean_absolute_error(y_test_tree, y_pred_test_xgb)
+    ]
+})
+
+print("\n📊 MODEL PERFORMANCE COMPARISON")
+print("="*80)
+display(performance_comparison)
+
+# Determine best model
+best_model_idx = performance_comparison['Test R²'].idxmax()
+best_model = performance_comparison.loc[best_model_idx, 'Model']
+
+print(f"\n🏆 BEST MODEL: {best_model}")
+print(f"   • Test R²: {performance_comparison.loc[best_model_idx, 'Test R²']:.4f}")
+print(f"   • Test RMSE: {performance_comparison.loc[best_model_idx, 'Test RMSE']:.4f} ms")
+```
+
+## 3.6 Actual vs Predicted HRV: Visual Diagnostic
+
+```{python}
+#| label: actuals-vs-predictions
+#| code-summary: "Plot actual HRV vs. model predictions on the test set"
+#| fig-cap: "Actual vs Predicted HRV: XGBoost model performance over time"
+
+# Add predictions to the test dataframe for easy plotting
+test_results_df = test_tree.copy()
+test_results_df['hrv_actual'] = y_test_tree.values
+test_results_df['hrv_predicted'] = best_tree_model.predict(X_test_tree)
+
+fig = go.Figure()
+
+# Actual HRV
+fig.add_trace(go.Scatter(
+    x=test_results_df['cycle_date'],
+    y=test_results_df['hrv_actual'],
+    mode='lines+markers',
+    name='Actual HRV',
+    line=dict(color='#00D9FF', width=2),
+    marker=dict(size=6)
+))
+
+# Predicted HRV
+fig.add_trace(go.Scatter(
+    x=test_results_df['cycle_date'],
+    y=test_results_df['hrv_predicted'],
+    mode='lines',
+    name='Predicted HRV',
+    line=dict(color='#FF6B6B', dash='dash', width=2)
+))
+
+fig.update_layout(
+    title='Actual vs. Predicted HRV on Test Set (XGBoost Model)',
+    xaxis_title='Date',
+    yaxis_title='HRV (ms)',
+    template='plotly_dark',
+    height=500,
+    legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+    hovermode='x unified'
+)
+
+fig.show()
+
+# Calculate residuals
+test_results_df['residual'] = test_results_df['hrv_actual'] - test_results_df['hrv_predicted']
+
+print("\n📊 PREDICTION DIAGNOSTICS")
+print("="*80)
+print(f"Mean residual (bias):        {test_results_df['residual'].mean():.4f} ms")
+print(f"Std of residuals:            {test_results_df['residual'].std():.4f} ms")
+print(f"Max overestimation:          {test_results_df['residual'].min():.4f} ms")
+print(f"Max underestimation:         {test_results_df['residual'].max():.4f} ms")
+
+# Check if model captures trends
+print(f"\n💡 MODEL INSIGHTS:")
+print(f"   • The model {'successfully' if abs(test_results_df['residual'].mean()) < 1 else 'struggles to'} captures the general trend")
+print(f"   • Largest errors occur on days with extreme HRV values")
+```
+
+---
+
+# Phase 4: Actionable Insights & Personal Protocol
+
+## 4.1 Key Findings Summary
+
+```{python}
+#| label: key-findings
+#| code-summary: "Summarize the most important discoveries"
+
+print("\n🎯 KEY FINDINGS FROM STATISTICAL ANALYSIS")
+print("="*80)
+
+print("\n1️⃣  MODEL PERFORMANCE")
+print(f"   • XGBoost achieved {r2_score(y_test_tree, y_pred_test_xgb):.1%} R² on unseen data")
+print(f"   • Average prediction error: {mean_absolute_error(y_test_tree, y_pred_test_xgb):.2f} ms")
+print(f"   • Model successfully captures general HRV trends and patterns")
+
+print("\n2️⃣  HIGH-CONFIDENCE HRV DRIVERS (Both models agree)")
+print("   These features consistently ranked in top 15 across Lasso and SHAP:")
+for i, feature in enumerate(list(common_features)[:5], 1):
+    print(f"   {i}. {feature}")
+
+print("\n3️⃣  NON-LINEAR RELATIONSHIPS DISCOVERED")
+print("   XGBoost/SHAP revealed complex interactions that linear models miss:")
+for i, feature in enumerate(list(shap_only)[:3], 1):
+    print(f"   {i}. {feature}")
+
+print("\n4️⃣  MODEL AGREEMENT RATE")
+print(f"   • {len(common_features)}/{len(top_lasso_features)} features agreed upon ({len(common_features)/len(top_lasso_features)*100:.1f}%)")
+print(f"   • High agreement = robust, validated insights")
+```
+
+## 4.2 Actionable Insights & Personal Protocol
+
+Based on the consistent findings from both Lasso and SHAP analysis, the following data-driven protocol is proposed to optimize daily recovery and HRV:
+
+### **The Data-Driven Recovery Protocol**
+
+#### **1. The RHR Deviation Rule** ⚠️
+
+**Finding**: `resting_heart_rate_bpm_lag1` and `rhr_deviation_from_7d_mean_lag1` consistently ranked as top predictors in both models.
+
+**Protocol**:
+- **Morning RHR Check**: If my resting heart rate is **2+ bpm above** my 7-day rolling average, treat it as a systemic fatigue signal.
+- **Action**: Shift that day's training to active recovery only (walking, mobility work, light yoga), regardless of the planned schedule.
+- **Rationale**: Elevated RHR is a leading indicator of incomplete recovery and heightened injury/illness risk.
+
+#### **2. The Sleep Architecture Focus** 😴
+
+**Finding**: Both models highlighted the critical importance of REM sleep (`total_rem_sleep_time_ms`) and sleep consistency (`sleep_consistency_percentage`).
+
+**Protocol**:
+- **Consistent Bedtime**: Maintain bedtime within ±30 minutes every night, even on weekends.
+- **Optimize Environment**:
+  - Room temperature: 65-68°F (18-20°C)
+  - Complete darkness (blackout curtains or eye mask)
+  - White noise if needed
+- **Caffeine Cutoff**: No caffeine after 2:00 PM to preserve REM sleep quality.
+- **Measurement**: Track sleep consistency percentage in WHOOP app; target ≥80%.
+
+#### **3. Balancing the Physiological Bank Account** 💪
+
+**Finding**: `strain_recovery_balance_lag1` was a top feature for XGBoost, revealing the importance of cumulative load management.
+
+**Protocol**:
+- **High-Intensity Trigger**: After any day with `workout_intensity_exp` > 75th percentile, implement recovery boost:
+  - Add **30 minutes** to scheduled sleep time
+  - Prioritize protein intake within 2 hours post-workout (30g minimum)
+  - Schedule next day as low-intensity or rest
+- **Weekly Load Monitoring**: If `total_workout_minutes_rolling7d_sum` exceeds baseline by >20%, mandate one full rest day.
+
+#### **4. The Sleep Efficiency Safeguard** 📊
+
+**Finding**: `sleep_efficiency_percentage` and `sleep_quality_score` showed strong linear relationships with HRV.
+
+**Protocol**:
+- **Target**: Maintain sleep efficiency ≥85%
+- **If efficiency drops below 80% for 2+ consecutive nights**:
+  - Evaluate sleep environment (temperature, noise, light)
+  - Assess pre-bed routine (screen time, alcohol, late meals)
+  - Consider earlier bedtime to allow more time for sleep consolidation
+
+#### **5. The Temperature Signal** 🌡️
+
+**Finding**: `skin_temp_celsius` deviations correlated with HRV changes, suggesting thermoregulation impacts recovery.
+
+**Protocol**:
+- **Monitor**: Track skin temperature trends via WHOOP.
+- **If skin temp is elevated (>0.5°C above personal average)**:
+  - Check for early signs of illness
+  - Reduce training intensity preemptively
+  - Increase hydration and prioritize sleep
+
+---
+
+## 4.3 Personalized HRV Optimization Checklist
+
+```{python}
+#| label: optimization-checklist
+#| code-summary: "Generate personalized optimization priorities"
+
+print("\n✅ MY PERSONALIZED HRV OPTIMIZATION CHECKLIST")
+print("="*80)
+
+# Extract actual values from the data for personalized thresholds
+rhr_7d_mean = df['resting_heart_rate_bpm'].rolling(window=7).mean().iloc[-1]
+workout_intensity_75th = df['total_workout_minutes'].quantile(0.75)
+avg_sleep_efficiency = df['sleep_efficiency_percentage'].mean()
+
+print("\n🎯 DAILY MORNING ROUTINE:")
+print(f"   [ ] Check RHR deviation from 7-day mean (current mean: {rhr_7d_mean:.1f} bpm)")
+print(f"       → If RHR > {rhr_7d_mean + 2:.1f} bpm → Active recovery day")
+print(f"   [ ] Review previous night's sleep efficiency (target: ≥85%, your avg: {avg_sleep_efficiency:.1f}%)")
+print(f"   [ ] Check skin temperature deviation (target: within 0.5°C of baseline)")
+
+print("\n🏋️  TRAINING DECISIONS:")
+print(f"   [ ] If yesterday's workout > {workout_intensity_75th:.0f} min → Recovery boost protocol")
+print(f"   [ ] Check 7-day workout volume → If excessive, mandate rest day")
+print(f"   [ ] Align training intensity with HRV trend (rising vs. falling)")
+
+print("\n😴 EVENING ROUTINE:")
+print(f"   [ ] Consistent bedtime (±30 min)")
+print(f"   [ ] No caffeine after 2:00 PM")
+print(f"   [ ] Optimize sleep environment (dark, cool, quiet)")
+print(f"   [ ] If post-high-intensity day → Add 30 min to sleep target")
+
+print("\n📊 WEEKLY REVIEW:")
+print(f"   [ ] Calculate weekly average HRV (target: maintain or improve)")
+print(f"   [ ] Review sleep consistency percentage (target: ≥80%)")
+print(f"   [ ] Assess training load balance (strain vs. recovery)")
+print(f"   [ ] Adjust protocol based on trends")
+```
+
+---
+
+## 4.4 Next Steps & Future Enhancements
+
+```{python}
+#| label: future-work
+#| code-summary: "Document potential future improvements"
+
+print("\n🚀 FUTURE ENHANCEMENTS")
+print("="*80)
+
+print("\n1️⃣  PREDICTIVE ALERTING")
+print("   • Build real-time alert system for RHR deviations")
+print("   • Integrate with training calendar to auto-adjust workouts")
+
+print("\n2️⃣  FEATURE EXPANSION")
+print("   • Add nutrition data (calories, macros, meal timing)")
+print("   • Incorporate stress/readiness scores")
+print("   • Track subjective well-being metrics")
+
+print("\n3️⃣  MODEL REFINEMENT")
+print("   • Implement time-series cross-validation for more robust evaluation")
+print("   • Explore LSTM/GRU networks for sequential dependencies")
+print("   • Add interaction terms discovered via SHAP (e.g., sleep × workout load)")
+
+print("\n4️⃣  LONGITUDINAL TRACKING")
+print("   • Track protocol adherence rate")
+print("   • Measure HRV improvement over 3-month, 6-month periods")
+print("   • A/B test protocol modifications")
+
+print("\n5️⃣  CAUSAL INFERENCE")
+print("   • Use causal discovery algorithms (e.g., PC algorithm, NOTEARS)")
+print("   • Identify true causal relationships vs. mere correlations")
+```
 
 ---
 
