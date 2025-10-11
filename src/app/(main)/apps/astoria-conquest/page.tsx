@@ -1,13 +1,15 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 import type { Metadata } from 'next';
 import { AstoriaConquestClient } from './client';
 import { metadata as pageMetadata } from './metadata';
 
-
 export const metadata: Metadata = pageMetadata;
 
 import type { StravaRun } from '@/types/astoria';
+
+// Import JSON data directly (works in both dev and production)
+import baseMapData from '@/../../public/data/astoria-conquest/astoria-base-map.geojson';
+import coveredStreetsData from '@/../../public/data/astoria-conquest/astoria-covered-streets.geojson';
+import statsData from '@/../../public/data/astoria-conquest/astoria-progress-stats.json';
 
 interface RunData {
   id: number;
@@ -47,33 +49,21 @@ interface StatsData {
   runs: RunData[];
 }
 
-async function getData() {
-  const dataPath = path.join(process.cwd(), 'public/data/astoria-conquest');
+// Data is now imported directly at the top of the file, no async loading needed
+function getData() {
   try {
-    // Load base map and covered streets
-    const baseMap = JSON.parse(await fs.readFile(path.join(dataPath, 'astoria-base-map.geojson'), 'utf-8'));
-    let coveredStreets = { type: "FeatureCollection", features: [] };
-    
-    // Try to load the progress files if they exist
-    try {
-      coveredStreets = JSON.parse(await fs.readFile(path.join(dataPath, 'astoria-covered-streets.geojson'), 'utf-8'));
-    } catch (e) {
-      console.log('Progress files not found, using defaults');
-    }
-    
-    return { 
-      baseMap, 
-      coveredStreets
+    return {
+      baseMap: baseMapData,
+      coveredStreets: coveredStreetsData
     };
   } catch (error) {
     console.error('Error loading data:', error);
-    // Return null values to trigger error states in the client
     return null;
   }
 }
 
-export default async function AstoriaConquestPage() {
-  const rawData = await getData();
+export default function AstoriaConquestPage() {
+  const rawData = getData();
   if (!rawData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -85,9 +75,8 @@ export default async function AstoriaConquestPage() {
     );
   }
 
-  // Transform the stats data structure
-  const statsJson = await fs.readFile(path.join(process.cwd(), 'public/data/astoria-conquest/astoria-progress-stats.json'), 'utf-8');
-  const rawStats = JSON.parse(statsJson) as StatsData;
+  // Use the imported stats data
+  const rawStats = statsData as StatsData;
   
   // Transform runs to match StravaRun interface
   // Use the run_number from the data if available, otherwise assign based on date order

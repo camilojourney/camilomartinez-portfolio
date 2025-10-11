@@ -125,7 +125,7 @@ const AstoriaMap = ({ baseMapData, coveredStreetsData, selectedRun }: AstoriaMap
         {/* Show either the selected run OR all covered streets */}
         {selectedRunFeature ? (
           <GeoJSON
-            key="selected-run"
+            key={`selected-run-${selectedRun?.id || 'none'}`}
             data={selectedRunFeature}
             style={{ color: '#ff4ff8', weight: 4, opacity: 0.9 }}
           />
