@@ -9,13 +9,13 @@ This script:
 
 Outputs:
 - backend/data/astoria-conquest/cache/astoria_graph.pkl (for Python processing)
-- public/data/astoria-conquest/astoria-base-map.geojson (for frontend display)
+- src/data/astoria-conquest/astoria-base-map.geojson (for frontend display)
 
 Usage:
     # From project root
     cd backend
     poetry run python app/scripts/astoria/generate_base_map.py
-    
+
     # Or from npm script
     npm run map:setup
 """
@@ -39,11 +39,11 @@ SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent
 
 # Store data in backend for better organization
-OUTPUT_DIR_PUBLIC = PROJECT_ROOT / "public" / "data" / "astoria-conquest"  # Frontend visualization
+DATA_OUTPUT_DIR = PROJECT_ROOT / "src" / "data" / "astoria-conquest"  # Frontend data (bundled)
 OUTPUT_DIR_CACHE = PROJECT_ROOT / "backend" / "data" / "astoria-conquest" / "cache"  # Backend cache
 OSMNX_CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "osmnx-cache"  # OSMnx HTTP cache
 
-os.makedirs(OUTPUT_DIR_PUBLIC, exist_ok=True)
+os.makedirs(DATA_OUTPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR_CACHE, exist_ok=True)
 os.makedirs(OSMNX_CACHE_DIR, exist_ok=True)
 
@@ -121,7 +121,7 @@ with open(graph_path, 'wb') as f:
 print(f"      - Saved Python graph object to: {graph_path}")
 
 # 2. Save the Base Map as GeoJSON (for the website frontend)
-geojson_path = OUTPUT_DIR_PUBLIC / "astoria-base-map.geojson"
+geojson_path = DATA_OUTPUT_DIR / "astoria-base-map.geojson"
 edges_gdf.to_file(geojson_path, driver='GeoJSON')
 print(f"      - Saved web-ready base map to: {geojson_path}")
 

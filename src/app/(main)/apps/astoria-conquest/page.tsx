@@ -7,9 +7,9 @@ export const metadata: Metadata = pageMetadata;
 import type { StravaRun } from '@/types/astoria';
 
 // Import JSON data directly (works in both dev and production)
-import baseMapData from '@/../../public/data/astoria-conquest/astoria-base-map.geojson';
-import coveredStreetsData from '@/../../public/data/astoria-conquest/astoria-covered-streets.geojson';
-import statsData from '@/../../public/data/astoria-conquest/astoria-progress-stats.json';
+import baseMapData from '@/data/astoria-conquest/astoria-base-map.geojson';
+import coveredStreetsData from '@/data/astoria-conquest/astoria-covered-streets.geojson';
+import statsData from '@/data/astoria-conquest/astoria-progress-stats.json';
 
 interface RunData {
   id: number;

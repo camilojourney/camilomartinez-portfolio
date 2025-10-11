@@ -9,13 +9,13 @@ This script:
 5. Generates updated map visualization files
 
 Outputs:
-- public/data/astoria-conquest/astoria-covered-streets.geojson
-- public/data/astoria-conquest/astoria-progress-stats.json
+- src/data/astoria-conquest/astoria-covered-streets.geojson
+- src/data/astoria-conquest/astoria-progress-stats.json
 
 Usage:
     # From backend directory
     poetry run python app/scripts/astoria/update_progress.py
-    
+
     # Or called automatically by Celery worker (weekly)
 """
 
@@ -47,7 +47,7 @@ DB_CONNECTION_STRING = os.getenv("POSTGRES_URL_NONPRISMA") or os.getenv("DATABAS
 
 # Store data paths
 CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "astoria-conquest" / "cache"
-PUBLIC_DIR = PROJECT_ROOT / "public" / "data" / "astoria-conquest"
+DATA_OUTPUT_DIR = PROJECT_ROOT / "src" / "data" / "astoria-conquest"
 OSMNX_CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "osmnx-cache"
 GRAPH_PATH = CACHE_DIR / "astoria_graph.pkl"
 
@@ -329,8 +329,8 @@ stats = {
 }
 
 # Overwrite the progress files
-covered_streets_path = PUBLIC_DIR / "astoria-covered-streets.geojson"
-stats_path = PUBLIC_DIR / "astoria-progress-stats.json"
+covered_streets_path = DATA_OUTPUT_DIR / "astoria-covered-streets.geojson"
+stats_path = DATA_OUTPUT_DIR / "astoria-progress-stats.json"
 
 # Export covered streets as GeoJSON
 covered_edges_gdf.to_file(
