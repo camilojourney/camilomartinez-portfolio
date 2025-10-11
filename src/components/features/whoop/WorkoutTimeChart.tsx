@@ -16,8 +16,16 @@ type WorkoutTimeChartProps = {
 };
 
 const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) => {
+  // ====================================================================
+  // ALL HOOKS MUST BE DECLARED FIRST (before any conditional returns)
+  // ====================================================================
+  
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const chartRef = React.useRef<SVGSVGElement>(null);
+  
+  const [isMounted, setIsMounted] = React.useState(false);
+  const [containerWidth, setContainerWidth] = React.useState(1000);
   const [hoveredWorkout, setHoveredWorkout] = React.useState<{
     dateLabel: string;
     timeLabel: string;
@@ -29,67 +37,26 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     showBelow: boolean;
   } | null>(null);
 
-  // Catch any rendering errors early
-  try {
-    if (data && data.length > 0 && typeof data[0].timeAsMinutes !== 'number') {
-      throw new Error('Invalid workout time data format');
-    }
-  } catch (err) {
-    return (
-      <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
-        <div className="text-red-400 text-3xl mb-3">⚠️</div>
-        <p className="text-white/70 text-lg">Error loading workout chart</p>
-        <p className="text-white/50 text-sm mt-2">{String(err)}</p>
-      </div>
-    );
-  }
-  
-  if (!data || data.length === 0) {
-    return (
-      <div className="border-2 border-dashed border-amber-500/30 rounded-lg p-8 text-center">
-        <div className="text-amber-400 text-3xl mb-3">⏰</div>
-        <p className="text-white/70 text-lg">No workout time data available.</p>
-        <p className="text-white/50 text-sm mt-2">Check that your database has workout records.</p>
-      </div>
-    );
-  }
-
   // Filter valid data and exclude "Other" workout type
-  const validData = React.useMemo(() => data.filter(point => {
-    try {
-      if (!point.date) return false;
-
-      // Exclude "Other" workout type
-      if (point.workoutType === 'Other') return false;
-
-      // FIX: Use parseISO which handles both 'yyyy-MM-dd' AND ISO 8601 timestamps
-      const parsed = parseISO(String(point.date));
-      return !isNaN(parsed.getTime());
-    } catch {
-      return false;
-    }
-  }), [data]);
-  
-  if (validData.length === 0) {
-    return (
-      <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
-        <div className="text-red-400 text-3xl mb-3">⚠️</div>
-        <p className="text-white/70 text-lg">No valid workout time data.</p>
-        <p className="text-white/50 text-sm mt-2">Data was received but no valid dates were found.</p>
-      </div>
-    );
-  }
+  const validData = React.useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
+    return data.filter(point => {
+      try {
+        if (!point.date) return false;
+        if (point.workoutType === 'Other') return false;
+        
+        const parsed = parseISO(String(point.date));
+        return !isNaN(parsed.getTime());
+      } catch {
+        return false;
+      }
+    });
+  }, [data]);
 
   const sortedData = React.useMemo(() => {
     return [...validData].sort((a, b) => a.date.localeCompare(b.date));
   }, [validData]);
-  
-  React.useEffect(() => {
-    if (scrollContainerRef.current && sortedData.length > 0) {
-      const container = scrollContainerRef.current;
-      container.scrollLeft = container.scrollWidth;
-    }
-  }, [sortedData.length]);
 
   const monthGroups = React.useMemo(() => {
     if (!sortedData.length) return [] as Array<{ month: string; startIndex: number; endIndex: number }>;
@@ -114,6 +81,82 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
 
     return groups;
   }, [sortedData]);
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Auto-scroll to the right
+  React.useEffect(() => {
+    if (scrollContainerRef.current && sortedData.length > 0) {
+      const container = scrollContainerRef.current;
+      container.scrollLeft = container.scrollWidth;
+    }
+  }, [sortedData.length]);
+
+  // Update container width on resize
+  React.useEffect(() => {
+    const updateWidth = () => {
+      if (chartRef.current) {
+        const width = chartRef.current.parentElement?.clientWidth || 1000;
+        setContainerWidth(Math.max(width, 700));
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  // ====================================================================
+  // NOW WE CAN DO CONDITIONAL RETURNS (all hooks already called)
+  // ====================================================================
+
+  // Show loading state during SSR
+  if (!isMounted) {
+    return (
+      <div className="border-2 border-dashed border-cyan-500/30 rounded-lg p-8 text-center">
+        <div className="text-cyan-400 text-3xl mb-3">⏰</div>
+        <p className="text-white/70 text-lg">Loading workout time data...</p>
+      </div>
+    );
+  }
+
+  // Check for data validation errors
+  if (data && data.length > 0 && typeof data[0].timeAsMinutes !== 'number') {
+    return (
+      <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
+        <div className="text-red-400 text-3xl mb-3">⚠️</div>
+        <p className="text-white/70 text-lg">Error loading workout chart</p>
+        <p className="text-white/50 text-sm mt-2">Invalid workout time data format</p>
+      </div>
+    );
+  }
+  
+  if (!data || data.length === 0) {
+    return (
+      <div className="border-2 border-dashed border-amber-500/30 rounded-lg p-8 text-center">
+        <div className="text-amber-400 text-3xl mb-3">⏰</div>
+        <p className="text-white/70 text-lg">No workout time data available.</p>
+        <p className="text-white/50 text-sm mt-2">Check that your database has workout records.</p>
+      </div>
+    );
+  }
+
+  if (validData.length === 0) {
+    return (
+      <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
+        <div className="text-red-400 text-3xl mb-3">⚠️</div>
+        <p className="text-white/70 text-lg">No valid workout time data.</p>
+        <p className="text-white/50 text-sm mt-2">Data was received but no valid dates were found.</p>
+      </div>
+    );
+  }
+
+  // ====================================================================
+  // RENDERING LOGIC (all hooks called, all validations done)
+  // ====================================================================
 
   const [goalHours, goalMinutes] = goalTime.split(':').map(Number);
   const goalTimeInMinutes = goalHours * 60 + goalMinutes;
@@ -146,22 +189,6 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
     const normalized = (clampedTime - minTimeValue) / range;
     return height - padding.bottom - (normalized * chartHeight);
   };
-  
-  const [containerWidth, setContainerWidth] = React.useState(1000);
-  const chartRef = React.useRef<SVGSVGElement>(null);
-
-  React.useEffect(() => {
-    const updateWidth = () => {
-      if (chartRef.current) {
-        const width = chartRef.current.parentElement?.clientWidth || 1000;
-        setContainerWidth(Math.max(width, 700)); // Minimum 700px
-      }
-    };
-
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
 
   const displayMonths = monthGroups.map(group => {
     const centerIndex = Math.round((group.startIndex + group.endIndex) / 2);

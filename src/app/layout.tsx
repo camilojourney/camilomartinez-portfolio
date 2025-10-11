@@ -49,6 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         'text-black bg-white dark:text-white dark:bg-black',
         GeistSans.variable,
@@ -58,7 +59,10 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href="https://camilomartinez.co" />
       </head>
-      <body className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}>
+      <body 
+        suppressHydrationWarning
+        className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}
+      >
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
             <main className="flex-1 w-full">
