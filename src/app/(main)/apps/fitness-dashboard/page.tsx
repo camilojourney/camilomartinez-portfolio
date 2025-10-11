@@ -180,21 +180,49 @@ async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
             }
         };
         
-        const workoutTimes = workouts.map((workout: any) => {
-            const startTime = new Date(workout.start_time);
-            const hours = startTime.getHours();
-            const minutes = startTime.getMinutes();
+        // Convert UTC time to New York timezone
+        const convertToNYTime = (utcTimestamp: string) => {
+            const utcDate = new Date(utcTimestamp);
+            
+            // Convert to New York timezone string (e.g., "10/10/2025, 8:30:00 AM")
+            const nyTimeString = utcDate.toLocaleString('en-US', {
+                timeZone: 'America/New_York',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            // Parse the formatted string back to get NY time components
+            // Format: "MM/DD/YYYY, HH:MM:SS"
+            const [datePart, timePart] = nyTimeString.split(', ');
+            const [month, day, year] = datePart.split('/');
+            const [hours, minutes] = timePart.split(':');
             
             return {
-                date: startTime.toISOString().split('T')[0], // YYYY-MM-DD format
-                time: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`,
-                timeAsMinutes: hours * 60 + minutes,
+                date: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`,
+                hours: parseInt(hours, 10),
+                minutes: parseInt(minutes, 10)
+            };
+        };
+        
+        const workoutTimes = workouts.map((workout: any) => {
+            // Convert UTC timestamp to New York time
+            const nyTime = convertToNYTime(workout.start_time);
+            
+            return {
+                date: nyTime.date, // YYYY-MM-DD format in NY timezone
+                time: `${String(nyTime.hours).padStart(2, '0')}:${String(nyTime.minutes).padStart(2, '0')}`,
+                timeAsMinutes: nyTime.hours * 60 + nyTime.minutes, // Calculate from NY time
                 workoutType: standardizeWorkoutType(workout.sport_name || 'unknown')
             };
         });
         
         console.log('Workout times data processed:', workoutTimes.length, 'records');
-        console.log('Sample workout times:', JSON.stringify(workoutTimes.slice(0, 3)));
+        console.log('Sample workout times (NY timezone):', JSON.stringify(workoutTimes.slice(0, 3)));
         
         return workoutTimes;
     } catch (error) {
