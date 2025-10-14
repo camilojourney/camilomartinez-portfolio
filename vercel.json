@@ -1,12 +1,16 @@
 {
   "crons": [
-    { 
-      "path": "/api/cron/daily-data-fetch?secret=REDACTED_CRON_SECRET", 
+    {
+      "path": "/api/cron/daily-data-fetch?secret=REDACTED_CRON_SECRET",
       "schedule": "0 19 * * *"
     },
     {
       "path": "/api/cron/strava-weekly-sync?secret=cron_secure_strava_weekly_sync_2024",
       "schedule": "0 13 * * 1"
+    },
+    {
+      "path": "/api/cron/astoria-update?secret=cron_secure_astoria_update_2024",
+      "schedule": "30 13 * * 1"
     }
   ],
   "redirects": [
