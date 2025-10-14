@@ -1,0 +1,13 @@
+project:
+  type: default
+
+format:
+  html:
+    theme: darkly
+    code-fold: true
+    toc: true
+
+jupyter: python3
+
+execute:
+  engine: jupyter
