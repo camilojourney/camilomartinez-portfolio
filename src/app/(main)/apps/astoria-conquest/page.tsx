@@ -5,11 +5,8 @@ import { metadata as pageMetadata } from './metadata';
 export const metadata: Metadata = pageMetadata;
 
 import type { StravaRun } from '@/types/astoria';
-
-// Import JSON data directly (works in both dev and production)
-import baseMapData from '@/data/astoria-conquest/astoria-base-map.geojson';
-import coveredStreetsData from '@/data/astoria-conquest/astoria-covered-streets.geojson';
-import statsData from '@/data/astoria-conquest/astoria-progress-stats.json';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 interface RunData {
   id: number;
@@ -49,12 +46,25 @@ interface StatsData {
   runs: RunData[];
 }
 
-// Data is now imported directly at the top of the file, no async loading needed
-function getData() {
+// Load data from public directory at build time
+async function getData() {
   try {
+    const publicDir = path.join(process.cwd(), 'public', 'data', 'astoria-conquest');
+
+    const baseMapData = JSON.parse(
+      await fs.readFile(path.join(publicDir, 'astoria-base-map.geojson'), 'utf-8')
+    );
+    const coveredStreetsData = JSON.parse(
+      await fs.readFile(path.join(publicDir, 'astoria-covered-streets.geojson'), 'utf-8')
+    );
+    const statsData = JSON.parse(
+      await fs.readFile(path.join(publicDir, 'astoria-progress-stats.json'), 'utf-8')
+    );
+
     return {
       baseMap: baseMapData,
-      coveredStreets: coveredStreetsData
+      coveredStreets: coveredStreetsData,
+      stats: statsData
     };
   } catch (error) {
     console.error('Error loading data:', error);
@@ -62,8 +72,8 @@ function getData() {
   }
 }
 
-export default function AstoriaConquestPage() {
-  const rawData = getData();
+export default async function AstoriaConquestPage() {
+  const rawData = await getData();
   if (!rawData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -75,8 +85,8 @@ export default function AstoriaConquestPage() {
     );
   }
 
-  // Use the imported stats data
-  const rawStats = statsData as StatsData;
+  // Use the loaded stats data
+  const rawStats = rawData.stats as StatsData;
   
   // Transform runs to match StravaRun interface
   // Use the run_number from the data if available, otherwise assign based on date order

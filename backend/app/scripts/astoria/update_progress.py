@@ -9,8 +9,8 @@ This script:
 5. Generates updated map visualization files
 
 Outputs:
-- src/data/astoria-conquest/astoria-covered-streets.geojson
-- src/data/astoria-conquest/astoria-progress-stats.json
+- public/data/astoria-conquest/astoria-covered-streets.geojson
+- public/data/astoria-conquest/astoria-progress-stats.json
 
 Usage:
     # From backend directory
@@ -47,7 +47,7 @@ DB_CONNECTION_STRING = os.getenv("POSTGRES_URL_NONPRISMA") or os.getenv("DATABAS
 
 # Store data paths
 CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "astoria-conquest" / "cache"
-DATA_OUTPUT_DIR = PROJECT_ROOT / "src" / "data" / "astoria-conquest"
+DATA_OUTPUT_DIR = PROJECT_ROOT / "public" / "data" / "astoria-conquest"
 OSMNX_CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "osmnx-cache"
 GRAPH_PATH = CACHE_DIR / "astoria_graph.pkl"
 

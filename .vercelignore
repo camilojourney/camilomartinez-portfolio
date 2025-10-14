@@ -17,6 +17,8 @@ docs/
 scripts/data/
 backend/data/
 public/data/
+# Exception: allow Astoria Conquest data for the live map
+!public/data/astoria-conquest/
 backups/
 
 # Large assets

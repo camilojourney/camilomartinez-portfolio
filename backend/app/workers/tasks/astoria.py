@@ -27,7 +27,7 @@ def update_progress() -> Dict[str, Any]:
     1. Fetches all Strava runs with polylines
     2. Matches them against Astoria street network
     3. Generates updated map visualization
-    4. Exports to src/data/astoria-conquest/
+    4. Exports to public/data/astoria-conquest/
 
     Returns:
         Dict with update statistics

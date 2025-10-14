@@ -9,7 +9,7 @@ This script:
 
 Outputs:
 - backend/data/astoria-conquest/cache/astoria_graph.pkl (for Python processing)
-- src/data/astoria-conquest/astoria-base-map.geojson (for frontend display)
+- public/data/astoria-conquest/astoria-base-map.geojson (for frontend display)
 
 Usage:
     # From project root
@@ -39,7 +39,7 @@ SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.parent
 
 # Store data in backend for better organization
-DATA_OUTPUT_DIR = PROJECT_ROOT / "src" / "data" / "astoria-conquest"  # Frontend data (bundled)
+DATA_OUTPUT_DIR = PROJECT_ROOT / "public" / "data" / "astoria-conquest"  # Frontend data (static assets)
 OUTPUT_DIR_CACHE = PROJECT_ROOT / "backend" / "data" / "astoria-conquest" / "cache"  # Backend cache
 OSMNX_CACHE_DIR = PROJECT_ROOT / "backend" / "data" / "osmnx-cache"  # OSMnx HTTP cache
 
