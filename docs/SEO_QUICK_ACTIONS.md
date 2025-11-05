@@ -57,7 +57,7 @@ We've implemented all the **technical SEO** (the hard engineer stuff). Now you n
    Allow: /projects/
    Disallow: /api
    Disallow: /admin
-   
+
    Sitemap: https://camilomartinez.co/sitemap.xml
    ```
 3. Redeploy
