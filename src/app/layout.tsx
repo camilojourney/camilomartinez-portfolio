@@ -14,29 +14,68 @@ import Footer from '@/components/shared/footer'
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Camilo Martinez | AI Engineer',
+    default: 'Camilo Martinez | AI Engineer & Full-Stack Developer',
     template: '%s | Camilo Martinez',
   },
-  description: 'A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development.',
+  description: 'AI Engineer specializing in machine learning systems, data pipelines, and full-stack development. Explore live projects: fitness analytics, geospatial routing, LLM agents, speech AI, and more.',
+  keywords: [
+    'AI engineer',
+    'machine learning',
+    'data engineering',
+    'full-stack developer',
+    'Next.js',
+    'FastAPI',
+    'speech AI',
+    'LLM systems',
+    'portfolio',
+    'Camilo Martinez',
+  ],
+  authors: [{ name: 'Camilo Martinez' }],
+  creator: 'Camilo Martinez',
   openGraph: {
-    title: 'Camilo Martinez | AI Engineer',
-    description: 'A modern, interactive portfolio showcasing expertise in AI development, data analytics, and full-stack development.',
+    title: 'Camilo Martinez | AI Engineer & Full-Stack Developer',
+    description: 'AI Engineer specializing in machine learning systems, data pipelines, and full-stack development. Explore live projects in fitness analytics, geospatial routing, LLM agents, and more.',
     url: baseUrl,
     siteName: 'Camilo Martinez Portfolio',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: `${baseUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: 'Camilo Martinez - AI Engineer Portfolio',
+        type: 'image/png',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Camilo Martinez | AI Engineer',
+    description: 'AI Engineer: machine learning, data pipelines, full-stack development.',
+    images: [`${baseUrl}/og-image.png`],
+    creator: '@camilojourney',
   },
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
+      noimageindex: false,
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
   },
+  alternates: {
+    canonical: baseUrl,
+  },
+  verification: {
+    google: 'YOUR_GOOGLE_VERIFICATION_CODE', // Update with actual code
+  },
+  category: 'Technology',
 }
 
 import { cn } from '@/lib/utils'
@@ -46,6 +85,37 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Camilo Martinez',
+    url: baseUrl,
+    jobTitle: 'AI Engineer',
+    description: 'AI Engineer specializing in machine learning systems, data pipelines, and full-stack development.',
+    sameAs: [
+      'https://github.com/camilojourney',
+      'https://linkedin.com/in/camilomartinez',
+      'https://twitter.com/camilojourney',
+    ],
+    knowsAbout: [
+      'Machine Learning',
+      'Data Engineering',
+      'Full-Stack Development',
+      'AI Systems',
+      'Speech AI',
+      'Data Pipelines',
+      'FastAPI',
+      'Next.js',
+    ],
+    image: `${baseUrl}/og-image.png`,
+    mainEntity: {
+      '@type': 'WebSite',
+      name: 'Camilo Martinez Portfolio',
+      url: baseUrl,
+      description: 'AI Engineer portfolio showcasing expertise in machine learning and full-stack development',
+    },
+  }
+
   return (
     <html
       lang="en"
@@ -57,7 +127,20 @@ export default function RootLayout({
       )}
     >
       <head>
-        <link rel="canonical" href="https://camilomartinez.co" />
+        <link rel="canonical" href={baseUrl} />
+        <meta name="theme-color" content="#000000" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="msapplication-TileColor" content="#000000" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+          suppressHydrationWarning
+        />
       </head>
       <body 
         suppressHydrationWarning

@@ -110,6 +110,7 @@ export async function POST(req: Request) {
     const knowledge = await getKnowledgeContext();
     const systemPrompt = getSystemPrompt(knowledge);
 
+    const startTime = Date.now();
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [{ role: 'system', content: systemPrompt }, ...messages],
@@ -117,9 +118,93 @@ export async function POST(req: Request) {
       max_tokens: 500, // Keep responses concise
     });
 
-    return NextResponse.json(response.choices[0].message);
+    const responseTime = Date.now() - startTime;
+    const answer = response.choices[0].message;
+
+    // AUTOMATIC EVALUATION: Sample 10% of responses for quality monitoring
+    // This runs async (fire-and-forget) so it doesn't slow down chat
+    const shouldEvaluate = Math.random() < 0.1; // 10% sampling rate
+    if (shouldEvaluate && messages.length > 0) {
+      const lastUserMessage = messages[messages.length - 1];
+
+      // Evaluate in background (don't wait)
+      evaluateAnswerAsync(
+        lastUserMessage.content,
+        answer.content || '',
+        knowledge,
+        responseTime
+      ).catch(err => console.error('Background evaluation failed:', err));
+    }
+
+    return NextResponse.json(answer);
   } catch (error) {
     console.error('Chat API Error:', error);
     return NextResponse.json({ error: 'Failed to get response from AI.' }, { status: 500 });
+  }
+}
+
+/**
+ * Background self-evaluation (fire-and-forget)
+ * Automatically evaluates 10% of answers for quality monitoring
+ */
+async function evaluateAnswerAsync(
+  question: string,
+  answer: string,
+  context: string,
+  responseTime: number
+): Promise<void> {
+  try {
+    const evaluationPrompt = `You are an expert evaluator assessing chatbot response quality.
+
+Evaluate this answer on a 0.0-1.0 scale across 5 criteria:
+1. Accuracy: Factually correct per context?
+2. Relevance: Directly addresses question?
+3. Completeness: Sufficient detail?
+4. Clarity: Easy to understand?
+5. Tone: Professional and friendly?
+
+Question: ${question}
+Answer: ${answer}
+Context: ${context.substring(0, 1500)}...
+
+Respond with JSON only:
+{
+  "score": 0.85,
+  "reasoning": "Clear answer with specific details",
+  "improvements": ["Could add project links"],
+  "category": "technical_skills|project_info|background|other"
+}`;
+
+    const evalResponse = await openai.chat.completions.create({
+      model: 'gpt-4o-mini', // Cheaper model for evaluation
+      messages: [{ role: 'user', content: evaluationPrompt }],
+      temperature: 0.3, // Low temp for consistent scoring
+      response_format: { type: 'json_object' },
+    });
+
+    const evaluation = JSON.parse(evalResponse.choices[0].message.content || '{}');
+
+    // Log to console (in production, save to database)
+    console.log('[Auto-Evaluation]', {
+      timestamp: new Date().toISOString(),
+      score: evaluation.score,
+      category: evaluation.category,
+      responseTime: `${responseTime}ms`,
+      questionPreview: question.substring(0, 60) + '...',
+    });
+
+    // TODO: Save to database for analytics dashboard
+    // await prisma.chatEvaluation.create({
+    //   data: {
+    //     question, answer, score: evaluation.score,
+    //     reasoning: evaluation.reasoning,
+    //     category: evaluation.category,
+    //     responseTime
+    //   }
+    // });
+
+  } catch (error) {
+    // Silent fail - evaluation errors shouldn't break chat
+    console.error('[Auto-Evaluation Error]', error);
   }
 }
