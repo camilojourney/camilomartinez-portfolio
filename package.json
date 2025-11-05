@@ -55,6 +55,7 @@
     "postcss": "^8.4.35",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-is": "^19.2.0",
     "react-leaflet": "^5.0.0",
     "recharts": "^3.0.2",
     "sugar-high": "^0.6.0",

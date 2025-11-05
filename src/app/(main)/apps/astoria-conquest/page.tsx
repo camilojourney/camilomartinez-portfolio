@@ -5,8 +5,11 @@ import { metadata as pageMetadata } from './metadata';
 export const metadata: Metadata = pageMetadata;
 
 import type { StravaRun } from '@/types/astoria';
-import { promises as fs } from 'fs';
-import path from 'path';
+
+// Import data files directly instead of using fs.readFile
+import baseMapData from '@/../../public/data/astoria-conquest/astoria-base-map.geojson';
+import coveredStreetsData from '@/../../public/data/astoria-conquest/astoria-covered-streets.geojson';
+import statsData from '@/../../public/data/astoria-conquest/astoria-progress-stats.json';
 
 interface RunData {
   id: number;
@@ -46,21 +49,9 @@ interface StatsData {
   runs: RunData[];
 }
 
-// Load data from public directory at build time
-async function getData() {
+// Data is now imported at the top of the file
+function getData() {
   try {
-    const publicDir = path.join(process.cwd(), 'public', 'data', 'astoria-conquest');
-
-    const baseMapData = JSON.parse(
-      await fs.readFile(path.join(publicDir, 'astoria-base-map.geojson'), 'utf-8')
-    );
-    const coveredStreetsData = JSON.parse(
-      await fs.readFile(path.join(publicDir, 'astoria-covered-streets.geojson'), 'utf-8')
-    );
-    const statsData = JSON.parse(
-      await fs.readFile(path.join(publicDir, 'astoria-progress-stats.json'), 'utf-8')
-    );
-
     return {
       baseMap: baseMapData,
       coveredStreets: coveredStreetsData,
@@ -73,7 +64,7 @@ async function getData() {
 }
 
 export default async function AstoriaConquestPage() {
-  const rawData = await getData();
+  const rawData = getData();
   if (!rawData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
