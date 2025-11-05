@@ -75,6 +75,6 @@ export const projects: ProjectMeta[] = [
     tags: ['Speech AI', 'Accessibility', 'Productivity'],
     status: 'in-progress',
     caseStudyHref: '/projects/invoz-ai',
-    previewImage: '/images/previews_main/invoz_ai.png',
+    previewImage: '/images/previews_main/image.png',
   },
 ];
