@@ -241,15 +241,69 @@ All roadmap items must be traced in `PROJECT_ARCHITECTURE_PLAN.md` and reviewed 
 
 ---
 
-## 🔗 References
-- `docs/ARCHITECTURE_PATTERNS.md` – **Comprehensive guide to architecture patterns and trade-offs**
-- `docs/TECH_STACK.md` – Technology rationale underpinning this architecture.
-- `docs/data/SCHEMA.md` – Detailed DDL, ER diagrams, and view definitions.
-- `docs/ai/RAG_SYSTEM.md` – In-depth AI pipeline with prompt templates.
-- `docs/operations/MONITORING.md` – Observability blueprint and alert catalog.
-- `backend/app/workers/README.md` – Background workers service documentation.
-- `DOCUMENTATION_ARCHITECTURE.md` – Documentation system meta-architecture.
+---
+
+## 🛠️ Technology Stack & Decisions
+
+### Stack Guiding Principles
+1. **AI-First**: Prefer ecosystems with native support for embeddings, LLM tooling, and async workflows.
+2. **Velocity with Discipline**: Select managed services that minimize ops toil without sacrificing observability.
+3. **Progressive Disclosure**: Start simple, evolve to micro components only when justified by load or complexity.
+4. **Polyglot Sympathy**: Embrace TypeScript + Python pairing; optimize interop via well-defined contracts.
+5. **Future-Proofing**: Track LTS support windows, deprecation schedules, and community health.
+
+### Technology Matrix
+
+| Layer | Primary Tech | Version | Rationale |
+|-------|--------------|---------|-----------|
+| **Experience** | Next.js 15, React 19, TypeScript 5 | Latest LTS | Server Components, ISR, strong DX |
+| **Orchestration** | FastAPI, Pydantic v2, SQLAlchemy 2 | Python 3.11 | Async performance, OpenAPI autogen, type safety |
+| **Data** | PostgreSQL 15, pgvector 0.5, Redis 7 | Managed | Relational integrity + vector search |
+| **AI** | OpenAI GPT-4o, text-embedding-3-small | API | Best-in-class reasoning + cost-effective embeddings |
+| **Dev Tooling** | pnpm, Poetry, Ruff, Vitest, Pytest | - | Fast installs, consistent linting/testing |
+| **Ops** | Vercel, Railway, Docker, Prometheus/Grafana | - | Managed deploys + optional self-hosted observability |
+
+### Key Technology Decisions
+
+**Frontend (Next.js 15)**
+- App Router for granular data fetching, Server Actions, RSC streaming
+- TypeScript strict mode with `@tanstack/react-query` for server state
+- Tailwind CSS with design tokens
+
+**Backend (FastAPI)**
+- Async-first, type-driven with auto OpenAPI docs
+- SQLAlchemy 2 for database operations with Alembic migrations
+- `httpx` for external APIs with retry middleware
+
+**AI Platform**
+- GPT-4o for reasoning (fallback: GPT-4o-mini)
+- text-embedding-3-small for cost-effective embeddings
+- Prompt registry in markdown with YAML frontmatter
+
+**Infrastructure**
+- Vercel (frontend): Git-based deployments, preview branches, ISR support
+- Railway (backend): Container deploy from Dockerfile
+- Managed PostgreSQL & Redis on Railway
+- Grafana Cloud for production observability
+
+### Risks & Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|-----------|
+| OpenAI dependency outage | AI features degraded | Multi-provider abstraction, cached answers |
+| pgvector bloat | Slow queries | Scheduled `VACUUM`, dimension monitoring |
+| OAuth credential rotation | Integration downtime | Automated refresh scripts, secret manager |
 
 ---
 
-*Last Updated: October 7, 2025*
+## 🔗 References
+- `docs/ARCHITECTURE_PATTERNS.md` – Comprehensive guide to architecture patterns and trade-offs
+- `docs/data/SCHEMA.md` – Detailed DDL, ER diagrams, and view definitions
+- `docs/ai/RAG_SYSTEM.md` – In-depth AI pipeline with prompt templates
+- `docs/operations/MONITORING.md` – Observability blueprint and alert catalog
+- `backend/app/workers/README.md` – Background workers service documentation
+- `DOCUMENTATION_ARCHITECTURE.md` – Documentation system meta-architecture
+
+---
+
+*Last Updated: November 5, 2025*

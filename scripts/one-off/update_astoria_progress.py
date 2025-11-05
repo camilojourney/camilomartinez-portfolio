@@ -49,10 +49,10 @@ all_polylines = []
 try:
     conn = psycopg2.connect(DB_CONNECTION_STRING)
     cur = conn.cursor()
-    
+
     # --- THIS IS THE UPDATED SQL QUERY ---
     sql_query = """
-        SELECT 
+        SELECT
             sr.id, sr.name, sr.start_date, sr.distance_meters,
             sr.detailed_polyline, sr.elapsed_time_seconds,
             sr.average_speed_mps, sr.suffer_score,
@@ -63,7 +63,7 @@ try:
         FROM strava_runs sr
         LEFT JOIN activity_correlations ac ON sr.id = ac.strava_run_id
         LEFT JOIN whoop_workouts w ON w.id = ac.whoop_workout_id
-        WHERE 
+        WHERE
             sr.start_date >= '2025-09-20'
             AND sr.detailed_polyline IS NOT NULL
         ORDER BY sr.start_date DESC;
@@ -80,7 +80,7 @@ try:
             round(zone_ms / (1000 * 60), 2) if zone_ms else 0
             for zone_ms in row[12:18]  # hr_zone_0_ms through hr_zone_5_ms
         ]
-        
+
         runs_data.append({
             "run_number": len(rows) - idx + 1,  # Reverse numbering since ORDER BY DESC
             "id": row[0],
@@ -106,7 +106,7 @@ try:
                 "max": hr_zones_minutes[5]
             }
         })
-    
+
     # Still maintain all_polylines for the coverage calculation
     all_polylines = [run["polyline"] for run in runs_data]
     cur.close()
@@ -168,12 +168,12 @@ G_u = nx.Graph(G_final)
 
 for encoded_polyline in all_polylines:
     if not encoded_polyline: continue
-    
+
     # 1. DECODE AND PRE-PROCESS (Original Method)
     decoded_coords = polyline.decode(encoded_polyline)
     clipped_coords = [(lat, lon) for lat, lon in decoded_coords if (minx <= lon <= maxx) and (miny <= lat <= maxy)]
     if len(clipped_coords) < 2: continue
-    
+
     smoothed_coords = smooth_trace(clipped_coords, w=3)
     clustered_coords = spatial_cluster(smoothed_coords)
     if len(clustered_coords) < 2: continue
@@ -197,7 +197,7 @@ for encoded_polyline in all_polylines:
     for n in candidate_nodes:
         if not snapped_nodes or n != snapped_nodes[-1]:
             snapped_nodes.append(n)
-            
+
     # 3. RECONSTRUCT PATH (Original Method)
     for a, b in zip(snapped_nodes[:-1], snapped_nodes[1:]):
         if a == b: continue

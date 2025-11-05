@@ -1,15 +1,13 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 import type { Metadata } from 'next';
+import type { FeatureCollection, Geometry } from 'geojson';
 import { AstoriaConquestClient } from './client';
 import { metadata as pageMetadata } from './metadata';
 
 export const metadata: Metadata = pageMetadata;
 
 import type { StravaRun } from '@/types/astoria';
-
-// Import data files directly instead of using fs.readFile
-import baseMapData from '../../../../../public/data/astoria-conquest/astoria-base-map.geojson';
-import coveredStreetsData from '../../../../../public/data/astoria-conquest/astoria-covered-streets.geojson';
-import statsData from '../../../../../public/data/astoria-conquest/astoria-progress-stats.json';
 
 interface RunData {
   id: number;
@@ -49,13 +47,29 @@ interface StatsData {
   runs: RunData[];
 }
 
-// Data is now imported at the top of the file
-function getData() {
+type BaseMapData = FeatureCollection<Geometry>;
+type CoveredStreetsData = FeatureCollection<Geometry>;
+
+const DATA_DIR = path.join(process.cwd(), 'public', 'data', 'astoria-conquest');
+
+async function readJsonFile<T>(fileName: string): Promise<T> {
+  const absolutePath = path.join(DATA_DIR, fileName);
+  const fileContents = await fs.readFile(absolutePath, 'utf-8');
+  return JSON.parse(fileContents) as T;
+}
+
+async function getData() {
   try {
+    const [baseMap, coveredStreets, stats] = await Promise.all([
+      readJsonFile<BaseMapData>('astoria-base-map.geojson'),
+      readJsonFile<CoveredStreetsData>('astoria-covered-streets.geojson'),
+      readJsonFile<StatsData>('astoria-progress-stats.json')
+    ]);
+
     return {
-      baseMap: baseMapData,
-      coveredStreets: coveredStreetsData,
-      stats: statsData
+      baseMap,
+      coveredStreets,
+      stats
     };
   } catch (error) {
     console.error('Error loading data:', error);
@@ -64,7 +78,7 @@ function getData() {
 }
 
 export default async function AstoriaConquestPage() {
-  const rawData = getData();
+  const rawData = await getData();
   if (!rawData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -76,9 +90,8 @@ export default async function AstoriaConquestPage() {
     );
   }
 
-  // Use the loaded stats data
-  const rawStats = rawData.stats as StatsData;
-  
+  const { baseMap, coveredStreets, stats: rawStats } = rawData;
+
   // Transform runs to match StravaRun interface
   // Use the run_number from the data if available, otherwise assign based on date order
   const transformedRuns: StravaRun[] = (rawStats.runs || []).map((run) => ({
@@ -109,7 +122,8 @@ export default async function AstoriaConquestPage() {
   }));
 
   const data = {
-    ...rawData,
+    baseMap,
+    coveredStreets,
     stats: {
       covered_miles: rawStats.summary.covered_miles,
       total_miles: rawStats.summary.total_miles,
