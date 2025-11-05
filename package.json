@@ -7,7 +7,7 @@
     "env:pull": "./scripts/sync-env.sh pull",
     "env:status": "./scripts/sync-env.sh status",
     "env:list": "./scripts/sync-env.sh list",
-    "env:sync": "./scripts/sync-env.sh pull && npm run dev",
+    "env:sync": "./scripts/sync-env.sh pull && pnpm dev",
     "map:setup": "cd backend && poetry run python app/scripts/astoria/generate_base_map.py",
     "map:update": "cd backend && poetry run python app/scripts/astoria/update_progress.py",
     "db:setup": "node scripts/db/setup-astoria-database.sql",
