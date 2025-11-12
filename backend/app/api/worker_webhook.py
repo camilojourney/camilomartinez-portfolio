@@ -28,6 +28,52 @@ def health_check():
     })
 
 
+@app.route('/webhook/correlate-activities', methods=['POST'])
+def correlate_activities_webhook():
+    """
+    Webhook endpoint to trigger activity correlation.
+
+    Matches Strava runs with WHOOP workouts based on time proximity.
+
+    Expected request:
+    POST /webhook/correlate-activities
+    Headers:
+      Authorization: Bearer <WORKER_WEBHOOK_SECRET>
+    """
+    try:
+        # Verify authorization
+        auth_header = request.headers.get('Authorization', '')
+        token = auth_header.replace('Bearer ', '').strip()
+
+        if token != WEBHOOK_SECRET:
+            logger.error('❌ Unauthorized webhook request')
+            return jsonify({'error': 'Unauthorized'}), 401
+
+        logger.info('🔄 Starting activity correlation...')
+
+        # Import and run the correlation task
+        from app.workers.tasks.strava import correlate_activities
+        result = correlate_activities()
+
+        logger.info(f'✅ Activity correlation completed: {result.get("correlations_created", 0)} matches created')
+        return jsonify(result)
+
+    except ImportError as e:
+        logger.error(f'❌ Failed to import correlation module: {str(e)}')
+        return jsonify({
+            'success': False,
+            'error': 'Correlation module not available',
+            'details': str(e)
+        }), 500
+
+    except Exception as e:
+        logger.error(f'❌ Correlation failed: {str(e)}')
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 @app.route('/webhook/astoria-update', methods=['POST'])
 def astoria_update_webhook():
     """
