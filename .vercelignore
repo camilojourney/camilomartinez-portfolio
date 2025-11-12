@@ -16,9 +16,8 @@ docs/
 # Scripts and data (but NOT src/data which contains source code)
 scripts/data/
 backend/data/
-public/data/
-# Exception: allow Astoria Conquest data for the live map
-!public/data/astoria-conquest/
+# NOTE: We need public/data/astoria-conquest/ for the live map, so we can't ignore all of public/data/
+# If you need to ignore specific large files in public/data/, add them individually
 backups/
 
 # Large assets
