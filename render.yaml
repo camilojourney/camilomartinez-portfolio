@@ -5,8 +5,8 @@ services:
     runtime: python
     region: oregon
     plan: free
-    buildCommand: "cd backend && pip install -r requirements.txt"
-    startCommand: "cd backend && gunicorn app.api.worker_webhook:app --bind 0.0.0.0:$PORT --timeout 300"
+    buildCommand: "cd backend && pip install poetry && poetry install --no-root"
+    startCommand: "cd backend && poetry run gunicorn app.api.worker_webhook:app --bind 0.0.0.0:$PORT --timeout 300"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -25,8 +25,8 @@ services:
     region: oregon
     plan: free
     schedule: "30 13 * * 1"  # Every Monday at 1:30 PM
-    buildCommand: "cd backend && pip install -r requirements.txt"
-    startCommand: "cd backend && python app/scripts/astoria/update_progress.py"
+    buildCommand: "cd backend && pip install poetry && poetry install --no-root"
+    startCommand: "cd backend && poetry run python app/scripts/astoria/update_progress.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
