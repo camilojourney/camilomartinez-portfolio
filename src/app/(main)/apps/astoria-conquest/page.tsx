@@ -1,138 +1,23 @@
 import type { Metadata } from 'next';
-import type { FeatureCollection, Geometry } from 'geojson';
 import { AstoriaConquestClient } from './client';
 import { metadata as pageMetadata } from './metadata';
 
 export const metadata: Metadata = pageMetadata;
 
-import type { StravaRun } from '@/types/astoria';
-
-// Static imports for data files - works in Vercel serverless environment
-import baseMapData from '../../../../../public/data/astoria-conquest/astoria-base-map.geojson';
-import coveredStreetsData from '../../../../../public/data/astoria-conquest/astoria-covered-streets.geojson';
-import statsData from '../../../../../public/data/astoria-conquest/astoria-progress-stats.json';
-
-interface RunData {
-  id: number;
-  run_number?: number;
-  name: string;
-  date: string;
-  distance_meters: number;
-  duration_seconds: number;
-  polyline?: string;
-  average_speed_mps?: number;
-  total_elevation_gain?: number;
-  avg_heart_rate?: number;
-  max_heart_rate?: number;
-  suffer_score?: number;
-  whoop_strain?: number;
-  kilojoules?: number;
-  heart_rate_zones?: {
-    rest?: number;
-    light?: number;
-    moderate?: number;
-    hard?: number;
-    peak?: number;
-    max?: number;
-  };
-}
-
-interface StatsData {
-  summary: {
-    total_miles: number;
-    covered_miles: number;
-    percent_complete: number;
-    total_segments: number;
-    covered_segments: number;
-    total_runs: number;
-    last_updated: string;
-  };
-  runs: RunData[];
-}
-
-type BaseMapData = FeatureCollection<Geometry>;
-type CoveredStreetsData = FeatureCollection<Geometry>;
-
-function getData() {
-  try {
-    // Use statically imported data - works in Vercel serverless environment
-    return {
-      baseMap: baseMapData as BaseMapData,
-      coveredStreets: coveredStreetsData as CoveredStreetsData,
-      stats: statsData as StatsData
-    };
-  } catch (error) {
-    console.error('Error loading data:', error);
-    return null;
-  }
-}
+/**
+ * Astoria Conquest Page
+ * 
+ * This page displays an interactive map showing your running conquest of Astoria.
+ * Data is fetched client-side from API routes to keep the bundle size small.
+ * 
+ * Data files are generated weekly by the backend Python script and served via:
+ * - /api/astoria/base-map (1.0 MB)
+ * - /api/astoria/covered-streets (156 KB)
+ * - /api/astoria/stats (4 KB)
+ */
 
 export default function AstoriaConquestPage() {
-  const rawData = getData();
-  if (!rawData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Error Loading Data</h1>
-          <p className="text-gray-400">Unable to load the required data files.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const { baseMap, coveredStreets, stats: rawStats } = rawData;
-
-  // Transform runs to match StravaRun interface
-  // Use the run_number from the data if available, otherwise assign based on date order
-  const transformedRuns: StravaRun[] = (rawStats.runs || []).map((run) => ({
-    id: run.id,
-    run_number: run.run_number || 0, // Use the run_number from the data
-    name: run.name,
-    date: run.date,
-    start_date: run.date,
-    distance_meters: run.distance_meters,
-    duration_seconds: run.duration_seconds,
-    total_elevation_gain: run.total_elevation_gain || 0,
-    average_speed_mps: run.distance_meters / run.duration_seconds,
-    max_speed: 0, // This could be calculated from splits if available
-    avg_heart_rate: run.avg_heart_rate || 0,
-    max_heart_rate: run.max_heart_rate || 0,
-    suffer_score: run.suffer_score || 0,
-    whoop_strain: run.whoop_strain || 0,
-    kilojoules: run.kilojoules || 0,
-    polyline: run.polyline || "",
-    heart_rate_zones: {
-      zone1_seconds: run.heart_rate_zones?.rest || 0,
-      zone2_seconds: run.heart_rate_zones?.light || 0,
-      zone3_seconds: run.heart_rate_zones?.moderate || 0,
-      zone4_seconds: run.heart_rate_zones?.hard || 0,
-      zone5_seconds: run.heart_rate_zones?.peak || 0,
-      zone6_seconds: run.heart_rate_zones?.max || 0
-    }
-  }));
-
-  const data = {
-    baseMap,
-    coveredStreets,
-    stats: {
-      covered_miles: rawStats.summary.covered_miles,
-      total_miles: rawStats.summary.total_miles,
-      covered_segments: rawStats.summary.covered_segments,
-      total_segments: rawStats.summary.total_segments,
-      percent_complete: rawStats.summary.percent_complete,
-      last_updated: rawStats.summary.last_updated
-    },
-    runs: transformedRuns,
-    runStats: {
-      total_runs: rawStats.summary.total_runs,
-      total_distance: rawStats.summary.covered_miles * 1609.34, // Convert miles to meters
-      total_elevation: transformedRuns.reduce((sum, run) => sum + run.total_elevation_gain, 0),
-      total_time: transformedRuns.reduce((sum, run) => sum + run.duration_seconds, 0),
-      avg_heart_rate: transformedRuns.reduce((sum, run) => sum + run.avg_heart_rate, 0) / (transformedRuns.length || 1),
-      max_heart_rate: Math.max(...transformedRuns.map(run => run.max_heart_rate)),
-      runs: transformedRuns
-    }
-  };
-
-  return <AstoriaConquestClient {...data} />;
+  // Data will be fetched client-side by the AstoriaConquestClient component
+  // This keeps the page bundle small and allows the data to be cached by CDN
+  return <AstoriaConquestClient />;
 }

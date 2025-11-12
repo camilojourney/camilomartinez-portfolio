@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import LiquidNav from '@/components/shared/liquid-nav';
 import { AstoriaStats } from '@/components/features/astoria-conquest/AstoriaStats';
@@ -14,30 +14,184 @@ import type {
   RunCardData,
   AstoriaStats as AstoriaStatsType
 } from '@/types/astoria';
+import type { FeatureCollection, Geometry } from 'geojson';
 
-interface AstoriaConquestClientProps {
-  baseMap: any;
-  coveredStreets: any;
-  stats: {
-    covered_miles: number;
-    total_miles: number;
-    covered_segments: number;
-    total_segments: number;
-    percent_complete: number;
-    last_updated: string;
+interface RawRunData {
+  id: number;
+  run_number?: number;
+  name: string;
+  date: string;
+  distance_meters: number;
+  duration_seconds: number;
+  polyline?: string;
+  average_speed_mps?: number;
+  total_elevation_gain?: number;
+  avg_heart_rate?: number;
+  max_heart_rate?: number;
+  suffer_score?: number;
+  whoop_strain?: number;
+  kilojoules?: number;
+  heart_rate_zones?: {
+    rest?: number;
+    light?: number;
+    moderate?: number;
+    hard?: number;
+    peak?: number;
+    max?: number;
   };
-  runs: StravaRun[];
-  runStats: AstoriaStatsType;
 }
 
-export function AstoriaConquestClient({ 
-  baseMap, 
-  coveredStreets, 
-  stats, 
-  runs, 
-  runStats 
-}: AstoriaConquestClientProps) {
+interface RawStatsData {
+  summary: {
+    total_miles: number;
+    covered_miles: number;
+    percent_complete: number;
+    total_segments: number;
+    covered_segments: number;
+    total_runs: number;
+    last_updated: string;
+  };
+  runs: RawRunData[];
+}
+
+export function AstoriaConquestClient() {
   const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<{
+    baseMap: FeatureCollection<Geometry>;
+    coveredStreets: FeatureCollection<Geometry>;
+    stats: {
+      covered_miles: number;
+      total_miles: number;
+      covered_segments: number;
+      total_segments: number;
+      percent_complete: number;
+      last_updated: string;
+    };
+    runs: StravaRun[];
+    runStats: AstoriaStatsType;
+  } | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        
+        // Fetch all three data files in parallel
+        const [baseMapRes, coveredStreetsRes, statsRes] = await Promise.all([
+          fetch('/api/astoria/base-map'),
+          fetch('/api/astoria/covered-streets'),
+          fetch('/api/astoria/stats')
+        ]);
+
+        if (!baseMapRes.ok || !coveredStreetsRes.ok || !statsRes.ok) {
+          throw new Error('Failed to fetch map data');
+        }
+
+        const baseMap = await baseMapRes.json();
+        const coveredStreets = await coveredStreetsRes.json();
+        const rawStats: RawStatsData = await statsRes.json();
+
+        // Transform runs to match StravaRun interface
+        const transformedRuns: StravaRun[] = (rawStats.runs || []).map((run) => ({
+          id: run.id,
+          run_number: run.run_number || 0,
+          name: run.name,
+          date: run.date,
+          start_date: run.date,
+          distance_meters: run.distance_meters,
+          duration_seconds: run.duration_seconds,
+          total_elevation_gain: run.total_elevation_gain || 0,
+          average_speed_mps: run.distance_meters / run.duration_seconds,
+          max_speed: 0,
+          avg_heart_rate: run.avg_heart_rate || 0,
+          max_heart_rate: run.max_heart_rate || 0,
+          suffer_score: run.suffer_score || 0,
+          whoop_strain: run.whoop_strain || 0,
+          kilojoules: run.kilojoules || 0,
+          polyline: run.polyline || "",
+          heart_rate_zones: {
+            zone1_seconds: run.heart_rate_zones?.rest || 0,
+            zone2_seconds: run.heart_rate_zones?.light || 0,
+            zone3_seconds: run.heart_rate_zones?.moderate || 0,
+            zone4_seconds: run.heart_rate_zones?.hard || 0,
+            zone5_seconds: run.heart_rate_zones?.peak || 0,
+            zone6_seconds: run.heart_rate_zones?.max || 0
+          }
+        }));
+
+        setData({
+          baseMap,
+          coveredStreets,
+          stats: {
+            covered_miles: rawStats.summary.covered_miles,
+            total_miles: rawStats.summary.total_miles,
+            covered_segments: rawStats.summary.covered_segments,
+            total_segments: rawStats.summary.total_segments,
+            percent_complete: rawStats.summary.percent_complete,
+            last_updated: rawStats.summary.last_updated
+          },
+          runs: transformedRuns,
+          runStats: {
+            total_runs: rawStats.summary.total_runs,
+            total_distance: rawStats.summary.covered_miles * 1609.34,
+            total_elevation: transformedRuns.reduce((sum, run) => sum + run.total_elevation_gain, 0),
+            total_time: transformedRuns.reduce((sum, run) => sum + run.duration_seconds, 0),
+            avg_heart_rate: transformedRuns.reduce((sum, run) => sum + run.avg_heart_rate, 0) / (transformedRuns.length || 1),
+            max_heart_rate: Math.max(...transformedRuns.map(run => run.max_heart_rate)),
+            runs: transformedRuns
+          }
+        });
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading Astoria data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+        <div className="text-center">
+          <div className="mb-4">
+            <svg className="animate-spin h-12 w-12 mx-auto text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Loading Astoria Conquest...</h2>
+          <p className="text-gray-400">Fetching map data and statistics</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Error Loading Data</h1>
+          <p className="text-gray-400 mb-4">{error || 'Unable to load the required data files.'}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { baseMap, coveredStreets, stats, runs, runStats } = data;
 
   const sortedRuns = [...runs].sort((a, b) => {
     const orderA = typeof a.run_number === 'number' ? a.run_number : new Date(a.date).getTime();
