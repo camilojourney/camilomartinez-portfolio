@@ -1,5 +1,3 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 import type { Metadata } from 'next';
 import type { FeatureCollection, Geometry } from 'geojson';
 import { AstoriaConquestClient } from './client';
@@ -8,6 +6,11 @@ import { metadata as pageMetadata } from './metadata';
 export const metadata: Metadata = pageMetadata;
 
 import type { StravaRun } from '@/types/astoria';
+
+// Static imports for data files - works in Vercel serverless environment
+import baseMapData from '../../../../../public/data/astoria-conquest/astoria-base-map.geojson';
+import coveredStreetsData from '../../../../../public/data/astoria-conquest/astoria-covered-streets.geojson';
+import statsData from '../../../../../public/data/astoria-conquest/astoria-progress-stats.json';
 
 interface RunData {
   id: number;
@@ -50,26 +53,13 @@ interface StatsData {
 type BaseMapData = FeatureCollection<Geometry>;
 type CoveredStreetsData = FeatureCollection<Geometry>;
 
-const DATA_DIR = path.join(process.cwd(), 'public', 'data', 'astoria-conquest');
-
-async function readJsonFile<T>(fileName: string): Promise<T> {
-  const absolutePath = path.join(DATA_DIR, fileName);
-  const fileContents = await fs.readFile(absolutePath, 'utf-8');
-  return JSON.parse(fileContents) as T;
-}
-
-async function getData() {
+function getData() {
   try {
-    const [baseMap, coveredStreets, stats] = await Promise.all([
-      readJsonFile<BaseMapData>('astoria-base-map.geojson'),
-      readJsonFile<CoveredStreetsData>('astoria-covered-streets.geojson'),
-      readJsonFile<StatsData>('astoria-progress-stats.json')
-    ]);
-
+    // Use statically imported data - works in Vercel serverless environment
     return {
-      baseMap,
-      coveredStreets,
-      stats
+      baseMap: baseMapData as BaseMapData,
+      coveredStreets: coveredStreetsData as CoveredStreetsData,
+      stats: statsData as StatsData
     };
   } catch (error) {
     console.error('Error loading data:', error);
@@ -77,8 +67,8 @@ async function getData() {
   }
 }
 
-export default async function AstoriaConquestPage() {
-  const rawData = await getData();
+export default function AstoriaConquestPage() {
+  const rawData = getData();
   if (!rawData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
