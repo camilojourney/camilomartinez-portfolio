@@ -54,18 +54,35 @@ git stash --include-untracked --quiet || true
 
 # Pull with rebase to maintain linear history
 git pull --rebase origin main || {
-    echo "⚠️  Rebase had conflicts, attempting to resolve..."
-    # If rebase fails, abort and try regular merge
-    git rebase --abort 2>/dev/null || true
-    git pull --no-rebase origin main || {
-        echo "⚠️  Pull failed completely, forcing push..."
-        # Last resort: force push (only safe because this is automated data)
-        git push --force-with-lease origin main
-        git stash pop --quiet 2>/dev/null || true
-        echo "✅ Force-pushed to GitHub"
-        echo "🚀 Vercel will auto-deploy with the new data"
-        exit 0
-    }
+    echo "⚠️  Rebase had conflicts, auto-resolving..."
+    
+    # Check if we're in a rebase
+    if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+        # Resolve conflicts by taking our version (the newer data)
+        git checkout --ours public/data/astoria-conquest/astoria-progress-stats.json 2>/dev/null || true
+        git checkout --ours public/data/astoria-conquest/astoria-covered-streets.geojson 2>/dev/null || true
+        git checkout --ours public/data/astoria-conquest/astoria-base-map.geojson 2>/dev/null || true
+        
+        # Mark as resolved and continue rebase
+        git add public/data/astoria-conquest/*.json public/data/astoria-conquest/*.geojson 2>/dev/null || true
+        git rebase --continue 2>/dev/null || {
+            # If rebase still fails, abort and try merge
+            git rebase --abort 2>/dev/null || true
+        }
+    fi
+    
+    # If rebase was aborted or never started, try regular merge
+    if [ ! -d .git/rebase-merge ] && [ ! -d .git/rebase-apply ]; then
+        git pull --no-rebase --strategy-option=ours origin main || {
+            echo "⚠️  Pull failed completely, forcing push..."
+            # Last resort: force push (safe because this is automated data)
+            git push --force-with-lease origin main
+            git stash pop --quiet 2>/dev/null || true
+            echo "✅ Force-pushed to GitHub"
+            echo "🚀 Vercel will auto-deploy with the new data"
+            exit 0
+        }
+    fi
 }
 
 # Restore stashed changes
