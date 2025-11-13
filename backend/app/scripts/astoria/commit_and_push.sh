@@ -15,6 +15,13 @@ if [ ! -d .git ]; then
     exit 1
 fi
 
+# Ensure we're on main branch (Render may checkout in detached HEAD)
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" = "HEAD" ]; then
+    echo "📍 Detected detached HEAD, switching to main branch..."
+    git checkout main
+fi
+
 # Configure git for automated commits
 git config user.name "Astoria Conquest Bot"
 git config user.email "astoria-bot@camilomartinez.co"

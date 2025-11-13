@@ -26,9 +26,20 @@ cd /opt/render/project/src
 
 # Check if we're in a git repository
 if [ -d .git ]; then
-    # Set remote URL to use SSH
-    git remote set-url origin git@github.com:camilojourney/camilomartinez-portfolio.git || \
-    git remote add origin git@github.com:camilojourney/camilomartinez-portfolio.git
+    # Check if origin remote exists
+    if git remote get-url origin &> /dev/null; then
+        # Update existing remote to use SSH
+        git remote set-url origin git@github.com:camilojourney/camilomartinez-portfolio.git
+    else
+        # Add new remote
+        git remote add origin git@github.com:camilojourney/camilomartinez-portfolio.git
+    fi
+    
+    # Ensure we're on main branch (Render checks out in detached HEAD)
+    git checkout main || git checkout -b main
+    
+    # Set upstream for push
+    git branch --set-upstream-to=origin/main main
 else
     echo "⚠️  Not a git repository - skipping remote configuration"
 fi
