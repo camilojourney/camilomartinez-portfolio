@@ -1,6 +1,6 @@
 # ⚙️ Backend Architecture Guide
 
-> **Status:** Authoritative · **Scope:** FastAPI Service Mesh · **Last Updated:** October 2, 2025  
+> **Status:** Authoritative · **Scope:** FastAPI Service Mesh · **Last Updated:** October 2, 2025
 > **Owner:** Backend Guild (Camilo Martinez) · **Reviewer:** AI Assistant
 
 ---
@@ -26,15 +26,15 @@
 
 ## 🏛️ System Overview
 
-| Concern | Detail |
-|---------|--------|
-| **Framework** | FastAPI (ASGI) with async-first design |
-| **Runtime** | Python 3.11, Uvicorn workers (gunicorn optional) |
-| **Storage** | PostgreSQL 15 + pgvector, Redis 7 |
-| **Integrations** | WHOOP, Strava, OpenAI |
-| **AI Services** | RAG pipeline, trainer agent, evaluation harness |
-| **Configuration** | Pydantic Settings (`Settings` class) |
-| **Testing** | Pytest, pytest-asyncio, respx for HTTP mocks |
+| Concern           | Detail                                           |
+| ----------------- | ------------------------------------------------ |
+| **Framework**     | FastAPI (ASGI) with async-first design           |
+| **Runtime**       | Python 3.11, Uvicorn workers (gunicorn optional) |
+| **Storage**       | PostgreSQL 15 + pgvector, Redis 7                |
+| **Integrations**  | WHOOP, Strava, OpenAI                            |
+| **AI Services**   | RAG pipeline, trainer agent, evaluation harness  |
+| **Configuration** | Pydantic Settings (`Settings` class)             |
+| **Testing**       | Pytest, pytest-asyncio, respx for HTTP mocks     |
 
 ---
 
@@ -148,15 +148,15 @@ async def run_query(payload: QueryRequest, service: AIQueryService = Depends(get
 
 ## ✅ Quality Gates
 
-| Stage | Command | Notes |
-|-------|---------|-------|
-| **Lint** | `poetry run ruff check` | Enforce style + bugbear rules |
-| **Format** | `poetry run ruff format` | Auto-format code |
-| **Type Check** | `poetry run mypy app` | Optional but recommended |
-| **Unit Tests** | `poetry run pytest tests/unit` | Fast feedback |
-| **Integration Tests** | `poetry run pytest tests/integration` | Spins up db fixture |
-| **Coverage** | `poetry run pytest --cov=app --cov-report=xml` | Target ≥ 80% |
-| **Contracts** | `poetry run python scripts/openapi_snapshot.py` | Detects API drift |
+| Stage                 | Command                                         | Notes                         |
+| --------------------- | ----------------------------------------------- | ----------------------------- |
+| **Lint**              | `poetry run ruff check`                         | Enforce style + bugbear rules |
+| **Format**            | `poetry run ruff format`                        | Auto-format code              |
+| **Type Check**        | `poetry run mypy app`                           | Optional but recommended      |
+| **Unit Tests**        | `poetry run pytest tests/unit`                  | Fast feedback                 |
+| **Integration Tests** | `poetry run pytest tests/integration`           | Spins up db fixture           |
+| **Coverage**          | `poetry run pytest --cov=app --cov-report=xml`  | Target ≥ 80%                  |
+| **Contracts**         | `poetry run python scripts/openapi_snapshot.py` | Detects API drift             |
 
 CI enforces lint + tests via `.github/workflows/backend.yml`.
 

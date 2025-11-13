@@ -6,10 +6,10 @@ export const metadata: Metadata = pageMetadata;
 
 /**
  * Astoria Conquest Page
- * 
+ *
  * This page displays an interactive map showing your running conquest of Astoria.
  * Data is fetched client-side from API routes to keep the bundle size small.
- * 
+ *
  * Data files are generated weekly by the backend Python script and served via:
  * - /api/astoria/base-map (1.0 MB)
  * - /api/astoria/covered-streets (156 KB)

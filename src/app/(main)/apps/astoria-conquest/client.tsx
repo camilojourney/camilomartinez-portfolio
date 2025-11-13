@@ -9,8 +9,8 @@ import { RunCard } from '@/components/features/astoria-conquest/RunCard';
 import { RunSelector } from '@/components/features/astoria-conquest/RunSelector';
 import Link from 'next/link';
 import { extractZoneDurations } from '@/lib/astoria/zones';
-import type { 
-  StravaRun, 
+import type {
+  StravaRun,
   RunCardData,
   AstoriaStats as AstoriaStatsType
 } from '@/types/astoria';
@@ -77,7 +77,7 @@ export function AstoriaConquestClient() {
     async function fetchData() {
       try {
         setLoading(true);
-        
+
         // Fetch all three data files in parallel
         const [baseMapRes, coveredStreetsRes, statsRes] = await Promise.all([
           fetch('/api/astoria/base-map'),
@@ -180,8 +180,8 @@ export function AstoriaConquestClient() {
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Error Loading Data</h1>
           <p className="text-gray-400 mb-4">{error || 'Unable to load the required data files.'}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
             Retry
@@ -267,15 +267,15 @@ export function AstoriaConquestClient() {
         <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
           <div className="space-y-8">
             <div className="bg-black/20 rounded-xl p-4 aspect-[4/3]">
-              <MapContainer 
-                baseMapData={baseMap} 
+              <MapContainer
+                baseMapData={baseMap}
                 coveredStreetsData={coveredStreets || { type: "FeatureCollection", features: [] }}
                 selectedRun={selectedRun || undefined}
               />
             </div>
-            
+
             <div className="bg-black/20 rounded-xl p-6">
-              <AstoriaStats 
+              <AstoriaStats
                 stats={displayedStats}
               />
             </div>
@@ -290,8 +290,8 @@ export function AstoriaConquestClient() {
               };
 
               return (
-                <RunCard 
-                  key={run.id} 
+                <RunCard
+                  key={run.id}
                   run={runData}
                   isSelected={run.id === selectedRunId}
                   onClick={() => setSelectedRunId(run.id === selectedRunId ? null : run.id)}

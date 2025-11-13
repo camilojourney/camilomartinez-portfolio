@@ -1,5 +1,5 @@
 # Astoria Conquest cache files (generated)
-astoria-conquest/cache/*.pkl
+# Note: astoria_graph.pkl is committed so Render has it on deploy
 astoria-conquest/cache/*.geojson
 
 # OSMnx HTTP cache (generated)

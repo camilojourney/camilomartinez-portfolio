@@ -1,24 +1,9 @@
 services:
-  # Python Background Worker for Astoria Conquest Updates
-  - type: web
-    name: astoria-worker
-    runtime: python
-    region: oregon
-    plan: free
-    buildCommand: cd backend && pip install poetry && poetry install --no-root
-    startCommand: cd backend && poetry run uvicorn app.api.worker_webhook:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: POSTGRES_URL_NONPRISMA
-        sync: false
-      - key: DATABASE_URL
-        sync: false
-      - key: WORKER_WEBHOOK_SECRET
-        generateValue: true
-    healthCheckPath: /health
-
-  # Optional: Cron job service (alternative to Vercel cron)
+  # Astoria Conquest Weekly Update (Cron Job)
+  # Runs every Monday at 1:30 PM to:
+  # 1. Fetch Strava runs from PostgreSQL
+  # 2. Match with WHOOP data
+  # 3. Generate updated map GeoJSON files
   - type: cron
     name: astoria-weekly-update
     runtime: python

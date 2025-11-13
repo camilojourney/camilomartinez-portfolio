@@ -62,8 +62,8 @@ Click "Advanced" → "Add Environment Variable" and add these:
 | Key | Value | Notes |
 |-----|-------|-------|
 | `PYTHON_VERSION` | `3.11.0` | Python version |
-| `POSTGRES_URL_NONPRISMA` | `your-vercel-postgres-url` | Copy from Vercel |
-| `DATABASE_URL` | `your-vercel-postgres-url` | Same as above |
+| `POSTGRES_URL_NONPRISMA` | `postgres://user:pass@host.vercel-storage.com:5432/db` | Copy from Vercel (NOT POSTGRES_PRISMA_URL!) |
+| `DATABASE_URL` | `postgres://user:pass@host.vercel-storage.com:5432/db` | Same as above |
 | `WORKER_WEBHOOK_SECRET` | Generate random 32-char string | Use: `openssl rand -hex 16` |
 
 **How to get PostgreSQL URL:**
