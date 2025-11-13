@@ -47,6 +47,17 @@ os.makedirs(DATA_OUTPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR_CACHE, exist_ok=True)
 os.makedirs(OSMNX_CACHE_DIR, exist_ok=True)
 
+# --- CHECK IF BASE MAP ALREADY EXISTS ---
+GRAPH_PATH = OUTPUT_DIR_CACHE / "astoria_graph.pkl"
+GEOJSON_PATH = DATA_OUTPUT_DIR / "astoria-base-map.geojson"
+
+if GRAPH_PATH.exists() and GEOJSON_PATH.exists():
+    print("✅ Base map files already exist. Skipping generation to save time and bandwidth.")
+    print(f"   - Graph cache: {GRAPH_PATH}")
+    print(f"   - GeoJSON file: {GEOJSON_PATH}")
+    print("\n💡 Tip: To force regeneration, delete these files first.")
+    exit(0)
+
 # Configure OSMnx to use backend cache directory
 ox.settings.cache_folder = str(OSMNX_CACHE_DIR)
 ox.settings.use_cache = True
@@ -115,14 +126,12 @@ print(f"   -> Final network created with {len(nodes_gdf)} nodes and {len(edges_g
 print("   -> Saving processed files...")
 
 # 1. Save the NetworkX Graph Object (for fast loading in future scripts)
-graph_path = OUTPUT_DIR_CACHE / "astoria_graph.pkl"
-with open(graph_path, 'wb') as f:
+with open(GRAPH_PATH, 'wb') as f:
     pickle.dump(G_final, f)
-print(f"      - Saved Python graph object to: {graph_path}")
+print(f"      - Saved Python graph object to: {GRAPH_PATH}")
 
 # 2. Save the Base Map as GeoJSON (for the website frontend)
-geojson_path = DATA_OUTPUT_DIR / "astoria-base-map.geojson"
-edges_gdf.to_file(geojson_path, driver='GeoJSON')
-print(f"      - Saved web-ready base map to: {geojson_path}")
+edges_gdf.to_file(GEOJSON_PATH, driver='GeoJSON')
+print(f"      - Saved web-ready base map to: {GEOJSON_PATH}")
 
 print("\n✅ Success! Foundational map assets have been created.")

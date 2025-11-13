@@ -1,16 +1,18 @@
 services:
   # Astoria Conquest Weekly Update (Cron Job)
   # Runs every Monday at 1:30 PM to:
-  # 1. Generate updated map from existing data
-  # 2. Correlate any new Strava/WHOOP activities for next week
+  # 1. Update progress map with new Strava runs (GPS matching)
+  # 2. Correlate any new Strava/WHOOP activities
+  # 3. Auto-commit and push updated files to trigger Vercel deploy
+  # Note: Base map generation skipped (files already in repo)
   - type: cron
     name: astoria-weekly-update
     runtime: python
     region: oregon
     plan: free
     schedule: "30 13 * * 1"  # Every Monday at 1:30 PM
-    buildCommand: "cd backend && pip install poetry && poetry install --no-root"
-    startCommand: "bash backend/app/scripts/astoria/setup_git.sh && cd backend && poetry run python app/scripts/astoria/generate_base_map.py && poetry run python app/scripts/astoria/update_progress.py && poetry run python app/scripts/correlate_activities.py && bash app/scripts/astoria/commit_and_push.sh"
+    buildCommand: "cd backend && rm -rf .venv && pip install --no-cache-dir poetry && poetry install --no-root"
+    startCommand: "bash backend/app/scripts/astoria/setup_git.sh && cd backend && poetry run python app/scripts/astoria/update_progress.py && poetry run python app/scripts/correlate_activities.py && bash app/scripts/astoria/commit_and_push.sh"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
