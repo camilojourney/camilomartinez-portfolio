@@ -1,16 +1,18 @@
 """
-Simple Flask webhook API for triggering Astoria updates from Vercel cron.
+Simple FastAPI webhook API for triggering Astoria updates from Vercel cron.
 
 This service runs on Render.com and receives webhook calls from Vercel.
 """
 
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 import subprocess
 import os
 from pathlib import Path
 import logging
+from typing import Optional
 
-app = Flask(__name__)
+app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -18,18 +20,29 @@ logger = logging.getLogger(__name__)
 WEBHOOK_SECRET = os.getenv('WORKER_WEBHOOK_SECRET', 'change-me-in-production')
 
 
-@app.route('/health', methods=['GET'])
+def verify_auth(authorization: Optional[str] = Header(None)):
+    """Verify webhook authentication"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    token = authorization.replace('Bearer ', '').strip()
+    if token != WEBHOOK_SECRET:
+        logger.error('❌ Unauthorized webhook request')
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+@app.get('/health')
 def health_check():
     """Health check endpoint for Render.com"""
-    return jsonify({
+    return {
         'status': 'healthy',
         'service': 'astoria-worker',
         'version': '1.0.0'
-    })
+    }
 
 
-@app.route('/webhook/correlate-activities', methods=['POST'])
-def correlate_activities_webhook():
+@app.post('/webhook/correlate-activities')
+def correlate_activities_webhook(authorization: Optional[str] = Header(None)):
     """
     Webhook endpoint to trigger activity correlation.
 
@@ -42,12 +55,7 @@ def correlate_activities_webhook():
     """
     try:
         # Verify authorization
-        auth_header = request.headers.get('Authorization', '')
-        token = auth_header.replace('Bearer ', '').strip()
-
-        if token != WEBHOOK_SECRET:
-            logger.error('❌ Unauthorized webhook request')
-            return jsonify({'error': 'Unauthorized'}), 401
+        verify_auth(authorization)
 
         logger.info('🔄 Starting activity correlation...')
 
@@ -56,26 +64,32 @@ def correlate_activities_webhook():
         result = correlate_activities()
 
         logger.info(f'✅ Activity correlation completed: {result.get("correlations_created", 0)} matches created')
-        return jsonify(result)
+        return result
 
     except ImportError as e:
         logger.error(f'❌ Failed to import correlation module: {str(e)}')
-        return jsonify({
-            'success': False,
-            'error': 'Correlation module not available',
-            'details': str(e)
-        }), 500
+        raise HTTPException(
+            status_code=500,
+            detail={
+                'success': False,
+                'error': 'Correlation module not available',
+                'details': str(e)
+            }
+        )
 
     except Exception as e:
         logger.error(f'❌ Correlation failed: {str(e)}')
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        raise HTTPException(
+            status_code=500,
+            detail={
+                'success': False,
+                'error': str(e)
+            }
+        )
 
 
-@app.route('/webhook/astoria-update', methods=['POST'])
-def astoria_update_webhook():
+@app.post('/webhook/astoria-update')
+def astoria_update_webhook(authorization: Optional[str] = Header(None)):
     """
     Webhook endpoint to trigger Astoria Conquest map update.
 
@@ -86,12 +100,7 @@ def astoria_update_webhook():
     """
     try:
         # Verify authorization
-        auth_header = request.headers.get('Authorization', '')
-        token = auth_header.replace('Bearer ', '').strip()
-
-        if token != WEBHOOK_SECRET:
-            logger.error('❌ Unauthorized webhook request')
-            return jsonify({'error': 'Unauthorized'}), 401
+        verify_auth(authorization)
 
         logger.info('🗺️ Starting Astoria Conquest map update...')
 
@@ -101,7 +110,7 @@ def astoria_update_webhook():
 
         if not script_path.exists():
             logger.error(f'❌ Script not found: {script_path}')
-            return jsonify({'error': 'Script not found'}), 500
+            raise HTTPException(status_code=500, detail={'error': 'Script not found'})
 
         # Run the Python script
         result = subprocess.run(
@@ -114,34 +123,47 @@ def astoria_update_webhook():
 
         if result.returncode == 0:
             logger.info('✅ Astoria map update completed successfully')
-            return jsonify({
+            return {
                 'success': True,
                 'message': 'Astoria map updated successfully',
                 'output': result.stdout[-500:]  # Last 500 chars
-            })
+            }
         else:
             logger.error(f'❌ Script failed: {result.stderr}')
-            return jsonify({
-                'success': False,
-                'error': 'Script execution failed',
-                'stderr': result.stderr[-500:]
-            }), 500
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    'success': False,
+                    'error': 'Script execution failed',
+                    'stderr': result.stderr[-500:]
+                }
+            )
 
     except subprocess.TimeoutExpired:
         logger.error('❌ Script timed out after 5 minutes')
-        return jsonify({
-            'success': False,
-            'error': 'Script execution timed out'
-        }), 408
+        raise HTTPException(
+            status_code=408,
+            detail={
+                'success': False,
+                'error': 'Script execution timed out'
+            }
+        )
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         logger.error(f'❌ Unexpected error: {str(e)}')
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        raise HTTPException(
+            status_code=500,
+            detail={
+                'success': False,
+                'error': str(e)
+            }
+        )
 
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    import uvicorn
+    port = int(os.getenv('PORT', 8000))
+    uvicorn.run(app, host='0.0.0.0', port=port)
