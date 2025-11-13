@@ -62,4 +62,3 @@ research/**/astoria_running_routes
 .vercel
 .env*.local
 .chat-logs/
-# Test SSH deploy key
