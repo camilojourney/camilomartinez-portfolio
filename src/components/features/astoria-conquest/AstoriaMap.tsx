@@ -31,7 +31,7 @@ function CustomControls() {
   };
 
   const handleCenterView = () => {
-    const center: LatLngExpression = [40.765, -73.92]; // Astoria Center
+    const center: LatLngExpression = [40.770, -73.915]; // Astoria Center - adjusted to center on runs
     map.setView(center, 14);
   };
 
@@ -47,7 +47,7 @@ function CustomControls() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
       </button>
-      
+
       {/* Zoom Out */}
       <button
         onClick={handleZoomOut}
@@ -58,7 +58,7 @@ function CustomControls() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
         </svg>
       </button>
-      
+
       {/* Center View */}
       <button
         onClick={handleCenterView}
@@ -76,7 +76,7 @@ function CustomControls() {
 }
 
 const AstoriaMap = ({ baseMapData, coveredStreetsData, selectedRun }: AstoriaMapProps) => {
-  const center: LatLngExpression = [40.765, -73.92]; // Astoria Center
+  const center: LatLngExpression = [40.770, -73.915]; // Astoria Center - centered on actual runs
 
   const selectedRunFeature = (() => {
     if (!selectedRun?.polyline) {

@@ -26,21 +26,21 @@ export function RunCard({ run, isSelected, onClick }: RunCardProps) {
     return `${month} ${day}, ${year} at ${displayHours}:${displayMinutes} ${ampm}`
   })()
 
-  const totalZoneSeconds = Object.values(run.heart_rate_zones).reduce((acc, value) => acc + value, 0)
+  // Convert minutes to seconds for total run duration
+  const totalRunSeconds = run.duration_seconds
 
-  const formatDuration = (seconds: number) => {
-    const mins = seconds / 60
-    if (mins < 1) {
-      return `${seconds.toFixed(0)} sec`
+  // Heart rate zones are already in minutes from the backend
+  const formatDuration = (minutes: number) => {
+    if (minutes < 1) {
+      return `${(minutes * 60).toFixed(0)} sec`
     }
-    return `${mins.toFixed(1)} min`
+    return `${minutes.toFixed(1)} min`
   }
 
   return (
     <div
-      className={`p-4 rounded-lg transition-all cursor-pointer ${
-        isSelected ? 'bg-cyan-500/20 border border-cyan-500' : 'bg-black/20 hover:bg-black/30'
-      }`}
+      className={`p-4 rounded-lg transition-all cursor-pointer ${isSelected ? 'bg-cyan-500/20 border border-cyan-500' : 'bg-black/20 hover:bg-black/30'
+        }`}
       onClick={onClick}
     >
       <div className="flex justify-between items-start mb-2">
@@ -83,17 +83,19 @@ export function RunCard({ run, isSelected, onClick }: RunCardProps) {
       <div className="mt-3 space-y-2">
         <div className="h-2 w-full rounded-full overflow-hidden bg-gray-700 flex">
           {HEART_RATE_ZONE_DEFINITIONS.map((zone) => {
-            const seconds = run.heart_rate_zones[zone.key]
-            if (!seconds || totalZoneSeconds === 0) {
+            const minutes = run.heart_rate_zones[zone.key]
+            if (!minutes || totalRunSeconds === 0) {
               return null
             }
-            const percentage = (seconds / totalZoneSeconds) * 100
+            // Calculate percentage based on total run duration
+            const zoneSeconds = minutes * 60
+            const percentage = (zoneSeconds / totalRunSeconds) * 100
             return (
               <div
                 key={zone.key}
                 className={`${zone.barClass} h-full transition-all`}
                 style={{ width: `${percentage}%` }}
-                title={`${zone.label}: ${formatDuration(seconds)} (${percentage.toFixed(1)}%)`}
+                title={`${zone.label}: ${formatDuration(minutes)} (${percentage.toFixed(1)}%)`}
               />
             )
           })}
@@ -105,7 +107,7 @@ export function RunCard({ run, isSelected, onClick }: RunCardProps) {
               <span className={`inline-flex h-2 w-2 rounded-full ${zone.dotClass}`} aria-hidden />
               <span>
                 {zone.label} · {zone.name}{' '}
-                {totalZoneSeconds > 0 && run.heart_rate_zones[zone.key]
+                {run.heart_rate_zones[zone.key]
                   ? `(${formatDuration(run.heart_rate_zones[zone.key])})`
                   : ''}
               </span>

@@ -193,10 +193,18 @@ export function AstoriaConquestClient() {
 
   const { baseMap, coveredStreets, stats, runs, runStats } = data;
 
-  const sortedRuns = [...runs].sort((a, b) => {
+  // Sort runs chronologically for buttons/selector (Run #1 → Run #4)
+  const runsForButtons = [...runs].sort((a, b) => {
     const orderA = typeof a.run_number === 'number' ? a.run_number : new Date(a.date).getTime();
     const orderB = typeof b.run_number === 'number' ? b.run_number : new Date(b.date).getTime();
     return orderA - orderB;
+  });
+
+  // Sort runs in REVERSE chronological order (newest first) for display cards
+  const sortedRuns = [...runs].sort((a, b) => {
+    const orderA = typeof a.run_number === 'number' ? a.run_number : new Date(a.date).getTime();
+    const orderB = typeof b.run_number === 'number' ? b.run_number : new Date(b.date).getTime();
+    return orderB - orderA; // Show newest first
   });
 
   const selectedRun = selectedRunId
@@ -236,7 +244,7 @@ export function AstoriaConquestClient() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
         {/* Progress Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-black/20 rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-400">Streets Covered</h3>
             <p className="text-3xl font-bold">{stats?.percent_complete}%</p>
@@ -249,24 +257,20 @@ export function AstoriaConquestClient() {
             <p className="text-3xl font-bold">{stats?.covered_miles.toFixed(1)} mi</p>
             <p className="text-sm text-gray-400">Across {runStats?.total_runs || 0} runs</p>
           </div>
-          <div className="bg-black/20 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-gray-400">Total Elevation</h3>
-            <p className="text-3xl font-bold">{(runStats?.total_elevation || 0).toFixed(0)}m</p>
-            <p className="text-sm text-gray-400">Cumulative gain</p>
-          </div>
         </div>
 
         {/* Run Selector */}
         <RunSelector
-          runs={sortedRuns}
+          runs={runsForButtons}
           selectedRunId={selectedRunId}
           onRunSelect={setSelectedRunId}
         />
 
-        {/* Map and Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-8">
-          <div className="space-y-8">
-            <div className="bg-black/20 rounded-xl p-4 aspect-[4/3]">
+        {/* Map and Run Cards - Combined in one box */}
+        <div className="bg-black/20 rounded-xl p-6">
+          <div className="grid grid-cols-1 xl:grid-cols-[3fr,2fr] gap-6 items-start">
+            {/* Map */}
+            <div className="bg-black/10 rounded-lg p-4 aspect-[4/3]">
               <MapContainer
                 baseMapData={baseMap}
                 coveredStreetsData={coveredStreets || { type: "FeatureCollection", features: [] }}
@@ -274,31 +278,32 @@ export function AstoriaConquestClient() {
               />
             </div>
 
-            <div className="bg-black/20 rounded-xl p-6">
-              <AstoriaStats
-                stats={displayedStats}
-              />
+            {/* Run Cards - Shows 2 cards, rest scroll */}
+            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+              {(selectedRun ? [selectedRun] : sortedRuns).map((run: StravaRun) => {
+                const runData: RunCardData = {
+                  ...run,
+                  heart_rate_zones: extractZoneDurations(run.heart_rate_zones),
+                };
+
+                return (
+                  <RunCard
+                    key={run.id}
+                    run={runData}
+                    isSelected={run.id === selectedRunId}
+                    onClick={() => setSelectedRunId(run.id === selectedRunId ? null : run.id)}
+                  />
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          {/* Run Cards */}
-          <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
-            {(selectedRun ? [selectedRun] : sortedRuns).map((run: StravaRun) => {
-              const runData: RunCardData = {
-                ...run,
-                heart_rate_zones: extractZoneDurations(run.heart_rate_zones),
-              };
-
-              return (
-                <RunCard
-                  key={run.id}
-                  run={runData}
-                  isSelected={run.id === selectedRunId}
-                  onClick={() => setSelectedRunId(run.id === selectedRunId ? null : run.id)}
-                />
-              );
-            })}
-          </div>
+        {/* Charts and Stats below */}
+        <div className="bg-black/20 rounded-xl p-6">
+          <AstoriaStats
+            stats={displayedStats}
+          />
         </div>
       </div>
 

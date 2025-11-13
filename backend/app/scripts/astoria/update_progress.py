@@ -77,10 +77,10 @@ all_polylines = []
 try:
     conn = psycopg2.connect(DB_CONNECTION_STRING)
     cur = conn.cursor()
-    
+
     # Fetch all runs with WHOOP enrichment
     sql_query = """
-        SELECT 
+        SELECT
             sr.id, sr.name, sr.start_date, sr.distance_meters,
             sr.detailed_polyline, sr.elapsed_time_seconds,
             sr.average_speed_mps, sr.suffer_score,
@@ -91,7 +91,7 @@ try:
         FROM strava_runs sr
         LEFT JOIN activity_correlations ac ON sr.id = ac.strava_run_id
         LEFT JOIN whoop_workouts w ON w.id = ac.whoop_workout_id
-        WHERE 
+        WHERE
             sr.start_date >= '2025-09-20'
             AND sr.detailed_polyline IS NOT NULL
         ORDER BY sr.start_date DESC;
@@ -107,7 +107,7 @@ try:
             round(zone_ms / (1000 * 60), 2) if zone_ms else 0
             for zone_ms in row[12:18]  # hr_zone_0_ms through hr_zone_5_ms
         ]
-        
+
         runs_data.append({
             "run_number": len(rows) - idx + 1,  # Reverse numbering since ORDER BY DESC
             "id": row[0],
@@ -133,7 +133,7 @@ try:
                 "max": hr_zones_minutes[5]
             }
         })
-    
+
     # Still maintain all_polylines for the coverage calculation
     all_polylines = [run["polyline"] for run in runs_data]
     cur.close()
@@ -157,7 +157,7 @@ def haversine(lat1, lon1, lat2, lon2):
     a = sin(dphi/2)**2 + cos(phi1) * cos(phi2) * sin(dlambda/2)**2
     return 2 * R * atan2(sqrt(a), sqrt(1 - a))
 
-def smooth_trace(points, w=3):
+def smooth_trace(points, w=2):
     """Smooth GPS trace using moving average."""
     if w <= 1 or len(points) < w:
         return points
@@ -170,7 +170,7 @@ def smooth_trace(points, w=3):
         sm.append((sum(lats) / len(lats), sum(lons) / len(lons)))
     return sm
 
-def spatial_cluster(points, dist_threshold=32):
+def spatial_cluster(points, dist_threshold=15):
     """Cluster nearby GPS points to reduce noise."""
     if not points:
         return []
@@ -198,15 +198,15 @@ G_u = nx.Graph(G_final)
 for encoded_polyline in all_polylines:
     if not encoded_polyline:
         continue
-    
+
     # 1. DECODE AND PRE-PROCESS
     decoded_coords = polyline.decode(encoded_polyline)
-    clipped_coords = [(lat, lon) for lat, lon in decoded_coords 
+    clipped_coords = [(lat, lon) for lat, lon in decoded_coords
                      if (minx <= lon <= maxx) and (miny <= lat <= maxy)]
     if len(clipped_coords) < 2:
         continue
-    
-    smoothed_coords = smooth_trace(clipped_coords, w=3)
+
+    smoothed_coords = smooth_trace(clipped_coords, w=2)
     clustered_coords = spatial_cluster(smoothed_coords)
     if len(clustered_coords) < 2:
         continue
@@ -231,7 +231,7 @@ for encoded_polyline in all_polylines:
     for n in candidate_nodes:
         if not snapped_nodes or n != snapped_nodes[-1]:
             snapped_nodes.append(n)
-            
+
     # 3. RECONSTRUCT PATH
     for a, b in zip(snapped_nodes[:-1], snapped_nodes[1:]):
         if a == b:

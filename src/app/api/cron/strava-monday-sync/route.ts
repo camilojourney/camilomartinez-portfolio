@@ -1,19 +1,14 @@
 // 📂 src/app/api/cron/strava-monday-sync/route.ts
 /**
- * Unified Monday sync cron job
- * Combines Strava weekly sync + Astoria map update into a single cron endpoint
+ * Strava Monday sync cron job
+ * Syncs new Strava activities for all users
  * Triggered every Monday at 1 PM
  *
- * This unified approach reduces Vercel's cron job count while maintaining all functionality.
+ * Note: Astoria Conquest map update runs separately on Render via its own cron job
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { StravaDataSyncCoordinator } from '@/lib/services/strava-data-sync';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
-
-const execAsync = promisify(exec);
 
 export const maxDuration = 300; // 5 minutes timeout for Vercel Pro
 
@@ -27,18 +22,9 @@ interface StravaSyncResult {
   error?: string;
 }
 
-interface AstoriaUpdateResult {
-  success: boolean;
-  durationSeconds: number;
-  output?: string;
-  workerResponse?: any;
-  error?: string;
-}
-
 interface MondaySyncResponse {
   success: boolean;
   strava: StravaSyncResult;
-  astoria: AstoriaUpdateResult;
   totalDurationSeconds: number;
   syncedAt: string;
   scheduledBy: string;
@@ -68,18 +54,19 @@ export async function POST(request: NextRequest) {
         endpoint: 'strava-monday-sync',
         dryRun: true,
         schedule: 'Every Monday at 1 PM',
-        includes: ['strava-weekly-sync', 'astoria-update'],
+        includes: ['strava-weekly-sync'],
+        note: 'Astoria map update runs separately on Render via cron',
         timestamp: new Date().toISOString()
       });
     }
 
-    console.log('🗓️ Starting unified Monday sync cron job...');
-    console.log('📋 Tasks: 1) Strava weekly sync, 2) Astoria map update');
+    console.log('🗓️ Starting Strava Monday sync cron job...');
+    console.log('📋 Task: Strava weekly sync (Astoria update handled by Render cron)');
 
     // ============================================
-    // TASK 1: STRAVA WEEKLY SYNC
+    // STRAVA WEEKLY SYNC
     // ============================================
-    console.log('\n📊 [1/2] Starting Strava weekly sync...');
+    console.log('\n📊 Starting Strava weekly sync...');
     const stravaStartTime = new Date();
     let stravaResult: StravaSyncResult;
 
@@ -121,122 +108,26 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // TASK 2: ASTORIA MAP UPDATE
-    // ============================================
-    console.log('\n🗺️ [2/2] Starting Astoria Conquest map update...');
-    const astoriaStartTime = new Date();
-    let astoriaResult: AstoriaUpdateResult;
-
-    try {
-      // Check if we're in production (Vercel/Render)
-      if (process.env.VERCEL === '1' || process.env.RENDER === '1') {
-        // Production: Call external Python worker via webhook
-        const workerUrl = process.env.ASTORIA_WORKER_URL;
-        const workerSecret = process.env.WORKER_WEBHOOK_SECRET;
-
-        if (!workerUrl || !workerSecret) {
-          throw new Error('Missing ASTORIA_WORKER_URL or WORKER_WEBHOOK_SECRET env vars');
-        }
-
-        console.log(`📡 Calling external worker at ${workerUrl}...`);
-
-        const webhookResponse = await fetch(`${workerUrl}/webhook/astoria-update`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${workerSecret}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            triggeredBy: 'strava-monday-sync-cron',
-            timestamp: new Date().toISOString()
-          })
-        });
-
-        if (!webhookResponse.ok) {
-          const errorData = await webhookResponse.json().catch(() => ({ error: 'Unknown error' }));
-          throw new Error(`Worker webhook failed: ${JSON.stringify(errorData)}`);
-        }
-
-        const workerData = await webhookResponse.json();
-        const astoriaEndTime = new Date();
-        const astoriaDuration = (astoriaEndTime.getTime() - astoriaStartTime.getTime()) / 1000;
-
-        astoriaResult = {
-          success: true,
-          durationSeconds: astoriaDuration,
-          workerResponse: workerData
-        };
-
-        console.log(`✅ Astoria map update completed via worker in ${astoriaDuration}s`);
-
-      } else {
-        // Local/self-hosted: Run Python script directly
-        const projectRoot = process.cwd();
-        const scriptPath = path.join(projectRoot, 'backend', 'app', 'scripts', 'astoria', 'update_progress.py');
-
-        const { stdout, stderr } = await execAsync(
-          `cd ${projectRoot}/backend && python3 ${scriptPath}`,
-          {
-            timeout: 300000, // 5 minutes
-            env: {
-              ...process.env,
-              PYTHONUNBUFFERED: '1'
-            }
-          }
-        );
-
-        const astoriaEndTime = new Date();
-        const astoriaDuration = (astoriaEndTime.getTime() - astoriaStartTime.getTime()) / 1000;
-
-        astoriaResult = {
-          success: true,
-          durationSeconds: astoriaDuration,
-          output: stdout
-        };
-
-        console.log(`✅ Astoria map update completed locally in ${astoriaDuration}s`);
-        if (stderr) {
-          console.warn('Script warnings:', stderr);
-        }
-      }
-
-    } catch (astoriaError) {
-      const astoriaEndTime = new Date();
-      const astoriaDuration = (astoriaEndTime.getTime() - astoriaStartTime.getTime()) / 1000;
-
-      astoriaResult = {
-        success: false,
-        durationSeconds: astoriaDuration,
-        error: astoriaError instanceof Error ? astoriaError.message : 'Unknown error'
-      };
-
-      console.error(`❌ Astoria map update failed:`, astoriaError);
-    }
-
-    // ============================================
     // FINAL RESULTS
     // ============================================
     const overallEndTime = new Date();
     const totalDuration = (overallEndTime.getTime() - overallStartTime.getTime()) / 1000;
 
-    const overallSuccess = stravaResult.success && astoriaResult.success;
-
     const response: MondaySyncResponse = {
-      success: overallSuccess,
+      success: stravaResult.success,
       strava: stravaResult,
-      astoria: astoriaResult,
       totalDurationSeconds: totalDuration,
       syncedAt: overallEndTime.toISOString(),
       scheduledBy: 'vercel-cron'
     };
 
-    console.log(`\n${overallSuccess ? '✅' : '⚠️'} Monday sync completed in ${totalDuration}s`);
+    console.log(`\n${stravaResult.success ? '✅' : '❌'} Strava sync completed in ${totalDuration}s`);
     console.log('📊 Summary:');
     console.log(`   - Strava: ${stravaResult.success ? '✅' : '❌'} (${stravaResult.durationSeconds}s)`);
-    console.log(`   - Astoria: ${astoriaResult.success ? '✅' : '❌'} (${astoriaResult.durationSeconds}s)`);
+    console.log(`   - Note: Astoria map update runs separately on Render`);
 
     return NextResponse.json(response, {
-      status: overallSuccess ? 200 : 207 // 207 = Multi-Status (partial success)
+      status: stravaResult.success ? 200 : 500
     });
 
   } catch (error) {
@@ -266,13 +157,9 @@ export async function GET() {
           name: 'Strava Weekly Sync',
           description: 'Syncs new running activities from Strava for all users',
           duration: 'Typically 10-30 seconds'
-        },
-        {
-          name: 'Astoria Conquest Map Update',
-          description: 'Updates progress map with latest coverage data',
-          duration: 'Typically 5-15 seconds (production: calls worker webhook)'
         }
       ],
+      note: 'Astoria Conquest map update runs separately on Render via its own cron job',
       endpoints: {
         cronEndpoint: 'POST /api/cron/strava-monday-sync (requires CRON_SECRET)',
         manualStravaSync: 'POST /api/strava/sync/weekly (requires authentication)',

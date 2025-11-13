@@ -1,9 +1,8 @@
 services:
   # Astoria Conquest Weekly Update (Cron Job)
   # Runs every Monday at 1:30 PM to:
-  # 1. Fetch Strava runs from PostgreSQL
-  # 2. Match with WHOOP data
-  # 3. Generate updated map GeoJSON files
+  # 1. Generate updated map from existing data
+  # 2. Correlate any new Strava/WHOOP activities for next week
   - type: cron
     name: astoria-weekly-update
     runtime: python
@@ -11,7 +10,7 @@ services:
     plan: free
     schedule: "30 13 * * 1"  # Every Monday at 1:30 PM
     buildCommand: "cd backend && pip install poetry && poetry install --no-root"
-    startCommand: "cd backend && poetry run python app/scripts/astoria/update_progress.py"
+    startCommand: "cd backend && poetry run python app/scripts/astoria/generate_base_map.py && poetry run python app/scripts/astoria/update_progress.py && poetry run python app/scripts/correlate_activities.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
