@@ -10,11 +10,13 @@ services:
     plan: free
     schedule: "30 13 * * 1"  # Every Monday at 1:30 PM
     buildCommand: "cd backend && pip install poetry && poetry install --no-root"
-    startCommand: "cd backend && poetry run python app/scripts/astoria/generate_base_map.py && poetry run python app/scripts/astoria/update_progress.py && poetry run python app/scripts/correlate_activities.py"
+    startCommand: "bash backend/app/scripts/astoria/setup_git.sh && cd backend && poetry run python app/scripts/astoria/generate_base_map.py && poetry run python app/scripts/astoria/update_progress.py && poetry run python app/scripts/correlate_activities.py && bash app/scripts/astoria/commit_and_push.sh"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: POSTGRES_URL_NONPRISMA
         sync: false
       - key: DATABASE_URL
+        sync: false
+      - key: DEPLOY_KEY
         sync: false
