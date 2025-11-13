@@ -20,6 +20,7 @@ ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 # Configure git
 git config --global user.name "Astoria Conquest Bot"
 git config --global user.email "astoria-bot@camilomartinez.co"
+git config --global pull.rebase true  # Use rebase for divergent branches
 
 # Navigate to project root and configure remote
 cd /opt/render/project/src
@@ -34,10 +35,10 @@ if [ -d .git ]; then
         # Add new remote
         git remote add origin git@github.com:camilojourney/camilomartinez-portfolio.git
     fi
-    
+
     # Ensure we're on main branch (Render checks out in detached HEAD)
     git checkout main || git checkout -b main
-    
+
     # Set upstream for push
     git branch --set-upstream-to=origin/main main
 else
