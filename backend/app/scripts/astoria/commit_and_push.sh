@@ -6,8 +6,14 @@ set -e  # Exit on error
 
 echo "📦 Committing updated Astoria map files..."
 
-# Navigate to project root
-cd "$(dirname "$0")/../../../.."
+# Navigate to project root (from /opt/render/project/src/backend/app/scripts/astoria to /opt/render/project/src)
+cd /opt/render/project/src
+
+# Verify we're in a git repository
+if [ ! -d .git ]; then
+    echo "❌ Error: Not in a git repository"
+    exit 1
+fi
 
 # Configure git for automated commits
 git config user.name "Astoria Conquest Bot"

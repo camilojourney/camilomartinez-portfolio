@@ -21,4 +21,16 @@ ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 git config --global user.name "Astoria Conquest Bot"
 git config --global user.email "astoria-bot@camilomartinez.co"
 
+# Navigate to project root and configure remote
+cd /opt/render/project/src
+
+# Check if we're in a git repository
+if [ -d .git ]; then
+    # Set remote URL to use SSH
+    git remote set-url origin git@github.com:camilojourney/camilomartinez-portfolio.git || \
+    git remote add origin git@github.com:camilojourney/camilomartinez-portfolio.git
+else
+    echo "⚠️  Not a git repository - skipping remote configuration"
+fi
+
 echo "✅ Git SSH authentication configured"
