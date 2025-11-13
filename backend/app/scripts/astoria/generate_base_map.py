@@ -69,11 +69,11 @@ def remove_all_dead_ends(graph):
     G_undirected = graph.to_undirected()
     # Find nodes with degree 1 (dead-ends in an undirected graph)
     dead_ends = [n for n, d in G_undirected.degree() if d == 1]
-    
+
     # Create a copy to modify
     G_pruned = graph.copy()
     G_pruned.remove_nodes_from(dead_ends)
-    
+
     # Keep only the largest connected component after removing dead ends
     if G_pruned.number_of_nodes() > 0:
         # Use the undirected view again to find the largest component
