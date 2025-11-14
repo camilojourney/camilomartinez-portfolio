@@ -53,13 +53,13 @@ if ! git stash pop --quiet 2>/dev/null; then
     git checkout --theirs public/data/astoria-conquest/astoria-progress-stats.json 2>/dev/null || true
     git checkout --theirs public/data/astoria-conquest/astoria-covered-streets.geojson 2>/dev/null || true
     git checkout --theirs public/data/astoria-conquest/astoria-base-map.geojson 2>/dev/null || true
-    git add public/data/astoria-conquest/*.json public/data/astoria-conquest/*.geojson 2>/dev/null || true
     # Drop the stash since we've manually resolved
     git stash drop --quiet 2>/dev/null || true
 fi
 
-# Check if there are changes to commit
-if git diff --quiet public/data/astoria-conquest/; then
+# Check if there are changes to commit (compare working directory against HEAD)
+# This checks if the generated files differ from what's in the last commit
+if git diff --quiet HEAD -- public/data/astoria-conquest/ 2>/dev/null; then
     echo "✅ No changes to commit - map data is up to date"
     exit 0
 fi
