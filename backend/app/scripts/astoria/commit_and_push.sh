@@ -146,6 +146,8 @@ echo "📤 Pushing to GitHub..."
 if git push origin main; then
     echo "✅ Successfully pushed updated map data to GitHub"
     echo "🚀 Vercel will auto-deploy with the new data"
+    echo "✅ Cron job completed successfully"
+    exit 0  # Explicit success exit to prevent Render retry
 else
     echo "❌ Error: Failed to push to GitHub"
     exit 1

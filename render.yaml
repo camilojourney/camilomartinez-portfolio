@@ -12,7 +12,7 @@ services:
     plan: free
     schedule: "30 13 * * 1"  # Every Monday at 1:30 PM
     buildCommand: "cd backend && rm -rf .venv && pip install --no-cache-dir poetry && poetry install --no-root"
-    startCommand: "bash backend/app/scripts/astoria/setup_git.sh && cd backend && poetry run python app/scripts/astoria/update_progress.py && poetry run python app/scripts/correlate_activities.py && bash app/scripts/astoria/commit_and_push.sh"
+    startCommand: "bash backend/app/scripts/astoria/render_cron_wrapper.sh"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
