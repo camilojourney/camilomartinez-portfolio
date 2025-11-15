@@ -20,28 +20,28 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
+          
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
+          
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libgeos-dev libspatialindex-dev
-
+          
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-
+          
       - name: Install Python dependencies
         working-directory: backend
         run: |
@@ -63,7 +63,7 @@ jobs:
             fi
             echo "skip_db=false" >> "$GITHUB_OUTPUT"
           fi
-
+          
       - name: Run Astoria progress update
         working-directory: backend
         env:
@@ -72,7 +72,7 @@ jobs:
         if: ${{ github.event.inputs.skip_db != 'true' }}
         run: |
           poetry run python app/scripts/astoria/update_progress.py
-
+          
       - name: Run activity correlation
         working-directory: backend
         env:
@@ -81,7 +81,7 @@ jobs:
         if: ${{ github.event.inputs.skip_db != 'true' }}
         run: |
           poetry run python app/scripts/correlate_activities.py
-
+          
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
@@ -89,29 +89,25 @@ jobs:
 
           # Only push if commit_changes input was provided and true
           if [[ "${{ github.event.inputs.commit_changes }}" == "true" ]]; then
-            # Fetch latest changes first to avoid conflicts
-            echo "📥 Fetching latest changes from remote..."
-            git fetch origin main
-
             if [[ -n $(git status --porcelain) ]]; then
               git add public/data/astoria-conquest/
-
-              # Pull/rebase before committing to stay up to date
-              echo "� Rebasing on latest remote changes..."
-              if git pull --rebase origin main; then
-                echo "✅ Rebased successfully"
-              else
-                echo "⚠️ Rebase had conflicts, trying merge..."
-                git rebase --abort
-                git pull --no-rebase origin main || echo "⚠️ Merge also had issues, will try to push anyway"
-              fi
-
-              git commit -m "chore: update Astoria Conquest map data - $(date -u '+%Y-%m-%d %H:%M:%S UTC')" || {
-                echo "⚠️ Commit failed, changes may have been already committed during rebase"
-              }
-
-              git push origin main
-              echo "✅ Successfully pushed updated map data"
+              git commit -m "chore: update Astoria Conquest map data - $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+              
+              # Push with retry - pull and retry if rejected
+              echo "📤 Pushing changes..."
+              for attempt in 1 2 3; do
+                if git push origin main; then
+                  echo "✅ Successfully pushed updated map data"
+                  break
+                else
+                  echo "⚠️ Push failed (attempt $attempt/3). Pulling and retrying..."
+                  git pull --rebase origin main || git pull --no-rebase origin main
+                  if [ $attempt -eq 3 ]; then
+                    echo "❌ Failed to push after 3 attempts"
+                    exit 1
+                  fi
+                fi
+              done
             else
               echo "ℹ️ No changes to commit"
             fi
