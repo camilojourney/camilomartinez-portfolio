@@ -2,7 +2,7 @@
 # Wrapper script for Render cron jobs to prevent automatic retries
 # Render retries cron jobs that "exit early" - this wrapper prevents that
 
-set -e
+# Don't use set -e - we need to handle errors manually to ensure proper cleanup
 
 echo "🚀 Starting Astoria Conquest weekly update..."
 echo "📅 Timestamp: $(date -u)"
@@ -31,8 +31,16 @@ if [ -f "$GLOBAL_LOCK" ]; then
 fi
 
 # Check git for recent commits (additional safety check)
-cd /opt/render/project/src 2>/dev/null || cd "$(dirname "$0")/../../.." 2>/dev/null || true
-if [ -d .git ]; then
+# Try to navigate to project root - if it fails, skip git check
+PROJECT_ROOT=""
+if cd /opt/render/project/src 2>/dev/null; then
+    PROJECT_ROOT="/opt/render/project/src"
+elif cd "$(dirname "$0")/../../.." 2>/dev/null; then
+    PROJECT_ROOT="$(pwd)"
+fi
+
+if [ -n "$PROJECT_ROOT" ] && [ -d "$PROJECT_ROOT/.git" ]; then
+    cd "$PROJECT_ROOT"
     # Check if there's a recent commit to astoria files (within last 5 minutes)
     RECENT_COMMIT=$(git log -1 --since="5 minutes ago" --format="%H" -- "public/data/astoria-conquest/" 2>/dev/null || true)
     if [ -n "$RECENT_COMMIT" ]; then
@@ -43,8 +51,8 @@ if [ -d .git ]; then
             echo "⚠️  Recent commit detected ($AGE seconds ago)"
             echo "⚠️  This is likely from a previous run. Exiting to prevent duplicate commits."
             echo "✅ Skipping duplicate run"
-            # Create lock file to prevent further retries
-            echo $$ > "$GLOBAL_LOCK"
+            # Create lock file to prevent further retries (use same format as line 56)
+            echo "$(date +%s):$$" > "$GLOBAL_LOCK"
             # Schedule lock removal in background (after 5 minutes)
             (sleep $LOCK_MIN_AGE && rm -f "$GLOBAL_LOCK") &
             exit 0
@@ -58,11 +66,17 @@ echo "$(date +%s):$$" > "$GLOBAL_LOCK"
 # We'll remove it manually after sleep
 
 # Run the actual workflow
-bash backend/app/scripts/astoria/setup_git.sh
-cd backend
-poetry run python app/scripts/astoria/update_progress.py
-poetry run python app/scripts/correlate_activities.py
-bash app/scripts/astoria/commit_and_push.sh
+# Use explicit error handling to ensure lock cleanup on failure
+if ! (bash backend/app/scripts/astoria/setup_git.sh && \
+      cd backend && \
+      poetry run python app/scripts/astoria/update_progress.py && \
+      poetry run python app/scripts/correlate_activities.py && \
+      bash app/scripts/astoria/commit_and_push.sh); then
+    echo "❌ Workflow failed - check logs above for details"
+    # Remove lock on failure so it can be retried later
+    rm -f "$GLOBAL_LOCK" 2>/dev/null || true
+    exit 1
+fi
 
 echo ""
 echo "✅ ================================================"
