@@ -22,6 +22,10 @@ if [ -f "$GLOBAL_LOCK" ]; then
         echo "⚠️  Another instance completed $AGE seconds ago"
         echo "⚠️  This is likely a Render auto-retry. Exiting gracefully."
         echo "✅ Skipping duplicate run to prevent conflicts"
+        # Sleep briefly to prevent Render from thinking this is a failure
+        # Cron jobs that exit too quickly trigger "Application exited early"
+        echo "⏸️  Sleeping briefly to indicate successful completion..."
+        sleep 30
         # Keep the lock file to prevent further retries
         exit 0
     else
@@ -55,6 +59,10 @@ if [ -n "$PROJECT_ROOT" ] && [ -d "$PROJECT_ROOT/.git" ]; then
             echo "$(date +%s):$$" > "$GLOBAL_LOCK"
             # Schedule lock removal in background (after 5 minutes)
             (sleep $LOCK_MIN_AGE && rm -f "$GLOBAL_LOCK") &
+            # Sleep briefly to prevent Render from thinking this is a failure
+            # Cron jobs that exit too quickly trigger "Application exited early"
+            echo "⏸️  Sleeping briefly to indicate successful completion..."
+            sleep 30
             exit 0
         fi
     fi
@@ -94,7 +102,9 @@ echo "⏱️  Total runtime: $SECONDS seconds"
 # Sleep to ensure Render doesn't think we exited early
 # Render free tier auto-retries cron jobs that exit in under ~2 minutes
 # We sleep for 2+ minutes to prevent the "Application exited early" retry
-echo "⏸️  Sleeping for 150 seconds to prevent Render auto-retry..."
+# This makes Render think the job ran successfully, not that it crashed
+echo "⏸️  Sleeping for 150 seconds to prevent Render 'Application exited early' retry..."
+echo "ℹ️  This is intentional - cron jobs should exit after completion"
 sleep 150
 
 # Remove lock file after sleep period
