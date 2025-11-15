@@ -59,15 +59,39 @@ fi
 
 # Check if there are changes to commit (compare working directory against HEAD)
 # This checks if the generated files differ from what's in the last commit
-if git diff --quiet HEAD -- public/data/astoria-conquest/ 2>/dev/null; then
+# Use both staged and unstaged diff to catch all changes
+HAS_CHANGES=false
+if ! git diff --quiet HEAD -- public/data/astoria-conquest/ 2>/dev/null; then
+    HAS_CHANGES=true
+elif ! git diff --cached --quiet HEAD -- public/data/astoria-conquest/ 2>/dev/null; then
+    HAS_CHANGES=true
+fi
+
+if [ "$HAS_CHANGES" = false ]; then
     echo "✅ No changes to commit - map data is up to date"
+    echo "ℹ️  Generated files are identical to the latest commit"
     exit 0
+fi
+
+# Verify files exist before adding
+if [ ! -f "public/data/astoria-conquest/astoria-progress-stats.json" ] || \
+   [ ! -f "public/data/astoria-conquest/astoria-covered-streets.geojson" ] || \
+   [ ! -f "public/data/astoria-conquest/astoria-base-map.geojson" ]; then
+    echo "❌ Error: Generated files are missing"
+    exit 1
 fi
 
 # Add the generated files
 git add public/data/astoria-conquest/astoria-covered-streets.geojson
 git add public/data/astoria-conquest/astoria-progress-stats.json
 git add public/data/astoria-conquest/astoria-base-map.geojson
+
+# Final check: ensure we actually have changes after staging
+if git diff --cached --quiet HEAD -- public/data/astoria-conquest/ 2>/dev/null; then
+    echo "✅ No changes to commit after staging - map data is identical to HEAD"
+    git reset HEAD public/data/astoria-conquest/ 2>/dev/null || true
+    exit 0
+fi
 
 # Create commit with timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
