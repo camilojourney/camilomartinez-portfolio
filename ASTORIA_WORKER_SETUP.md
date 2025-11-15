@@ -142,6 +142,14 @@ Updated GeoJSON files in public/data/astoria-conquest/
    - Commit and push the updated files
    - Or configure auto-commit in the worker
 
+### GitHub Actions (Optional)
+
+If you want to run the same update job in GitHub Actions for testing or redundancy, set the following secrets in the repository settings under **Settings → Secrets & variables → Actions**:
+
+- `DATABASE_URL` (or `POSTGRES_URL_NONPRISMA`) — a Postgres connection string the workflow can use to pull Strava runs and WHOOP data.
+
+The workflow `Astoria Conquest Weekly Update` supports manual runs and safe testing via inputs: on the workflow run page choose 'Run workflow', then you can set `skip_db=true` to skip DB steps (no data fetch) or `commit_changes=true` to allow committing generated assets back to `main`.
+
 ## Monitoring
 
 ### Check Logs

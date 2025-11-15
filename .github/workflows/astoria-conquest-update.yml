@@ -5,10 +5,21 @@ on:
     # Run every Saturday at 1:00 AM UTC (same as your Render cron)
     - cron: '0 22 * * 1'
   workflow_dispatch:  # Allow manual trigger from GitHub UI
+    inputs:
+      skip_db:
+        description: 'Skip database-dependent steps (update progress & correlation). Useful for testing without a DB.'
+        required: false
+        default: 'false'
+      commit_changes:
+        description: 'If true, commit and push generated files back to the repository. Default false for safe manual testing.'
+        required: false
+        default: 'false'
 
 jobs:
   update-map:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout repository
@@ -35,12 +46,30 @@ jobs:
         working-directory: backend
         run: |
           poetry install --no-interaction --no-root
+
+      - name: Validate secrets and inputs
+        shell: bash
+        run: |
+          # Allow skipping DB-heavy steps for testing
+          if [ "${{ github.event.inputs.skip_db }}" == "true" ]; then
+            echo "Skipping DB-dependent steps by request (workflow input skip_db=true)."
+            echo "skip_db=true" >> "$GITHUB_OUTPUT"
+          else
+            # Fail early with a clear message if DATABASE_URL isn't present
+            if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+              echo "🚨 ERROR: DATABASE_URL secret is not set."
+              echo "Set the secret in the repo settings or use skip_db=true for testing."
+              exit 1
+            fi
+            echo "skip_db=false" >> "$GITHUB_OUTPUT"
+          fi
           
       - name: Run Astoria progress update
         working-directory: backend
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           POSTGRES_URL_NONPRISMA: ${{ secrets.DATABASE_URL }}
+        if: ${{ github.event.inputs.skip_db != 'true' }}
         run: |
           poetry run python app/scripts/astoria/update_progress.py
           
@@ -49,6 +78,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           POSTGRES_URL_NONPRISMA: ${{ secrets.DATABASE_URL }}
+        if: ${{ github.event.inputs.skip_db != 'true' }}
         run: |
           poetry run python app/scripts/correlate_activities.py
           
@@ -56,12 +86,21 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          if [[ -n $(git status --porcelain) ]]; then
-            git add public/data/astoria-conquest/
-            git commit -m "chore: update Astoria Conquest map data - $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-            git push
-            echo "✅ Successfully pushed updated map data"
+
+          # Only push if commit_changes input was provided and true
+          if [[ "${{ github.event.inputs.commit_changes }}" == "true" ]]; then
+            if [[ -n $(git status --porcelain) ]]; then
+              git add public/data/astoria-conquest/
+              git commit -m "chore: update Astoria Conquest map data - $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+              git push
+              echo "✅ Successfully pushed updated map data"
+            else
+              echo "ℹ️ No changes to commit"
+            fi
           else
-            echo "ℹ️ No changes to commit"
+            # Helpful output for tests: list changed files without committing
+            echo "ℹ️ Skipping commit because 'commit_changes' input is not 'true'."
+            echo "Changed files (if any):"
+            git --no-pager status --porcelain || true
+            git --no-pager diff --name-only || true
           fi
