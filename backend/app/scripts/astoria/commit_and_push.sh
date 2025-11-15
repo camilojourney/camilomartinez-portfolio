@@ -4,6 +4,41 @@
 
 # Don't use set -e here - we need to handle errors manually for better control
 
+# Lock file to prevent concurrent runs (Render sometimes retries after "Application exited early")
+LOCK_FILE="/tmp/astoria-commit-push.lock"
+
+# Function to cleanup lock on exit
+cleanup_lock() {
+    if [ -f "$LOCK_FILE" ]; then
+        rm -f "$LOCK_FILE"
+    fi
+}
+trap cleanup_lock EXIT
+
+# Try to acquire lock (non-blocking)
+if [ -f "$LOCK_FILE" ]; then
+    # Check if lock is stale (older than 10 minutes)
+    if [ -n "$(find "$LOCK_FILE" -mmin +10 2>/dev/null)" ]; then
+        echo "⚠️  Removing stale lock file (older than 10 minutes)"
+        rm -f "$LOCK_FILE"
+    else
+        LOCK_PID=$(cat "$LOCK_FILE" 2>/dev/null)
+        # Check if the process is still running
+        if [ -n "$LOCK_PID" ] && kill -0 "$LOCK_PID" 2>/dev/null; then
+            echo "⚠️  Another instance is already running (PID: $LOCK_PID). Exiting to prevent duplicate commits."
+            echo "ℹ️  This is likely Render's automatic retry after 'Application exited early'"
+            exit 0  # Exit gracefully - another instance is handling it
+        else
+            echo "⚠️  Removing stale lock file (process not running)"
+            rm -f "$LOCK_FILE"
+        fi
+    fi
+fi
+
+# Create lock file with our PID
+echo $$ > "$LOCK_FILE"
+echo "🔒 Lock acquired (PID: $$)"
+
 echo "📦 Committing updated Astoria map files..."
 
 # Navigate to project root (from /opt/render/project/src/backend/app/scripts/astoria to /opt/render/project/src)
