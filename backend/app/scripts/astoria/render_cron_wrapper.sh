@@ -54,7 +54,8 @@ echo "🎉 Cron job finished at $(date -u)"
 echo "⏱️  Total runtime: $SECONDS seconds"
 
 # Sleep to ensure Render doesn't think we exited early
-# Render expects cron jobs to take some time
-sleep 10
+# Render free tier auto-retries cron jobs that exit in under ~2 minutes
+echo "⏸️  Sleeping for 90 seconds to prevent Render auto-retry..."
+sleep 90
 
 exit 0
