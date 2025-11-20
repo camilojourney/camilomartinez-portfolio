@@ -2,7 +2,7 @@ name: Astoria Conquest Weekly Update
 
 on:
   schedule:
-    # Run every Saturday at 1:00 AM UTC (same as your Render cron)
+    # Run every Monday at 10:00 PM UTC (22:00)
     - cron: '0 22 * * 1'
   workflow_dispatch:  # Allow manual trigger from GitHub UI
     inputs:
@@ -36,16 +36,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgeos-dev libspatialindex-dev
-          
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Install Python dependencies
         working-directory: backend
         run: |
-          poetry install --no-interaction --no-root
+          uv sync --frozen
 
       - name: Validate secrets and inputs
         shell: bash
@@ -71,8 +71,8 @@ jobs:
           POSTGRES_URL_NONPRISMA: ${{ secrets.DATABASE_URL }}
         if: ${{ github.event.inputs.skip_db != 'true' }}
         run: |
-          poetry run python app/scripts/astoria/update_progress.py
-          
+          uv run python app/scripts/astoria/update_progress.py
+
       - name: Run activity correlation
         working-directory: backend
         env:
@@ -80,7 +80,7 @@ jobs:
           POSTGRES_URL_NONPRISMA: ${{ secrets.DATABASE_URL }}
         if: ${{ github.event.inputs.skip_db != 'true' }}
         run: |
-          poetry run python app/scripts/correlate_activities.py
+          uv run python app/scripts/correlate_activities.py
           
       - name: Commit and push changes
         run: |

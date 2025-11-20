@@ -1,4 +1,5 @@
-# Camilo Martinez – AI Developer Portfolio
+cd backend
+poetry run uvicorn app.main:app --reload --port 8000# Camilo Martinez – AI Developer Portfolio
 
 This repository powers Camilo's AI-driven fitness analytics platform built with Next.js on the frontend and FastAPI on the backend. The codebase is production-ready, integrates WHOOP and Strava data sources, and ships with automated AI evaluation pipelines.
 

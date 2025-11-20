@@ -77,4 +77,15 @@ export const projects: ProjectMeta[] = [
     caseStudyHref: '/projects/invoz-ai',
     previewImage: '/images/previews_main/image.png',
   },
+  {
+    slug: 'focus-time',
+    title: 'Focus Time',
+    description: 'macOS menu bar timer for hyperfocus awareness—periodic check-ins help you stay accountable during deep work sessions and review focus patterns.',
+    tags: ['Tauri 2', 'Rust', 'macOS', 'ADHD Tools'],
+    status: 'live',
+    caseStudyHref: '/projects/focus-time',
+    appHref: '/apps/focus-time',
+    appLabel: 'Download app',
+    previewImage: '/images/previews_main/Hyper-awareness.png',
+  },
 ];

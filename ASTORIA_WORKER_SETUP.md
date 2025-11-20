@@ -69,11 +69,11 @@ Updated GeoJSON files in public/data/astoria-conquest/
 2. Navigate to **Settings** → **Environment Variables**
 3. Add these variables:
 
-   | Name | Value | Environment |
-   |------|-------|-------------|
-   | `ASTORIA_WORKER_URL` | `https://astoria-worker.onrender.com` | Production, Preview, Development |
-   | `WORKER_WEBHOOK_SECRET` | `<the secret you generated>` | Production, Preview, Development |
-   | `CRON_SECRET` | `cron_secure_astoria_update_2024` | Production, Preview, Development |
+   | Name                    | Value                                 | Environment                      |
+   | ----------------------- | ------------------------------------- | -------------------------------- |
+   | `ASTORIA_WORKER_URL`    | `https://astoria-worker.onrender.com` | Production, Preview, Development |
+   | `WORKER_WEBHOOK_SECRET` | `<the secret you generated>`          | Production, Preview, Development |
+   | `CRON_SECRET`           | `cron_secure_astoria_update_2024`     | Production, Preview, Development |
 
 4. **Redeploy** your Vercel project to apply the new environment variables
 

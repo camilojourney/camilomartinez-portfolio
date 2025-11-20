@@ -2,14 +2,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:backend": "cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8000",
+    "dev:full": "bash ./scripts/dev-full.sh",
     "build": "next build",
     "start": "next start",
     "env:pull": "./scripts/sync-env.sh pull",
     "env:status": "./scripts/sync-env.sh status",
     "env:list": "./scripts/sync-env.sh list",
     "env:sync": "./scripts/sync-env.sh pull && pnpm dev",
-    "map:setup": "cd backend && poetry run python app/scripts/astoria/generate_base_map.py",
-    "map:update": "cd backend && poetry run python app/scripts/astoria/update_progress.py",
+    "map:setup": "cd backend && uv run python app/scripts/astoria/generate_base_map.py",
+    "map:update": "cd backend && uv run python app/scripts/astoria/update_progress.py",
     "db:setup": "node scripts/db/setup-astoria-database.sql",
     "db:migrate": "node scripts/db/run-strava-migration.js",
     "data:load-streets": "node scripts/data/load-astoria-streets.js",
@@ -67,6 +69,7 @@
   "devDependencies": {
     "@types/geojson": "^7946.0.16",
     "@types/pg": "^8.11.0",
+    "concurrently": "^9.2.1",
     "ts-node": "^10.9.2"
   }
 }
