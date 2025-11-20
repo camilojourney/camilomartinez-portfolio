@@ -30,7 +30,7 @@
   --sh-entity: #e25a1c;
 
   /* Typography */
-  --font-sans: "Inter", sans-serif;
+  --font-sans: var(--font-geist-sans), "Inter", sans-serif;
 
   /* Spacing & Radius */
   --radius: 0.75rem;

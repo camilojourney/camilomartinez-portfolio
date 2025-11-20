@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:backend": "cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8000",
-    "dev:full": "bash ./scripts/dev-full.sh",
+    "dev:all": "concurrently \"pnpm dev:backend\" \"pnpm dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
     "build": "next build",
     "start": "next start",
     "env:pull": "./scripts/sync-env.sh pull",

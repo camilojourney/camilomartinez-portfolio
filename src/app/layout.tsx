@@ -2,10 +2,9 @@ import '@/styles/globals.css'
 import '@/styles/animations.css'
 import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import { baseUrl } from './sitemap'
+import { baseUrl } from '@/lib/site'
 import AuthProvider from '@/components/features/auth/AuthProvider'
 import LiquidNav from '@/components/shared/liquid-nav'
 import Footer from '@/components/shared/footer'
@@ -122,8 +121,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn(
         'text-black bg-white dark:text-white dark:bg-black',
-        GeistSans.variable,
-        GeistMono.variable
+        GeistSans.variable
       )}
     >
       <head>
@@ -146,17 +144,17 @@ export default function RootLayout({
         suppressHydrationWarning
         className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}
       >
-        <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <main className="flex-1 w-full">
-              {children}
-            </main>
-            <Footer />
-            {/* <GlobalChatbot /> */} {/* Temporarily hidden - will show when AI answers are optimized */}
-            <Analytics />
-            <SpeedInsights />
-          </div>
-        </AuthProvider>
+        {/* <AuthProvider suppressHydrationWarning> */}
+        <div className="min-h-screen flex flex-col">
+          <main className="flex-1 w-full">
+            {children}
+          </main>
+          <Footer />
+          {/* <GlobalChatbot /> */} {/* Temporarily hidden - will show when AI answers are optimized */}
+          <Analytics />
+          <SpeedInsights />
+        </div>
+        {/* </AuthProvider> */}
       </body>
     </html>
   )

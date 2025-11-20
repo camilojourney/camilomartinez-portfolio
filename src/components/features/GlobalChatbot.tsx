@@ -7,18 +7,32 @@ import { Chatbot } from '@/components/features/Chatbot';
 export function GlobalChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Auto-open after a delay on first visit
   useEffect(() => {
-    const hasSeenChatbot = localStorage.getItem('hasSeenChatbot');
-    if (!hasSeenChatbot) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        localStorage.setItem('hasSeenChatbot', 'true');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
+    // Set isMounted to true to indicate we're on the client
+    setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    // Only access localStorage after component is mounted on client
+    if (!isMounted || typeof window === 'undefined') return;
+
+    try {
+      const hasSeenChatbot = localStorage.getItem('hasSeenChatbot');
+      if (!hasSeenChatbot) {
+        const timer = setTimeout(() => {
+          setIsOpen(true);
+          localStorage.setItem('hasSeenChatbot', 'true');
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    } catch (error) {
+      // localStorage might be disabled or unavailable
+      console.warn('localStorage is not available:', error);
+    }
+  }, [isMounted]);
 
   const toggleChatbot = () => {
     if (isOpen && !isMinimized) {
@@ -88,21 +102,20 @@ export function GlobalChatbot() {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ 
-              opacity: 1, 
-              scale: isMinimized ? 0.3 : 1, 
+            animate={{
+              opacity: 1,
+              scale: isMinimized ? 0.3 : 1,
               y: isMinimized ? 200 : 0,
               x: isMinimized ? 200 : 0
             }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ duration: 0.3, type: "spring", damping: 25, stiffness: 300 }}
-            className={`fixed z-40 ${
-              isMinimized 
-                ? 'bottom-24 right-24 w-32 h-20' 
-                : 'bottom-6 right-6 w-96 h-[600px] md:w-[450px] md:h-[650px]'
-            }`}
+            className={`fixed z-40 ${isMinimized
+              ? 'bottom-24 right-24 w-32 h-20'
+              : 'bottom-6 right-6 w-96 h-[600px] md:w-[450px] md:h-[650px]'
+              }`}
           >
-            <div 
+            <div
               className="w-full h-full rounded-2xl liquid-glass-panel overflow-hidden shadow-2xl"
               style={{
                 background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95))',
@@ -164,7 +177,7 @@ export function GlobalChatbot() {
               )}
 
               {isMinimized && (
-                <div 
+                <div
                   className="w-full h-full flex items-center justify-center cursor-pointer"
                   onClick={() => setIsMinimized(false)}
                 >
@@ -188,12 +201,12 @@ export function GlobalChatbot() {
         .liquid-glass-button {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .liquid-glass-button:hover {
           transform: translateY(-2px);
           box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
         }
-        
+
         .liquid-glass-button:active {
           transform: translateY(0px);
         }
@@ -201,7 +214,7 @@ export function GlobalChatbot() {
         .liquid-glass-button-small {
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .liquid-glass-button-small:hover {
           background: rgba(255,255,255,0.1) !important;
           transform: scale(1.1);

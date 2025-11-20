@@ -126,7 +126,7 @@ export default function FocusTimeDownloadPage() {
             className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
           >
             <motion.a
-              href={platform === 'mac' ? '/downloads/focus-time-macos.dmg' : '/downloads/focus-time-windows.exe'}
+              href={platform === 'mac' ? 'https://github.com/camilojourney/Focusing-App/releases/download/v1.0.0/Hyper.Awareness_1.0.0_aarch64.dmg' : '/downloads/focus-time-windows.exe'}
               download
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
@@ -164,7 +164,7 @@ export default function FocusTimeDownloadPage() {
               <span>How I built this</span>
             </Link>
             <a
-              href="https://github.com/yourusername/focus-time"
+              href="https://github.com/camilojourney/Focusing-App"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white text-sm font-medium rounded-xl transition-all duration-300"

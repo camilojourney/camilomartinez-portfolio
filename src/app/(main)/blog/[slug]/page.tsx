@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from '@/components/features/blog/mdx'
 import { formatDate, getBlogPosts } from '../utils'
-import { baseUrl } from '@/app/sitemap'
+import { baseUrl } from '@/lib/site'
 
 interface BlogPost {
   slug: string;

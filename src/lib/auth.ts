@@ -1,3 +1,6 @@
+// Polyfill localStorage before importing NextAuth to prevent SSR errors
+import '../lib/polyfills/localStorage'
+
 import NextAuth from "next-auth"
 import { OAuthConfig } from "next-auth/providers"
 import { WhoopDatabaseService } from '@/lib/db/whoop-database'
@@ -61,7 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // Initial sign in - store tokens in database
             if (account) {
                 console.log('🔐 Initial sign in - storing tokens in database and session');
-                
+
                 const expiresAt = new Date(Date.now() + (account.expires_in ?? 3600) * 1000);
                 const tokens = {
                     accessToken: account.access_token!,
@@ -119,7 +122,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             try {
                 console.log('🔄 Refreshing WHOOP access token...');
-                
+
                 const tokenService = new TokenRefreshService();
                 const refreshedTokens = await tokenService.refreshWhoopToken(token.refreshToken as string);
 
@@ -144,7 +147,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 };
             } catch (error) {
                 console.warn('⚠️ Refresh token expired - re-authentication required');
-                
+
                 // Return token with error flag to prevent further attempts
                 return {
                     ...token,
@@ -161,7 +164,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     console.warn('⚠️ Session has refresh token error - access token may be invalid');
                 }
             }
-            
+
             return {
                 ...session,
                 accessToken: token.accessToken,
