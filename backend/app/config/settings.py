@@ -69,7 +69,10 @@ class Settings(BaseSettings):
     @property
     def database_url_async(self) -> str:
         """Convert sync PostgreSQL URL to async (psycopg driver)."""
-        if self.DATABASE_URL.startswith("postgresql://"):
+        # Handle both postgres:// (old) and postgresql:// (new) formats
+        if self.DATABASE_URL.startswith("postgres://"):
+            return self.DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+        elif self.DATABASE_URL.startswith("postgresql://"):
             return self.DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
         return self.DATABASE_URL
     
