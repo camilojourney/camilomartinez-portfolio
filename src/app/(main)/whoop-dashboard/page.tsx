@@ -5,6 +5,9 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import LiquidNav from '@/components/shared/liquid-nav';
 import { ApiClient, analyticsService, integrationService } from '@/lib/api/config';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 
 interface CollectionStats {
     user?: any;
