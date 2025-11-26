@@ -70,7 +70,7 @@ jobs:
           echo "📥 Fetching ALL Strava runs from API (including detailed splits)..."
           echo "⏱️  This may take a few minutes for full historical sync..."
 
-          response=$(curl -s -X POST https://camilomartinez.co/api/strava/sync/historical \
+          response=$(curl -s -L -X POST https://camilomartinez.co/api/strava/sync/historical \
             -H "Content-Type: application/json" \
             -w "\nHTTP_STATUS:%{http_code}" \
             --max-time 300)
