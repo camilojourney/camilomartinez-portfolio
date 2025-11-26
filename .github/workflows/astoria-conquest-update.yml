@@ -11,7 +11,7 @@ on:
         required: false
         default: 'false'
       commit_changes:
-        description: 'If true, commit and push generated files back to the repository. Default false for safe manual testing.'
+        description: 'If true, commit and push generated files. Scheduled runs always commit. Default false for manual testing.'
         required: false
         default: 'false'
 
@@ -63,7 +63,30 @@ jobs:
             fi
             echo "skip_db=false" >> "$GITHUB_OUTPUT"
           fi
-          
+
+      - name: Sync all Strava runs (historical with splits)
+        if: ${{ github.event.inputs.skip_db != 'true' }}
+        run: |
+          echo "📥 Fetching ALL Strava runs from API (including detailed splits)..."
+          echo "⏱️  This may take a few minutes for full historical sync..."
+
+          response=$(curl -s -X POST https://camilomartinez.co/api/strava/sync/historical \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP_STATUS:%{http_code}" \
+            --max-time 300)
+
+          http_status=$(echo "$response" | grep "HTTP_STATUS" | cut -d: -f2)
+          body=$(echo "$response" | sed '/HTTP_STATUS/d')
+
+          if [ "$http_status" == "200" ]; then
+            echo "✅ Strava historical sync successful!"
+            echo "$body" | jq -r '.data.summary | "📊 Imported \(.totalActivitiesImported) activities in \(.durationSeconds)s (\(.averageRate) activities/min)"' 2>/dev/null || echo "$body"
+          else
+            echo "⚠️ Strava sync returned status $http_status"
+            echo "$body"
+            echo "Continuing with existing data in database..."
+          fi
+
       - name: Run Astoria progress update
         working-directory: backend
         env:
@@ -87,8 +110,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Only push if commit_changes input was provided and true
-          if [[ "${{ github.event.inputs.commit_changes }}" == "true" ]]; then
+          # Commit by default for scheduled runs, or when commit_changes=true for manual runs
+          if [[ "${{ github.event_name }}" == "schedule" ]] || [[ "${{ github.event.inputs.commit_changes }}" == "true" ]]; then
             if [[ -n $(git status --porcelain) ]]; then
               git add public/data/astoria-conquest/
               git commit -m "chore: update Astoria Conquest map data - $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
