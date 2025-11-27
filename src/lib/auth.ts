@@ -1,5 +1,5 @@
 // Polyfill localStorage before importing NextAuth to prevent SSR errors
-import '../lib/polyfills/localStorage'
+import './polyfills/localStorage'
 
 import NextAuth from "next-auth"
 import { OAuthConfig } from "next-auth/providers"

@@ -1,13 +1,65 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useState, useEffect, useCallback } from 'react';
 import LiquidNav from '@/components/shared/liquid-nav';
 import { ApiClient, analyticsService, integrationService } from '@/lib/api/config';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
+// Custom hook to safely use next-auth/react only on client
+function useAuthClient() {
+    const [authState, setAuthState] = useState<{
+        session: any;
+        status: 'loading' | 'authenticated' | 'unauthenticated';
+    }>({ session: null, status: 'loading' });
+    const [authModule, setAuthModule] = useState<any>(null);
+
+    useEffect(() => {
+        // Dynamically import next-auth/react only on client
+        import('next-auth/react').then((mod) => {
+            setAuthModule(mod);
+        });
+    }, []);
+
+    // Update session state when authModule is loaded
+    useEffect(() => {
+        if (!authModule) return;
+
+        const { getSession } = authModule;
+
+        const updateSession = async () => {
+            try {
+                const session = await getSession();
+                setAuthState({
+                    session,
+                    status: session ? 'authenticated' : 'unauthenticated'
+                });
+            } catch {
+                setAuthState({ session: null, status: 'unauthenticated' });
+            }
+        };
+
+        updateSession();
+
+        // Re-check session periodically
+        const interval = setInterval(updateSession, 60000);
+        return () => clearInterval(interval);
+    }, [authModule]);
+
+    const signIn = useCallback(async (provider?: string) => {
+        if (authModule) {
+            await authModule.signIn(provider);
+        }
+    }, [authModule]);
+
+    const signOut = useCallback(async () => {
+        if (authModule) {
+            await authModule.signOut();
+        }
+    }, [authModule]);
+
+    return { ...authState, signIn, signOut };
+}
 
 interface CollectionStats {
     user?: any;
@@ -51,7 +103,7 @@ interface ViewDataResponse {
 }
 
 export default function WhoopDashboard() {
-    const { data: session, status } = useSession();
+    const { session, status, signIn, signOut } = useAuthClient();
     const [historicalResult, setHistoricalResult] = useState<CollectionStats | null>(null);
     const [dailyResult, setDailyResult] = useState<CollectionStats | null>(null);
     const [debugInfo, setDebugInfo] = useState<any>(null);

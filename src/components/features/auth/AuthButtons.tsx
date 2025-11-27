@@ -1,13 +1,15 @@
-import { auth, signIn, signOut } from "@/lib/auth"
+// Use lazy-loaded auth to prevent NextAuth initialization issues in dev mode
+import { getServerAuth } from "@/lib/auth-server"
 
 export async function AuthButtons() {
-    const session = await auth()
+    const session = await getServerAuth()
 
     if (!session) {
         return (
             <form
                 action={async () => {
                     "use server"
+                    const { signIn } = await import("@/lib/auth")
                     await signIn("whoop")
                 }}
             >
@@ -33,6 +35,7 @@ export async function AuthButtons() {
             <form
                 action={async () => {
                     "use server"
+                    const { signOut } = await import("@/lib/auth")
                     await signOut()
                 }}
             >

@@ -5,7 +5,8 @@ import { GeistSans } from 'geist/font/sans'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { baseUrl } from '@/lib/site'
-import AuthProvider from '@/components/features/auth/AuthProvider'
+// AuthProvider removed - not currently used, and imports next-auth which causes SSR issues
+// import AuthProvider from '@/components/features/auth/AuthProvider'
 import LiquidNav from '@/components/shared/liquid-nav'
 import Footer from '@/components/shared/footer'
 // import { GlobalChatbot } from '@/components/features/GlobalChatbot' // Temporarily hidden

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Webpack config (used when running without --turbopack)
   webpack: (config) => {
     // Add support for importing .geojson files
     config.module.rules.push({
@@ -9,9 +10,18 @@ const nextConfig = {
 
     return config;
   },
+  // Turbopack config (used when running with --turbopack)
+  turbopack: {
+    rules: {
+      '*.geojson': {
+        loaders: ['json-loader'],
+        as: '*.json',
+      },
+    },
+  },
   experimental: {
-    // Optimize package imports to reduce bundle size
-    optimizePackageImports: ['next-auth'],
+    // Don't optimize next-auth as it causes issues with SSR
+    // optimizePackageImports: ['next-auth'],
   },
 };
 

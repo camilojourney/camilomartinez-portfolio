@@ -1,4 +1,5 @@
-import { auth } from "@/lib/auth"
+// Use lazy-loaded auth to prevent NextAuth initialization issues in dev mode
+import { getServerAuth } from "@/lib/auth-server"
 import { AuthButtons } from "@/components/features/auth/AuthButtons"
 import { RecoveryChart } from "@/components/features/whoop/RecoveryChart"
 import LiquidPage from '@/components/shared/liquid-page'
@@ -24,16 +25,14 @@ async function getWhoopData(accessToken: string): Promise<any> {
     }
 }
 
-import { Session } from "next-auth"
-
 export default async function LiveDataPage() {
-    const session = await auth()
+    const session = await getServerAuth()
     let whoopData: any = null
     let dataError: string | null = null
 
     // Cast session to include accessToken property
     const sessionWithToken = session as typeof session & { accessToken?: string; error?: string }
-    
+
     if (sessionWithToken?.accessToken && !sessionWithToken.error) {
         whoopData = await getWhoopData(sessionWithToken.accessToken)
         if (whoopData?.error) {

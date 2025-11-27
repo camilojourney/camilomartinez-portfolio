@@ -1,12 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { signIn } from 'next-auth/react';
 import LiquidPage from '@/components/shared/liquid-page';
 import { systemService } from '@/lib/api/config';
 
 export default function SignInPage() {
     const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+
+    // Dynamically import signIn to avoid SSR localStorage errors
+    const handleSignIn = async () => {
+        const { signIn } = await import('next-auth/react');
+        await signIn('whoop');
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -42,7 +47,10 @@ export default function SignInPage() {
                 </div>
 
                 <button
-                    onClick={() => signIn('whoop', { callbackUrl: '/whoop-dashboard' })}
+                    onClick={async () => {
+                        const { signIn } = await import('next-auth/react');
+                        signIn('whoop', { callbackUrl: '/whoop-dashboard' });
+                    }}
                     className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold py-3 px-6 rounded-full transition duration-200 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
                     disabled={apiStatus === 'checking'}
                 >
@@ -55,8 +63,8 @@ export default function SignInPage() {
                         apiStatus === 'online'
                             ? 'text-emerald-300'
                             : apiStatus === 'offline'
-                            ? 'text-rose-300'
-                            : 'text-amber-300'
+                                ? 'text-rose-300'
+                                : 'text-amber-300'
                     }>
                         {apiStatus === 'checking' ? 'Checking FastAPI backend…' : apiStatus === 'online' ? 'Backend reachable' : 'Backend offline'}
                     </span>
