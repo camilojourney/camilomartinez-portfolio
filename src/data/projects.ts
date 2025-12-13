@@ -88,4 +88,13 @@ export const projects: ProjectMeta[] = [
     appLabel: 'Download app',
     previewImage: '/images/previews_main/Hyper-awareness.png',
   },
+  {
+    slug: 'nlp-data-science',
+    title: 'NLP Data Science',
+    description: 'Interactive presentation on pronunciation error detection and NLP analysis using Quarto and Python.',
+    tags: ['NLP', 'Data Science', 'Python', 'Quarto'],
+    status: 'live',
+    caseStudyHref: '/projects/nlp-data-science',
+    previewImage: '/images/previews_main/nlp_presentation.png',
+  },
 ];
