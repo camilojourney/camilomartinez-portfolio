@@ -13,7 +13,13 @@ format:
 execute:
   warning: false
   message: false
-jupyter: python3
+  daemon: false
+  engine: jupyter
+jupyter:
+  kernelspec:
+    name: hrv-research
+    language: python
+    display_name: HRV Research (Python 3.14)
 ---
 
 # Project Overview
@@ -35,25 +41,24 @@ All data comes from the **WHOOP API**, aggregated into a daily feature table wit
 This analysis follows a rigorous data science workflow:
 
 1. **Phase 1: Deep Exploratory Data Analysis (EDA)**
-   - Visualize target variable over time
-   - Analyze distributions and detect outliers
-   - Perform bivariate analysis
+   - Visualize target variable distributions and temporal patterns
+   - Test statistical assumptions and detect outliers
+   - Perform bivariate correlation analysis
 
-2. **Phase 2: Feature Engineering & Selection**
+2. **Phase 2: Feature Engineering & Preprocessing**
+   - Create time-series features (lags, rolling windows, cumulative metrics)
+   - Handle missing data and apply transformations
+   - Perform time-aware train-test split
+
 3. **Phase 3: Statistical Modeling & Inference**
-4. **Phase 4: Validation & Interpretation**
+   - Train interpretable (Lasso) and powerful (XGBoost) models
+   - Hyperparameter tuning with cross-validation
+   - Extract feature importance and SHAP values
 
-## Executive Summary: Key Findings
-
-This analysis successfully built a machine learning model capable of explaining a significant portion of daily HRV variance. The key takeaway is that **HRV is less about single-day actions and more about the body's underlying physiological state and accumulated load.**
-
-The three most powerful drivers identified are:
-
-1. **Resting Heart Rate (RHR):** A low RHR is the single strongest predictor of a high HRV, indicating a state of recovery and readiness.
-2. **Acute Stress (RHR Deviation):** A sudden spike in RHR compared to its 7-day average is a powerful negative driver, signaling acute stress, illness, or poor recovery.
-3. **Chronic Fitness Base:** Long-term cumulative workout minutes positively correlate with a higher baseline HRV, demonstrating that a consistent training load builds a more resilient system.
-
-These insights form the basis for a personal, data-driven protocol to optimize daily performance and recovery.
+4. **Phase 4: Model Synthesis & Validation**
+   - Compare model predictions and performance metrics
+   - Identify primary HRV drivers across model types
+   - Document technical approach and findings
 
 ---
 
@@ -98,7 +103,7 @@ print("✅ Libraries loaded successfully")
 ```
 
 
-We preceed to load the data from a PostgreSQL database. The SQL query aggregates daily features from multiple tables, ensuring one row per day with relevant metrics. 
+We preceed to load the data from a PostgreSQL database. The SQL query aggregates daily features from multiple tables, ensuring one row per day with relevant metrics.
 
 ```{python}
 #| label: load-data
@@ -141,7 +146,7 @@ cycles_daily_aggregates AS (
     SELECT
         DATE(start_time) AS cycle_date,
         -- Duration-weighted average heart rate for the entire day
-        SUM(avg_heart_rate_bpm * EXTRACT(EPOCH FROM (end_time - start_time))) / 
+        SUM(avg_heart_rate_bpm * EXTRACT(EPOCH FROM (end_time - start_time))) /
             SUM(EXTRACT(EPOCH FROM (end_time - start_time))) AS cycle_avg_hr_bpm,
         -- Maximum heart rate across all cycles for that day
         MAX(max_heart_rate_bpm) AS cycle_max_hr_bpm
@@ -159,7 +164,7 @@ main_sleep_cycle AS (
         end_time,
         -- Rank cycles by duration - longest sleep is rank 1
         ROW_NUMBER() OVER(
-            PARTITION BY DATE(start_time) 
+            PARTITION BY DATE(start_time)
             ORDER BY (end_time - start_time) DESC
         ) as sleep_rank
     FROM
@@ -311,8 +316,8 @@ fig.add_trace(go.Scatter(
 # Add median reference line
 median_hrv = df['hrv_rmssd_ms'].median()
 fig.add_hline(
-    y=median_hrv, 
-    line_dash="dot", 
+    y=median_hrv,
+    line_dash="dot",
     line_color="yellow",
     annotation_text=f"Median: {median_hrv:.1f} ms",
     annotation_position="right"
@@ -342,13 +347,23 @@ print(f"Range:        {df['hrv_rmssd_ms'].max() - df['hrv_rmssd_ms'].min():.2f} 
 print(f"CV:           {(df['hrv_rmssd_ms'].std() / df['hrv_rmssd_ms'].mean() * 100):.2f}%")
 ```
 
-My HRV data shows steady resilience with improving recovery trends:
-	•	You’re maintaining a strong, stable baseline around 66 ms, showing consistent recovery.
-	•	The gradual rise from August to October signals improving fitness or recovery habits (better sleep, balanced training).
-	•	The June dip likely reflects fatigue or stress—moments where recovery lagged behind strain.
-	•	The October peak suggests optimal recovery and readiness.
+My HRV data reveals steady resilience with improving recovery trends:
+- **Stable baseline** around 66 ms demonstrates consistent recovery capacity, the difference between the median and mean is minimal. which indicates low skewness. Threfore, the HRV values are symmetrically distributed around the mean.
+- **June to October decline** In this period, HRV dipped below 60 ms multiple times, indicating periods of accumulated fatigue or stress. This correspond to a really hard time in my life were I was going through an emotionally challenging situation.
+- **Gradual rise from August to October** signals improving fitness and optimized recovery habits (better sleep quality, balanced training load). I started to workout more.
+- **October peak** represents optimal recovery state and physiological readiness, with HRV reaching above 100 ms.
 
-also the cv (standard deviation / mean) is at 16.19% which is a healthy variability level, indicating good autonomic nervous system function.
+The coefficient of variation (CV = 15.82%) measures how much my HRV varies from day to day relative to my own baseline. It falls within a healthy range, indicating robust autonomic nervous system function and appropriate physiological adaptation to training stress.
+
+| **CV (%)** | **Meaning** | **Interpretation** |
+|------------|-------------|-------------------|
+| < 8–10% | Too stable | Nervous system is rigid, under-responsive |
+| 10–15% | Stable | Well regulated, low stress |
+| **15–20%** | **Healthy adaptive** ✅ | **Normal response to training & life** |
+| 20–25% | Elevated | High stress or inconsistent recovery |
+| > 25–30% | Abnormal | Dysregulated, illness, overreaching |
+
+My CV of 15.82% places me in the **"Healthy adaptive"** range, indicating normal physiological variability in response to training load and daily stressors.
 
 ```{python}
 #| label: hrv-distribution
@@ -387,10 +402,29 @@ else:
     print("⚠️  HRV may not be normally distributed (p < 0.05)")
 ```
 
-	•	Not normal: Shapiro-Wilk p = 0.0348 → reject normality at 5%.
-	•	Shape: Nearly centered (mean 66.7 ≈ median 65.9) but with non-normal tails (Q-Q plot deviates at both ends). Likely mild right-skew/heavy tails.
-	•	Implication: Use robust stats & tests: median/IQR, Spearman (ρ) over Pearson when relating features, non-parametric tests, or bootstrap CIs.
-	•	For modeling: Tree models are fine. For linear models, consider transforming HRV or predictors (e.g., Box-Cox/Yeo-Johnson) and check residuals.
+**Statistical Findings:**
+
+### Shapiro-Wilk Normality Test Results
+- **Test Statistic**: 0.9879
+- **P-value**: 0.0626
+- **Decision**: Since p-value (0.0626) > α (0.05), we **fail to reject** the null hypothesis
+
+**Interpretation**: The HRV data appears approximately normally distributed, though borderline. The p-value is close to the 0.05 threshold, suggesting mild deviation from perfect normality.
+
+### Distribution Characteristics
+- **Shape**: Nearly centered (mean 66.7 ≈ median 65.9) with slightly heavier tails than a perfect normal distribution
+- **Q-Q Plot**: Shows deviations at both ends, indicating mild right-skew with heavy tails
+
+### Modeling Strategy Based on Distribution
+Given the borderline normality, the analysis employs a **dual modeling approach**:
+
+| **Model Type** | **Approach** | **Rationale** |
+|----------------|-------------|---------------|
+| **Tree-based** (XGBoost) | Use raw features | Tree models are distribution-agnostic; no normality required |
+| **Linear** (Lasso) | Apply transformations + scaling | Log-transform skewed features; use robust statistics |
+| **Correlation** | Report both Pearson & Spearman | Pearson assumes normality; Spearman is rank-based (robust) |
+
+This strategy ensures valid statistical inference regardless of minor distributional deviations.
 
 
 ## 1.2 Feature Distributions & Outlier Detection
@@ -416,12 +450,12 @@ axes = axes.flatten()
 for idx, col in enumerate(numeric_cols):
     ax = axes[idx]
     data = df[col].dropna()
-    
+
     # Histogram
     ax.hist(data, bins=30, alpha=0.7, color='#00D9FF', edgecolor='white')
     ax.axvline(data.mean(), color='#FF6B6B', linestyle='--', linewidth=2, label=f'Mean: {data.mean():.1f}')
     ax.axvline(data.median(), color='yellow', linestyle='--', linewidth=2, label=f'Median: {data.median():.1f}')
-    
+
     ax.set_title(col, fontsize=10, fontweight='bold')
     ax.set_xlabel('Value', fontsize=8)
     ax.set_ylabel('Frequency', fontsize=8)
@@ -436,27 +470,85 @@ plt.tight_layout()
 plt.show()
 ```
 
+From this overview, we can see a lot of values that are concentrated at zero, particularly in the heart rate zone features. This makes sense since **heart rate zones are only recorded during workouts**—on non-workout days, these values should be `NaN` (not applicable) rather than `0`.
+
+Before detecting outliers, we need to fix this semantic issue: **zeros in HR zones on non-workout days should be converted to `NaN`** to prevent them from artificially diluting our statistics.
+
+```{python}
+#| label: convert-zeros-to-nan
+#| code-summary: "Convert HR zone zeros to NaN for non-workout days"
+
+print("\n🔄 CONVERTING HR ZONE ZEROS TO NaN (NON-WORKOUT DAYS)")
+print("="*80)
+
+# Define HR zone columns
+hr_zone_cols = [
+    'total_hr_zone_0_ms',
+    'total_hr_zone_1_ms',
+    'total_hr_zone_2_ms',
+    'total_hr_zone_3_ms',
+    'total_hr_zone_4_ms',
+    'total_hr_zone_5_ms',
+    'avg_workout_hr_bpm'
+]
+
+# Convert zeros to NaN for HR zones when there's no workout
+print(f"📊 Before conversion:")
+print(f"   • Total workout days: {(df['total_workout_minutes'] > 0).sum()}")
+print(f"   • Non-workout days: {(df['total_workout_minutes'] == 0).sum()}")
+
+# Track conversions for each column
+for col in hr_zone_cols:
+    if col in df.columns:
+        # Count zeros on non-workout days
+        non_workout_mask = df['total_workout_minutes'] == 0
+        zeros_converted = (df.loc[non_workout_mask, col] == 0).sum()
+
+        # Convert zeros to NaN on non-workout days
+        df.loc[non_workout_mask, col] = np.nan
+
+        print(f"   ✅ {col}: {zeros_converted} zeros → NaN")
+```
+
 ```{python}
 #| label: outlier-detection
 #| code-summary: "Detect outliers using IQR method"
 
 print("\n🔍 OUTLIER DETECTION (IQR Method)")
 print("="*80)
+print("\n📖 WHAT IS AN OUTLIER?")
+print("-" * 80)
+print("An outlier is a data point that falls outside the 'typical' range for a feature.")
+print("\nWe use the IQR (Interquartile Range) method:")
+print("   1. Q1 (25th percentile): 25% of data falls below this value")
+print("   2. Q3 (75th percentile): 75% of data falls below this value")
+print("   3. IQR = Q3 - Q1 (the middle 50% of data)")
+print("   4. Lower Bound = Q1 - 1.5 × IQR")
+print("   5. Upper Bound = Q3 + 1.5 × IQR")
+print("   6. OUTLIER: Any value < Lower Bound OR > Upper Bound")
+print("\n📌 Key Point: HR zone outliers now ONLY include actual workout days")
+print("   (non-workout days are NaN and excluded from outlier analysis)")
+print("="*80)
 
 outlier_summary = []
 
 for col in numeric_cols:
+    # dropna() removes NaN values before calculating outliers
     data = df[col].dropna()
-    
+
+    # Skip if no valid data
+    if len(data) == 0:
+        continue
+
     Q1 = data.quantile(0.25)
     Q3 = data.quantile(0.75)
     IQR = Q3 - Q1
-    
+
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
-    
+
     outliers = data[(data < lower_bound) | (data > upper_bound)]
-    
+
     if len(outliers) > 0:
         outlier_summary.append({
             'Feature': col,
@@ -465,7 +557,8 @@ for col in numeric_cols:
             'Lower Bound': f"{lower_bound:.2f}",
             'Upper Bound': f"{upper_bound:.2f}",
             'Min Outlier': f"{outliers.min():.2f}",
-            'Max Outlier': f"{outliers.max():.2f}"
+            'Max Outlier': f"{outliers.max():.2f}",
+            'Valid Data Points': len(data)
         })
 
 if outlier_summary:
@@ -569,22 +662,23 @@ axes = axes.flatten()
 
 for idx, feature in enumerate(top_features):
     ax = axes[idx]
-    
+
     # Scatter plot
     ax.scatter(df[feature], df['hrv_rmssd_ms'], alpha=0.6, s=30, color='#00D9FF')
-    
+
     # Add regression line
     mask = df[[feature, 'hrv_rmssd_ms']].notna().all(axis=1)
     if mask.sum() > 1:
         z = np.polyfit(df.loc[mask, feature], df.loc[mask, 'hrv_rmssd_ms'], 1)
         p = np.poly1d(z)
-        ax.plot(df.loc[mask, feature].sort_values(), 
-                p(df.loc[mask, feature].sort_values()), 
+        ax.plot(df.loc[mask, feature].sort_values(),
+                p(df.loc[mask, feature].sort_values()),
                 "r--", linewidth=2, alpha=0.8, label=f'Linear Fit')
-    
-    # Calculate correlation
-    corr, p_val = pearsonr(df[feature].dropna(), df['hrv_rmssd_ms'].dropna())
-    
+
+    # Calculate correlation (use only rows where both values are present)
+    valid_data = df[[feature, 'hrv_rmssd_ms']].dropna()
+    corr, p_val = pearsonr(valid_data[feature], valid_data['hrv_rmssd_ms'])
+
     ax.set_xlabel(feature, fontsize=10, fontweight='bold')
     ax.set_ylabel('HRV (ms)', fontsize=10, fontweight='bold')
     ax.set_title(f'{feature}\nCorr: {corr:.3f} (p={p_val:.4f})', fontsize=11, fontweight='bold')
@@ -601,7 +695,7 @@ plt.show()
 #| fig-cap: "Sleep stage impact on HRV"
 
 # Convert sleep times from ms to hours
-sleep_cols = ['total_light_sleep_time_ms', 'total_slow_wave_sleep_time_ms', 
+sleep_cols = ['total_light_sleep_time_ms', 'total_slow_wave_sleep_time_ms',
               'total_rem_sleep_time_ms', 'total_awake_time_ms']
 
 df_sleep = df.copy()
@@ -630,8 +724,8 @@ sleep_corr_df = pd.DataFrame(sleep_stage_corrs)
 
 # Create figure with more padding
 fig, ax = plt.subplots(figsize=(10, 5.5))
-bars = ax.bar(sleep_corr_df['Sleep Stage'], sleep_corr_df['Correlation'], 
-              color=['#00D9FF', '#FF6B6B', '#FFD93D', '#6BCB77'], 
+bars = ax.bar(sleep_corr_df['Sleep Stage'], sleep_corr_df['Correlation'],
+              color=['#00D9FF', '#FF6B6B', '#FFD93D', '#6BCB77'],
               alpha=0.8, width=0.6, edgecolor='white', linewidth=1.5)
 
 ax.axhline(y=0, color='white', linestyle='-', linewidth=1.5, alpha=0.5)
@@ -644,12 +738,12 @@ ax.grid(axis='y', alpha=0.3, linestyle='--')
 for bar, val in zip(bars, sleep_corr_df['Correlation']):
     height = bar.get_height()
     # Position labels just above the top of each bar
-    ax.text(bar.get_x() + bar.get_width()/2., 
+    ax.text(bar.get_x() + bar.get_width()/2.,
             height,  # Exactly at the bar height
-            f'{val:.3f}', 
-            ha='center', 
+            f'{val:.3f}',
+            ha='center',
             va='bottom',  # Align bottom of text with top of bar
-            fontsize=13, 
+            fontsize=13,
             fontweight='bold',
             color='white',
             bbox=dict(boxstyle='round,pad=0.4', facecolor='black', alpha=0.8, edgecolor='white', linewidth=1))
@@ -665,9 +759,10 @@ plt.subplots_adjust(left=0.12, right=0.95, top=0.92, bottom=0.12)
 plt.show()
 ```
 
-	•	REM and Light sleep matter most for your next-morning HRV: r ≈ 0.27 each → about 7% of HRV variance individually (0.27²).
-	•	Slow-wave (deep) sleep shows a weak link (r ≈ 0.09, <1% variance).
-	•	Awake time is essentially uninformative (r ≈ 0.006).
+**Key Sleep Stage Findings:**
+- **REM and Light sleep** show strongest associations with next-morning HRV (r ≈ 0.27 each), explaining approximately 7% of HRV variance individually
+- **Slow-wave (deep) sleep** demonstrates weak correlation (r ≈ 0.09, <1% variance explained)
+- **Awake time** shows negligible relationship with HRV (r ≈ 0.006)
 
 
 
@@ -702,8 +797,8 @@ for feature, corr in top_neg.items():
     print(f"   • {feature}: {corr:.3f}")
 
 print(f"\n5️⃣  DATA QUALITY")
-outlier_count = sum([len(df[col][(df[col] < df[col].quantile(0.25) - 1.5 * (df[col].quantile(0.75) - df[col].quantile(0.25))) | 
-                                   (df[col] > df[col].quantile(0.75) + 1.5 * (df[col].quantile(0.75) - df[col].quantile(0.25)))]) 
+outlier_count = sum([len(df[col][(df[col] < df[col].quantile(0.25) - 1.5 * (df[col].quantile(0.75) - df[col].quantile(0.25))) |
+                                   (df[col] > df[col].quantile(0.75) + 1.5 * (df[col].quantile(0.75) - df[col].quantile(0.25)))])
                       for col in numeric_cols])
 print(f"   • Total outliers detected: {outlier_count}")
 print(f"   • Features with >10% missing: {len(missing_df[missing_df['Percentage'] > 10])}")
@@ -815,14 +910,14 @@ rolling_features = [
 print("\n📊 Creating ROLLING WINDOW Features:")
 for feature, window, agg_func in rolling_features:
     col_name = f"{feature}_rolling{window}d_{agg_func}"
-    
+
     if agg_func == 'mean':
         df[col_name] = df[feature].rolling(window=window, min_periods=1).mean()
     elif agg_func == 'sum':
         df[col_name] = df[feature].rolling(window=window, min_periods=1).sum()
     elif agg_func == 'std':
         df[col_name] = df[feature].rolling(window=window, min_periods=1).std()
-    
+
     print(f"   ✅ {col_name}")
 
 # ============================================================================
@@ -1024,11 +1119,8 @@ fig.update_layout(
 fig.show()
 ```
 
-### 🧩 Interpretation: Train–Test Split
-- **Purpose**: The chart shows a chronological split of HRV data into training (blue) and test (red).
-- **What It Means**: The **yellow dashed line** is the cutoff; left = train, right = test. This prevents temporal leakage and mirrors real forecasting.
-- **Observations**: Test-period HRV is slightly higher/less variable (recent upward trend), but ranges overlap (~40–100 ms), so distribution shift is modest.
-- **Why It Matters**: Validates that evaluation is truly out-of-sample in time.
+**Chronological split ensures valid time-series evaluation.** Training data (blue) precedes test data (red), preventing temporal leakage. Overlapping distributions confirm minimal dataset shift.
+
 
 ```{python}
 #| label: verify-preprocessing
@@ -1113,11 +1205,11 @@ for feature in skewed_features:
         # Apply log(x + 1) transformation
         train_linear[f'{feature}_log'] = np.log1p(train_linear[feature])
         test_linear[f'{feature}_log'] = np.log1p(test_linear[feature])
-        
+
         # Drop original feature (keep only transformed version)
         train_linear = train_linear.drop(columns=[feature])
         test_linear = test_linear.drop(columns=[feature])
-        
+
         print(f"   ✅ {feature} → {feature}_log")
 
 print(f"\n✅ Training set: {train_linear.shape}")
@@ -1149,7 +1241,7 @@ fig, axes = plt.subplots(4, 2, figsize=(10, 11))
 for idx, feature in enumerate(features_to_visualize):
     if feature not in train_df.columns:
         continue
-    
+
     # Left column: Original distribution
     ax_orig = axes[idx, 0]
     data_orig = train_df[feature].dropna()
@@ -1158,14 +1250,14 @@ for idx, feature in enumerate(features_to_visualize):
     ax_orig.set_xlabel('Value', fontsize=9)
     ax_orig.set_ylabel('Frequency', fontsize=9)
     ax_orig.grid(alpha=0.3)
-    
+
     # Add skewness annotation
     skewness = data_orig.skew()
-    ax_orig.text(0.95, 0.95, f'Skewness: {skewness:.2f}', 
+    ax_orig.text(0.95, 0.95, f'Skewness: {skewness:.2f}',
                  transform=ax_orig.transAxes, ha='right', va='top',
                  bbox=dict(boxstyle='round', facecolor='black', alpha=0.5),
                  fontsize=9, color='white')
-    
+
     # Right column: Log-transformed distribution
     ax_log = axes[idx, 1]
     data_log = np.log1p(data_orig)
@@ -1174,15 +1266,15 @@ for idx, feature in enumerate(features_to_visualize):
     ax_log.set_xlabel('Log Value', fontsize=9)
     ax_log.set_ylabel('Frequency', fontsize=9)
     ax_log.grid(alpha=0.3)
-    
+
     # Add skewness annotation
     skewness_log = data_log.skew()
-    ax_log.text(0.95, 0.95, f'Skewness: {skewness_log:.2f}', 
+    ax_log.text(0.95, 0.95, f'Skewness: {skewness_log:.2f}',
                 transform=ax_log.transAxes, ha='right', va='top',
                 bbox=dict(boxstyle='round', facecolor='black', alpha=0.5),
                 fontsize=9, color='white')
 
-plt.suptitle('Impact of Log Transformation on Skewed Features', 
+plt.suptitle('Impact of Log Transformation on Skewed Features',
              fontsize=14, fontweight='bold', y=0.995)
 plt.tight_layout()
 plt.show()
@@ -1217,12 +1309,12 @@ X_test_linear_scaled = scaler.transform(X_test_linear)
 
 # Convert back to DataFrame for easier handling
 X_train_linear_scaled = pd.DataFrame(
-    X_train_linear_scaled, 
+    X_train_linear_scaled,
     columns=feature_cols_linear,
     index=X_train_linear.index
 )
 X_test_linear_scaled = pd.DataFrame(
-    X_test_linear_scaled, 
+    X_test_linear_scaled,
     columns=feature_cols_linear,
     index=X_test_linear.index
 )
@@ -1549,14 +1641,14 @@ display(Markdown("### Model Performance Comparison"))
 display(results_df)
 
 print("\n💡 INTERPRETATION:")
-print(f"   • The Test RMSE is the most important metric. It represents the typical prediction error on unseen data.")
-print(f"   • R² tells us the percentage of HRV variance the model can explain.")
-print(f"   • The tuned tree model appears to be more accurate, but our main goal is inference, which we'll explore next.")
+print(f"   • Test RMSE: Primary evaluation metric representing typical prediction error on unseen data")
+print(f"   • R²: Proportion of HRV variance explained by the model")
+print(f"   • The tuned tree model achieves superior predictive accuracy, enabling robust feature importance analysis")
 ```
 
-### 🧩 Interpretation: Model Performance
-- **RMSE**: The **Test RMSE of ~7.6 ms** for the tuned tree model is our key metric. It means, on average, our predictions for next-day HRV are off by about 7.6 milliseconds. Given the natural daily HRV fluctuation (Std Dev ≈ 10.8 ms), this is a strong result.
-- **R²**: The model explains roughly **50% of the variance** in next-day HRV on unseen data. This is excellent for complex physiological data, indicating our features capture a substantial amount of the signal.
+### 🧩 Model Performance Analysis
+- **RMSE**: Test RMSE of ~7.6 ms represents the average prediction error for next-day HRV. Compared to the natural daily HRV standard deviation (10.8 ms), this demonstrates strong predictive capability.
+- **R²**: The model explains approximately **50% of variance** in next-day HRV on unseen data—a robust result for complex physiological data, confirming that the engineered features successfully capture meaningful signal.
 
 To understand where the model succeeds and fails, we can visualize its predictions against the actual values over time.
 
@@ -1572,31 +1664,28 @@ test_results_df['hrv_predicted'] = best_tree_model.predict(X_test_tree)
 
 fig = go.Figure()
 fig.add_trace(go.Scatter(
-    x=test_results_df['cycle_date'], 
-    y=test_results_df['hrv_actual'], 
-    mode='lines+markers', 
-    name='Actual HRV', 
+    x=test_results_df['cycle_date'],
+    y=test_results_df['hrv_actual'],
+    mode='lines+markers',
+    name='Actual HRV',
     line=dict(color='#00D9FF')
 ))
 fig.add_trace(go.Scatter(
-    x=test_results_df['cycle_date'], 
-    y=test_results_df['hrv_predicted'], 
-    mode='lines', 
-    name='Predicted HRV', 
+    x=test_results_df['cycle_date'],
+    y=test_results_df['hrv_predicted'],
+    mode='lines',
+    name='Predicted HRV',
     line=dict(color='#FF6B6B', dash='dash')
 ))
 fig.update_layout(
-    title='Actual vs. Predicted HRV on Test Set', 
-    template='plotly_dark', 
+    title='Actual vs. Predicted HRV on Test Set',
+    template='plotly_dark',
     height=500,
     legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)
 )
 fig.show()
 ```
 
-### 🧩 Interpretation: Actual vs. Predicted
-- The model successfully captures the **general trend and magnitude** of HRV fluctuations.
-- It correctly predicts the direction of most major peaks and troughs, though it tends to slightly underestimate the most extreme values (a common trait of regression models).
 
 ## 3.3 Inference: What Drives Your HRV?
 
@@ -1747,14 +1836,14 @@ if 'explainer' in globals() and 'shap_values' in globals():
 
     # Find the day with the lowest HRV in the test set
     worst_day_idx = y_test_tree.idxmin()
-    
+
     # For XGBoost models, shap_values is a numpy array
     if isinstance(shap_values, np.ndarray):
         test_idx_position = X_test_tree.index.get_loc(worst_day_idx)
         worst_day_shap_values = shap_values[test_idx_position]
-        
+
         print(f"Analyzing the lowest HRV day: {test_tree.loc[worst_day_idx, 'cycle_date'].date()} (HRV: {y_test_tree.loc[worst_day_idx]:.1f} ms)")
-        
+
         shap.waterfall_plot(shap.Explanation(
             values=worst_day_shap_values,
             base_values=explainer.expected_value,
@@ -1764,9 +1853,9 @@ if 'explainer' in globals() and 'shap_values' in globals():
     else:
         # For sklearn models, shap_values is an Explanation object
         worst_day_shap = shap_values[X_test_tree.index.get_loc(worst_day_idx)]
-        
+
         print(f"Analyzing the lowest HRV day: {test_tree.loc[worst_day_idx, 'cycle_date'].date()} (HRV: {y_test_tree.loc[worst_day_idx]:.1f} ms)")
-        
+
         shap.plots.waterfall(worst_day_shap, max_display=15, show=False)
         plt.tight_layout()
         plt.show()
@@ -1775,13 +1864,13 @@ if 'explainer' in globals() and 'shap_values' in globals():
 
     # Find the day with the highest HRV in the test set
     best_day_idx = y_test_tree.idxmax()
-    
+
     if isinstance(shap_values, np.ndarray):
         test_idx_position = X_test_tree.index.get_loc(best_day_idx)
         best_day_shap_values = shap_values[test_idx_position]
-        
+
         print(f"Analyzing the highest HRV day: {test_tree.loc[best_day_idx, 'cycle_date'].date()} (HRV: {y_test_tree.loc[best_day_idx]:.1f} ms)")
-        
+
         shap.waterfall_plot(shap.Explanation(
             values=best_day_shap_values,
             base_values=explainer.expected_value,
@@ -1790,9 +1879,9 @@ if 'explainer' in globals() and 'shap_values' in globals():
         ))
     else:
         best_day_shap = shap_values[X_test_tree.index.get_loc(best_day_idx)]
-        
+
         print(f"Analyzing the highest HRV day: {test_tree.loc[best_day_idx, 'cycle_date'].date()} (HRV: {y_test_tree.loc[best_day_idx]:.1f} ms)")
-        
+
         shap.plots.waterfall(best_day_shap, max_display=15, show=False)
         plt.tight_layout()
         plt.show()
@@ -1802,35 +1891,42 @@ else:
 
 ---
 
-# Phase 4: Synthesis & Actionable Protocol
+# Phase 4: Model Synthesis & Key Findings
 
-This final phase synthesizes the findings from both the Lasso and tree-based models and translates them into a practical, data-driven personal protocol to optimize recovery and performance.
+This analysis successfully identified the primary drivers of daily HRV through a combination of linear (Lasso) and non-linear (tree-based) modeling approaches.
 
-## 4.1 Synthesis of Models: What Did We Learn?
+## 4.1 Model Comparison & Key Insights
 
-By comparing our simple, interpretable Lasso model with the powerful, non-linear tree-based model, we can build a highly confident understanding of the key HRV drivers.
+Comparing interpretable linear models with powerful tree-based models reveals consistent patterns and validates the feature engineering strategy:
 
-- **Strong Agreement**: Both models overwhelmingly agree that **`resting_heart_rate_bpm`** and its trend **`rhr_deviation_from_7d_mean`** are the most dominant factors. This confirms that your baseline physiological state is the most critical input for next-day HRV.
-- **Where Tree Models Shine**: The non-linear tree model uncovered a crucial insight that Lasso missed: the high importance of **`cumulative_workout_minutes`**. It correctly identified this not as a source of fatigue, but as a proxy for **fitness**, where a higher chronic training load builds a more resilient system and a higher HRV ceiling.
-- **The Power of Composite Features**: Advanced features like the **`strain_recovery_balance_lag1`** score and **`sleep_quality_score`** were consistently ranked as important by the tree model, proving that combining related metrics into a single, physiologically-aware feature provides a powerful signal.
+### Primary HRV Drivers Identified:
 
-## 4.2 Actionable Insights & Personal Protocol
+**1. Resting Heart Rate & Acute Deviations**
+- Both models identify **`resting_heart_rate_bpm`** and **`rhr_deviation_from_7d_mean`** as dominant factors
+- Confirms that baseline physiological state is the strongest predictor of next-day HRV
+- Acute RHR spikes (>2 bpm above 7-day average) signal systemic stress or inadequate recovery
 
-The model's findings can be distilled into a simple, actionable protocol. This moves the project from descriptive analysis to a prescriptive tool for self-improvement.
+**2. Chronic Training Load (Fitness Proxy)**
+- Tree models reveal **`cumulative_workout_minutes`** as a major positive driver
+- Represents accumulated fitness capacity rather than fatigue—higher chronic training load correlates with elevated baseline HRV
+- Demonstrates the importance of consistent training volume over sporadic high-intensity efforts
 
-**1. The RHR Deviation Rule (The "Red Flag" Detector):**
-   - **Finding:** The feature `rhr_deviation_from_7d_mean` is a powerful negative driver, signaling acute stress.
-   - **Protocol:** If my morning RHR is **2+ bpm above** my 7-day average, I will treat it as a signal of systemic fatigue or impending illness. That day's training will be shifted to active recovery (e.g., walking, mobility), regardless of the original plan.
+**3. Composite Physiological Metrics**
+- Engineered features (**`strain_recovery_balance_lag1`**, **`sleep_quality_score`**) rank highly in tree model importance
+- Validates the strategy of combining related metrics into physiologically-meaningful composite features
+- These aggregated scores capture complex interactions that individual metrics miss
 
-**2. The Chronic Load Principle (The "Fitness Builder"):**
-   - **Finding:** `cumulative_workout_minutes` is a major positive driver of baseline HRV.
-   - **Protocol:** The key to a higher HRV ceiling is not single heroic efforts, but **consistency**. The focus should be on maintaining a steady weekly training volume (`total_workout_minutes_rolling7d_sum`) to continuously build the fitness base.
+## 4.2 Technical Achievements
 
-**3. The Physiological Bank Account (The "Daily Balance"):**
-   - **Finding:** The `strain_recovery_balance_lag1` score was a clean and effective predictor in the tree model.
-   - **Protocol:** After any day with a high-intensity workout (e.g., `workout_intensity_exp` in the top 25th percentile), I will make a conscious effort to maximize the "deposit" by prioritizing sleep duration and quality to offset the "withdrawal."
+This project demonstrates proficiency in:
 
-By adhering to this data-driven protocol, the insights from this analysis can be directly applied to optimize daily well-being and long-term athletic adaptation.
+- **Time-series feature engineering**: Lag features, rolling windows, cumulative metrics, and deviation signals
+- **Model selection & validation**: Time-series aware cross-validation, hyperparameter tuning, holdout testing
+- **Interpretability techniques**: Lasso coefficients, SHAP values, permutation importance
+- **Statistical rigor**: Distribution testing, correlation analysis, residual diagnostics
+- **Domain expertise**: Physiologically-informed feature design and results interpretation
+
+The combination of exploratory analysis, rigorous modeling, and practical interpretation showcases end-to-end data science capabilities applied to real-world physiological data.
 
 ---
 
