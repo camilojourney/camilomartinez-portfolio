@@ -21,26 +21,26 @@ class Settings(BaseSettings):
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379/0"
     
-    # OpenAI Configuration
-    OPENAI_API_KEY: str
+    # OpenAI Configuration (optional for standalone scripts)
+    OPENAI_API_KEY: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4-turbo-preview"
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
     
     # Translation Services
     DEEPL_API_KEY: Optional[str] = None
     
-    # Strava API (from your existing config)
-    STRAVA_CLIENT_ID: str
-    STRAVA_CLIENT_SECRET: str
+    # Strava API (optional for standalone scripts)
+    STRAVA_CLIENT_ID: Optional[str] = None
+    STRAVA_CLIENT_SECRET: Optional[str] = None
     STRAVA_ACCESS_TOKEN: Optional[str] = None
     STRAVA_REFRESH_TOKEN: Optional[str] = None
     
-    # WHOOP API (from your existing config)
-    WHOOP_CLIENT_ID: str
-    WHOOP_CLIENT_SECRET: str
+    # WHOOP API (optional for standalone scripts)
+    WHOOP_CLIENT_ID: Optional[str] = None
+    WHOOP_CLIENT_SECRET: Optional[str] = None
     
-    # Authentication & Security
-    SECRET_KEY: str
+    # Authentication & Security (optional for standalone scripts)
+    SECRET_KEY: Optional[str] = None
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
@@ -50,8 +50,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_WINDOW: int = 86400  # 24 hours in seconds
     RATE_LIMIT_BYPASS_SECRET: Optional[str] = None
     
-    # Cron Job Security (from your existing config)
-    CRON_SECRET: str
+    # Cron Job Security (optional for standalone scripts)
+    CRON_SECRET: Optional[str] = None
     
     # External Services
     NEXTAUTH_URL: str = "http://localhost:3000"

@@ -61,7 +61,7 @@ jobs:
       # This calculates last week's data (Jan 4-10) and stores in database
       - name: 🏃 Update Whoop weekly habits
         env:
-          # Database connection from Render
+          # Only needs database connection
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           echo "📊 Calculating last week's habits data..."
@@ -71,9 +71,8 @@ jobs:
       # Updates the 8 goal pages with fresh metrics
       - name: 📝 Update Notion goal pages
         env:
-          # Database connection
+          # Database and Notion credentials
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # Notion API credentials
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: |
