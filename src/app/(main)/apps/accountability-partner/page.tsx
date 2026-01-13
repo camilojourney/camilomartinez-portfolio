@@ -45,24 +45,34 @@ async function getWeeklyAccountabilityMetrics(): Promise<WeeklyAccountabilityDat
         `;
 
         // Format time as HH:MM
-        const formatTime = (decimalHour: number | null): string => {
-            if (decimalHour === null || decimalHour === 0) return '--:--';
-            const hours = Math.floor(decimalHour);
-            const minutes = Math.round((decimalHour - hours) * 60);
+        // PostgreSQL returns numeric values as strings, so we need to parseFloat first
+        const formatTime = (decimalHour: string | number | null): string => {
+            if (decimalHour === null || decimalHour === 0 || decimalHour === '0') return '--:--';
+            const hour = typeof decimalHour === 'string' ? parseFloat(decimalHour) : decimalHour;
+            if (isNaN(hour)) return '--:--';
+            const hours = Math.floor(hour);
+            const minutes = Math.round((hour - hours) * 60);
             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        };
+
+        // Helper to safely parse numeric strings from PostgreSQL
+        const parseNum = (val: string | number | null): number => {
+            if (val === null) return 0;
+            const num = typeof val === 'string' ? parseFloat(val) : val;
+            return isNaN(num) ? 0 : num;
         };
 
         const weeklyData: WeeklyAccountabilityData[] = result.rows.map((row) => ({
             weekStart: row.week_start_date,
             weekEnd: row.week_end_date,
-            trainingDays: row.workout_count || 0,
-            meditationSessions: row.meditation_count || 0,
+            trainingDays: parseInt(row.workout_count, 10) || 0,
+            meditationSessions: parseInt(row.meditation_count, 10) || 0,
             avgWakeTime: formatTime(row.avg_wake_hour),
-            wakeTimeStdDev: row.std_wake_hour ? Math.round(row.std_wake_hour * 60 * 100) / 100 : 0, // Convert hours to minutes
+            wakeTimeStdDev: Math.round(parseNum(row.std_wake_hour) * 60 * 100) / 100, // Convert hours to minutes
             avgWorkoutStartTime: formatTime(row.avg_workout_hour),
-            workoutStartStdDev: row.std_workout_hour ? Math.round(row.std_workout_hour * 60 * 100) / 100 : 0,
+            workoutStartStdDev: Math.round(parseNum(row.std_workout_hour) * 60 * 100) / 100,
             avgSleepStartTime: formatTime(row.avg_sleep_start_hour),
-            sleepStartStdDev: row.std_sleep_start_hour ? Math.round(row.std_sleep_start_hour * 60 * 100) / 100 : 0
+            sleepStartStdDev: Math.round(parseNum(row.std_sleep_start_hour) * 60 * 100) / 100
         }));
 
         // Reverse to get chronological order (oldest first)
@@ -185,9 +195,14 @@ async function getWeeklyHabitsData() {
         // Transform the data for the frontend
         // PostgreSQL returns numeric values as strings through @vercel/postgres
         // We need to parse them to numbers for the charts to work correctly
+        // Date fields need to be converted to ISO strings for parseISO() to work
         const weeklyData = result.rows.map((row) => ({
-            weekStart: row.week_start_date,
-            weekEnd: row.week_end_date,
+            weekStart: row.week_start_date instanceof Date 
+                ? row.week_start_date.toISOString().split('T')[0] 
+                : String(row.week_start_date),
+            weekEnd: row.week_end_date instanceof Date 
+                ? row.week_end_date.toISOString().split('T')[0] 
+                : String(row.week_end_date),
             meditationCount: parseInt(row.meditation_count, 10) || 0,
             trainingDays: parseInt(row.workout_count, 10) || 0,
             avgWakeHour: row.avg_wake_hour ? parseFloat(row.avg_wake_hour) : null,
@@ -199,6 +214,7 @@ async function getWeeklyHabitsData() {
         }));
 
         console.log('Weekly habits data from DB:', weeklyData.length, 'weeks');
+        console.log('Sample weekStart format:', weeklyData[0]?.weekStart, typeof weeklyData[0]?.weekStart);
 
         return weeklyData;
     } catch (error) {
