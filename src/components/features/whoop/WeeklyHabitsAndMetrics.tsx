@@ -39,10 +39,10 @@ interface WeeklyHabitsAndMetricsProps {
 export function WeeklyHabitsAndMetrics({ habitsData, metricsData, selectedYear }: WeeklyHabitsAndMetricsProps) {
     return (
         <div className="space-y-12">
-            {/* Summary Cards - FIRST (Past Week at a glance) */}
-            <WeeklyAccountabilityMetrics data={metricsData} selectedYear={selectedYear} />
+            {/* 1. Summary Cards - FIRST (Past Week at a glance) */}
+            <WeeklyAccountabilityMetrics data={metricsData} selectedYear={selectedYear} showCards={true} showTable={false} />
 
-            {/* Charts - SECOND */}
+            {/* 2. Charts - SECOND */}
             <div className="py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-8">
@@ -54,6 +54,9 @@ export function WeeklyHabitsAndMetrics({ habitsData, metricsData, selectedYear }
                     <WeeklyHabitsChart data={habitsData} selectedYear={selectedYear} />
                 </div>
             </div>
+
+            {/* 3. Weekly Progress Table - THIRD (before Morning Workout Challenge) */}
+            <WeeklyAccountabilityMetrics data={metricsData} selectedYear={selectedYear} showCards={false} showTable={true} />
         </div>
     );
 }
