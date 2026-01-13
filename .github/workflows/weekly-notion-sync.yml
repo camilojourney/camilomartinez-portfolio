@@ -1,7 +1,13 @@
 # 📂 .github/workflows/weekly-notion-sync.yml
 #
-# Weekly Automation: Update Whoop data and sync to Notion
+# Weekly Automation: Close last week, prepare next week
 # Runs every Sunday at 6:00 AM EST (11:00 AM UTC)
+#
+# What happens every Sunday:
+# 1. Calculate & store Whoop metrics for LAST WEEK (week that just ended)
+# 2. Create Notion pages for NEXT WEEK (week that's starting today)
+#
+# This way you review the past and prepare for the future in one go!
 #
 # Why GitHub Actions?
 # ✅ Free for public/private repos (2000 min/month)
@@ -10,7 +16,7 @@
 # ✅ Secure secrets management
 # ✅ Easy monitoring via GitHub UI
 
-name: 📊 Weekly Notion Sync
+name: 📊 Weekly Review & Setup
 
 # Schedule: Every Sunday at 11:00 UTC (6:00 AM EST)
 # Cron format: minute hour day-of-month month day-of-week
@@ -18,80 +24,78 @@ name: 📊 Weekly Notion Sync
 on:
   schedule:
     - cron: '0 11 * * 0'  # 11:00 UTC Sunday = 6:00 AM EST
-  
+
   # Allow manual trigger from GitHub Actions UI for testing
   workflow_dispatch:
 
 jobs:
-  sync-weekly-data:
-    name: Update Whoop → Notion
+  weekly-review-and-setup:
+    name: Review Last Week → Prepare Next Week
     runs-on: ubuntu-latest
-    
+
     # Set working directory for all steps
     defaults:
       run:
         working-directory: ./backend
-    
+
     steps:
       # Step 1: Checkout the repository code
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
-      
+
       # Step 2: Set up Python environment
       # Why Python 3.11? Matches your development environment
       - name: 🐍 Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       # Step 3: Install UV package manager
       # Why UV? It's what you use locally - faster than pip
       - name: 📦 Install UV
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      
+
       # Step 4: Install Python dependencies
       # Uses your pyproject.toml for exact same packages as local
       - name: 📚 Install dependencies
         run: |
           uv sync
-      
-      # Step 5: Update Whoop weekly habits table
-      # This calculates last week's data (Jan 4-10) and stores in database
-      - name: 🏃 Update Whoop weekly habits
+
+      # Step 5: Update Whoop data for LAST WEEK (the week that just ended)
+      # This calculates metrics from the past week and stores in database
+      - name: 🏃 Update Whoop weekly habits for past week
         env:
           # Only needs database connection
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          echo "📊 Calculating last week's habits data..."
+          echo "📊 Calculating LAST week's habits data (week that just ended)..."
           uv run python scripts/populate_weekly_habits.py --show --limit 3
-      
-      # Step 6: Sync updated data to Notion
-      # Updates the 8 goal pages with fresh metrics
-      - name: 📝 Update Notion goal pages
+
+      # Step 6: Create Notion pages for NEXT WEEK (the week that's starting)
+      # This creates all template pages (with Goals, Systems, Constraints) for the new week
+      - name: 📋 Duplicate Notion pages for next week
         env:
-          # Database and Notion credentials
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: |
-          echo "📤 Syncing to Notion..."
-          uv run python scripts/update_notion_goals.py
-      
+          echo "📋 Creating pages for next week from last week's templates..."
+          uv run python scripts/duplicate_weekly_pages.py
+
       # Step 7: Report success
       - name: ✅ Summary
         if: success()
         run: |
-          echo "🎉 Weekly sync completed successfully!"
-          echo "✓ Whoop data updated"
-          echo "✓ Notion pages synced"
-          echo "📅 Check your Notion for this week's review"
-      
+          echo "🎉 Weekly automation completed successfully!"
+          echo "✓ Whoop data updated for LAST week (week that ended)"
+          echo "✓ Notion pages created for NEXT week (week starting today)"
+          echo "📅 You're ready to start tracking the new week!"
+
       # Step 8: Report failure
       - name: ❌ Failure notification
         if: failure()
         run: |
-          echo "⚠️  Weekly sync failed!"
+          echo "⚠️  Weekly automation failed!"
           echo "Check the logs above for details"
           exit 1
