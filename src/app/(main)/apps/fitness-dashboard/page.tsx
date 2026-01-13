@@ -2,8 +2,7 @@ import { analyticsService } from '@/lib/api/config';
 import { Card } from '@/components/ui/Card';
 import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
 import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
-import { ActivityDistributionChart } from '@/components/features/whoop/ActivityDistributionChart';
-import WorkoutTimeChart from '@/components/features/whoop/WorkoutTimeChart';
+import { TrainingAnalytics } from '@/components/features/whoop/TrainingAnalytics';
 import LiquidNav from '@/components/shared/liquid-nav';
 import Link from 'next/link';
 
@@ -12,7 +11,7 @@ export const dynamic = 'auto';
 export const dynamicParams = true;
 export const revalidate = 21600; // Revalidate every 6 hours (21600 seconds)
 
-import { DashboardStrainData, DashboardMonthlyStrainData, DashboardStrainRecoveryData, DashboardWorkoutData, DashboardWorkoutTimeData } from '@/types/whoop';
+import { DashboardStrainData, DashboardMonthlyStrainData, DashboardStrainRecoveryData, DashboardWorkoutData } from '@/types/whoop';
 
 async function getStrainData(): Promise<DashboardStrainData[]> {
     try {
@@ -127,10 +126,10 @@ async function getStrainRecoveryData(): Promise<DashboardStrainRecoveryData[]> {
 async function getWorkoutData(): Promise<DashboardWorkoutData[]> {
     try {
         const response = await analyticsService.getWorkoutData() as any;
-        
+
         // Extract workout data from /api/view-data response
         const workouts = response?.recent?.workouts || [];
-        
+
         if (workouts?.length) {
             const workoutData = workouts.map((workout: any) => ({
                 id: workout.id,
@@ -138,7 +137,7 @@ async function getWorkoutData(): Promise<DashboardWorkoutData[]> {
                 start_time: workout.start_time,
                 end_time: workout.end_time
             }));
-            
+
             console.log('Workout data found:', workoutData.length, 'workouts');
             return workoutData;
         }
@@ -151,92 +150,90 @@ async function getWorkoutData(): Promise<DashboardWorkoutData[]> {
     }
 }
 
-async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
+interface MonthlyTrainingDaysData {
+    month: string; // "YYYY-MM" format
+    trainingDays: number;
+    daysInMonth: number;
+}
+
+async function getMonthlyTrainingDays(): Promise<MonthlyTrainingDaysData[]> {
     try {
-        const response = await analyticsService.getWorkoutTimes() as any;
-        
-        // Extract workout data and convert to time format
+        const response = await analyticsService.getWorkoutData() as any;
+
+        // Extract workout data from /api/view-data response
         const workouts = response?.recent?.workouts || [];
-        
-        // Function to standardize workout type names
-        const standardizeWorkoutType = (sportName: string): string => {
-            const lowercaseName = sportName.toLowerCase();
-            
-            // Group weightlifting variations
-            if (lowercaseName.includes('weightlifting') || lowercaseName === 'weightlifting_msk') {
-                return 'Weightlifting';
-            }
-            
-            // Keep specific types as-is
-            switch (lowercaseName) {
-                case 'running':
-                    return 'Running';
-                case 'cycling':
-                    return 'Cycling';
-                case 'boxing':
-                    return 'Boxing';
-                default:
-                    return 'Other';
-            }
-        };
-        
-        // Convert UTC time to New York timezone
-        const convertToNYTime = (utcTimestamp: string) => {
-            const utcDate = new Date(utcTimestamp);
-            
-            // Convert to New York timezone string (e.g., "10/10/2025, 8:30:00 AM")
-            const nyTimeString = utcDate.toLocaleString('en-US', {
-                timeZone: 'America/New_York',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            });
-            
-            // Parse the formatted string back to get NY time components
-            // Format: "MM/DD/YYYY, HH:MM:SS"
-            const [datePart, timePart] = nyTimeString.split(', ');
-            const [month, day, year] = datePart.split('/');
-            const [hours, minutes] = timePart.split(':');
-            
-            return {
-                date: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`,
-                hours: parseInt(hours, 10),
-                minutes: parseInt(minutes, 10)
-            };
-        };
-        
-        const workoutTimes = workouts.map((workout: any) => {
-            // Convert UTC timestamp to New York time
-            const nyTime = convertToNYTime(workout.start_time);
-            
-            return {
-                date: nyTime.date, // YYYY-MM-DD format in NY timezone
-                time: `${String(nyTime.hours).padStart(2, '0')}:${String(nyTime.minutes).padStart(2, '0')}`,
-                timeAsMinutes: nyTime.hours * 60 + nyTime.minutes, // Calculate from NY time
-                workoutType: standardizeWorkoutType(workout.sport_name || 'unknown')
-            };
+
+        if (!workouts?.length) {
+            console.log('No workout data for monthly training days');
+            return [];
+        }
+
+        // Filter to only relevant workout types
+        const relevantWorkouts = workouts.filter((workout: any) => {
+            const sportName = workout.sport_name?.toLowerCase();
+            return sportName === 'weightlifting' ||
+                   sportName === 'weightlifting_msk' ||
+                   sportName === 'running' ||
+                   sportName === 'boxing';
         });
-        
-        console.log('Workout times data processed:', workoutTimes.length, 'records');
-        console.log('Sample workout times (NY timezone):', JSON.stringify(workoutTimes.slice(0, 3)));
-        
-        return workoutTimes;
+
+        // Group workouts by month and count unique days
+        const monthlyMap = new Map<string, Set<string>>();
+
+        relevantWorkouts.forEach((workout: any) => {
+            const startTime = new Date(workout.start_time);
+
+            // Get the timezone offset from the workout or assume NY time
+            const timezoneOffset = workout.timezone_offset || '-05:00';
+
+            // Apply timezone offset to get local date
+            const offsetHours = parseInt(timezoneOffset.split(':')[0]);
+            const offsetMinutes = parseInt(timezoneOffset.split(':')[1]);
+            const localTime = new Date(startTime.getTime() + (offsetHours * 60 + offsetMinutes) * 60 * 1000);
+
+            const monthKey = `${localTime.getFullYear()}-${String(localTime.getMonth() + 1).padStart(2, '0')}`;
+            const dayKey = localTime.toISOString().split('T')[0]; // YYYY-MM-DD
+
+            if (!monthlyMap.has(monthKey)) {
+                monthlyMap.set(monthKey, new Set());
+            }
+            monthlyMap.get(monthKey)!.add(dayKey);
+        });
+
+        // Convert to array with days in month calculation
+        const monthlyTrainingDays: MonthlyTrainingDaysData[] = [];
+
+        monthlyMap.forEach((days, monthKey) => {
+            const [year, month] = monthKey.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            monthlyTrainingDays.push({
+                month: monthKey,
+                trainingDays: days.size,
+                daysInMonth
+            });
+        });
+
+        // Sort by month chronologically
+        monthlyTrainingDays.sort((a, b) => a.month.localeCompare(b.month));
+
+        console.log('Monthly training days processed:', monthlyTrainingDays.length, 'months');
+        console.log('Sample data:', monthlyTrainingDays.slice(0, 3));
+
+        return monthlyTrainingDays;
     } catch (error) {
-        console.error('Error fetching workout times:', error);
+        console.error('Error fetching monthly training days:', error);
         return [];
     }
 }
+
 
 export default async function MyDataPage() {
     const strainData = await getStrainData();
     const monthlyStrainData = await getMonthlyStrainData();
     const strainRecoveryData = await getStrainRecoveryData();
     const workoutData = await getWorkoutData();
-    const workoutTimeData = await getWorkoutTimes();
+    const monthlyTrainingDays = await getMonthlyTrainingDays();
 
     return (
         <div className="min-h-screen relative overflow-hidden">
@@ -320,45 +317,6 @@ I need the peak strain to be changed for a percentage of the weeks on the curren
                                 <ActivityHeatmap data={strainData} monthlyData={monthlyStrainData} />
                             </Card>
 
-                            {/* Morning Workout Challenge Chart */}
-                            <Card className="p-8 pt-12 border-white/10 hover:border-amber-400/30 transition-all duration-300 overflow-visible">
-                                <div className="mb-8 text-center">
-                                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 rounded-full px-6 py-3 mb-6">
-                                        <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
-                                        <span className="text-amber-300 font-semibold tracking-wide">Am I winning my early morning battle?</span>
-                                    </div>
-                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                                        The Morning Workout Challenge
-                                    </h2>
-                                    <div className="space-y-4 text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-6">
-                                        <h2 className="text-4xl font-bold text-center text-white mb-6">
-                                            Win The Morning, Win The Day
-                                        </h2>
-                                        <p className="text-center text-white/80 text-base max-w-2xl mx-auto">
-                                            In <span className="font-bold text-white">October 2025</span>, I committed to working out <span className="font-bold text-white">before 8:30 AM</span> every day. 
-                                            This is my <span className="font-bold text-cyan-400">public accountability board</span> — tracking every workout, every morning, for everyone to see.
-                                        </p>
-                                    </div>
-                                </div>
-                                
-
-                                
-
-                                
-                                {/* Workout Time Chart Component */}
-                                <div className="border border-amber-500/30 bg-black/20 rounded-lg p-6">
-                                    {workoutTimeData.length > 0 ? (
-                                        <WorkoutTimeChart data={workoutTimeData} goalTime="08:30" />
-                                    ) : (
-                                        <div className="text-center p-8 text-white/60">
-                                            <div className="text-amber-400 text-3xl mb-3">⏰</div>
-                                            <p className="text-white/70 text-lg">No workout time data available.</p>
-                                            <p className="text-white/50 text-sm mt-2">Check that your database has workout records.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </Card>
-
                             {/* Component 2: Strain vs. Recovery */}
                             <Card className="p-8 border-white/10 hover:border-cyan-400/30 transition-all duration-300">
                                 <div className="mb-8 text-center">
@@ -390,7 +348,7 @@ I need the peak strain to be changed for a percentage of the weeks on the curren
                                 </p>
                             </div>
                             <Card className="p-8 border-white/10 hover:border-purple-400/30 transition-all duration-300">
-                                <ActivityDistributionChart data={workoutData} />
+                                <TrainingAnalytics workoutData={workoutData} monthlyTrainingDays={monthlyTrainingDays} />
                             </Card>
 
                             {/* Call to Action - Read how I built this */}

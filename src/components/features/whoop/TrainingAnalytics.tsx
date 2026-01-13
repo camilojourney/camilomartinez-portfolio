@@ -1,58 +1,27 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { MonthlyTrainingDays } from './MonthlyTrainingDays';
 
-// This interface matches what our database query returns
 interface WorkoutData {
     id: string;
     sport_name: string;
     start_time: string;
     end_time: string;
-    // Other fields are optional since they might not be in the query result
-    [key: string]: any;
 }
 
-interface ActivityDistributionProps {
-    data: WorkoutData[];
+interface MonthlyTrainingDaysData {
+    month: string;
+    trainingDays: number;
+    daysInMonth: number;
 }
 
-export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
-    const [hoveredBar, setHoveredBar] = React.useState<{
-        sport: string;
-        month: string;
-        hours: number;
-        sessions: number;
-        x: number;
-        y: number;
-    } | null>(null);
-    const containerRef = React.useRef<HTMLDivElement>(null);
+interface TrainingAnalyticsProps {
+    workoutData: WorkoutData[];
+    monthlyTrainingDays: MonthlyTrainingDaysData[];
+}
 
-    // Add client-side only rendering flag to fix hydration issues
-    const [isMounted, setIsMounted] = useState(false);
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    // Handle empty data case
-    if (!data || data.length === 0) {
-        return (
-            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 text-center">
-                <div className="text-white/60">
-                    <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <h3 className="text-xl font-light mb-3 text-white">No Activity Data Yet</h3>
-                    <p className="text-white/70 font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
-                        Your workout distribution will appear here once you have some weightlifting, running, or boxing activities recorded.
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-    interface MonthlyData {
+interface MonthlyData {
     name: string;
     Weightlifting: number;
     Running: number;
@@ -71,26 +40,38 @@ interface YearlyTotals {
     BoxingSessions: number;
 }
 
-// Get available years from data
-    const getAvailableYears = (): number[] => {
+export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: TrainingAnalyticsProps) {
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [isMounted, setIsMounted] = useState(false);
+    const [hoveredBar, setHoveredBar] = useState<{
+        sport: string;
+        month: string;
+        hours: number;
+        sessions: number;
+        x: number;
+        y: number;
+    } | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const monthlyChartScrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Get available years from data
+    const availableYears = useMemo(() => {
         const years = new Set<number>();
-        data.forEach(workout => {
+        workoutData.forEach(workout => {
             const year = new Date(workout.start_time).getFullYear();
             years.add(year);
         });
         return Array.from(years).sort((a, b) => b - a);
-    };
+    }, [workoutData]);
 
-    const availableYears = getAvailableYears();
-
-// Process data to calculate hours per sport per month
+    // Process workout data by selected year
     const processedData = useMemo(() => {
-        // Initialize empty data structure
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const sportCategories = ['Weightlifting', 'Running', 'Boxing'] as const;
-        type SportCategory = typeof sportCategories[number];
 
-        // Initialize the monthly data with zeros
         const monthlyData: MonthlyData[] = months.map(month => ({
             name: month,
             Weightlifting: 0,
@@ -101,7 +82,6 @@ interface YearlyTotals {
             BoxingSessions: 0
         }));
 
-        // Initialize yearly totals
         const yearlyTotals: YearlyTotals = {
             Weightlifting: 0,
             Running: 0,
@@ -111,24 +91,17 @@ interface YearlyTotals {
             BoxingSessions: 0
         };
 
-        // Filter data by selected year first
-        const yearData = data.filter(workout => {
+        const yearData = workoutData.filter(workout => {
             const workoutYear = new Date(workout.start_time).getFullYear();
             return workoutYear === selectedYear;
         });
 
-        // Process each workout
         yearData.forEach(workout => {
-            // Calculate duration in hours
             const start = new Date(workout.start_time);
             const end = new Date(workout.end_time);
             const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-
-            // Determine month index
             const monthIndex = start.getMonth();
 
-            // Determine sport category
-            // Convert sport name to category
             const sportName = workout.sport_name.toLowerCase();
             let sportCategory: keyof YearlyTotals | undefined;
 
@@ -140,35 +113,26 @@ interface YearlyTotals {
                 sportCategory = 'Boxing';
             }
 
-            if (!sportCategory) {
-                return; // Skip other sports
-            }
+            if (!sportCategory) return;
 
-            // Add hours to monthly data
             monthlyData[monthIndex][sportCategory] += durationHours;
-
-            // Increment session count
             const sessionKey = `${sportCategory}Sessions` as keyof MonthlyData;
             (monthlyData[monthIndex][sessionKey] as number) += 1;
 
-            // Add to yearly total
             yearlyTotals[sportCategory] += durationHours;
-            
-            // Increment yearly session count
             const yearlySessionKey = `${sportCategory}Sessions` as keyof YearlyTotals;
             (yearlyTotals[yearlySessionKey] as number) += 1;
         });
 
-        return {
-            monthlyData,
-            yearlyTotals
-        };
-    }, [data, selectedYear]);
+        return { monthlyData, yearlyTotals };
+    }, [workoutData, selectedYear]);
 
     const visibleMonthlyData = useMemo(() => {
         if (!processedData.monthlyData.length) return processedData.monthlyData;
 
-        const monthlyTotals = processedData.monthlyData.map(month => month.Weightlifting + month.Running + month.Boxing);
+        const monthlyTotals = processedData.monthlyData.map(month =>
+            month.Weightlifting + month.Running + month.Boxing
+        );
         const firstIndex = monthlyTotals.findIndex(total => total > 0);
         let lastIndex = -1;
 
@@ -183,59 +147,45 @@ interface YearlyTotals {
             return processedData.monthlyData;
         }
 
-        // Return slice from first to last active month (chronological order)
-        // This ensures months appear in calendar order: Jan -> Dec
-        const sliced = processedData.monthlyData.slice(firstIndex, lastIndex + 1);
-        console.log('Visible months:', sliced.map(m => m.name).join(', '));
-        return sliced;
+        return processedData.monthlyData.slice(firstIndex, lastIndex + 1);
     }, [processedData.monthlyData]);
 
-    const monthlyChartScrollRef = React.useRef<HTMLDivElement>(null);
-
-    // Colors for each sport
     const sportColors = {
         Weightlifting: 'url(#gradient-green)',
         Running: 'url(#gradient-blue)',
         Boxing: 'url(#gradient-orange)'
     };
 
-    // For the legend and solid color needs
     const sportSolidColors = {
-        Weightlifting: '#4ade80', // Green
-        Running: '#3b82f6',      // Blue
-        Boxing: '#f97316'        // Orange
+        Weightlifting: '#4ade80',
+        Running: '#3b82f6',
+        Boxing: '#f97316'
     };
 
-    // Calculate chart dimensions
     const barChartWidth = 700;
     const barChartHeight = 400;
     const donutChartSize = 300;
     const padding = { top: 40, right: 60, bottom: 60, left: 60 };
     const monthsToDisplay = visibleMonthlyData.length || 1;
     const barGroupWidth = (barChartWidth - padding.left - padding.right) / monthsToDisplay;
-    const groupPadding = barGroupWidth * 0.2; // Use 20% of the group width for spacing
-    const barWidth = (barGroupWidth - groupPadding) / 3; // The width for each of the 3 bars
+    const groupPadding = barGroupWidth * 0.2;
+    const barWidth = (barGroupWidth - groupPadding) / 3;
 
-    // Get max value for y-axis scale
     const maxHours = useMemo(() => {
         let max = 0;
         visibleMonthlyData.forEach(month => {
             const monthTotal = month.Weightlifting + month.Running + month.Boxing;
             if (monthTotal > max) max = monthTotal;
         });
-        return Math.ceil(max * 1.2); // Add 20% padding
+        return Math.ceil(max * 1.2);
     }, [visibleMonthlyData]);
 
-    // Scale functions
     const yScale = (hours: number) => (barChartHeight - padding.top - padding.bottom) * (1 - hours / maxHours);
 
-    // Calculate total hours for donut chart (excluding session counts)
-    // This line adds up all the hours from your data to display in the center of the chart
     const totalHoursYear = processedData.yearlyTotals.Weightlifting +
-                           processedData.yearlyTotals.Running +
-                           processedData.yearlyTotals.Boxing;
+        processedData.yearlyTotals.Running +
+        processedData.yearlyTotals.Boxing;
 
-    // Calculate percentages and angles for donut chart
     const donutData = useMemo(() => {
         const result: Array<{
             sport: string;
@@ -244,9 +194,8 @@ interface YearlyTotals {
             startAngle: number;
             endAngle: number;
         }> = [];
-        let startAngle = -Math.PI / 2; // Start at the 9 o'clock position
+        let startAngle = -Math.PI / 2;
 
-        // Only include the 3 main sports (exclude session counts)
         const sports = ['Weightlifting', 'Running', 'Boxing'] as const;
 
         for (const sport of sports) {
@@ -268,32 +217,9 @@ interface YearlyTotals {
         return result;
     }, [processedData.yearlyTotals, totalHoursYear]);
 
-    // Helper function to create a simple arc path (not a closed wedge)
-    const describeArc = (startAngle: number, endAngle: number, radius: number) => {
-        const center = donutChartSize / 2;
-        const start = {
-            x: center + Math.sin(startAngle) * radius,
-            y: center - Math.cos(startAngle) * radius
-        };
-        const end = {
-            x: center + Math.sin(endAngle) * radius,
-            y: center - Math.cos(endAngle) * radius
-        };
-
-        const largeArcFlag = endAngle - startAngle > Math.PI ? '1' : '0';
-
-        const d = [
-            'M', start.x, start.y,
-            'A', radius, radius, 0, largeArcFlag, 1, end.x, end.y
-        ].join(' ');
-
-        return d;
-    };
-
-    // Format hours to display with one decimal place
     const formatHours = (hours: number) => hours.toFixed(1);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!monthlyChartScrollRef.current) return;
         const container = monthlyChartScrollRef.current;
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
@@ -301,6 +227,22 @@ interface YearlyTotals {
             container.scrollLeft = maxScrollLeft;
         }
     }, [visibleMonthlyData.length]);
+
+    if (!workoutData || workoutData.length === 0) {
+        return (
+            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 text-center">
+                <div className="text-white/60">
+                    <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <h3 className="text-xl font-light mb-3 text-white">No Activity Data Yet</h3>
+                    <p className="text-white/70 font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
+                        Your workout distribution will appear here once you have some weightlifting, running, or boxing activities recorded.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div ref={containerRef} className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8 relative">
@@ -352,13 +294,11 @@ interface YearlyTotals {
                 }
             `}</style>
 
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Monthly Bar Chart (2/3 width) */}
+                {/* Monthly Bar Chart */}
                 <div className="lg:col-span-2 bg-black/20 rounded-2xl p-2 sm:p-6">
                     <h3 className="text-lg font-light text-white mb-4 text-center">Monthly Training Hours</h3>
 
-                    {/* Sport Legend */}
                     <div className="flex justify-center gap-6 mb-4">
                         {Object.entries(sportSolidColors).map(([sport, color]) => (
                             <div key={sport} className="flex items-center gap-2">
@@ -368,14 +308,12 @@ interface YearlyTotals {
                         ))}
                     </div>
 
-                    {/* Scrollable wrapper for the chart */}
                     <div ref={monthlyChartScrollRef} className="overflow-x-auto">
                         <svg
                             viewBox={`0 0 ${barChartWidth} ${barChartHeight}`}
                             className="w-full h-auto min-w-[600px]"
                             preserveAspectRatio="xMidYMid meet"
                         >
-                            {/* Define gradients */}
                             <defs>
                                 <linearGradient id="gradient-green" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="#4ade80" />
@@ -391,180 +329,88 @@ interface YearlyTotals {
                                 </linearGradient>
                             </defs>
 
-                            {/* X-axis */}
-                            <line
-                                x1={padding.left}
-                                y1={barChartHeight - padding.bottom}
-                                x2={barChartWidth - padding.right}
-                                y2={barChartHeight - padding.bottom}
-                                stroke="rgba(255,255,255,0.3)"
-                                strokeWidth="2"
-                            />
+                            <line x1={padding.left} y1={barChartHeight - padding.bottom} x2={barChartWidth - padding.right} y2={barChartHeight - padding.bottom} stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
+                            <line x1={padding.left} y1={padding.top} x2={padding.left} y2={barChartHeight - padding.bottom} stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
 
-                            {/* Y-axis */}
-                            <line
-                                x1={padding.left}
-                                y1={padding.top}
-                                x2={padding.left}
-                                y2={barChartHeight - padding.bottom}
-                                stroke="rgba(255,255,255,0.3)"
-                                strokeWidth="2"
-                            />
-
-                            {/* Y-axis labels */}
                             {[0, maxHours / 4, maxHours / 2, maxHours * 3 / 4, maxHours].map((hours, i) => (
                                 <g key={i}>
-                                    <text
-                                        x={padding.left - 10}
-                                        y={padding.top + yScale(hours)}
-                                        textAnchor="end"
-                                        fill="rgba(255,255,255,0.6)"
-                                        fontSize="12"
-                                        dominantBaseline="middle"
-                                    >
+                                    <text x={padding.left - 10} y={padding.top + yScale(hours)} textAnchor="end" fill="rgba(255,255,255,0.6)" fontSize="12" dominantBaseline="middle">
                                         {Math.round(hours)}h
                                     </text>
-                                    <line
-                                        x1={padding.left - 5}
-                                        y1={padding.top + yScale(hours)}
-                                        x2={padding.left}
-                                        y2={padding.top + yScale(hours)}
-                                        stroke="rgba(255,255,255,0.3)"
-                                        strokeWidth="1"
-                                    />
+                                    <line x1={padding.left - 5} y1={padding.top + yScale(hours)} x2={padding.left} y2={padding.top + yScale(hours)} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
                                 </g>
                             ))}
 
-                            {/* X-axis labels (months) */}
                             {visibleMonthlyData.map((month, i) => (
-                                <text
-                                    key={i}
-                                    x={padding.left + i * barGroupWidth + barGroupWidth / 2}
-                                    y={barChartHeight - padding.bottom + 20}
-                                    textAnchor="middle"
-                                    fill="rgba(255,255,255,0.6)"
-                                    fontSize="12"
-                                >
+                                <text key={i} x={padding.left + i * barGroupWidth + barGroupWidth / 2} y={barChartHeight - padding.bottom + 20} textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="12">
                                     {month.name}
                                 </text>
                             ))}
 
-                            {/* Y-axis title */}
-                            <text
-                                x={20}
-                                y={barChartHeight / 2}
-                                textAnchor="middle"
-                                fill="rgba(255,255,255,0.8)"
-                                fontSize="14"
-                                fontWeight="300"
-                                transform={`rotate(-90, 20, ${barChartHeight / 2})`}
-                            >
+                            <text x={20} y={barChartHeight / 2} textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="14" fontWeight="300" transform={`rotate(-90, 20, ${barChartHeight / 2})`}>
                                 Hours
                             </text>
 
-                            {/* Bars */}
                             {visibleMonthlyData.map((month, monthIndex) => {
-                                // Calculate the starting x-position for this month's group of bars
                                 const groupXStart = padding.left + monthIndex * barGroupWidth + groupPadding / 2;
 
                                 return (
                                     <g key={monthIndex} className="bar-group">
-                                        {/* Weightlifting bar */}
-                                        <rect
-                                            x={groupXStart}
-                                            y={padding.top + yScale(month.Weightlifting)}
-                                            width={barWidth}
-                                            height={barChartHeight - padding.bottom - padding.top - yScale(month.Weightlifting)}
-                                            fill={sportColors.Weightlifting}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
-                                            rx="2"
-                                            style={{ animationDelay: `${monthIndex * 50}ms` }}
-                                            onMouseEnter={(e) => {
-                                                if (containerRef.current) {
-                                                    const containerRect = containerRef.current.getBoundingClientRect();
-                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                    setHoveredBar({
-                                                        sport: 'Weightlifting',
-                                                        month: month.name,
-                                                        hours: month.Weightlifting,
-                                                        sessions: month.WeightliftingSessions,
-                                                        x: rect.left - containerRect.left + rect.width / 2,
-                                                        y: rect.top - containerRect.top
-                                                    });
-                                                }
-                                            }}
-                                            onMouseLeave={() => setHoveredBar(null)}
-                                        />
-
-                                        {/* Running bar */}
-                                        <rect
-                                            x={groupXStart + barWidth}
-                                            y={padding.top + yScale(month.Running)}
-                                            width={barWidth}
-                                            height={barChartHeight - padding.bottom - padding.top - yScale(month.Running)}
-                                            fill={sportColors.Running}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
-                                            rx="2"
-                                            style={{ animationDelay: `${monthIndex * 50 + 50}ms` }}
-                                            onMouseEnter={(e) => {
-                                                if (containerRef.current) {
-                                                    const containerRect = containerRef.current.getBoundingClientRect();
-                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                    setHoveredBar({
-                                                        sport: 'Running',
-                                                        month: month.name,
-                                                        hours: month.Running,
-                                                        sessions: month.RunningSessions,
-                                                        x: rect.left - containerRect.left + rect.width / 2,
-                                                        y: rect.top - containerRect.top
-                                                    });
-                                                }
-                                            }}
-                                            onMouseLeave={() => setHoveredBar(null)}
-                                        />
-
-                                        {/* Boxing bar */}
-                                        <rect
-                                            x={groupXStart + barWidth * 2}
-                                            y={padding.top + yScale(month.Boxing)}
-                                            width={barWidth}
-                                            height={barChartHeight - padding.bottom - padding.top - yScale(month.Boxing)}
-                                            fill={sportColors.Boxing}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
-                                            rx="2"
-                                            style={{ animationDelay: `${monthIndex * 50 + 100}ms` }}
-                                            onMouseEnter={(e) => {
-                                                if (containerRef.current) {
-                                                    const containerRect = containerRef.current.getBoundingClientRect();
-                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                    setHoveredBar({
-                                                        sport: 'Boxing',
-                                                        month: month.name,
-                                                        hours: month.Boxing,
-                                                        sessions: month.BoxingSessions,
-                                                        x: rect.left - containerRect.left + rect.width / 2,
-                                                        y: rect.top - containerRect.top
-                                                    });
-                                                }
-                                            }}
-                                            onMouseLeave={() => setHoveredBar(null)}
-                                        />
+                                        <rect x={groupXStart} y={padding.top + yScale(month.Weightlifting)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Weightlifting)} fill={sportColors.Weightlifting} opacity="0.8" className="bar-anim hover:opacity-100 transition-opacity cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50}ms` }} onMouseEnter={(e) => {
+                                            if (containerRef.current) {
+                                                const containerRect = containerRef.current.getBoundingClientRect();
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                setHoveredBar({
+                                                    sport: 'Weightlifting',
+                                                    month: month.name,
+                                                    hours: month.Weightlifting,
+                                                    sessions: month.WeightliftingSessions,
+                                                    x: rect.left - containerRect.left + rect.width / 2,
+                                                    y: rect.top - containerRect.top
+                                                });
+                                            }
+                                        }} onMouseLeave={() => setHoveredBar(null)} />
+                                        <rect x={groupXStart + barWidth} y={padding.top + yScale(month.Running)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Running)} fill={sportColors.Running} opacity="0.8" className="bar-anim hover:opacity-100 transition-opacity cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50 + 50}ms` }} onMouseEnter={(e) => {
+                                            if (containerRef.current) {
+                                                const containerRect = containerRef.current.getBoundingClientRect();
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                setHoveredBar({
+                                                    sport: 'Running',
+                                                    month: month.name,
+                                                    hours: month.Running,
+                                                    sessions: month.RunningSessions,
+                                                    x: rect.left - containerRect.left + rect.width / 2,
+                                                    y: rect.top - containerRect.top
+                                                });
+                                            }
+                                        }} onMouseLeave={() => setHoveredBar(null)} />
+                                        <rect x={groupXStart + barWidth * 2} y={padding.top + yScale(month.Boxing)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Boxing)} fill={sportColors.Boxing} opacity="0.8" className="bar-anim hover:opacity-100 transition-opacity cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50 + 100}ms` }} onMouseEnter={(e) => {
+                                            if (containerRef.current) {
+                                                const containerRect = containerRef.current.getBoundingClientRect();
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                setHoveredBar({
+                                                    sport: 'Boxing',
+                                                    month: month.name,
+                                                    hours: month.Boxing,
+                                                    sessions: month.BoxingSessions,
+                                                    x: rect.left - containerRect.left + rect.width / 2,
+                                                    y: rect.top - containerRect.top
+                                                });
+                                            }
+                                        }} onMouseLeave={() => setHoveredBar(null)} />
                                     </g>
                                 );
                             })}
                         </svg>
                     </div>
-                </div>                {/* Yearly Donut Chart (1/3 width) */}
+                </div>
+
+                {/* Yearly Donut Chart */}
                 <div className="lg:col-span-1 bg-black/20 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center gap-4">
                     <h3 className="text-lg font-light text-white mb-2 text-center">Yearly Distribution</h3>
 
-                                        <div className="flex flex-col items-center">
-                        {/* Conic Gradient Donut Chart - Only render client-side to avoid hydration issues */}
+                    <div className="flex flex-col items-center">
                         {!isMounted ? (
-                            // Skeleton loader while mounting
                             <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
                                 <div className="w-[85%] h-[85%] rounded-full relative bg-white/5 animate-pulse">
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-black/40 rounded-full flex items-center justify-center flex-col">
@@ -574,9 +420,7 @@ interface YearlyTotals {
                             </div>
                         ) : (
                             <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
-                                {/* Create the conic gradient donut */}
                                 <div className="relative w-[85%] h-[85%] animate-fadeIn">
-                                    {/* Outer circle with conic gradient */}
                                     <div
                                         className="absolute inset-0 rounded-full"
                                         style={{
@@ -592,36 +436,18 @@ interface YearlyTotals {
                                             boxShadow: '0 0 20px rgba(0,0,0,0.3) inset, 0 4px 12px rgba(0,0,0,0.4)',
                                         }}
                                     />
-
-                                    {/* Inner circle cutout (creates donut hole) */}
                                     <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-[#1a1625] shadow-2xl"
-                                         style={{
-                                             boxShadow: '0 0 0 2px rgba(255,255,255,0.1), inset 0 2px 8px rgba(0,0,0,0.6)'
-                                         }}
+                                         style={{ boxShadow: '0 0 0 2px rgba(255,255,255,0.1), inset 0 2px 8px rgba(0,0,0,0.6)' }}
                                     />
-
-                                    {/* Content overlay (displays total) */}
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] rounded-full flex items-center justify-center flex-col animate-scaleIn">
-                                        {/* "TOTAL" text */}
-                                        <span className="text-white/90 text-base font-medium mb-[-2px]">
-                                            TOTAL
-                                        </span>
-
-                                        {/* THIS IS THE TOTAL HOURS NUMBER displayed prominently */}
-                                        <span className="text-white text-4xl font-bold mt-1">
-                                            {formatHours(totalHoursYear)}
-                                        </span>
-
-                                        {/* "HOURS" text */}
-                                        <span className="text-white/90 text-base font-medium mt-1">
-                                            HOURS
-                                        </span>
+                                        <span className="text-white/90 text-base font-medium mb-[-2px]">TOTAL</span>
+                                        <span className="text-white text-4xl font-bold mt-1">{formatHours(totalHoursYear)}</span>
+                                        <span className="text-white/90 text-base font-medium mt-1">HOURS</span>
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Legend */}
                         <div className="mt-6 space-y-3 w-full max-w-[300px]">
                             {Object.entries(processedData.yearlyTotals)
                                 .filter(([sport]) => !sport.includes('Sessions'))
@@ -716,6 +542,9 @@ interface YearlyTotals {
                     </div>
                 </div>
             )}
+
+            {/* Monthly Training Days Chart Below */}
+            <MonthlyTrainingDays data={monthlyTrainingDays} selectedYear={selectedYear} />
         </div>
     );
 }

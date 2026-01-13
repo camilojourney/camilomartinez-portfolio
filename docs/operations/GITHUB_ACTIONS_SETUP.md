@@ -20,7 +20,7 @@ You need to add 3 secrets to your GitHub repository. These are stored securely a
 5. Add each of these 3 secrets:
 
 #### Secret 1: `DATABASE_URL`
-**Name:** `DATABASE_URL`  
+**Name:** `DATABASE_URL`
 **Value:** Your Render Postgres connection string
 
 ```
@@ -34,7 +34,7 @@ postgresql://USER:PASSWORD@HOST:5432/DATABASE
 ---
 
 #### Secret 2: `NOTION_TOKEN`
-**Name:** `NOTION_TOKEN`  
+**Name:** `NOTION_TOKEN`
 **Value:** Your Notion integration token
 
 **Where to find it:**
@@ -45,8 +45,8 @@ postgresql://USER:PASSWORD@HOST:5432/DATABASE
 ---
 
 #### Secret 3: `NOTION_DATABASE_ID`
-**Name:** `NOTION_DATABASE_ID`  
-**Value:** 
+**Name:** `NOTION_DATABASE_ID`
+**Value:**
 ```
 2e3e98e30a3080c6a15ae087562cf137
 ```
@@ -78,13 +78,20 @@ Every **Sunday at 6:00 AM EST** (11:00 UTC), GitHub will automatically:
 1. **Wake up** a fresh Ubuntu server
 2. **Clone** your repository
 3. **Install** Python + dependencies
-4. **Run** `populate_weekly_habits.py` → Calculates last completed week (e.g., Jan 11-17)
-5. **Run** `update_notion_goals.py` → Updates your 8 Notion goal pages
-6. **Shut down** - All done!
+4. **Run** `duplicate_weekly_pages.py` → Creates new pages for current week from last week's templates
+5. **Run** `populate_weekly_habits.py` → Calculates current week's habits data
+6. **Run** `create_weekly_notion_pages.py` → Populates Hours/Count fields with Whoop data
+7. **Shut down** - All done!
 
 **Timeline:**
 - Takes 2-3 minutes total
 - By 6:05 AM, your Notion is ready for weekly review ☕
+
+**What gets automated:**
+- ✅ All 26 pages duplicated with Goals, Systems, Constraints, emojis
+- ✅ New date ranges set (current week)
+- ✅ Hours/Count fields populated with Whoop data
+- ✅ Ready for you to fill in weekly reflections
 
 ---
 

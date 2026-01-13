@@ -1,5 +1,6 @@
 // Project metadata and types for portfolio showcase
 export type ProjectStatus = 'live' | 'prototype' | 'in-progress' | 'concept';
+export type ProjectCategory = 'Live App' | 'Data Science';
 
 export interface ProjectMeta {
   slug: string;
@@ -7,6 +8,7 @@ export interface ProjectMeta {
   description: string;
   tags: string[];
   status: ProjectStatus;
+  category: ProjectCategory;
   caseStudyHref: string;
   appHref?: string;
   appLabel?: string;
@@ -21,9 +23,21 @@ export const projects: ProjectMeta[] = [
     description: 'Real-time health analytics combining WHOOP + Strava data pipelines.',
     tags: ['Data Engineering', 'APIs', 'Real-time'],
     status: 'live',
+    category: 'Live App',
     caseStudyHref: '/projects/fitness-dashboard',
     appHref: '/apps/fitness-dashboard',
     previewImage: '/images/previews_main/fitness.png',
+  },
+  {
+    slug: 'accountability-partner',
+    title: 'Accountability Partner',
+    description: 'Public commitment tracker for my daily morning workout challenge—every workout, every morning, visible to everyone.',
+    tags: ['Accountability', 'Data Visualization', 'WHOOP API'],
+    status: 'live',
+    category: 'Live App',
+    caseStudyHref: '/projects/accountability-partner',
+    appHref: '/apps/accountability-partner',
+    previewImage: '/images/previews_main/accountable.png',
   },
   {
     slug: 'astoria-conquest',
@@ -31,6 +45,7 @@ export const projects: ProjectMeta[] = [
     description: 'Geospatial routing and map visualization to run every street in Astoria, Queens.',
     tags: ['Graph Theory', 'Mapping', 'Visualization'],
     status: 'live',
+    category: 'Live App',
     caseStudyHref: '/projects/astoria-conquest',
     appHref: '/apps/astoria-conquest',
     previewImage: '/images/previews_main/astoria_conquest.png',
@@ -41,6 +56,7 @@ export const projects: ProjectMeta[] = [
     description: 'LLM-powered content generator that translates raw insights into polished posts.',
     tags: ['LLMs', 'Automation', 'Content'],
     status: 'live',
+    category: 'Live App',
     caseStudyHref: '/projects/social-media-pipeline',
     appHref: '/apps/social-media-pipeline',
     previewImage: '/images/previews_main/socia_media_creation.png',
@@ -51,6 +67,7 @@ export const projects: ProjectMeta[] = [
     description: 'Multi-agent advisory directors debating strategy, risk, and customer voice.',
     tags: ['Multi-Agent', 'Strategy', 'LLM Systems'],
     status: 'live',
+    category: 'Live App',
     caseStudyHref: '/projects/ai-advisor-board',
     appHref: 'https://ai-advisor-board.vercel.app',
     appLabel: 'Launch live app',
@@ -63,6 +80,7 @@ export const projects: ProjectMeta[] = [
     description: 'RAG-powered conversational agent that evaluates its answers and expands its knowledge base autonomously.',
     tags: ['RAG', 'NLP', 'Self-Improvement'],
     status: 'live',
+    category: 'Live App',
     caseStudyHref: '/projects/interactive-chatbot',
     appHref: '/about',
     appLabel: 'Try the chatbot',
@@ -74,8 +92,9 @@ export const projects: ProjectMeta[] = [
     description: 'Privacy-first, on-device speech coach: dictation + real-time grammar correction + personalized pronunciation feedback powered by federated learning.',
     tags: ['Speech AI', 'Accessibility', 'Productivity'],
     status: 'in-progress',
+    category: 'Live App',
     caseStudyHref: '/projects/invoz-ai',
-    previewImage: '/images/previews_main/image.png',
+    previewImage: '/images/previews_main/invoz.png',
   },
   {
     slug: 'focus-time',
@@ -83,6 +102,7 @@ export const projects: ProjectMeta[] = [
     description: 'macOS menu bar timer for hyperfocus awareness—periodic check-ins help you stay accountable during deep work sessions and review focus patterns.',
     tags: ['Tauri 2', 'Rust', 'macOS', 'ADHD Tools'],
     status: 'live',
+    category: 'Live App',
     caseStudyHref: '/projects/focus-time',
     appHref: '/apps/focus-time',
     appLabel: 'Download app',
@@ -94,7 +114,18 @@ export const projects: ProjectMeta[] = [
     description: 'Interactive presentation on pronunciation error detection and NLP analysis using Quarto and Python.',
     tags: ['NLP', 'Data Science', 'Python', 'Quarto'],
     status: 'live',
+    category: 'Data Science',
     caseStudyHref: '/projects/nlp-data-science',
-    previewImage: '/images/previews_main/nlp_presentation.png',
+    previewImage: '/images/previews_main/clear_speech.png',
+  },
+  {
+    slug: 'hrv-research',
+    title: 'HRV Research: Understanding Heart Rate Variability',
+    description: 'Machine learning analysis using WHOOP data to identify key drivers of daily HRV and optimize recovery protocols.',
+    tags: ['Machine Learning', 'Data Science', 'Python', 'Health Analytics'],
+    status: 'live',
+    category: 'Data Science',
+    caseStudyHref: '/projects/hrv-research',
+    previewImage: '/images/previews_main/Recovery_vs_strain.png',
   },
 ];

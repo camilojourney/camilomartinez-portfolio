@@ -151,7 +151,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {week_data['training_days']}/7 days")
         success_count += 1
-    
+
     # 2. Meditation Sessions
     print(f"\n   📝 Updating: Meditation Sessions")
     if update_notion_page(GOAL_PAGE_IDS["meditation"], {
@@ -160,7 +160,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {week_data['meditation_count']}/10 sessions")
         success_count += 1
-    
+
     # 3. Wake Time Average
     wake_time = format_time(week_data["avg_wake"])
     print(f"\n   📝 Updating: Wake Time (Average)")
@@ -170,7 +170,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {wake_time}")
         success_count += 1
-    
+
     # 4. Wake Time Std Dev
     wake_std = format_time_minutes(week_data["std_wake"])
     print(f"\n   📝 Updating: Wake Time (Std Deviation)")
@@ -180,7 +180,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {wake_std}")
         success_count += 1
-    
+
     # 5. Workout Time Average
     workout_time = format_time(week_data["avg_workout"])
     print(f"\n   📝 Updating: Workout Time (Average)")
@@ -190,7 +190,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {workout_time}")
         success_count += 1
-    
+
     # 6. Workout Time Std Dev
     workout_std = format_time_minutes(week_data["std_workout"])
     print(f"\n   📝 Updating: Workout Time (Std Deviation)")
@@ -200,7 +200,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {workout_std}")
         success_count += 1
-    
+
     # 7. Sleep Start Time Average
     sleep_time = format_time(week_data["avg_sleep_start"])
     print(f"\n   📝 Updating: Sleep Start Time (Average)")
@@ -210,7 +210,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {sleep_time}")
         success_count += 1
-    
+
     # 8. Sleep Start Time Std Dev
     sleep_std = format_time_minutes(week_data["std_sleep_start"])
     print(f"\n   📝 Updating: Sleep Start Time (Std Deviation)")
@@ -220,7 +220,7 @@ async def main():
     }):
         print(f"      ✅ Set to: {sleep_std}")
         success_count += 1
-    
+
     print("\n" + "=" * 80)
     print(f"✅ Successfully updated {success_count}/8 goal pages for week {week_label}")
     print("=" * 80)

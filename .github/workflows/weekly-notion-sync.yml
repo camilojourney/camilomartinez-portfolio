@@ -73,26 +73,38 @@ jobs:
           echo "📊 Calculating LAST week's habits data (week that just ended)..."
           uv run python scripts/populate_weekly_habits.py --show --limit 3
 
-      # Step 6: Create Notion pages for NEXT WEEK (the week that's starting)
+      # Step 6: Update the 8 Whoop metrics in LAST WEEK's existing pages
+      # This fills in the Count/Hours fields with actual data for the week that just ended
+      - name: � Update Whoop metrics in last week's Notion pages
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: |
+          echo "� Updating 8 Whoop metrics in LAST week's pages..."
+          uv run python scripts/sync_weekly_to_notion.py
+
+      # Step 7: Create Notion pages for NEXT WEEK (the week that's starting)
       # This creates all template pages (with Goals, Systems, Constraints) for the new week
-      - name: 📋 Duplicate Notion pages for next week
+      - name: � Duplicate Notion pages for next week
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: |
-          echo "📋 Creating pages for next week from last week's templates..."
+          echo "� Creating pages for NEXT week from last week's templates..."
           uv run python scripts/duplicate_weekly_pages.py
 
-      # Step 7: Report success
+      # Step 8: Report success
       - name: ✅ Summary
         if: success()
         run: |
           echo "🎉 Weekly automation completed successfully!"
-          echo "✓ Whoop data updated for LAST week (week that ended)"
-          echo "✓ Notion pages created for NEXT week (week starting today)"
-          echo "📅 You're ready to start tracking the new week!"
+          echo "✓ Whoop data calculated for LAST week"
+          echo "✓ 8 Whoop metrics updated in LAST week's pages"
+          echo "✓ Notion pages created for NEXT week (ready to track)"
+          echo "📅 You're all set for the new week!"
 
-      # Step 8: Report failure
+      # Step 9: Report failure
       - name: ❌ Failure notification
         if: failure()
         run: |
