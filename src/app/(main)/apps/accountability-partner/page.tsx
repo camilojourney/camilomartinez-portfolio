@@ -183,17 +183,19 @@ async function getWeeklyHabitsData() {
         `;
 
         // Transform the data for the frontend
+        // PostgreSQL returns numeric values as strings through @vercel/postgres
+        // We need to parse them to numbers for the charts to work correctly
         const weeklyData = result.rows.map((row) => ({
             weekStart: row.week_start_date,
             weekEnd: row.week_end_date,
-            meditationCount: row.meditation_count || 0,
-            trainingDays: row.workout_count || 0,
-            avgWakeHour: row.avg_wake_hour || null,
-            stdWakeHour: row.std_wake_hour || null,
-            avgWorkoutHour: row.avg_workout_hour || null,
-            stdWorkoutHour: row.std_workout_hour || null,
-            avgSleepStartHour: row.avg_sleep_start_hour || null,
-            stdSleepStartHour: row.std_sleep_start_hour || null,
+            meditationCount: parseInt(row.meditation_count, 10) || 0,
+            trainingDays: parseInt(row.workout_count, 10) || 0,
+            avgWakeHour: row.avg_wake_hour ? parseFloat(row.avg_wake_hour) : null,
+            stdWakeHour: row.std_wake_hour ? parseFloat(row.std_wake_hour) : null,
+            avgWorkoutHour: row.avg_workout_hour ? parseFloat(row.avg_workout_hour) : null,
+            stdWorkoutHour: row.std_workout_hour ? parseFloat(row.std_workout_hour) : null,
+            avgSleepStartHour: row.avg_sleep_start_hour ? parseFloat(row.avg_sleep_start_hour) : null,
+            stdSleepStartHour: row.std_sleep_start_hour ? parseFloat(row.std_sleep_start_hour) : null,
         }));
 
         console.log('Weekly habits data from DB:', weeklyData.length, 'weeks');
