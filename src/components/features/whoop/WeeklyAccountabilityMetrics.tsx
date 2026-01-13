@@ -60,17 +60,26 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
     const olderWeeks = sortedWeeks.slice(6);
 
     // Format date for display
+    // Parse date string manually to avoid timezone issues
+    // "2026-01-04" should display as Jan 4, not Jan 3
     const formatWeekLabel = (weekStart: string, weekEnd: string) => {
-        const start = new Date(weekStart);
-        const end = new Date(weekEnd);
-
-        const monthStart = start.toLocaleDateString('en-US', { month: 'short' });
-        const monthEnd = end.toLocaleDateString('en-US', { month: 'short' });
+        // Parse YYYY-MM-DD format directly to avoid UTC timezone shift
+        const parseLocalDate = (dateStr: string) => {
+            const [year, month, day] = dateStr.split('T')[0].split('-').map(Number);
+            return { year, month, day };
+        };
+        
+        const start = parseLocalDate(weekStart);
+        const end = parseLocalDate(weekEnd);
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthStart = months[start.month - 1];
+        const monthEnd = months[end.month - 1];
 
         if (monthStart === monthEnd) {
-            return `${monthStart} ${start.getDate()}-${end.getDate()}`;
+            return `${monthStart} ${start.day}-${end.day}`;
         }
-        return `${monthStart} ${start.getDate()}-${monthEnd} ${end.getDate()}`;
+        return `${monthStart} ${start.day}-${monthEnd} ${end.day}`;
     };
 
     // Check if goal is met
@@ -266,171 +275,171 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
 
             {/* Weekly Progress Table */}
             {showTable && (
-                    <Card className="p-6 bg-black/20 border-white/10 mx-auto max-w-5xl">
-                        <h3 className="text-xl font-semibold text-white mb-6 text-center">Weekly Progress Tracker - {selectedYear}</h3>
+                <Card className="p-6 bg-black/20 border-white/10 mx-auto max-w-5xl">
+                    <h3 className="text-xl font-semibold text-white mb-6 text-center">Weekly Progress Tracker - {selectedYear}</h3>
 
-                        {/* Last 6 Weeks */}
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-white/20">
-                                        <th className="text-left py-3 px-4 text-white/80 font-medium">Week</th>
-                                        <th className="text-center py-3 px-4 text-white/80 font-medium">Training<br />Days</th>
-                                        <th className="text-center py-3 px-4 text-white/80 font-medium">Meditation<br />Sessions</th>
-                                        <th className="text-center py-3 px-4 text-white/80 font-medium">Wake Time<br />(Avg ± SD)</th>
-                                        <th className="text-center py-3 px-4 text-white/80 font-medium">Workout Start<br />(Avg ± SD)</th>
-                                        <th className="text-center py-3 px-4 text-white/80 font-medium">Sleep Start<br />(Avg ± SD)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {last6Weeks.map((week, index) => {
-                                        const trainingGoalMet = isGoalMet(week.trainingDays, 5);
-                                        const meditationGoalMet = isGoalMet(week.meditationSessions, 10);
-                                        const wakeGoalMet = isTimeGoalMet(week.avgWakeTime, 8, 20);
-                                        const workoutGoalMet = isTimeGoalMet(week.avgWorkoutStartTime, 9, 20);
-                                        const sleepStartGoalMet = isSleepStartGoalMet(week.avgSleepStartTime);
+                    {/* Last 6 Weeks */}
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-white/20">
+                                    <th className="text-left py-3 px-4 text-white/80 font-medium">Week</th>
+                                    <th className="text-center py-3 px-4 text-white/80 font-medium">Training<br />Days</th>
+                                    <th className="text-center py-3 px-4 text-white/80 font-medium">Meditation<br />Sessions</th>
+                                    <th className="text-center py-3 px-4 text-white/80 font-medium">Wake Time<br />(Avg ± SD)</th>
+                                    <th className="text-center py-3 px-4 text-white/80 font-medium">Workout Start<br />(Avg ± SD)</th>
+                                    <th className="text-center py-3 px-4 text-white/80 font-medium">Sleep Start<br />(Avg ± SD)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {last6Weeks.map((week, index) => {
+                                    const trainingGoalMet = isGoalMet(week.trainingDays, 5);
+                                    const meditationGoalMet = isGoalMet(week.meditationSessions, 10);
+                                    const wakeGoalMet = isTimeGoalMet(week.avgWakeTime, 8, 20);
+                                    const workoutGoalMet = isTimeGoalMet(week.avgWorkoutStartTime, 9, 20);
+                                    const sleepStartGoalMet = isSleepStartGoalMet(week.avgSleepStartTime);
 
-                                        const isCurrent = index === 0;
+                                    const isCurrent = index === 0;
 
-                                        return (
-                                            <tr
-                                                key={week.weekStart}
-                                                className={`border-b border-white/10 hover:bg-white/5 transition-colors ${isCurrent ? 'bg-amber-500/10' : ''}`}
-                                            >
-                                                <td className="py-3 px-4 text-white/90 font-medium">
-                                                    {formatWeekLabel(week.weekStart, week.weekEnd)}
-                                                    {isCurrent && (
-                                                        <span className="ml-2 text-amber-400 text-xs">(Current)</span>
-                                                    )}
-                                                </td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <span className={`font-bold ${getGoalColorClass(trainingGoalMet)}`}>
-                                                        {week.trainingDays}/7
-                                                    </span>
-                                                    <span className="ml-2">
-                                                        {trainingGoalMet ? '✅' : '⚠️'}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <span className={`font-semibold ${getGoalColorClass(meditationGoalMet)}`}>
-                                                        {week.meditationSessions}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <div className={`font-semibold ${getGoalColorClass(wakeGoalMet)}`}>
-                                                        {week.avgWakeTime}
-                                                    </div>
-                                                    <div className="text-white/50 text-xs">± {Math.round(week.wakeTimeStdDev)} min</div>
-                                                </td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <div className={`font-semibold ${getGoalColorClass(workoutGoalMet)}`}>
-                                                        {week.avgWorkoutStartTime}
-                                                    </div>
-                                                    <div className="text-white/50 text-xs">± {Math.round(week.workoutStartStdDev)} min</div>
-                                                </td>
-                                                <td className="py-3 px-4 text-center">
-                                                    <div className={`font-semibold ${getGoalColorClass(sleepStartGoalMet)}`}>
-                                                        {week.avgSleepStartTime}
-                                                    </div>
-                                                    <div className="text-white/50 text-xs">± {Math.round(week.sleepStartStdDev)} min</div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                                    return (
+                                        <tr
+                                            key={week.weekStart}
+                                            className={`border-b border-white/10 hover:bg-white/5 transition-colors ${isCurrent ? 'bg-amber-500/10' : ''}`}
+                                        >
+                                            <td className="py-3 px-4 text-white/90 font-medium">
+                                                {formatWeekLabel(week.weekStart, week.weekEnd)}
+                                                {isCurrent && (
+                                                    <span className="ml-2 text-amber-400 text-xs">(Current)</span>
+                                                )}
+                                            </td>
+                                            <td className="py-3 px-4 text-center">
+                                                <span className={`font-bold ${getGoalColorClass(trainingGoalMet)}`}>
+                                                    {week.trainingDays}/7
+                                                </span>
+                                                <span className="ml-2">
+                                                    {trainingGoalMet ? '✅' : '⚠️'}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-center">
+                                                <span className={`font-semibold ${getGoalColorClass(meditationGoalMet)}`}>
+                                                    {week.meditationSessions}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-center">
+                                                <div className={`font-semibold ${getGoalColorClass(wakeGoalMet)}`}>
+                                                    {week.avgWakeTime}
+                                                </div>
+                                                <div className="text-white/50 text-xs">± {Math.round(week.wakeTimeStdDev)} min</div>
+                                            </td>
+                                            <td className="py-3 px-4 text-center">
+                                                <div className={`font-semibold ${getGoalColorClass(workoutGoalMet)}`}>
+                                                    {week.avgWorkoutStartTime}
+                                                </div>
+                                                <div className="text-white/50 text-xs">± {Math.round(week.workoutStartStdDev)} min</div>
+                                            </td>
+                                            <td className="py-3 px-4 text-center">
+                                                <div className={`font-semibold ${getGoalColorClass(sleepStartGoalMet)}`}>
+                                                    {week.avgSleepStartTime}
+                                                </div>
+                                                <div className="text-white/50 text-xs">± {Math.round(week.sleepStartStdDev)} min</div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
 
-                        {/* Scrollable Older Weeks */}
-                        {olderWeeks.length > 0 && (
-                            <details className="mt-6">
-                                <summary className="cursor-pointer text-center text-white/70 hover:text-white/90 transition-colors py-2">
-                                    Show {olderWeeks.length} older weeks ▼
-                                </summary>
-                                <div className="mt-4 max-h-96 overflow-y-auto">
-                                    <table className="w-full text-sm">
-                                        <tbody>
-                                            {olderWeeks.map((week) => {
-                                                const trainingGoalMet = isGoalMet(week.trainingDays, 5);
-                                                const meditationGoalMet = isGoalMet(week.meditationSessions, 10);
-                                                const wakeGoalMet = isTimeGoalMet(week.avgWakeTime, 8, 20);
-                                                const workoutGoalMet = isTimeGoalMet(week.avgWorkoutStartTime, 9, 20);
-                                                const sleepStartGoalMet = isSleepStartGoalMet(week.avgSleepStartTime);
+                    {/* Scrollable Older Weeks */}
+                    {olderWeeks.length > 0 && (
+                        <details className="mt-6">
+                            <summary className="cursor-pointer text-center text-white/70 hover:text-white/90 transition-colors py-2">
+                                Show {olderWeeks.length} older weeks ▼
+                            </summary>
+                            <div className="mt-4 max-h-96 overflow-y-auto">
+                                <table className="w-full text-sm">
+                                    <tbody>
+                                        {olderWeeks.map((week) => {
+                                            const trainingGoalMet = isGoalMet(week.trainingDays, 5);
+                                            const meditationGoalMet = isGoalMet(week.meditationSessions, 10);
+                                            const wakeGoalMet = isTimeGoalMet(week.avgWakeTime, 8, 20);
+                                            const workoutGoalMet = isTimeGoalMet(week.avgWorkoutStartTime, 9, 20);
+                                            const sleepStartGoalMet = isSleepStartGoalMet(week.avgSleepStartTime);
 
-                                                return (
-                                                    <tr
-                                                        key={week.weekStart}
-                                                        className="border-b border-white/10 hover:bg-white/5 transition-colors"
-                                                    >
-                                                        <td className="py-3 px-4 text-white/90 font-medium">
-                                                            {formatWeekLabel(week.weekStart, week.weekEnd)}
-                                                        </td>
-                                                        <td className="py-3 px-4 text-center">
-                                                            <span className={`font-bold ${getGoalColorClass(trainingGoalMet)}`}>
-                                                                {week.trainingDays}/7
-                                                            </span>
-                                                            <span className="ml-2">
-                                                                {trainingGoalMet ? '✅' : '⚠️'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-3 px-4 text-center">
-                                                            <span className={`font-semibold ${getGoalColorClass(meditationGoalMet)}`}>
-                                                                {week.meditationSessions}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-3 px-4 text-center">
-                                                            <div className={`font-semibold ${getGoalColorClass(wakeGoalMet)}`}>
-                                                                {week.avgWakeTime}
-                                                            </div>
-                                                            <div className="text-white/50 text-xs">± {Math.round(week.wakeTimeStdDev)} min</div>
-                                                        </td>
-                                                        <td className="py-3 px-4 text-center">
-                                                            <div className={`font-semibold ${getGoalColorClass(workoutGoalMet)}`}>
-                                                                {week.avgWorkoutStartTime}
-                                                            </div>
-                                                            <div className="text-white/50 text-xs">± {Math.round(week.workoutStartStdDev)} min</div>
-                                                        </td>
-                                                        <td className="py-3 px-4 text-center">
-                                                            <div className={`font-semibold ${getGoalColorClass(sleepStartGoalMet)}`}>
-                                                                {week.avgSleepStartTime}
-                                                            </div>
-                                                            <div className="text-white/50 text-xs">± {Math.round(week.sleepStartStdDev)} min</div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </details>
-                        )}
-
-                        {/* Legend */}
-                        <div className="mt-6 pt-4 border-t border-white/10">
-                            <div className="flex flex-wrap gap-6 justify-center text-sm text-white/60">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-green-400">●</span>
-                                    <span>Goal Met</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-red-400">●</span>
-                                    <span>Goal Not Met</span>
-                                </div>
+                                            return (
+                                                <tr
+                                                    key={week.weekStart}
+                                                    className="border-b border-white/10 hover:bg-white/5 transition-colors"
+                                                >
+                                                    <td className="py-3 px-4 text-white/90 font-medium">
+                                                        {formatWeekLabel(week.weekStart, week.weekEnd)}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-center">
+                                                        <span className={`font-bold ${getGoalColorClass(trainingGoalMet)}`}>
+                                                            {week.trainingDays}/7
+                                                        </span>
+                                                        <span className="ml-2">
+                                                            {trainingGoalMet ? '✅' : '⚠️'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 px-4 text-center">
+                                                        <span className={`font-semibold ${getGoalColorClass(meditationGoalMet)}`}>
+                                                            {week.meditationSessions}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 px-4 text-center">
+                                                        <div className={`font-semibold ${getGoalColorClass(wakeGoalMet)}`}>
+                                                            {week.avgWakeTime}
+                                                        </div>
+                                                        <div className="text-white/50 text-xs">± {Math.round(week.wakeTimeStdDev)} min</div>
+                                                    </td>
+                                                    <td className="py-3 px-4 text-center">
+                                                        <div className={`font-semibold ${getGoalColorClass(workoutGoalMet)}`}>
+                                                            {week.avgWorkoutStartTime}
+                                                        </div>
+                                                        <div className="text-white/50 text-xs">± {Math.round(week.workoutStartStdDev)} min</div>
+                                                    </td>
+                                                    <td className="py-3 px-4 text-center">
+                                                        <div className={`font-semibold ${getGoalColorClass(sleepStartGoalMet)}`}>
+                                                            {week.avgSleepStartTime}
+                                                        </div>
+                                                        <div className="text-white/50 text-xs">± {Math.round(week.sleepStartStdDev)} min</div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
-                            <div className="mt-3 text-center text-sm text-white/60">
-                                <span className="text-white/80 font-semibold">Goals: </span>
-                                <span className="text-amber-400">5 training days</span>
-                                <span className="mx-1">•</span>
-                                <span className="text-purple-400">10 meditations</span>
-                                <span className="mx-1">•</span>
-                                <span className="text-cyan-400">8:00 (±20min) wake</span>
-                                <span className="mx-1">•</span>
-                                <span className="text-green-400">9:00 (±20min) workout</span>
-                                <span className="mx-1">•</span>
-                                <span className="text-indigo-400">12:30 AM (±30min) sleep</span>
+                        </details>
+                    )}
+
+                    {/* Legend */}
+                    <div className="mt-6 pt-4 border-t border-white/10">
+                        <div className="flex flex-wrap gap-6 justify-center text-sm text-white/60">
+                            <div className="flex items-center gap-2">
+                                <span className="text-green-400">●</span>
+                                <span>Goal Met</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-red-400">●</span>
+                                <span>Goal Not Met</span>
                             </div>
                         </div>
-                    </Card>
+                        <div className="mt-3 text-center text-sm text-white/60">
+                            <span className="text-white/80 font-semibold">Goals: </span>
+                            <span className="text-amber-400">5 training days</span>
+                            <span className="mx-1">•</span>
+                            <span className="text-purple-400">10 meditations</span>
+                            <span className="mx-1">•</span>
+                            <span className="text-cyan-400">8:00 (±20min) wake</span>
+                            <span className="mx-1">•</span>
+                            <span className="text-green-400">9:00 (±20min) workout</span>
+                            <span className="mx-1">•</span>
+                            <span className="text-indigo-400">12:30 AM (±30min) sleep</span>
+                        </div>
+                    </div>
+                </Card>
             )}
         </div>
     );
