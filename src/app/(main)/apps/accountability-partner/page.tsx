@@ -162,17 +162,43 @@ async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
 
 async function getWeeklyHabitsData() {
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-        const response = await fetch(`${baseUrl}/api/weekly-habits`, {
-            cache: 'no-store'
-        });
+        // Query database directly instead of using HTTP fetch
+        // This avoids issues with server-side fetching its own API routes
+        const { sql } = await import('@vercel/postgres');
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch weekly habits data');
-        }
+        const result = await sql`
+            SELECT
+                week_start_date,
+                week_end_date,
+                meditation_count,
+                workout_count,
+                avg_wake_hour,
+                std_wake_hour,
+                avg_workout_hour,
+                std_workout_hour,
+                avg_sleep_start_hour,
+                std_sleep_start_hour
+            FROM weekly_habits_summary
+            ORDER BY week_start_date ASC
+        `;
 
-        const result = await response.json();
-        return result.data || [];
+        // Transform the data for the frontend
+        const weeklyData = result.rows.map((row) => ({
+            weekStart: row.week_start_date,
+            weekEnd: row.week_end_date,
+            meditationCount: row.meditation_count || 0,
+            trainingDays: row.workout_count || 0,
+            avgWakeHour: row.avg_wake_hour || null,
+            stdWakeHour: row.std_wake_hour || null,
+            avgWorkoutHour: row.avg_workout_hour || null,
+            stdWorkoutHour: row.std_workout_hour || null,
+            avgSleepStartHour: row.avg_sleep_start_hour || null,
+            stdSleepStartHour: row.std_sleep_start_hour || null,
+        }));
+
+        console.log('Weekly habits data from DB:', weeklyData.length, 'weeks');
+
+        return weeklyData;
     } catch (error) {
         console.error('Error fetching weekly habits data:', error);
         return [];
