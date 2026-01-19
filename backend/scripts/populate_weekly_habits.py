@@ -337,20 +337,25 @@ async def populate_all_weeks(recalculate_all: bool = False):
 
             print(f"\n✅ Processed {weeks_processed} weeks, populated {weeks_with_data} weeks with data")
         else:
-            # Only process current week
+            # Process the PREVIOUS week (the one that just ended)
+            # This script runs on Sundays, so we want to capture the week that just finished
             current_date = datetime.now()
             week_start, _ = await get_week_bounds(current_date)
 
-            print(f"\n🔄 Processing current week ({week_start.date()})...")
+            # Go back to the previous week (the one that just ended)
+            previous_week_start = week_start - timedelta(days=7)
+            previous_week_end = previous_week_start + timedelta(days=6)
 
-            summary = await calculate_weekly_summary(db, week_start)
+            print(f"\n🔄 Processing last week ({previous_week_start.date()} to {previous_week_end.date()})...")
+
+            summary = await calculate_weekly_summary(db, previous_week_start)
             if summary:
                 await upsert_weekly_summary(db, summary)
                 print(f"  ✅ Week of {summary['week_start_date']}: "
                       f"{summary['meditation_count']} meditations, "
                       f"{summary['workout_count']} training days")
             else:
-                print("  ℹ️  No data available for current week yet")
+                print("  ℹ️  No data available for last week")
 
 
 async def display_recent_weeks(limit: int = 12):
