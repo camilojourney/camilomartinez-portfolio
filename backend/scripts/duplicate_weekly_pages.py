@@ -1,18 +1,113 @@
 #!/usr/bin/env python3
 """
-Duplicate all Notion pages from one week to create templates for new weeks
+Create weekly Notion pages from 9 consolidated identity templates
 
 This script:
-1. Fetches all pages from a source week (default: current week)
-2. Creates exact duplicates with new date ranges
-3. Preserves all properties: emojis, Goals, Systems, Constraints, Areas, etc.
-4. ONLY updates the Date field and clears Hours/Count fields for data to be filled
+1. Creates 9 identity-based pages with Pull motivation language
+2. Sets the date range for the new week
+3. Clears Hours/Count/Std fields for automation to fill
+
+The 9 consolidated identities:
+1. I am an athlete (Training count - Whoop)
+2. I train at the same time daily (Avg + Std - Whoop)
+3. I live in the present (Meditation count - Whoop)
+4. I wake at the same time daily (Avg + Std - Whoop)
+5. I sleep at the same time nightly (Avg + Std - Whoop)
+6. I close my day with intention (Manual)
+7. I am a focused builder (Manual)
+8. I protect my attention (Manual)
+9. I build by shipping (Manual)
 """
 import asyncio
 import os
 import requests
 from datetime import datetime, timedelta
 from typing import Optional
+
+# 9 Consolidated Identity Templates with Pull Motivation
+IDENTITY_TEMPLATES = [
+    {
+        "emoji": "🏋️",
+        "identity": "I am an athlete",
+        "goal": "Athletes show up — the sessions follow",
+        "system": "Training is my default, not my exception",
+        "metric": "Training sessions",
+        "metric_type": "Count",
+        "area": ["Health"],
+    },
+    {
+        "emoji": "⏰",
+        "identity": "I train at the same time daily",
+        "goal": "Same time, every day — that's just what I do",
+        "system": "Breakfast → bike → gym — it's automatic",
+        "metric": "Average workout time + consistency",
+        "metric_type": "Hours + Std",
+        "area": ["Health"],
+    },
+    {
+        "emoji": "🧘",
+        "identity": "I live in the present",
+        "goal": "Present people make space for stillness",
+        "system": "Two pauses per day to reset",
+        "metric": "Meditation sessions",
+        "metric_type": "Count",
+        "area": ["Health"],
+    },
+    {
+        "emoji": "🌅",
+        "identity": "I wake at the same time daily",
+        "goal": "Consistency builds a stable foundation",
+        "system": "My alarm is a promise I keep to myself",
+        "metric": "Average wake time + consistency",
+        "metric_type": "Hours + Std",
+        "area": ["Health"],
+    },
+    {
+        "emoji": "🌙",
+        "identity": "I sleep at the same time nightly",
+        "goal": "Sleep is preparation, not leftover time",
+        "system": "Evening ritual → lights out",
+        "metric": "Average sleep time + consistency",
+        "metric_type": "Hours + Std",
+        "area": ["Health"],
+    },
+    {
+        "emoji": "🌆",
+        "identity": "I close my day with intention",
+        "goal": "I end my day ready to recover",
+        "system": "Clean body, clean mind, clean cutoff",
+        "metric": "Days ended with intention",
+        "metric_type": "Count",
+        "area": ["Health"],
+    },
+    {
+        "emoji": "🎯",
+        "identity": "I am a focused builder",
+        "goal": "Focused builders create in long blocks",
+        "system": "One task, full attention — that's how I work",
+        "metric": "Deep work hours",
+        "metric_type": "Hours",
+        "area": ["Work"],
+    },
+    {
+        "emoji": "📵",
+        "identity": "I protect my attention",
+        "goal": "Distractions don't deserve my time",
+        "system": "My phone is a tool, not an escape",
+        "metric": "Screen time under limit",
+        "metric_type": "Count",
+        "area": ["Work"],
+    },
+    {
+        "emoji": "🚀",
+        "identity": "I build by shipping",
+        "goal": "Builders ship — planning alone is dreaming",
+        "system": "Done > perfect",
+        "metric": "Features/commits shipped",
+        "metric_type": "Count",
+        "area": ["Work"],
+    },
+]
 
 # Notion credentials from environment variables
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
@@ -48,15 +143,15 @@ def get_week_bounds(date: datetime) -> tuple[datetime, datetime]:
     return week_start, week_end
 
 
-def fetch_pages_for_week(week_start_date: str) -> list[dict]:
+def check_pages_exist_for_week(week_start_date: str) -> list[dict]:
     """
-    Fetch all pages from Notion database for a specific week
+    Check if pages already exist for a specific week
 
     Args:
         week_start_date: ISO format date string (YYYY-MM-DD) for Sunday
 
     Returns:
-        List of page objects from Notion API
+        List of existing page objects from Notion API
     """
     url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
     headers = {
@@ -83,14 +178,14 @@ def fetch_pages_for_week(week_start_date: str) -> list[dict]:
     return data.get("results", [])
 
 
-def duplicate_page(source_page: dict, new_week_start: str, new_week_end: str) -> bool:
+def create_page_from_template(template: dict, week_start: str, week_end: str) -> bool:
     """
-    Create a duplicate of a page with new date range
+    Create a new Notion page from an identity template
 
     Args:
-        source_page: Original page object from Notion API
-        new_week_start: New week start date (ISO format)
-        new_week_end: New week end date (ISO format)
+        template: Template dict with identity, goal, system, etc.
+        week_start: Week start date (ISO format)
+        week_end: Week end date (ISO format)
 
     Returns:
         True if successful, False otherwise
@@ -102,73 +197,50 @@ def duplicate_page(source_page: dict, new_week_start: str, new_week_end: str) ->
         "Notion-Version": "2022-06-28"
     }
 
-    # Get all properties from source page
-    source_props = source_page.get("properties", {})
-
-    # Build new properties - copy everything except Date, Hours, Count
-    new_properties = {}
-
-    # Copy Identity (title)
-    if "Identity" in source_props:
-        new_properties["Identity"] = source_props["Identity"]
-
-    # Copy Goal
-    if "Goal (Outcome)" in source_props:
-        new_properties["Goal (Outcome)"] = source_props["Goal (Outcome)"]
-
-    # Copy System
-    if "System (What I Do Repeatedly)" in source_props:
-        new_properties["System (What I Do Repeatedly)"] = source_props["System (What I Do Repeatedly)"]
-
-    # Copy Weekly Metric
-    if "Weekly Metric" in source_props:
-        new_properties["Weekly Metric"] = source_props["Weekly Metric"]
-
-    # Copy Constraints
-    if "Constraints / Environment (Friction Rules)" in source_props:
-        new_properties["Constraints / Environment (Friction Rules)"] = source_props["Constraints / Environment (Friction Rules)"]
-
-    # Copy Metric Type
-    if "Metric Type" in source_props:
-        new_properties["Metric Type"] = source_props["Metric Type"]
-
-    # Copy Area (multi-select)
-    if "Area" in source_props:
-        new_properties["Area"] = source_props["Area"]
-
-    # Copy YES / NO
-    if "YES / NO" in source_props:
-        new_properties["YES / NO"] = source_props["YES / NO"]
-
-    # Set NEW date range
-    new_properties["Date"] = {
-        "date": {
-            "start": new_week_start,
-            "end": new_week_end
-        }
-    }
-
-    # Clear Hours and Count fields (will be filled by automation)
-    new_properties["Hours"] = {
-        "rich_text": []
-    }
-
-    new_properties["Count"] = {
-        "rich_text": []
+    # Build properties from template
+    properties = {
+        # Identity (title field)
+        "Identity": {
+            "title": [{"text": {"content": template["identity"]}}]
+        },
+        # Goal
+        "Goal (Outcome)": {
+            "rich_text": [{"text": {"content": template["goal"]}}]
+        },
+        # System
+        "System (What I Do Repeatedly)": {
+            "rich_text": [{"text": {"content": template["system"]}}]
+        },
+        # Weekly Metric
+        "Weekly Metric": {
+            "rich_text": [{"text": {"content": template["metric"]}}]
+        },
+        # Metric Type
+        "Metric Type": {
+            "rich_text": [{"text": {"content": template["metric_type"]}}]
+        },
+        # Area (multi-select)
+        "Area": {
+            "multi_select": [{"name": area} for area in template["area"]]
+        },
+        # Date range
+        "Date": {
+            "date": {
+                "start": week_start,
+                "end": week_end
+            }
+        },
+        # Clear data fields (will be filled by automation or manually)
+        "Hours": {"rich_text": []},
+        "Count": {"rich_text": []},
     }
 
     # Build the page payload
     page_payload = {
         "parent": {"database_id": DATABASE_ID},
-        "properties": new_properties
+        "properties": properties,
+        "icon": {"type": "emoji", "emoji": template["emoji"]}
     }
-
-    # Copy emoji icon if it exists and is an emoji type
-    if "icon" in source_page and source_page["icon"]:
-        icon = source_page["icon"]
-        # Only copy if it's an emoji type, not a URL
-        if icon.get("type") == "emoji":
-            page_payload["icon"] = icon
 
     # Create the new page
     try:
@@ -186,90 +258,78 @@ async def main():
     """Main function"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Duplicate Notion pages for a new week")
+    parser = argparse.ArgumentParser(description="Create weekly Notion pages from identity templates")
     parser.add_argument(
         "--test",
         action="store_true",
-        help="Test mode: Use current week as template and create next week (for mid-week testing)"
+        help="Test mode: Create pages for next week instead of current week"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force creation even if pages already exist for the target week"
     )
     args = parser.parse_args()
 
     print("=" * 100)
-    print("📋 Duplicate Notion Pages for Current Week")
+    print("📋 Create Weekly Notion Pages from 9 Identity Templates")
     print("=" * 100)
 
-    # Determine which weeks to use
-    # On Sunday: "today's week" is the week that just started (has no data yet)
+    # Determine target week
     today = datetime.now()
     current_week_start, current_week_end = get_week_bounds(today)
 
     if args.test:
-        # Test mode: Use today's week as template, create future week
-        # Example: If today is Tuesday Jan 14 (in week Jan 11-17)
-        #   Template: Jan 11-17 (the week we're in)
-        #   Target: Jan 18-24 (next week)
-        print("\n⚠️  TEST MODE: Using current week as template")
-        template_week_start = current_week_start
-        template_week_end = current_week_end
+        # Test mode: Create pages for next week
+        print("\n⚠️  TEST MODE: Creating pages for next week")
         target_week_start = current_week_start + timedelta(days=7)
         target_week_end = current_week_end + timedelta(days=7)
     else:
-        # Production mode: Use completed week as template, create pages for new week
-        # Example: If today is Sunday Jan 18 (start of new week)
-        #   Template: Jan 11-17 (the week that just ended - has full 7 days of data)
-        #   Target: Jan 18-24 (the week that just started - needs new pages)
-        template_week_start = current_week_start - timedelta(days=7)
-        template_week_end = current_week_end - timedelta(days=7)
+        # Production mode: Create pages for the current week (the week that just started)
         target_week_start = current_week_start
         target_week_end = current_week_end
 
-    print(f"\n📅 Template week (completed): {template_week_start.date()} to {template_week_end.date()}")
-    print(f"📅 Creating pages for (new week): {target_week_start.date()} to {target_week_end.date()}")
+    print(f"\n📅 Creating pages for week: {target_week_start.date()} to {target_week_end.date()}")
 
-    # Fetch all pages from template week
-    print(f"\n1️⃣  Fetching template pages from template week...")
-    source_pages = fetch_pages_for_week(template_week_start.date().isoformat())
+    # Check if pages already exist for this week
+    print(f"\n1️⃣  Checking for existing pages...")
+    existing_pages = check_pages_exist_for_week(target_week_start.date().isoformat())
 
-    if not source_pages:
-        print(f"   ❌ No pages found for week {template_week_start.date()}")
-        print("   💡 Try specifying a different source week that has pages")
+    if existing_pages and not args.force:
+        print(f"   ⚠️  Found {len(existing_pages)} pages already exist for this week!")
+        print("   💡 Use --force to create anyway (will result in duplicates)")
         return
 
-    print(f"   ✅ Found {len(source_pages)} pages to duplicate")
+    if existing_pages:
+        print(f"   ⚠️  Found {len(existing_pages)} existing pages, but --force flag set")
+    else:
+        print("   ✅ No existing pages found")
 
-    # Duplicate each page for target week
-    print(f"\n2️⃣  Creating pages for target week...")
+    # Create pages from templates
+    print(f"\n2️⃣  Creating {len(IDENTITY_TEMPLATES)} identity pages...")
     success_count = 0
 
-    for i, page in enumerate(source_pages, 1):
-        props = page.get("properties", {})
-        icon = page.get("icon", {})
-        emoji = icon.get("emoji", "📄") if icon else "📄"
+    for i, template in enumerate(IDENTITY_TEMPLATES, 1):
+        print(f"\n   {i}/{len(IDENTITY_TEMPLATES)} {template['emoji']} {template['identity']}")
 
-        identity = props.get("Identity", {}).get("title", [])
-        title = identity[0].get("plain_text", "Untitled") if identity else "Untitled"
-
-        print(f"\n   {i}/{len(source_pages)} {emoji} {title}")
-
-        if duplicate_page(
-            page,
+        if create_page_from_template(
+            template,
             target_week_start.date().isoformat(),
             target_week_end.date().isoformat()
         ):
-            print(f"      ✅ Created duplicate")
+            print(f"      ✅ Created")
             success_count += 1
         else:
-            print(f"      ❌ Failed to create duplicate")
+            print(f"      ❌ Failed")
 
     print("\n" + "=" * 100)
-    print(f"✅ Successfully duplicated {success_count}/{len(source_pages)} pages")
-    print(f"📅 New pages created for week: {target_week_start.date()} to {target_week_end.date()}")
+    print(f"✅ Successfully created {success_count}/{len(IDENTITY_TEMPLATES)} identity pages")
+    print(f"📅 Pages created for week: {target_week_start.date()} to {target_week_end.date()}")
     print("=" * 100)
 
-    print("\n💡 Next steps:")
-    print("   1. Check your Notion database for the new pages")
-    print("   2. The GitHub Action will populate Hours/Count fields with Whoop data")
-    print("   3. Fill in your weekly review manually")
+    print("\n💡 What's next:")
+    print("   • 5 pages will be auto-filled by Whoop data (athlete, train time, present, wake time, sleep time)")
+    print("   • 4 pages need manual tracking (close day, focused builder, protect attention, build by shipping)")
 
 
 if __name__ == "__main__":

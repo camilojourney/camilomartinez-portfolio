@@ -4,8 +4,13 @@ Update existing Notion pages with weekly Whoop data
 
 This script:
 1. Gets the last completed week's data from PostgreSQL
-2. Finds existing Notion pages for that week
-3. Updates the 8 Whoop-related metrics in those pages
+2. Finds existing Notion pages for that week (by Identity name)
+3. Updates the 5 Whoop-related identities:
+   - I am an athlete → Count (training sessions)
+   - I live in the present → Count (meditation sessions)
+   - I train at the same time daily → Hours (avg) + Std (deviation)
+   - I wake at the same time daily → Hours (avg) + Std (deviation)
+   - I sleep at the same time nightly → Hours (avg) + Std (deviation)
 
 DO NOT create new pages - only update existing ones!
 """
@@ -122,16 +127,17 @@ async def main():
     print(f"1️⃣  Found {len(pages)} pages for this week")
     print()
 
-    # Map weekly metric keywords to data (8 metrics total)
-    updates = {
-        "Meditation sessions": ("Count", str(meditation)),
-        "Training sessions": ("Count", str(training)),
-        "Days within wake-time (average per week": ("Hours", avg_wake),
-        "Days within wake-time window (Average standard deviation)": ("Hours", f"{std_wake} min"),
-        "Average Time I start working out": ("Hours", avg_workout),
-        "Average std Time I start working out": ("Hours", f"{std_workout} min"),
-        "Average Time I start sleeping": ("Hours", avg_sleep),
-        "Average std Time I start sleeping": ("Hours", f"{std_sleep} min"),
+    # Map Identity names to their data updates
+    # New consolidated structure: 6 Whoop-related identities (3 merged pairs + 2 counts)
+    # Each identity maps to the fields that need updating
+    identity_updates = {
+        # Count-based metrics
+        "I am an athlete": {"Count": str(training)},
+        "I live in the present": {"Count": str(meditation)},
+        # Time-based metrics (merged avg + std into same page)
+        "I train at the same time daily": {"Hours": avg_workout, "Std": f"{std_workout} min"},
+        "I wake at the same time daily": {"Hours": avg_wake, "Std": f"{std_wake} min"},
+        "I sleep at the same time nightly": {"Hours": avg_sleep, "Std": f"{std_sleep} min"},
     }
 
     print("2️⃣  Updating Whoop metrics in Notion pages...")
@@ -139,42 +145,39 @@ async def main():
 
     updated_count = 0
     for page in pages:
-        weekly_metric_prop = page["properties"].get("Weekly Metric", {}).get("rich_text", [])
-        if not weekly_metric_prop:
+        # Get the Identity (title) of this page
+        identity_prop = page["properties"].get("Identity", {}).get("title", [])
+        if not identity_prop:
             continue
 
-        weekly_metric = weekly_metric_prop[0]["text"]["content"]
+        identity_name = identity_prop[0]["text"]["content"]
 
-        # Check if this page matches any of our Whoop metrics
-        for metric_name, (field, value) in updates.items():
-            if metric_name in weekly_metric:
-                # Update the page
-                update_url = f"https://api.notion.com/v1/pages/{page['id']}"
-                update_data = {
-                    "properties": {
-                        field: {"rich_text": [{"text": {"content": value}}]}
-                    }
-                }
+        # Check if this page matches any of our Whoop-related identities
+        if identity_name in identity_updates:
+            fields_to_update = identity_updates[identity_name]
 
-                resp = requests.patch(update_url, headers=headers, json=update_data)
-                if resp.status_code == 200:
-                    title = page["properties"]["Identity"]["title"][0]["text"]["content"]
-                    print(f"   ✅ {title}: {value}")
-                    updated_count += 1
-                else:
-                    print(f"   ❌ Failed to update: {resp.text[:100]}")
-                break
+            # Build the update payload with all fields for this identity
+            update_url = f"https://api.notion.com/v1/pages/{page['id']}"
+            properties = {}
+
+            for field, value in fields_to_update.items():
+                properties[field] = {"rich_text": [{"text": {"content": value}}]}
+
+            update_data = {"properties": properties}
+
+            resp = requests.patch(update_url, headers=headers, json=update_data)
+            if resp.status_code == 200:
+                values_str = ", ".join(f"{k}={v}" for k, v in fields_to_update.items())
+                print(f"   ✅ {identity_name}: {values_str}")
+                updated_count += 1
+            else:
+                print(f"   ❌ Failed to update {identity_name}: {resp.text[:100]}")
 
     print()
     print("=" * 80)
-    print(f"✅ Successfully updated {updated_count}/8 Whoop metrics in Notion")
+    print(f"✅ Successfully updated {updated_count}/5 Whoop-related identities in Notion")
     print("=" * 80)
     print()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
 
 
 if __name__ == "__main__":

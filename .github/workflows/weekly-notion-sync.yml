@@ -67,28 +67,40 @@ jobs:
           echo "📊 Calculating LAST week's habits data (week that just ended)..."
           uv run python scripts/populate_weekly_habits.py --show --limit 3
 
-      # Step 6: Create new Notion pages for this week
-      # Creates 8 new pages with weekly metrics (not updating existing pages)
-      - name: 📝 Create Notion pages for week
+      # Step 6: Update EXISTING Notion pages for last week with Whoop data
+      # These pages should already exist (created the previous Sunday)
+      - name: 📝 Update Notion pages with Whoop data
         env:
           # Database and Notion credentials
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: |
-          echo "📤 Creating new Notion pages..."
-          uv run python scripts/create_weekly_notion_pages.py
+          echo "📤 Updating existing Notion pages with last week's data..."
+          uv run python scripts/sync_weekly_to_notion.py
 
-      # Step 7: Report success
+      # Step 7: Create new empty template pages for the upcoming week
+      # Duplicates the previous week's pages (with Goals, Systems, Constraints)
+      # but clears the Hours/Count fields for new data
+      - name: 📋 Create template pages for new week
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: |
+          echo "📋 Creating template pages for the new week..."
+          uv run python scripts/duplicate_weekly_pages.py
+
+      # Step 9: Report success
       - name: ✅ Summary
         if: success()
         run: |
           echo "🎉 Weekly sync completed successfully!"
-          echo "✓ Whoop data updated"
-          echo "✓ Notion pages synced"
+          echo "✓ Whoop data updated in database"
+          echo "✓ Last week's Notion pages updated with data"
+          echo "✓ New week's template pages created"
           echo "📅 Check your Notion for this week's review"
 
-      # Step 8: Report failure
+      # Step 11: Report failure
       - name: ❌ Failure notification
         if: failure()
         run: |

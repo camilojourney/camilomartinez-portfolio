@@ -284,7 +284,7 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
                                     <tbody>
                                         <tr className="border-b border-white/10 bg-amber-500/10">
                                             <td className="py-3 px-4 text-white/90 font-semibold">
-                                            {isCompletedYear ? 'Year Average' : 'Year to Date'}
+                                                {isCompletedYear ? 'Year Average' : 'Year to Date'}
                                                 <span className="ml-2 text-amber-400 text-xs">({yearlyAverages.totalWeeks} weeks)</span>
                                             </td>
                                             <td className="py-3 px-4 text-center">
