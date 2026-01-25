@@ -31,6 +31,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I am an athlete",
         "goal": "Athletes show up — the sessions follow",
         "system": "Training is my default, not my exception",
+        "constraints": "Gym bag always ready; no excuses on low-energy days",
         "metric": "Training sessions",
         "metric_type": "Count",
         "area": ["Health"],
@@ -40,6 +41,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I train at the same time daily",
         "goal": "Same time, every day — that's just what I do",
         "system": "Breakfast → bike → gym — it's automatic",
+        "constraints": "No meetings before 11 AM",
         "metric": "Average workout time + consistency",
         "metric_type": "Hours + Std",
         "area": ["Health"],
@@ -49,6 +51,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I live in the present",
         "goal": "Present people make space for stillness",
         "system": "Two pauses per day to reset",
+        "constraints": "Phone off during meditation",
         "metric": "Meditation sessions",
         "metric_type": "Count",
         "area": ["Health"],
@@ -58,6 +61,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I wake at the same time daily",
         "goal": "Consistency builds a stable foundation",
         "system": "My alarm is a promise I keep to myself",
+        "constraints": "No screens after 11 PM",
         "metric": "Average wake time + consistency",
         "metric_type": "Hours + Std",
         "area": ["Health"],
@@ -67,6 +71,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I sleep at the same time nightly",
         "goal": "Sleep is preparation, not leftover time",
         "system": "Evening ritual → lights out",
+        "constraints": "Bedroom is for sleep only",
         "metric": "Average sleep time + consistency",
         "metric_type": "Hours + Std",
         "area": ["Health"],
@@ -76,6 +81,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I close my day with intention",
         "goal": "I end my day ready to recover",
         "system": "Clean body, clean mind, clean cutoff",
+        "constraints": "Shower before bed, no exceptions",
         "metric": "Days ended with intention",
         "metric_type": "Count",
         "area": ["Health"],
@@ -85,6 +91,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I am a focused builder",
         "goal": "Focused builders create in long blocks",
         "system": "One task, full attention — that's how I work",
+        "constraints": "Phone in another room during deep work",
         "metric": "Deep work hours",
         "metric_type": "Hours",
         "area": ["Work"],
@@ -94,6 +101,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I protect my attention",
         "goal": "Distractions don't deserve my time",
         "system": "My phone is a tool, not an escape",
+        "constraints": "No short-form apps on phone",
         "metric": "Screen time under limit",
         "metric_type": "Count",
         "area": ["Work"],
@@ -103,6 +111,7 @@ IDENTITY_TEMPLATES = [
         "identity": "I build by shipping",
         "goal": "Builders ship — planning alone is dreaming",
         "system": "Done > perfect",
+        "constraints": "Ship something every week, no matter how small",
         "metric": "Features/commits shipped",
         "metric_type": "Count",
         "area": ["Work"],
@@ -210,6 +219,10 @@ def create_page_from_template(template: dict, week_start: str, week_end: str) ->
         # System
         "System (What I Do Repeatedly)": {
             "rich_text": [{"text": {"content": template["system"]}}]
+        },
+        # Constraints
+        "Constraints": {
+            "rich_text": [{"text": {"content": template["constraints"]}}]
         },
         # Weekly Metric
         "Weekly Metric": {
