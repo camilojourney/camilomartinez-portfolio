@@ -1,0 +1,160 @@
+---
+title: "ETF vs Mutual Funds Analysis"
+author: "Juan Camilo Martinez Benavides"
+date: today
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    toc: true
+    toc-depth: 3
+    theme: darkly
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+  daemon: false
+  engine: jupyter
+jupyter:
+  kernelspec:
+    name: python3
+    display_name: Python 3
+    language: python
+---
+
+## Introduction
+
+This project aims to analyze and compare the performance of Exchange Traded Funds (ETFs) and Mutual Funds. We will explore their historical price data, various financial metrics, and identify top-performing funds over different time horizons.
+
+The analysis focuses on:
+- **Data Integrity**: Checking for missing values and data types.
+- **Performance Metrics**: Comparing returns over 5 and 10 years.
+- **Risk-Adjusted Returns**: Analyzing Sharpe Ratios to understand return per unit of risk.
+
+## Data Preparation
+
+First, we load the necessary libraries and the dataset. The data consists of zipped CSV files containing detailed information and historical prices for both ETFs and Mutual Funds.
+
+```{python}
+#| echo: true
+#| label: load-libraries-data
+
+import os
+import pandas as pd
+
+def load_data():
+    """Loads ETF and Mutual Fund datasets from zipped CSV files."""
+    try:
+        etfprices = pd.read_csv('ETF prices.csv.zip')
+        etfs_inf = pd.read_csv('ETFs.csv.zip')
+        
+        # Load and combine Mutual Fund price files
+        mutualfund1 = pd.read_csv('MutualFund prices - A-E.csv.zip')
+        mutualfund2 = pd.read_csv('MutualFund prices - F-K.csv.zip')
+        mutualfund3 = pd.read_csv('MutualFund prices - L-P.csv.zip')
+        mutualfund4 = pd.read_csv('MutualFund prices - Q-Z.csv.zip')
+        mutualfund_inf = pd.read_csv('MutualFunds.csv.zip')
+
+        mutual_fund_prices = pd.concat(
+            [mutualfund1, mutualfund2, mutualfund3, mutualfund4], 
+            ignore_index=True
+        )
+
+        return etfprices, etfs_inf, mutual_fund_prices, mutualfund_inf
+    except FileNotFoundError as e:
+        print(f"Data file not found: {e}")
+        return None, None, None, None
+    except Exception as e:
+        print(f"An error occurred loading data: {e}")
+        return None, None, None, None
+
+# Load the data
+etfprices, etfs_inf, mutual_fund_prices, mutualfund_inf = load_data()
+```
+
+## Data Cleaning and Overview
+
+Before diving into analysis, it's crucial to understand the structure of our data and clean it. We will remove duplicates and drop rows that are missing critical performance metrics (`fund_return_5years`, `fund_return_10years`, etc.) to ensure our ranking is accurate.
+
+```{python}
+#| echo: true
+#| label: data-cleaning
+
+def clean_values(df, columns_to_review):
+    """
+    Removes duplicates and drops rows with missing values 
+    in the specified critical columns.
+    """
+    if df is None: return None
+    
+    df_clean = df.copy()
+    df_clean.drop_duplicates(inplace=True)
+
+    # Check if columns exist before dropping
+    if all(col in df_clean.columns for col in columns_to_review):
+        df_clean.dropna(subset=columns_to_review, inplace=True)
+    else:
+        missing_cols = [col for col in columns_to_review if col not in df_clean.columns]
+        print(f"Warning: Missing columns in DataFrame: {missing_cols}")
+        
+    return df_clean
+
+def review_data_summary(df, name):
+    """Prints a brief summary of the dataset."""
+    if df is None: return
+    print(f"--- Review of {name} ---")
+    print(f"Shape: {df.shape}")
+    print(f"First 5 Rows:\n{df.head(2)}") # Showing only 2 rows for brevity
+    print("\n")
+
+# Columns critical for our analysis
+columns_to_analyze = [
+    'fund_symbol', 'fund_long_name', 'fund_category',
+    'fund_return_5years','fund_return_10years', 
+    'fund_sharpe_ratio_5years', 'fund_sharpe_ratio_10years'
+]
+
+# Clean the ETF data
+if etfs_inf is not None:
+    cleaned_etfs = clean_values(etfs_inf, columns_to_analyze)
+    review_data_summary(cleaned_etfs, "Cleaned ETFs")
+else:
+    cleaned_etfs = None
+```
+
+## Exploratory Data Analysis
+
+Now that we have clean data, let's explore the top performers. We will look at both raw returns and risk-adjusted returns (Sharpe Ratio).
+
+### Top 10 ETFs by Return
+
+Long-term returns are a key indicator of fund performance. Here are the top 10 ETFs based on their 10-year annual return.
+
+```{python}
+#| echo: true
+#| label: top-returns
+
+def get_top_funds(df, metric, n=10):
+    """Returns the top n funds based on a specific metric."""
+    if df is None: return None
+    return df.nlargest(n, metric)[['fund_long_name', 'fund_category', metric]]
+
+if cleaned_etfs is not None:
+    top_10y_return = get_top_funds(cleaned_etfs, 'fund_return_10years')
+    print("Top 10 ETFs by 10-Year Return:")
+    print(top_10y_return)
+```
+
+### Top 10 ETFs by Sharpe Ratio
+
+The Sharpe Ratio helps us understand which funds provided the best return for the variance (risk) they took. A higher Sharpe Ratio is generally better.
+
+```{python}
+#| echo: true
+#| label: top-sharpe
+
+if cleaned_etfs is not None:
+    top_5y_sharpe = get_top_funds(cleaned_etfs, 'fund_sharpe_ratio_5years')
+    print("Top 10 ETFs by 5-Year Sharpe Ratio:")
+    print(top_5y_sharpe)
+```

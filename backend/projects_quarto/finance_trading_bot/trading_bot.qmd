@@ -1,0 +1,135 @@
+---
+title: "Bitcoin Trading Bot Analysis"
+author: "Juan Camilo Martinez Benavides"
+date: today
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    toc: true
+    toc-depth: 3
+    theme: darkly
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+  daemon: false
+  engine: jupyter
+jupyter:
+  kernelspec:
+    name: python3
+    display_name: Python 3
+    language: python
+---
+
+## Introduction
+
+In the volatile world of cryptocurrency, informational advantages can be key. This project explores a trading bot strategy that combines **historical Bitcoin price data** with **news sentiment analysis**.
+
+The goal is to determine if news headlines (from major sources like Reuters, Guardian, and CNBC) can predict price movements and inform profitable trading decisions.
+
+## Data Acquisition
+
+We utilize several datasets for this analysis:
+1.  **Bitcoin Historical Data**: Daily price action (Open, High, Low, Close, Volume).
+2.  **News Headlines**: Aggregated headlines from The Guardian, Reuters, and CNBC.
+
+```{python}
+#| echo: true
+#| label: setup-and-load
+
+import pandas as pd
+import os
+
+def load_data():
+    """Loads historical BTC data and news headlines if available."""
+    data = {}
+    
+    # Load BTC Data
+    if os.path.exists('BTC-USD_1d_Bitcoin_20100101_20240613.csv'):
+        data['btc'] = pd.read_csv(
+            'BTC-USD_1d_Bitcoin_20100101_20240613.csv', 
+            parse_dates=['Date']
+        )
+    else:
+        print("Warning: BTC data file not found.")
+        data['btc'] = None
+
+    # Load News Data
+    news_files = {
+        'guardian': 'guardian_headlines.csv',
+        'reuters': 'reuters_headlines.csv',
+        'cnbc': 'cnbc_headlines.csv'
+    }
+    
+    for source, filename in news_files.items():
+        if os.path.exists(filename):
+            data[source] = pd.read_csv(filename)
+        else:
+            data[source] = None
+            print(f"Warning: {filename} not found.")
+            
+    return data
+
+# Load all datasets
+datasets = load_data()
+btc_data = datasets['btc']
+```
+
+## Data overview
+
+Let's examine the structure of our Bitcoin historical data.
+
+```{python}
+#| echo: true
+#| label: view-btc
+
+if btc_data is not None:
+    print(f"BTC Data Range: {btc_data['Date'].min()} to {btc_data['Date'].max()}")
+    print(btc_data.head())
+```
+
+## News Data Standardization
+
+News data often comes in varying formats. We need to standardize column names (e.g., specific `Date` and `Headline` columns) to merge them effectively later.
+
+```{python}
+#| echo: true
+#| label: standardize-news
+
+def standardize_news(df, source_name):
+    if df is None: return None
+    
+    df_clean = df.copy()
+    
+    # Mapping for standardization based on source inspection
+    if source_name == 'guardian':
+        df_clean.rename(columns={'Time': 'date', 'Headlines': 'headline'}, inplace=True)
+        df_clean['date'] = pd.to_datetime(df_clean['date'], format='%d-%b-%y', errors='coerce')
+        
+    elif source_name == 'reuters':
+        df_clean.rename(columns={'Time': 'date', 'Headlines': 'headline'}, inplace=True)
+        df_clean['date'] = pd.to_datetime(df_clean['date'], format='%b %d %Y', errors='coerce')
+        
+    elif source_name == 'cnbc':
+        # CNBC often has different formats, assuming 'Time' and 'Headlines' exist
+        df_clean.rename(columns={'Time': 'date', 'Headlines': 'headline'}, inplace=True)
+        # Add specific parsing logic for CNBC if needed
+    
+    return df_clean
+
+guardian_clean = standardize_news(datasets['guardian'], 'guardian')
+reuters_clean = standardize_news(datasets['reuters'], 'reuters')
+cnbc_clean = standardize_news(datasets['cnbc'], 'cnbc')
+
+if guardian_clean is not None:
+    print("Guardian Data (Standardized):")
+    print(guardian_clean.head(2))
+```
+
+## Strategic Outlook
+
+With standardized price and news data, the next steps in this project (implemented in future iterations) would involve:
+1.  **Sentiment Scoring**: Using NLTK or TextBlob to assign sentiment scores to headlines.
+2.  **Feature Engineering**: Merging sentiment scores with daily price data.
+3.  **Model Training**: Training a classifier (e.g., Random Forest, LSTM) to predict price direction based on sentiment.

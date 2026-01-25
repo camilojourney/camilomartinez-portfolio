@@ -1,0 +1,64 @@
+---
+title: "Walkability Analysis"
+author: "Juan Camilo Martinez Benavides"
+date: today
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    toc: true
+    toc-depth: 3
+    theme: darkly
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+  daemon: false
+  engine: jupyter
+jupyter:
+  kernelspec:
+    name: python3
+    display_name: Python 3
+    language: python
+---
+
+## Introduction
+
+Urban planning and public health are increasingly focused on **walkability**—a measure of how friendly an area is to walking. Walkable communities are associated with better health outcomes, lower environmental impact, and stronger local economies.
+
+This project analyzes the `WalkabilityIndex` dataset to identify patterns in urban accessibility.
+
+## Data Overview
+
+The core dataset for this project, `WalkabilityIndex.zip`, contains spatial data and metrics regarding:
+- **Intersection Density**: Connectivity of the street network.
+- **Proximity to Transit**: Distance to public transportation hubs.
+- **Land Use Mix**: Diversity of residential and commercial zones.
+
+```{python}
+#| echo: true
+#| label: setup
+
+import os
+import zipfile
+
+# Check for the dataset
+dataset_path = 'WalkabilityIndex.zip'
+
+if os.path.exists(dataset_path):
+    print(f"Dataset found: {dataset_path}")
+    print(f"Size: {os.path.getsize(dataset_path) / (1024*1024):.2f} MB")
+    
+    # Placeholder for extraction and analysis logic
+    # with zipfile.ZipFile(dataset_path, 'r') as zip_ref:
+    #     zip_ref.extractall("data")
+else:
+    print("Dataset not found. Please ensure 'WalkabilityIndex.zip' is in the project directory.")
+```
+
+## Analysis Goals
+
+Future steps for this analysis include:
+1.  **Unzipping and Loading**: Extracting the shapefiles or CSVs from the archive.
+2.  **Geospatial Visualization**: Mapping walkability scores across different regions.
+3.  **Correlation Analysis**: helping to understand factors that contribute most to a high walkability score.

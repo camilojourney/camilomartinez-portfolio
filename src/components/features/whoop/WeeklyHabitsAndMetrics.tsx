@@ -45,12 +45,6 @@ export function WeeklyHabitsAndMetrics({ habitsData, metricsData, selectedYear }
             {/* 2. Charts - SECOND */}
             <div className="py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-white">Weekly Goals Tracking</h2>
-                        <p className="mt-4 text-lg text-white/70">
-                            Track your progress against weekly goals for training, meditation, wake time, and workout timing.
-                        </p>
-                    </div>
                     <WeeklyHabitsChart data={habitsData} selectedYear={selectedYear} />
                 </div>
             </div>

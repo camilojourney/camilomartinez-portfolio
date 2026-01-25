@@ -17,9 +17,9 @@ execute:
   engine: jupyter
 jupyter:
   kernelspec:
-    name: hrv-research
+    name: python3
     language: python
-    display_name: HRV Research (Python 3.14)
+    display_name: Python 3
 ---
 
 # Project Overview

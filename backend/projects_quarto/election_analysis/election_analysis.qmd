@@ -1,0 +1,1012 @@
+---
+title: "Mini-Project #03: Do Proportional Electoral College Allocations Yield a More Representative Presidency?"
+author: "Juan Camilo Martinez Benavides"
+date: today
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    toc: true
+    toc-depth: 3
+    theme: darkly
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+---
+
+## Executive Summary
+
+This project explores the United States Electoral College system and investigates whether alternative allocation methods for electoral votes would result in outcomes more representative of the popular vote. Using historical election data, we simulate various scenarios—including proportional allocation—to assess their impact on presidential election results (1976–2020).
+
+## Introduction
+
+In the United States, the President isn’t chosen directly by popular vote. Instead, the winner is determined through the [Electoral College](https://en.wikipedia.org/wiki/United_States_Electoral_College). With the 2024 Presidential election drawing near, we ask: **Would a different allocation method for electoral votes yield results that better reflect the national popular vote?**
+
+This project dives into this question, analyzing historical congressional and presidential election data from [MIT’s Election Data Science Lab](https://electionlab.mit.edu/) and [UCLA Congressional Boundary Files](https://cdmaps.polisci.ucla.edu/). By exploring electoral vote distributions under different allocation rules, we aim to see how alternate methods might change election results.
+
+------------------------------------------------------------------------
+
+## Background
+
+### How the Electoral College Works
+
+The U.S. Constitution sets the foundation of the Electoral College, granting each state a number of electors equal to its congressional delegation: the number of House representatives plus two senators. Most states follow a **winner-take-all** rule, where the state’s popular vote winner claims all electoral votes. However, states like Nebraska and Maine use a **district-wide allocation** method, awarding votes by individual district results, with two additional votes for the statewide popular winner.
+
+In this analysis, we’ll test four allocation strategies to see their potential impact: 1. **State-Wide Winner-Take-All** 2. **District-Wide Winner-Take-All with At-Large Votes** 3. **State-Wide Proportional** 4. **National Proportional**
+
+------------------------------------------------------------------------
+
+## Data Collection
+
+### Setting Up the Libraries and Data
+
+We start by loading the necessary `R` packages for data manipulation and visualization.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+#| code-fold: true
+#| code-summary: "Show the code"
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(sf)
+library(stringr)
+library(statebins)
+library(scales)
+library(usmap)
+library(gt)
+library(DT)
+library(gganimate)
+library(maps)
+library(gifski)
+
+```
+
+## Data Sources and Import
+
+The project uses two primary datasets:
+
+U.S. House Election Data (1976–2022): Details vote counts from congressional races across the 50 states. U.S. Presidential Election Data (1976–2020): Provides state-level vote counts for presidential elections.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+DATA_HOUSE <- read_csv("1976-2022-house.csv") |> filter(!is.na(party))
+DATA_PRESIDENT <- read_csv("1976-2020-president.csv") |>  filter(!is.na(candidate) & !is.na(party_detailed))
+```
+
+Additionally, we download congressional boundary files for spatial analysis, covering elections from 1976 to 2012 from UCLA and from 2013 to 2023 from the U.S. Census Bureau.
+
+First, we download the UCLA congressional boundary files.
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+congress_shapefiles_ucla <- function(start = 95, end = 112) {
+  BASE_URL <- "https://cdmaps.polisci.ucla.edu/shp/districts"
+  
+  # Create directory if it doesn't exist
+  target_dir <- "data/congress_shapefiles"
+  if (!dir.exists(target_dir)) {
+    dir.create(target_dir, recursive = TRUE)
+  }
+  
+  for (congress in start:end) {
+    congress_str <- sprintf("%03d", congress)
+    file_url <- paste0(BASE_URL, congress_str, ".zip")
+    dest_file <- file.path(target_dir, paste0("congress_", congress_str, "_shapefile.zip"))
+    
+    # Avoid re-downloading
+    if (!file.exists(dest_file)) {
+      tryCatch({
+        download.file(file_url, destfile = dest_file, mode = "wb")
+        # Check if the file is downloaded successfully
+        if (file.size(dest_file) > 0) {
+          message("Successfully downloaded shapefile for Congress ", congress_str)
+        } else {
+          file.remove(dest_file)
+          message("Download failed for Congress ", congress_str, ". File was empty and deleted.")
+        }
+      }, error = function(e) {
+        message("Error downloading for Congress ", congress_str, ": ", e)
+      })
+    } else {
+      message("File for Congress ", congress_str, " already exists. Skipping download.")
+    }
+  }
+}
+
+#function
+congress_shapefiles_ucla(93,112)
+```
+
+Now, we download the U.S. Census Bureau congressional boundary files.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+# Define function to download, unzip, and read a shapefile
+download_and_read_shapefile <- function(year, congress_num) {
+  # Set base URL and target directory
+  base_url <- sprintf("https://www2.census.gov/geo/tiger/TIGER%d/CD/", year)
+  target_dir <- "data/congress_shapefiles"
+  
+  # Create directory if it doesn't exist
+  if (!dir.exists(target_dir)) dir.create(target_dir, recursive = TRUE)
+  
+  # Construct filename and paths
+  file_name <- sprintf("tl_%d_us_cd%d", year, congress_num)
+  zip_file <- file.path(target_dir, paste0(file_name, ".zip"))
+  unzip_dir <- file.path(target_dir, file_name)
+  shapefile_path <- file.path(unzip_dir, paste0(file_name, ".shp"))
+  
+  # Download the file if it doesn't exist
+  if (!file.exists(zip_file)) {
+    file_url <- paste0(base_url, file_name, ".zip")
+    tryCatch({
+      download.file(file_url, destfile = zip_file, mode = "wb")
+      if (file.size(zip_file) > 0) {
+        message("Downloaded: ", file_name, " for year ", year)
+      } else {
+        file.remove(zip_file)
+        message("Download failed for ", file_name, ". Empty file removed.")
+      }
+    }, error = function(e) {
+      message("Error downloading ", file_name, ": ", e$message)
+    })
+  }
+  
+  # Unzip and read the shapefile if it hasn’t been unzipped already
+  if (file.exists(zip_file) && !file.exists(shapefile_path)) {
+    unzip(zipfile = zip_file, exdir = unzip_dir)
+  }
+  
+  # Load the shapefile if it exists
+  if (file.exists(shapefile_path)) {
+    return(read_sf(shapefile_path))
+  } else {
+    message("Shapefile not found for ", file_name, " in year ", year)
+    return(NULL)
+  }
+}
+# Iterate over years and download shapefiles based on Congress sessions
+base_year <- 2022
+for (i in 0:10) {
+  year <- base_year - i
+  
+  # Determine Congress number based on the year
+  congress <- if (year >= 2018) 116
+              else if (year >= 2016) 115
+              else if (year >= 2014) 114
+              else if (year == 2013) 113
+              else if (year == 2012) 112
+              else NA
+  
+  if (!is.na(congress)) {
+    district_name <- sprintf("tl_%d_us_cd%d", year, congress)
+    
+    # Download and read shapefile
+    district_data <- download_and_read_shapefile(year, congress)
+    
+    # Assign the data to a unique variable in the global environment
+    if (!is.null(district_data)) {
+      assign(district_name, district_data, envir = .GlobalEnv)
+    }
+  } else {
+    message("Congress data not available for year ", year)
+  }
+}
+```
+
+### Initial Exploration of Vote Count Data
+
+Analyze Seat Gains and Losses in the U.S. House (1976-2022) This code calculates which states gained or lost the most seats in the House of Representatives between 1976 and 2022.
+
+```{r}
+
+# Filter House data for relevant years and calculate seat counts
+house_seats_over_time <- DATA_HOUSE |>
+  filter(year %in% c(1976, 2022)) |>
+  distinct(year, state, district) |>
+  group_by(year, state) |>
+  summarise(total_seats = n(), .groups = "drop")
+
+# Calculate seat changes from 1976 to 2022
+seat_changes <- house_seats_over_time |>
+  pivot_wider(names_from = year, values_from = total_seats, names_prefix = "year_") |>
+  mutate(seat_change = year_2022 - year_1976) |>
+  arrange(desc(seat_change))
+
+# Identify top 5 states with highest seat gains and losses
+top_gained_states <- seat_changes |> slice_max(seat_change, n = 5)
+top_lost_states <- seat_changes |> slice_min(seat_change, n = 5)
+
+# Plot top gained seats
+plot_seat_gains <- ggplot(top_gained_states, aes(x = reorder(state, seat_change), y = seat_change, fill = seat_change)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 5 States with Seat Gains (1976-2022)",
+       x = "State",
+       y = "Number of Seats Gained") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  theme_minimal()
+
+# Plot top lost seats
+plot_seat_losses <- ggplot(top_lost_states, aes(x = reorder(state, seat_change), y = seat_change, fill = -seat_change)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 5 States with Seat Losses (1976-2022)",
+       x = "State",
+       y = "Number of Seats Lost") +
+  scale_fill_gradient(low = "lightcoral", high = "darkred") +
+  theme_minimal()
+
+# Display both plots
+list(plot_seat_gains, plot_seat_losses)
+
+
+```
+
+As we can see in this graph, the states that gained the most seats are Texas, Florida, California, Arizona, and Georgia. On the other hand, the states that lost the most seats are New York, Ohio, Pennsylvania, Illinois, Ohio, and Michigan. The following table explains the population growth between 1976 to 2022 shifts are the main reason for these changes.
+
+| Location         | Growth Percentage |
+|------------------|-------------------|
+| **Arizona**      | 192.0%            |
+| **Florida**      | 161.9%            |
+| **Texas**        | 145.9%            |
+| **Georgia**      | 125.0%            |
+| **California**   | 77.3%             |
+| **USA**          | 52.8%             |
+| **Illinois**     | 12.5%             |
+| **Pennsylvania** | 10.2%             |
+| **New York**     | 10.1%             |
+| **Ohio**         | 9.3%              |
+| **Michigan**     | 8.1%              |
+
+We see clearly that the USA falls in the middle of the list, while the states that lost the most seats appear at the bottom.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+# Filter for New York State and relevant House races
+ny_house_data <- DATA_HOUSE |>
+  filter(state == "NEW YORK", office == "US HOUSE")
+
+# Calculate total votes (with fusion) and major party votes (without fusion)
+fusion_analysis <- ny_house_data |>
+  mutate(is_major_party = party %in% c("DEMOCRAT", "REPUBLICAN")) |>
+  group_by(year, district, candidate) |>
+  summarise(
+    total_votes_all_lines = sum(candidatevotes, na.rm = TRUE),
+    major_party_votes = sum(candidatevotes[is_major_party], na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Determine winners by both fusion and non-fusion scenarios
+winners_fusion <- fusion_analysis |>
+  group_by(year, district) |>
+  filter(total_votes_all_lines == max(total_votes_all_lines)) |>
+  select(year, district, candidate, total_votes_all_lines) |>
+  rename(fusion_winner = candidate, fusion_votes = total_votes_all_lines)|>
+  ungroup()
+
+winners_nonfusion <- fusion_analysis |>
+  group_by(year, district) |>
+  filter(major_party_votes == max(major_party_votes)) |>
+  select(year, district, candidate, major_party_votes) |>
+  rename(nonfusion_winner = candidate, nonfusion_votes = major_party_votes) |>
+  ungroup()
+
+# Find elections where fusion changed the winner
+election_outcomes <- winners_fusion |>
+  inner_join(winners_nonfusion, by = c("year", "district")) |>
+  filter(fusion_winner != nonfusion_winner) |>
+  arrange(desc(year))
+  
+
+datatable(
+  election_outcomes,
+  options = list(
+    pageLength = 10,         # Rows per page
+    autoWidth = TRUE,        # Adjust columns automatically
+    dom = 'tip',             # Only show table, info, and pagination
+    lengthMenu = c(5, 10, 15, 20)  # Options for rows per page
+  ),
+  rownames = FALSE           # Hide row names
+)
+
+
+```
+
+As we can see, fusion voting can be a deciding factor in elections. The table demonstrates that fusion voting increases the likelihood of being elected by enabling candidates to gather votes from multiple party lines. This consolidates support in a way that would not be possible without fusion, giving fusion candidates a strategic advantage.
+
+### Analyzing Presidential vs. Congressional Vote Patterns Across Parties
+
+This analysis explores whether presidential candidates tend to run ahead of or behind their congressional counterparts in the same state. Specifically, we’re investigating if Democratic and Republican presidential candidates receive more votes in a given state than all congressional candidates from their party in that same state.
+
+The following code will compare these vote counts, identifying instances where presidential candidates either outperformed ("ahead") or underperformed ("behind") their co-partisans. This will also help us understand if this trend varies over time, across states, or between parties, providing insights into the relative popularity of presidential candidates within each party.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+# Aggregate Democratic and Republican presidential votes by state and year
+presidential_votes <- DATA_PRESIDENT |>
+  filter(office == "US PRESIDENT", party_simplified %in% c("DEMOCRAT", "REPUBLICAN")) |>
+  group_by(year, state, party_simplified) |>
+  summarise(total_pres_votes = sum(candidatevotes, na.rm = TRUE), .groups = "drop")
+
+# Aggregate Democratic and Republican congressional votes by state and year
+congressional_votes <- DATA_HOUSE |>
+  filter(office == "US HOUSE", party %in% c("DEMOCRAT", "REPUBLICAN")) |>
+  group_by(year, state, party) |>
+  summarise(total_congress_votes = sum(candidatevotes, na.rm = TRUE), .groups = "drop") |>
+  rename(party_simplified = party)
+
+# Merge the presidential and congressional vote data
+vote_comparison <- presidential_votes |>
+  inner_join(congressional_votes, by = c("year", "state", "party_simplified")) |>
+  mutate(
+    vote_difference = total_pres_votes - total_congress_votes,
+    ran_ahead = ifelse(vote_difference > 0, "Ahead", "Behind")
+  )
+
+# Additional Visualization: Calculate the average vote difference per year across all states
+avg_vote_diff <- vote_comparison |>
+  group_by(year, party_simplified) |>
+  summarise(avg_vote_difference = mean(vote_difference, na.rm = TRUE), .groups = "drop")
+
+# Line chart for average vote difference over time
+ggplot(avg_vote_diff, aes(x = year, y = avg_vote_difference, color = party_simplified)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "Average Vote Difference Between Presidential and Congressional Candidates",
+    subtitle = "Across All States, by Party (1976 - 2020)",
+    x = "Year",
+    y = "Average Vote Difference (Presidential - Congressional)",
+    color = "Party"
+  ) +
+  scale_color_manual(values = c("DEMOCRAT" = "blue", "REPUBLICAN" = "red")) +
+
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+As we can see in the image, the average vote difference between presidential and congressional candidates has fluctuated over the years. On this, we can see a major fluctuation in the Republican party, what indicate that the presidential candidate has a major influence on votes than the congressional candidates. For Democrats, the difference is not that big, but still, the presidential candidate has a major influence on votes than the congressional candidates.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+# Summary of total instances where presidential candidates ran ahead or behind, grouped by party
+party_summary_stats <- vote_comparison |>
+  group_by(party_simplified) |>
+  summarise(
+    total_ahead = sum(ran_ahead == "Ahead"),
+    total_behind = sum(ran_ahead == "Behind"),
+    Difference = total_ahead - total_behind,  # Calculate the variance between ahead and behind
+    .groups = "drop"
+  )
+
+# Display the summary table
+party_summary_stats |>
+  gt() |>
+  tab_header(
+    title = "Summary of Presidential Candidates Running Ahead or Behind Congressional Candidates",
+    subtitle = "Total Instances by Party (1976-2020)"
+  ) |>
+  cols_label(
+    party_simplified = "Party",
+    total_ahead = "Total States (Ahead)",
+    total_behind = "Total States (Behind)",
+    Difference = "Difference (Ahead - Behind)"
+  )
+```
+
+Finally, we can observe the difference between the number of states where the presidential candidate ran ahead or behind their congressional counterparts. The table shows that both Democratic and Republican presidential candidates have run ahead more than behind, however, Republicans have a higher difference between the two categories. This indicates that Republican presidential candidates tend to outperform their congressional counterparts more frequently than Democratic candidates.
+
+### Importing and Plotting Shapefile Data
+
+The shapefiles we downloaded are provided in zip archives containing several files, but we only need the .shp file from each archive. In this section, we’ll walk through extracting the .shp file, loading it into R, and creating a plot from the data. The main tool we’ll use is the sf package, specifically the read_sf() function, which allows us to read shapefiles directly into R. Below, I’ll demonstrate how this process works.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+library(ggplot2)
+library(sf)
+
+if(!file.exists("nyc_borough_boundaries.zip")){
+    download.file("https://data.cityofnewyork.us/api/geospatial/tqmj-j8zm?method=export&format=Shapefile", 
+              destfile="nyc_borough_boundaries.zip")
+}
+
+##-
+td <- tempdir(); 
+zip_contents <- unzip("nyc_borough_boundaries.zip", 
+                      exdir = td)
+    
+fname_shp <- zip_contents[grepl("shp$", zip_contents)]
+nyc_sf <- read_sf(fname_shp)
+
+```
+
+With the following code, we can plot the shapefile data to visualize the boundaries of New York City boroughs.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+read_shp_from_zip <- function(zip_file) {
+  files_in_zip <- unzip(zip_file, list = TRUE)
+  
+  shp_file <- files_in_zip$Name[grepl("\\.shp$", files_in_zip$Name)]
+  
+  if (length(shp_file) == 1) {
+    unzip(zip_file, files = shp_file, exdir = tempdir())
+    
+    shp_path <- file.path(tempdir(), shp_file)
+    
+    shape_data <- read_sf(shp_path)
+    
+    return(shape_data)
+  } else {
+    message("No .shp file found in the provided zip archive.")
+    return(NULL)
+  }
+}
+
+```
+
+Now we plot the shapefile data to visualize the boundaries of New York City boroughs.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+ggplot(nyc_sf, 
+       aes(geometry=geometry)) + 
+    geom_sf()
+
+```
+
+Also we can plot the shapefile data with a fill color to visualize the boundaries of New York City boroughs.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+ggplot(nyc_sf, 
+       aes(geometry=geometry, 
+           fill = shape_area)) + 
+    geom_sf()
+```
+
+### Electoral College Results in 2000
+
+In this section, we will create a choropleth map to visualize the results of the 2000 U.S. Presidential Election. The map will display the winning party in each state, highlighting the electoral college winner between George W. Bush and Al Gore.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+
+# Step 1: Prepare Election Data
+election_2000 <- DATA_PRESIDENT |>
+  filter(year == 2000, office == "US PRESIDENT") |>
+  group_by(state) |>
+  slice_max(order_by = candidatevotes, n = 1) |>
+  ungroup()
+
+# Step 2: Assign Winning Party
+election_2000 <- election_2000 |>
+  mutate(
+    party_winner = ifelse(party_simplified == "REPUBLICAN", "Republican", "Democrat"),
+    state = tolower(state)
+  )
+
+# Step 3: Define Electoral College Votes (EC)
+ec_votes <- data.frame(
+  state_po = c("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA",
+               "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM",
+               "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA",
+               "WV", "WI", "WY"),
+  EC = c(9, 3, 8, 6, 54, 8, 8, 3, 3, 25, 13, 4, 4, 22, 12, 7, 6, 8, 9, 4, 10, 12, 18, 10, 7, 11, 3, 5, 4, 4, 15, 5,
+         33, 14, 3, 21, 8, 7, 23, 4, 8, 3, 11, 32, 5, 3, 13, 11, 5, 11, 3)
+)
+
+# Step 4: Merge EC into election data
+election_2000 <- election_2000 |>
+  left_join(ec_votes, by = "state_po")
+
+
+# Step 5: Prepare Map Data
+us_map <- map_data("state") |>
+  mutate(region = tolower(region))
+
+# Step 6: Merge election data with map data
+map_data_with_results <- us_map |>
+  left_join(election_2000, by = c("region" = "state"))
+
+# Step 7: Calculate State Centers for Labels
+state_centers <- map_data_with_results |>
+  group_by(region) |>
+  summarize(
+    long_center = mean(range(long, na.rm = TRUE)),
+    lat_center = mean(range(lat, na.rm = TRUE)),
+    state_po = first(state_po),
+    EC = first(EC)
+  ) |>
+  ungroup()
+
+# Step 8: Define Offset Labels for Northeastern States
+northeast_labels <- data.frame(
+  state_po = c("NH", "VT", "MA", "RI", "CT", "NJ", "DE", "MD", "DC"),
+  long_offset = c(5, 4, 7, 6, 5, 6, 5, 6, 4),
+  lat_offset = c(2, 1, -1, 0, -2, -1, -1, -1, -2)
+)
+
+# Join offset labels with state centers to add adjusted coordinates
+state_centers <- state_centers |>
+  left_join(northeast_labels, by = "state_po") |>
+  mutate(
+    long_center_adjusted = ifelse(!is.na(long_offset), long_center + long_offset, long_center),
+    lat_center_adjusted = ifelse(!is.na(lat_offset), lat_center + lat_offset, lat_center)
+  )
+
+# Prepare connector line data for northeastern states
+northeast_connectors <- state_centers |>
+  filter(!is.na(long_offset) & !is.na(lat_offset))
+
+# Step 9: Plot the Map with Insets and Connectors
+ggplot(map_data_with_results) +
+  # Mainland US
+  geom_polygon(aes(x = long, y = lat, group = group, fill = party_winner), color = "white") +
+  # Alaska inset
+  geom_polygon(data = subset(map_data_with_results, region == "alaska"),
+               aes(x = long - 35, y = lat + 10, group = group, fill = party_winner), color = "white") +
+  # Hawaii inset
+  geom_polygon(data = subset(map_data_with_results, region == "hawaii"),
+               aes(x = long + 50, y = lat - 5, group = group, fill = party_winner), color = "white") +
+  # Party color scale
+  scale_fill_manual(
+    values = c("Democrat" = "blue", "Republican" = "red"),
+    name = "2000 Election Winner",
+    labels = c("Democrat" = "Gore", "Republican" = "Bush"),
+    na.value = "grey"
+  ) +
+  # Labels for each state with offset adjustments for northeastern states
+  geom_text(
+    data = state_centers,
+    aes(x = long_center_adjusted, y = lat_center_adjusted, label = paste(state_po, EC)),
+    color = "black",
+    size = 3,
+    fontface = "bold"
+  ) +
+  # Connector lines for northeastern states
+  geom_segment(data = northeast_connectors, 
+               aes(x = long_center, y = lat_center, xend = long_center_adjusted, yend = lat_center_adjusted), 
+               color = "black", linetype = "solid") +
+  # Map labels and theme
+  labs(
+    title = "2000 Presidential Election Results by State",
+    subtitle = "Bush vs. Gore",
+    caption = "Data Source: MIT Election Data Science Lab"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5, size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12)
+  )
+
+```
+
+Now we can see a clear picture of how the 2000 U.S. Presidential Election played out across the country. The map shows the winning party in each state, highlighting the electoral college winner between George W. Bush and Al Gore. This visualization provides a snapshot of the election results and the distribution of electoral votes across the United States.
+
+### Animated Map of U.S. Presidential Election Results (1976-2020)
+
+After this we want to visualize the results of all the U.S. Presidential Elections from 1976 to 2020. The following code will create a faceted map showing the winning party in each state for each election year, along with the corresponding electoral college votes.
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+
+# Step 1: Prepare Election Data (for multiple years)
+election_data <- DATA_PRESIDENT |>
+  filter(office == "US PRESIDENT") |>
+  group_by(year, state) |>
+  slice_max(order_by = candidatevotes, n = 1) |>
+  ungroup() |>
+  mutate(
+    party_winner = ifelse(party_simplified == "REPUBLICAN", "Republican", "Democrat"),
+    state = tolower(state)  # Ensure compatibility with map data
+  )
+
+# Step 2: Prepare Map Data
+us_map <- map_data("state") |>
+  mutate(region = tolower(region))
+
+# Step 3: Merge Election Data with Map Data
+map_data_with_results <- us_map |>
+  left_join(election_data, by = c("region" = "state"))
+
+# Step 4: Plot the Animated Map with Explicit Colors
+animated_map <- ggplot(map_data_with_results) +
+  geom_polygon(aes(x = long, y = lat, group = group, fill = party_winner), color = "white") +
+  scale_fill_manual(
+    values = c("Democrat" = "#0000FF", "Republican" = "#FF0000"),  # Explicit blue and red
+    name = "Election Winner",
+    na.value = "grey"  # Handle unexpected NA values as grey
+  ) +
+  labs(
+    title = "Presidential Election Results by State Over Time",
+    subtitle = 'Year: {frame_time}',
+    caption = "Data Source: MIT Election Data Science Lab"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(hjust = 0.5, size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12)
+  ) +
+  transition_time(year) +   # Add animation over time
+  ease_aes('linear')        # Smooth animation
+
+# Render the animation as before
+#animate(animated_map,nframes = 100,fps = 10,width = 800,height = 600, renderer = gifski_renderer("election_animation_high_res.gif"))
+
+knitr::include_graphics("election_animation_high_res.gif")
+```
+
+## Comparing the Effects of ECV Allocation Rules
+
+Now, we are finishing the exploration of the data, we can compare the effects of different Electoral College Vote (ECV).Go through the historical voting data and assign each state’s ECVs according to various strategies:
+
+State-Wide Winner-Take-All
+District-Wide Winner-Take-All + State-Wide “At Large” Votes
+State-Wide Proportional
+National Proportional
+
+First, we join the Electoral College votes to the presidential data previously assigned.
+```{r}
+# Join the Electoral College votes to the presidential data
+pres_data_filtered <- DATA_PRESIDENT |>
+  filter(party_simplified %in% c("DEMOCRAT", "REPUBLICAN")) |>
+  left_join(ec_votes, by = "state_po")
+
+```
+
+## State-Wide Winner-Take-All
+
+```{r}
+
+# Group by year and state to get the total votes for each candidate within each state
+statewide_results <- pres_data_filtered |>
+  group_by(year, state, party_simplified) |>
+  summarize(candidatevotes = sum(candidatevotes), EC = first(EC), .groups = "drop")
+
+# Determine the winner in each state and assign all ECVs to that candidate
+statewide_winners <- statewide_results |>
+  group_by(year, state) |>
+  filter(candidatevotes == max(candidatevotes)) |>
+  ungroup()
+
+# Sum ECVs for each party by year
+statewide_winners_ecv <- statewide_winners |>
+  group_by(year, party_simplified) |>
+  summarize(ecv_total = sum(EC), .groups = "drop")
+
+# Plot ECVs over time for State-Wide Winner-Take-All
+ggplot(statewide_winners_ecv, aes(x = year, y = ecv_total, color = party_simplified)) +
+  geom_line(size = 1) +  # Slightly thicker line for better visibility
+  geom_point(size = 2) +  # Small points to highlight each year
+  labs(
+    title = "Electoral College Votes Over Time (State-Wide Winner-Take-All)",
+    x = "Year",
+    y = "Total Electoral College Votes (ECV)",
+    color = "Party"
+  ) +
+  scale_color_manual(values = c("DEMOCRAT" = "blue", "REPUBLICAN" = "red")) +  # Custom party colors
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+
+```
+
+This first plot shows the ECVs over time for the State-Wide Winner-Take-All allocation method. We can see how the ECVs are distributed between the Democratic and Republican parties in each election year, fluctuating over time.
+
+## District-Wide Winner-Take-All + State-Wide “At Large” Votes
+
+
+```{r}
+
+# Define the list of presidential election years
+presidential_years <- seq(1976, 2020, by = 4)
+
+# Filter DATA_HOUSE and DATA_PRESIDENT to include only presidential election years
+district_data <- DATA_HOUSE |>
+  filter(year %in% presidential_years)
+
+president_data <- DATA_PRESIDENT |>
+  filter(year %in% presidential_years)
+
+# Step 1: Determine district-level winners for Democrats and Republicans only, and assign 1 ECV per district
+district_winners <- district_data |>
+  filter(party %in% c("DEMOCRAT", "REPUBLICAN")) |>
+  group_by(year, state, state_po, district, party) |>
+  summarize(candidatevotes = sum(candidatevotes), .groups = "drop") |>
+  group_by(year, state, state_po, district) |>
+  filter(candidatevotes == max(candidatevotes)) |>
+  ungroup() |>
+  mutate(ECV = 1)  # Each district gets 1 ECV
+
+# Step 2: Calculate statewide winners for "at-large" ECVs for Democrats and Republicans only
+statewide_winners <- president_data |>
+  filter(party_simplified %in% c("DEMOCRAT", "REPUBLICAN")) |>
+  group_by(year, state, state_po, party_simplified) |>
+  summarize(candidatevotes = sum(candidatevotes), .groups = "drop") |>
+  group_by(year, state, state_po) |>
+  filter(candidatevotes == max(candidatevotes)) |>
+  ungroup() |>
+  mutate(ECV = 2)  # Statewide winner gets 2 at-large ECVs
+
+# Step 3: Combine district and state-wide results, focusing only on Democrat and Republican results
+district_plus_at_large <- bind_rows(
+  district_winners |> rename(party_simplified = party),
+  statewide_winners
+)
+
+# Step 4: Summarize ECV allocation by party and year
+ecv_allocation <- district_plus_at_large |>
+  group_by(year, party_simplified) |>
+  summarize(total_ecv = sum(ECV), .groups = "drop")
+
+# Step 5: Verify total ECVs across all states per year to see how they differ from 538
+total_ecv_by_year <- ecv_allocation |>
+  group_by(year) |>
+  summarize(yearly_total_ecv = sum(total_ecv))
+
+# Check for any year where the total ECVs do not equal 538
+total_ecv_check <- total_ecv_by_year |>
+  filter(yearly_total_ecv != 538)
+
+gt(total_ecv_check)
+
+```
+
+
+This confirms that the total ECVs for each year are close to 538, verifying that the allocation method is functioning correctly.
+
+
+```{r}
+
+ggplot(ecv_allocation, aes(x = year, y = total_ecv, color = party_simplified)) +
+  geom_line(size = 1) +  # Slightly thicker line for better visibility
+  geom_point(size = 2) +  # Small points to emphasize each data point
+  labs(
+    title = "Electoral College Votes Over Time (District-Wide + At-Large Allocation)",
+    x = "Year",
+    y = "Electoral College Votes (ECV)",
+    color = "Party"
+  ) +
+  scale_color_manual(values = c("DEMOCRAT" = "blue", "REPUBLICAN" = "red")) +  # Custom party colors
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+
+
+```
+
+This plot shows the ECVs over time for the District-Wide Winner-Take-All + State-Wide “At Large” Votes allocation method. We can see how the ECVs are distributed between the Democratic and Republican parties in each election year, fluctuating over time.
+
+
+#State-Wide Proportional
+
+```{r}
+# Step 1: Calculate vote share for Democrats and Republicans in each state
+statewide_results <- pres_data_filtered |>
+  group_by(year, state, state_po, party_simplified, EC) |>
+  summarize(candidatevotes = sum(candidatevotes), .groups = "drop") |>
+  group_by(year, state, state_po) |>
+  mutate(vote_share = candidatevotes / sum(candidatevotes)) |>
+  ungroup()
+
+# Step 2: Allocate ECVs proportionally based on vote share
+statewide_results <- statewide_results |>
+  mutate(proportional_ecv = round(vote_share * EC))  # Round to ensure integer ECVs
+
+# Step 3: Adjust ECVs to ensure they match the state's total (handle rounding errors)
+# For each state-year, adjust ECVs if the sum does not match the expected total
+statewide_adjusted <- statewide_results |>
+  group_by(year, state, state_po) |>
+  mutate(
+    ecv_adjustment = EC - sum(proportional_ecv),  # Calculate difference due to rounding
+    proportional_ecv = proportional_ecv + if_else(
+      row_number() == 1 & ecv_adjustment != 0, ecv_adjustment, 0
+    )  # Adjust the first party’s ECV by the remainder
+  ) |>
+  ungroup()
+
+# Step 4: Summarize ECV allocation by party and year
+ecv_state_proportion <- statewide_adjusted |>
+  group_by(year, party_simplified) |>
+  summarize(total_ecv = sum(proportional_ecv), .groups = "drop")
+
+# Step 5: Plot ECV vs Time for Democrats and Republicans (State-Wide Proportional)
+ggplot(ecv_state_proportion, aes(x = year, y = total_ecv, color = party_simplified)) +
+  geom_line(size = 1) +  # Slightly thicker line for clarity
+  geom_point(size = 2) +  # Small points to emphasize each data point
+  labs(
+    title = "Electoral College Votes Over Time (State-Wide Proportional)",
+    x = "Year",
+    y = "Electoral College Votes (ECV)",
+    color = "Party"
+  ) +
+  scale_color_manual(values = c("DEMOCRAT" = "blue", "REPUBLICAN" = "red")) +  # Custom party colors
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+
+
+```
+
+We can see a difference between this and the others methods, in this one we can see a clear advantage for the Democratic party, this is because the proportional allocation of ECVs is based on the vote share in each state. This method gives a more accurate representation of the popular vote in each state, which can lead to a more balanced distribution of ECVs between the two major parties.
+
+## National Proportional
+
+```{r}
+
+# Step 1: Calculate the total national vote share for Democrats and Republicans
+national_results <- pres_data_filtered |>
+  group_by(year, party_simplified) |>
+  summarize(total_votes = sum(candidatevotes), .groups = "drop") |>
+  group_by(year) |>
+  mutate(national_vote_share = total_votes / sum(total_votes)) |>
+  ungroup()
+
+# Step 2: Allocate ECVs based on national vote share
+national_results <- national_results |>
+  mutate(proportional_ecv = round(national_vote_share * 538))  # Round to ensure integer ECVs
+
+# Step 3: Adjust ECVs to ensure they sum to 538 (handle rounding discrepancies)
+# Adjust any remainder due to rounding so that the sum equals 538
+national_adjusted <- national_results |>
+  group_by(year) |>
+  mutate(
+    ecv_adjustment = 538 - sum(proportional_ecv),  # Calculate difference due to rounding
+    proportional_ecv = proportional_ecv + if_else(
+      row_number() == 1 & ecv_adjustment != 0, ecv_adjustment, 0
+    )  # Adjust the first party's ECV by the remainder
+  ) |>
+  ungroup()
+
+# Step 4: Plot ECV vs Time for Democrats and Republicans (National Proportional)
+ggplot(national_adjusted, aes(x = year, y = proportional_ecv, color = party_simplified)) +
+  geom_line(size = 1) +  # Slightly thicker line for better visibility
+  geom_point(size = 2) +  # Add small points at each year for clarity
+  labs(
+    title = "ECV Over Time by National Proportional Allocation",
+    x = "Year",
+    y = "Electoral College Votes (ECV)",
+    color = "Party"
+  ) +
+  scale_color_manual(values = c("DEMOCRAT" = "blue", "REPUBLICAN" = "red")) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  )
+
+```
+Now we compare all these methods to observe the differences between them.
+
+```{r}
+# Total number of elections
+total_elections <- 12
+
+# Calculate the percentage of Republican wins for each method
+
+# State-Wide Winner-Take-All
+statewide_republican_wins <- statewide_winners_ecv |>
+  group_by(year) |>
+  summarize(winning_party = party_simplified[which.max(ecv_total)]) |>
+  ungroup() |>
+  count(winning_party) |>
+  filter(winning_party == "REPUBLICAN") |>
+  pull(n)
+statewide_republican_percentage <- round((statewide_republican_wins / total_elections) * 100,2)
+statewide_democratic_percentage <- 100 - statewide_republican_percentage
+
+# District-Wide Winner-Take-All + At-Large
+district_republican_wins <- ecv_allocation |>
+  group_by(year) |>
+  summarize(winning_party = party_simplified[which.max(total_ecv)]) |>
+  ungroup() |>
+  count(winning_party) |>
+  filter(winning_party == "REPUBLICAN") |>
+  pull(n)
+district_republican_percentage <- round((district_republican_wins / total_elections) * 100,2)
+district_democratic_percentage <- 100 - district_republican_percentage
+
+# State-Wide Proportional
+state_proportional_republican_wins <- ecv_state_proportion |>
+  group_by(year) |>
+  summarize(winning_party = party_simplified[which.max(total_ecv)]) |>
+  ungroup() |>
+  count(winning_party) |>
+  filter(winning_party == "REPUBLICAN") |>
+  pull(n)
+state_proportional_republican_percentage <- round((state_proportional_republican_wins / total_elections) * 100,2)
+state_proportional_democratic_percentage <- 100 - state_proportional_republican_percentage
+
+# National Proportional
+national_proportional_republican_wins <- national_adjusted |>
+  group_by(year) |>
+  summarize(winning_party = party_simplified[which.max(proportional_ecv)]) |>
+  ungroup() |>
+  count(winning_party) |>
+  filter(winning_party == "REPUBLICAN") |>
+  pull(n)
+national_proportional_republican_percentage <- round((national_proportional_republican_wins / total_elections) * 100, 2)
+national_proportional_democratic_percentage <- 100 - national_proportional_republican_percentage
+
+# Create a data frame to summarize the results
+win_percentage_table <- data.frame(
+  Party = c("REPUBLICAN", "DEMOCRAT"),
+  `State-Wide Winner-Take-All` = c(statewide_republican_percentage, statewide_democratic_percentage),
+  `District-Wide + At-Large` = c(district_republican_percentage, district_democratic_percentage),
+  `State-Wide Proportional` = c(state_proportional_republican_percentage, state_proportional_democratic_percentage),
+  `National Proportional` = c(national_proportional_republican_percentage, national_proportional_democratic_percentage)
+)
+
+gt(win_percentage_table) 
+  
+
+
+```
+
+
+## Analysis of Each Scheme
+
+State-Wide Winner-Take-All:
+This widely used method awards all ECVs to the state-wide popular vote winner, often ignoring narrower vote margins.
+Result: Produced a balanced outcome, with each party winning 50% of elections (1976–2020), but often distorts national popular vote representation.
+
+District-Wide Winner-Take-All + At-Large:
+ECVs are awarded by district, with two at-large votes for the state winner.
+Result: Also produced a 50/50 split, providing a slightly more detailed reflection of local preferences, but still favoring swing districts.
+
+State-Wide Proportional:
+ECVs are split based on each candidate’s vote share within a state, offering a fairer reflection of popular support.
+Result: Democrats won 66.7% of elections, indicating a tilt toward populous urban centers.
+
+National Proportional:
+Allocates ECVs based on the national popular vote percentage.
+Result: Similar to State-Wide Proportional, with Democrats winning 66.7% of elections, showing a national popular vote bias.
+
+
+## Conclusion: The Fairest Scheme
+
+State-Wide Proportional is arguably the fairest, as it represents the actual vote distribution within each state. However, it significantly shifts outcomes, favoring Democrats due to higher urban population density. For instance, in a year like 2000, where Republicans narrowly won in the actual ECV count, a proportional method could have swung the outcome.
+
+Overall, State-Wide Proportional most accurately reflects voter preferences but tilts outcomes toward the party with broad, urban support.

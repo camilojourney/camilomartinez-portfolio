@@ -1,0 +1,32 @@
+---
+title: "Portfolio Projects"
+format:
+  html:
+    theme: darkly
+---
+
+# Welcome
+
+This is a collection of my data science and analysis portfolio projects, showcasing work in finance, urban planning, health analytics, and more.
+
+## Finance & Economics
+
+- [ETF vs Mutual Funds Analysis](finance_etf/etf_vs_mutual_funds.qmd) - Comparing performance metrics and risk-adjusted returns
+- [Bitcoin Trading Bot](finance_trading_bot/trading_bot.qmd) - Sentiment analysis for cryptocurrency trading
+- [Retirement Plan Analysis](retirement_plan/retirement_plan.qmd) - Monte Carlo simulation comparing TRS vs ORP plans
+- [Fiscal Analysis](fiscal_analysis/fiscal_analysis.qmd) - Government fiscal data exploration
+
+## Urban & Social Analysis
+
+- [Walkability Analysis](walkability/walkability.qmd) - Urban accessibility metrics and patterns
+- [Astoria Conquest](astoria-conquest/routes_astoria.qmd) - Optimizing running routes with graph theory
+- [Election Analysis](election_analysis/election_analysis.qmd) - Voting patterns and demographic insights
+
+## Health & Personal Analytics
+
+- [HRV Research](hrv_rmssd_ms/hrv_research.qmd) - Understanding heart rate variability drivers
+
+## Entertainment & Media
+
+- [Hollywood Analysis](hollywood_analysis/hollywood_analysis.qmd) - Movie success factors and genre trends using IMDb data
+- [Social Media Pipeline](social-media-pipeline/social-media-pipeline.qmd) - Authentic voice enhancement for social content

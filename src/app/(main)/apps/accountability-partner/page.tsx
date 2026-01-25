@@ -1,4 +1,3 @@
-import { analyticsService } from '@/lib/api/config';
 import { AccountabilityDashboard } from '@/components/features/whoop/AccountabilityDashboard';
 import LiquidNav from '@/components/shared/liquid-nav';
 
@@ -6,8 +5,6 @@ import LiquidNav from '@/components/shared/liquid-nav';
 export const dynamic = 'auto';
 export const dynamicParams = true;
 export const revalidate = 21600; // Revalidate every 6 hours (21600 seconds)
-
-import { DashboardWorkoutTimeData } from '@/types/whoop';
 
 interface WeeklyAccountabilityData {
     weekStart: string; // YYYY-MM-DD
@@ -41,7 +38,6 @@ async function getWeeklyAccountabilityMetrics(): Promise<WeeklyAccountabilityDat
                 std_sleep_start_hour
             FROM weekly_habits_summary
             ORDER BY week_start_date DESC
-            LIMIT 12
         `;
 
         // Format time as HH:MM
@@ -88,88 +84,6 @@ async function getWeeklyAccountabilityMetrics(): Promise<WeeklyAccountabilityDat
         return weeklyData;
     } catch (error) {
         console.error('Error fetching weekly accountability metrics:', error);
-        return [];
-    }
-}
-
-async function getWorkoutTimes(): Promise<DashboardWorkoutTimeData[]> {
-    try {
-        const response = await analyticsService.getWorkoutTimes() as any;
-
-        // Extract workout data and convert to time format
-        const workouts = response?.recent?.workouts || [];
-
-        // Function to standardize workout type names
-        const standardizeWorkoutType = (sportName: string): string => {
-            const lowercaseName = sportName.toLowerCase();
-
-            // Group weightlifting variations
-            if (lowercaseName.includes('weightlifting') || lowercaseName === 'weightlifting_msk') {
-                return 'Weightlifting';
-            }
-
-            // Keep specific types as-is
-            switch (lowercaseName) {
-                case 'running':
-                    return 'Running';
-                case 'cycling':
-                    return 'Cycling';
-                case 'boxing':
-                    return 'Boxing';
-                default:
-                    return 'Other';
-            }
-        };
-
-        // Convert UTC time to New York timezone
-        const convertToNYTime = (utcTimestamp: string) => {
-            const utcDate = new Date(utcTimestamp);
-
-            // Convert to New York timezone string (e.g., "10/10/2025, 8:30:00 AM")
-            const nyTimeString = utcDate.toLocaleString('en-US', {
-                timeZone: 'America/New_York',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            });
-
-            // Parse the formatted string back to get NY time components
-            // Format: "MM/DD/YYYY, HH:MM:SS"
-            const [datePart, timePart] = nyTimeString.split(', ');
-            const [month, day, year] = datePart.split('/');
-            const [hours, minutes] = timePart.split(':');
-
-            return {
-                date: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`,
-                hours: parseInt(hours, 10),
-                minutes: parseInt(minutes, 10)
-            };
-        };
-
-        const workoutTimes = workouts
-            .map((workout: any) => {
-                // Convert UTC timestamp to New York time
-                const nyTime = convertToNYTime(workout.start_time);
-
-                return {
-                    date: nyTime.date, // YYYY-MM-DD format in NY timezone
-                    time: `${String(nyTime.hours).padStart(2, '0')}:${String(nyTime.minutes).padStart(2, '0')}`,
-                    timeAsMinutes: nyTime.hours * 60 + nyTime.minutes, // Calculate from NY time
-                    workoutType: standardizeWorkoutType(workout.sport_name || 'unknown')
-                };
-            });
-        // No longer filtering by year here - let the client component handle it
-
-        console.log('Workout times data processed (all years):', workoutTimes.length, 'records');
-        console.log('Sample workout times (NY timezone):', JSON.stringify(workoutTimes.slice(0, 3)));
-
-        return workoutTimes;
-    } catch (error) {
-        console.error('Error fetching workout times:', error);
         return [];
     }
 }
@@ -228,7 +142,6 @@ async function getWeeklyHabitsData() {
 }
 
 export default async function AccountabilityPartnerPage() {
-    const workoutTimeData = await getWorkoutTimes();
     const weeklyMetrics = await getWeeklyAccountabilityMetrics();
     const weeklyHabitsData = await getWeeklyHabitsData();
 
@@ -268,7 +181,6 @@ export default async function AccountabilityPartnerPage() {
 
                     {/* All dashboard content with year toggle - client component */}
                     <AccountabilityDashboard
-                        workoutTimeData={workoutTimeData}
                         weeklyMetrics={weeklyMetrics}
                         weeklyHabitsData={weeklyHabitsData}
                     />
