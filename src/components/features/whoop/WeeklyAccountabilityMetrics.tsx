@@ -336,7 +336,7 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {monthlyAverages.map((month) => (
+                                                {monthlyAverages!.map((month) => (
                                                     <tr key={month.month} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                                         <td className="py-2 px-4 text-white/70 font-medium text-sm">
                                                             {month.month}

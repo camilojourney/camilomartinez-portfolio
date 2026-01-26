@@ -51,6 +51,9 @@ tmp/
 __pycache__/
 *.pyc
 
+# Backend script archives (one-time migrations, tests)
+backend/scripts/_archive/
+
 # Research artifacts
 research/lab/cache/
 research/**/.ipynb_checkpoints/
@@ -62,3 +65,6 @@ research/**/astoria_running_routes
 .vercel
 .env*.local
 .chat-logs/
+
+# Large data files
+backend/projects_quarto/hollywood_analysis/*.tsv.gz

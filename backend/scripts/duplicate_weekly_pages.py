@@ -92,8 +92,8 @@ IDENTITY_TEMPLATES = [
         "goal": "Focused builders create in long blocks",
         "system": "One task, full attention — that's how I work",
         "constraints": "Phone in another room during deep work",
-        "metric": "Deep work hours",
-        "metric_type": "Hours",
+        "metric": "Deep work sessions + hours",
+        "metric_type": "Count + Hours",
         "area": ["Work"],
     },
     {
@@ -216,12 +216,8 @@ def create_page_from_template(template: dict, week_start: str, week_end: str) ->
         "Goal (Outcome)": {
             "rich_text": [{"text": {"content": template["goal"]}}]
         },
-        # System
-        "System (What I Do Repeatedly)": {
-            "rich_text": [{"text": {"content": template["system"]}}]
-        },
-        # Constraints
-        "Constraints": {
+        # Constraints / Environment (renamed column)
+        "Constraints / Environment (Friction Rules)": {
             "rich_text": [{"text": {"content": template["constraints"]}}]
         },
         # Weekly Metric
@@ -246,6 +242,7 @@ def create_page_from_template(template: dict, week_start: str, week_end: str) ->
         # Clear data fields (will be filled by automation or manually)
         "Hours": {"rich_text": []},
         "Count": {"rich_text": []},
+        "Std": {"rich_text": []},
     }
 
     # Build the page payload
