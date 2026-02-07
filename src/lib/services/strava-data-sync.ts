@@ -286,6 +286,8 @@ export class HistoricalDataImporter {
       
       for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];
+        if (!batch) continue;
+        
         const batchNumber = i + 1;
         
         console.log(`📦 Processing batch ${batchNumber}/${batches.length} (${batch.length} activities)`);

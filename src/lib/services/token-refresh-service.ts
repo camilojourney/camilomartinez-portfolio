@@ -108,12 +108,12 @@ export class TokenRefreshService {
                 WHERE id = ${userId}
             `;
 
-            if (userResult.rows.length === 0) {
+            const user = userResult.rows[0];
+            
+            if (!user) {
                 console.warn(`⚠️ User ${userId} not found in database`);
                 return null;
             }
-
-            const user = userResult.rows[0];
             
             if (!user.refresh_token) {
                 console.warn(`⚠️ User ${userId} has no refresh token - needs re-authentication`);

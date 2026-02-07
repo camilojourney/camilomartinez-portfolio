@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
             }
             
             // Use first user for now (can be extended for all users)
-            const firstUser = allUsers[0];
+            const firstUser = allUsers[0]!; // Already checked length > 0
             userId = firstUser.id;
             freshTokens = { 
                 accessToken: firstUser.access_token, 
@@ -138,8 +138,8 @@ export async function POST(request: NextRequest) {
             console.log(`🔍 Admin token debug:`, {
                 hasAccessToken: !!firstUser.access_token,
                 hasRefreshToken: !!firstUser.refresh_token,
-                accessTokenLength: firstUser.access_token?.length || 0,
-                refreshTokenLength: firstUser.refresh_token?.length || 0,
+                accessTokenLength: firstUser.access_token?.length ?? 0,
+                refreshTokenLength: firstUser.refresh_token?.length ?? 0,
                 tokenExpiresAt: firstUser.token_expires_at
             });
         }
@@ -554,10 +554,12 @@ export async function POST(request: NextRequest) {
                                 const endDate = new Date(currentDate);
                                 endDate.setDate(endDate.getDate() - 1);
                                 
+                                const startDateStr = currentMissingStart.toISOString().split('T')[0] ?? '';
+                                const endDateStr = endDate.toISOString().split('T')[0] ?? '';
                                 if (currentMissingStart.getTime() === endDate.getTime()) {
-                                    missingRanges.push(currentMissingStart.toISOString().split('T')[0]);
+                                    missingRanges.push(startDateStr);
                                 } else {
-                                    missingRanges.push(`${currentMissingStart.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+                                    missingRanges.push(`${startDateStr} to ${endDateStr}`);
                                 }
                                 currentMissingStart = null;
                             }
@@ -569,10 +571,12 @@ export async function POST(request: NextRequest) {
                     // Close any final missing range
                     if (currentMissingStart) {
                         const endDate = new Date(lastDate);
+                        const startDateStr = currentMissingStart.toISOString().split('T')[0] ?? '';
+                        const endDateStr = endDate.toISOString().split('T')[0] ?? '';
                         if (currentMissingStart.getTime() === endDate.getTime()) {
-                            missingRanges.push(currentMissingStart.toISOString().split('T')[0]);
+                            missingRanges.push(startDateStr);
                         } else {
-                            missingRanges.push(`${currentMissingStart.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+                            missingRanges.push(`${startDateStr} to ${endDateStr}`);
                         }
                     }
                     
