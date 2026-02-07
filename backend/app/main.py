@@ -11,6 +11,7 @@ import logging
 import time
 
 from app.config import settings, init_database, close_database
+from app.config.logging_config import configure_logging
 from app.middleware.rate_limiting import RateLimitMiddleware
 from app.middleware.logging import LoggingMiddleware
 # Import all routers
@@ -27,6 +28,12 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager - handles startup and shutdown events."""
+    # Configure logging first
+    configure_logging(
+        debug=settings.DEBUG,
+        json_logs=not settings.DEBUG  # JSON in prod, human-readable in dev
+    )
+    
     # Startup
     logger.info("Starting Camilo AI Analytics Backend...")
     await init_database()

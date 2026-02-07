@@ -18,6 +18,14 @@
     "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": ".",
+    
+    /* Additional strict options per .ai/standards/code/typescript.md */
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    
     "paths": {
       "@/*": [
         "./src/*"

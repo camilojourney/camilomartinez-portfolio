@@ -39,8 +39,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         """Process request with comprehensive logging."""
         
-        # Generate correlation ID
-        correlation_id = str(uuid.uuid4())
+        # Use existing X-Request-ID or generate new correlation ID
+        correlation_id = request.headers.get("x-request-id") or str(uuid.uuid4())
         request.state.correlation_id = correlation_id
         
         # Start timing
@@ -62,7 +62,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 request, response, correlation_id, process_time
             )
             
-            # Add correlation ID to response headers
+            # Add tracing headers to response
+            response.headers["X-Request-ID"] = correlation_id
             response.headers["X-Correlation-ID"] = correlation_id
             response.headers["X-Process-Time"] = f"{process_time:.4f}"
             

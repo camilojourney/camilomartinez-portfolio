@@ -53,3 +53,45 @@
 
 **Updated:**
 - `package.json` - Added test scripts and vitest dependencies
+
+---
+
+## 2026-02-07: P2 Improvements
+
+### TypeScript Strict Mode (tsconfig.json)
+
+**Added compiler options:**
+- `noImplicitAny: true` - Require explicit any
+- `strictNullChecks: true` - Strict null handling
+- `noUncheckedIndexedAccess: true` - Require checking indexed access
+- `noImplicitReturns: true` - Require explicit returns
+- `noFallthroughCasesInSwitch: true` - Prevent switch fallthrough
+
+### Structured Logging (backend/app/config/logging_config.py)
+
+**Added:**
+- `JSONFormatter` - JSON log format for production
+- `DevelopmentFormatter` - Human-readable format with colors
+- `configure_logging()` - Centralized logging configuration
+- `get_logger()` - Helper to get loggers
+
+**Features:**
+- Consistent timestamp format (ISO 8601)
+- Log levels with colors in development
+- Extra fields support via `extra={}` parameter
+- Exception info included when present
+
+### Request Tracing (backend/app/middleware/logging.py)
+
+**Updated:**
+- Accept incoming `X-Request-ID` header or generate new UUID
+- Add `X-Request-ID` to response headers
+- Add `X-Correlation-ID` (same as X-Request-ID) for compatibility
+- Add `X-Process-Time` header with request duration
+
+**Headers added to responses:**
+```
+X-Request-ID: abc-123-def-456
+X-Correlation-ID: abc-123-def-456
+X-Process-Time: 0.0234
+```
