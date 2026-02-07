@@ -116,7 +116,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
         let currentWeek: DayData[] = [];
 
         for (let day = new Date(calendarEndDate); day >= calendarStartDate; day.setDate(day.getDate() - 1)) {
-            const dateStr = day.toISOString().split('T')[0];
+            const dateStr = day.toISOString().split('T')[0] ?? '';
             const beforeFirst = firstRecordedDate ? dateStr < firstRecordedDate : false;
             const afterLast = lastRecordedDate ? dateStr > lastRecordedDate : false;
 
@@ -168,8 +168,8 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     };
 
     const calendarData = generateCalendarData();
-    const firstRecordedDate = calendarData.length > 0 ? calendarData[0].date : null;
-    const lastRecordedDate = calendarData.length > 0 ? calendarData[calendarData.length - 1].date : null;
+    const firstRecordedDate = calendarData.length > 0 ? calendarData[0]?.date ?? null : null;
+    const lastRecordedDate = calendarData.length > 0 ? calendarData[calendarData.length - 1]?.date ?? null : null;
     const weeks = organizeIntoWeeks(calendarData, firstRecordedDate, lastRecordedDate);
 
     // *****************************************************************
@@ -222,7 +222,8 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
 
         monthRanges.forEach((range, monthIndex) => {
             const centerIndex = Math.round((range.min + range.max) / 2);
-            labels.set(centerIndex, allMonths[monthIndex]);
+            const monthLabel = allMonths[monthIndex] ?? '';
+            labels.set(centerIndex, monthLabel);
         });
 
         return labels;
@@ -484,7 +485,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                                                         label: weekLabel,
                                                                         average_strain: weekData.averageStrain,
                                                                         weekStart: weekData.firstDate,
-                                                                        weekEnd: endDate.toISOString().split('T')[0],
+                                                                        weekEnd: endDate.toISOString().split('T')[0] ?? '',
                                                                         x,
                                                                         y
                                                                     });

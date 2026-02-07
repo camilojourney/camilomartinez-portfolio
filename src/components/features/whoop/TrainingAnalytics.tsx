@@ -114,10 +114,13 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
             }
 
             if (!sportCategory) return;
+            
+            const monthData = monthlyData[monthIndex];
+            if (!monthData) return;
 
-            monthlyData[monthIndex][sportCategory] += durationHours;
+            monthData[sportCategory] += durationHours;
             const sessionKey = `${sportCategory}Sessions` as keyof MonthlyData;
-            (monthlyData[monthIndex][sessionKey] as number) += 1;
+            (monthData[sessionKey] as number) += 1;
 
             yearlyTotals[sportCategory] += durationHours;
             const yearlySessionKey = `${sportCategory}Sessions` as keyof YearlyTotals;
@@ -137,7 +140,8 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
         let lastIndex = -1;
 
         for (let i = monthlyTotals.length - 1; i >= 0; i--) {
-            if (monthlyTotals[i] > 0) {
+            const total = monthlyTotals[i];
+            if (total !== undefined && total > 0) {
                 lastIndex = i;
                 break;
             }

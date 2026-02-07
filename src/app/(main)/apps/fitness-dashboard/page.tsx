@@ -192,19 +192,23 @@ async function getMonthlyTrainingDays(): Promise<MonthlyTrainingDaysData[]> {
             const localTime = new Date(startTime.getTime() + (offsetHours * 60 + offsetMinutes) * 60 * 1000);
 
             const monthKey = `${localTime.getFullYear()}-${String(localTime.getMonth() + 1).padStart(2, '0')}`;
-            const dayKey = localTime.toISOString().split('T')[0]; // YYYY-MM-DD
+            const dayKey = localTime.toISOString().split('T')[0] ?? ''; // YYYY-MM-DD
 
             if (!monthlyMap.has(monthKey)) {
                 monthlyMap.set(monthKey, new Set());
             }
-            monthlyMap.get(monthKey)!.add(dayKey);
+            if (dayKey) {
+                monthlyMap.get(monthKey)!.add(dayKey);
+            }
         });
 
         // Convert to array with days in month calculation
         const monthlyTrainingDays: MonthlyTrainingDaysData[] = [];
 
         monthlyMap.forEach((days, monthKey) => {
-            const [year, month] = monthKey.split('-').map(Number);
+            const parts = monthKey.split('-').map(Number);
+            const year = parts[0] ?? new Date().getFullYear();
+            const month = parts[1] ?? 1;
             const daysInMonth = new Date(year, month, 0).getDate();
 
             monthlyTrainingDays.push({

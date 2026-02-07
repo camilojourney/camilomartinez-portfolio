@@ -14,7 +14,8 @@ interface MonthlyTrainingDaysProps {
 export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysProps) {
     // Filter data by selected year
     const yearData = data.filter(item => {
-        const year = parseInt(item.month.split('-')[0]);
+        const yearStr = item.month.split('-')[0] ?? '';
+        const year = parseInt(yearStr, 10);
         return year === selectedYear;
     });
 
