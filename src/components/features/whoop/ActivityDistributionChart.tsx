@@ -145,11 +145,14 @@ interface YearlyTotals {
             }
 
             // Add hours to monthly data
-            monthlyData[monthIndex][sportCategory] += durationHours;
+            const monthData = monthlyData[monthIndex];
+            if (!monthData) return;
+            
+            monthData[sportCategory] += durationHours;
 
             // Increment session count
             const sessionKey = `${sportCategory}Sessions` as keyof MonthlyData;
-            (monthlyData[monthIndex][sessionKey] as number) += 1;
+            (monthData[sessionKey] as number) += 1;
 
             // Add to yearly total
             yearlyTotals[sportCategory] += durationHours;
@@ -173,7 +176,8 @@ interface YearlyTotals {
         let lastIndex = -1;
 
         for (let i = monthlyTotals.length - 1; i >= 0; i--) {
-            if (monthlyTotals[i] > 0) {
+            const total = monthlyTotals[i];
+            if (total !== undefined && total > 0) {
                 lastIndex = i;
                 break;
             }

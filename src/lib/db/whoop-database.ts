@@ -75,11 +75,11 @@ export class WhoopDatabaseService {
             WHERE id = ${userId} AND refresh_token IS NOT NULL
         `;
 
-        if (result.rows.length === 0 || !result.rows[0].access_token) {
+        const row = result.rows[0];
+        if (!row || !row.access_token) {
             return null;
         }
 
-        const row = result.rows[0];
         return {
             accessToken: row.access_token,
             refreshToken: row.refresh_token,

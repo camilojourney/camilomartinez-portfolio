@@ -151,11 +151,11 @@ export class StravaUserService {
       WHERE id = ${userId}
     `;
 
-    if (result.rows.length === 0) {
+    const row = result.rows[0];
+    if (!row) {
       return null;
     }
 
-    const row = result.rows[0];
     return {
       id: row.id,
       email: row.email,

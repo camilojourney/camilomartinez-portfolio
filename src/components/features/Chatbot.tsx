@@ -230,7 +230,7 @@ export function Chatbot() {
 
     // Pick a random set each time component mounts
     const randomIndex = Math.floor(Math.random() * questionSets.length);
-    return questionSets[randomIndex];
+    return questionSets[randomIndex] ?? questionSets[0] ?? [];
   }, []);
 
   const handleSend = async () => {
