@@ -133,7 +133,11 @@ export async function POST(req: Request) {
     });
 
     const responseTime = Date.now() - startTime;
-    const answer = response.choices[0].message;
+    const choice = response.choices[0];
+    if (!choice) {
+      return NextResponse.json({ error: 'No response from AI.' }, { status: 500 });
+    }
+    const answer = choice.message;
 
     // AUTOMATIC EVALUATION: Sample 10% of responses for quality monitoring
     // This runs async (fire-and-forget) so it doesn't slow down chat
@@ -198,7 +202,9 @@ Respond with JSON only:
       response_format: { type: 'json_object' },
     });
 
-    const evaluation = JSON.parse(evalResponse.choices[0].message.content || '{}');
+    const evalChoice = evalResponse.choices[0];
+    const evalContent = evalChoice?.message?.content || '{}';
+    const evaluation = JSON.parse(evalContent);
 
     // Log to console (in production, save to database)
     console.log('[Auto-Evaluation]', {

@@ -60,11 +60,11 @@ async function getWeeklyAccountabilityMetrics(): Promise<WeeklyAccountabilityDat
 
         const weeklyData: WeeklyAccountabilityData[] = result.rows.map((row) => ({
             weekStart: row.week_start_date instanceof Date
-                ? row.week_start_date.toISOString().split('T')[0]
-                : String(row.week_start_date),
+                ? (row.week_start_date.toISOString().split('T')[0] ?? '')
+                : String(row.week_start_date ?? ''),
             weekEnd: row.week_end_date instanceof Date
-                ? row.week_end_date.toISOString().split('T')[0]
-                : String(row.week_end_date),
+                ? (row.week_end_date.toISOString().split('T')[0] ?? '')
+                : String(row.week_end_date ?? ''),
             trainingDays: parseInt(row.workout_count, 10) || 0,
             meditationSessions: parseInt(row.meditation_count, 10) || 0,
             avgWakeTime: formatTime(row.avg_wake_hour),
@@ -116,11 +116,11 @@ async function getWeeklyHabitsData() {
         // Date fields need to be converted to ISO strings for parseISO() to work
         const weeklyData = result.rows.map((row) => ({
             weekStart: row.week_start_date instanceof Date
-                ? row.week_start_date.toISOString().split('T')[0]
-                : String(row.week_start_date),
+                ? (row.week_start_date.toISOString().split('T')[0] ?? '')
+                : String(row.week_start_date ?? ''),
             weekEnd: row.week_end_date instanceof Date
-                ? row.week_end_date.toISOString().split('T')[0]
-                : String(row.week_end_date),
+                ? (row.week_end_date.toISOString().split('T')[0] ?? '')
+                : String(row.week_end_date ?? ''),
             meditationCount: parseInt(row.meditation_count, 10) || 0,
             trainingDays: parseInt(row.workout_count, 10) || 0,
             avgWakeHour: row.avg_wake_hour ? parseFloat(row.avg_wake_hour) : null,

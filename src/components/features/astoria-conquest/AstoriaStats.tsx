@@ -39,10 +39,12 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
       const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
       startOfWeek.setDate(diff);
 
-      const weekKey = startOfWeek.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const weekKey = startOfWeek.toISOString().split('T')[0] ?? ''; // YYYY-MM-DD format
       const miles = (run.distance_meters || 0) / 1609.34; // Convert to miles
 
-      weeklyData[weekKey] = (weeklyData[weekKey] || 0) + miles;
+      if (weekKey) {
+        weeklyData[weekKey] = (weeklyData[weekKey] || 0) + miles;
+      }
     });
 
     // Convert to array and sort by date

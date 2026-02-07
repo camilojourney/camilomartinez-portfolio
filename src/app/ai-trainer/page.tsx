@@ -412,16 +412,22 @@ export default function AITrainerPage() {
           {activeTab === 'insights' && (
             <div className="space-y-8">
               {/* Latest Analysis Report */}
-              {cycles.length > 0 && cycles[0].metadata?.error_patterns && cycles[0].metadata.error_patterns.length > 0 && (
-                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold mb-6 text-white">Latest Analysis Report</h3>
-                  <div className="prose prose-invert max-w-none">
-                    <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
-                      {cycles[0].metadata.error_patterns[0]}
+              {(() => {
+                const latestCycle = cycles[0];
+                const errorPatterns = latestCycle?.metadata?.error_patterns;
+                const firstPattern = errorPatterns?.[0];
+                if (!latestCycle || !errorPatterns || errorPatterns.length === 0 || !firstPattern) return null;
+                return (
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                    <h3 className="text-xl font-semibold mb-6 text-white">Latest Analysis Report</h3>
+                    <div className="prose prose-invert max-w-none">
+                      <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+                        {firstPattern}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Quick Insights Summary */}
               <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">

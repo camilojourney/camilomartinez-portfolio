@@ -71,7 +71,9 @@ Be strict but fair. A score of 0.8+ means excellent, 0.6-0.8 is good, 0.4-0.6 ne
       response_format: { type: 'json_object' },
     });
 
-    const evaluation = JSON.parse(response.choices[0].message.content || '{}');
+    const choice = response.choices[0];
+    const content = choice?.message?.content || '{}';
+    const evaluation = JSON.parse(content);
 
     // Log evaluation for monitoring
     console.log('Answer evaluated:', {

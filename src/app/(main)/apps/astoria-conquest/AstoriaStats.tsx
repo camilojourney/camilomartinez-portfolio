@@ -90,20 +90,25 @@ export default function AstoriaStats({ stats }: AstoriaStatsProps) {
 
         {/* Zone Legend */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-          {zoneNames.map((zone, idx) => (
-            <div key={idx} className="flex flex-col items-center">
-              <div className="flex items-center gap-2 mb-1">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: zoneColors[idx] }}
-                />
-                <span className="text-sm text-gray-300">{zone}</span>
+          {zoneNames.map((zone, idx) => {
+            const color = zoneColors[idx] ?? '#888';
+            const minutes = zoneMinutes[idx] ?? 0;
+            const percentage = zonePercentages[idx] ?? 0;
+            return (
+              <div key={idx} className="flex flex-col items-center">
+                <div className="flex items-center gap-2 mb-1">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="text-sm text-gray-300">{zone}</span>
+                </div>
+                <span className="text-xs text-gray-400">
+                  {minutes}min ({Math.round(percentage)}%)
+                </span>
               </div>
-              <span className="text-xs text-gray-400">
-                {zoneMinutes[idx]}min ({Math.round(zonePercentages[idx])}%)
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
