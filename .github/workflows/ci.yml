@@ -24,13 +24,16 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile || pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm run lint --if-present || true
+        run: pnpm run lint
+
+      - name: Run tests
+        run: pnpm run test:run
 
       - name: Build
-        run: pnpm run build || true
+        run: pnpm run build
 
   backend:
     runs-on: ubuntu-latest
@@ -50,10 +53,16 @@ jobs:
         run: pip install uv
 
       - name: Install dependencies
-        run: uv sync --dev || true
+        run: uv sync --dev
 
       - name: Lint
-        run: uv run ruff check . || true
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy app --ignore-missing-imports
+
+      - name: Run tests
+        run: uv run pytest --cov=app --cov-report=term-missing
 
   docs-links:
     runs-on: ubuntu-latest
@@ -61,7 +70,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate markdown links (basic)
+      - name: Check for broken markdown links
         run: |
           set -euo pipefail
-          ! grep -R "TODO" -n docs/ || true
+          # Find files with TODO markers (informational, doesn't fail)
+          echo "Files containing TODO markers:"
+          grep -R "TODO" -n docs/ || echo "No TODOs found in docs/"

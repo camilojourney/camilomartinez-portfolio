@@ -7,6 +7,12 @@
     "dev:all": "concurrently \"pnpm dev:backend\" \"pnpm dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
     "build": "next build",
     "start": "next start",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:backend": "cd backend && uv run pytest",
+    "test:all": "pnpm test:run && pnpm test:backend",
+    "lint": "next lint",
     "env:pull": "./scripts/sync-env.sh pull",
     "env:status": "./scripts/sync-env.sh status",
     "env:list": "./scripts/sync-env.sh list",
@@ -70,7 +76,10 @@
     "@types/geojson": "^7946.0.16",
     "@types/node": "20.11.17",
     "@types/pg": "^8.11.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.2.1",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "vitest": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8"
   }
 }
