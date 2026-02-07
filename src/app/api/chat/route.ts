@@ -3,7 +3,13 @@ import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+}
 
 // Load Camilo's knowledge base for RAG context
 async function getKnowledgeContext(): Promise<string> {
@@ -97,6 +103,14 @@ ${knowledge}
 
 export async function POST(req: Request) {
   try {
+    const openai = getOpenAIClient();
+    if (!openai) {
+      return NextResponse.json(
+        { error: 'OPENAI_API_KEY is not configured on the server.' },
+        { status: 503 }
+      );
+    }
+
     const { messages } = await req.json();
 
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -129,6 +143,7 @@ export async function POST(req: Request) {
 
       // Evaluate in background (don't wait)
       evaluateAnswerAsync(
+        openai,
         lastUserMessage.content,
         answer.content || '',
         knowledge,
@@ -148,6 +163,7 @@ export async function POST(req: Request) {
  * Automatically evaluates 10% of answers for quality monitoring
  */
 async function evaluateAnswerAsync(
+  openai: OpenAI,
   question: string,
   answer: string,
   context: string,

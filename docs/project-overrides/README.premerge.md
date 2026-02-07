@@ -16,15 +16,3 @@ Use `pnpm install && pnpm dev` for the frontend and follow the backend setup in 
 ---
 
 Looking for the previous long-form README? It now lives in [`docs/overview/PORTFOLIO_OVERVIEW.md`](docs/overview/PORTFOLIO_OVERVIEW.md).
-
-## AI Framework Integration
-
-This repository includes a merged AI workflow framework for consistent execution across tools.
-
-- Universal entrypoint: `AGENTS.md`
-- Quick runtime context: `CLAUDE.md`
-- Framework architecture: `ARCHITECTURE.md`
-- AI standards/workflows: `.ai/`
-- Human playbooks: `docs/playbooks/`
-
-Project-specific pre-merge docs are preserved in `docs/project-overrides/` when applicable.

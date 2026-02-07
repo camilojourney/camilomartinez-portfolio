@@ -1,7 +1,13 @@
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new OpenAI({ apiKey });
+}
 
 /**
  * Self-Evaluation Endpoint
@@ -15,6 +21,14 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  */
 export async function POST(req: Request) {
   try {
+    const openai = getOpenAIClient();
+    if (!openai) {
+      return NextResponse.json(
+        { error: 'OPENAI_API_KEY is not configured on the server.' },
+        { status: 503 }
+      );
+    }
+
     const { question, answer, context } = await req.json();
 
     const evaluationPrompt = `You are an expert evaluator assessing the quality of chatbot responses.
