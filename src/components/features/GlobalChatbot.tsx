@@ -17,7 +17,7 @@ export function GlobalChatbot() {
 
   useEffect(() => {
     // Only access localStorage after component is mounted on client
-    if (!isMounted || typeof window === 'undefined') return;
+    if (!isMounted || typeof window === 'undefined') return undefined;
 
     try {
       const hasSeenChatbot = localStorage.getItem('hasSeenChatbot');
@@ -32,6 +32,7 @@ export function GlobalChatbot() {
       // localStorage might be disabled or unavailable
       console.warn('localStorage is not available:', error);
     }
+    return undefined;
   }, [isMounted]);
 
   const toggleChatbot = () => {

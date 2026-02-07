@@ -134,16 +134,16 @@ export default function WhoopDashboard() {
 
     // Auto-refresh debug info and sync status every 30 seconds when authenticated
     useEffect(() => {
-        if (session) {
+        if (!session) return undefined;
+        
+        getDebugInfo();
+        getSyncStatus();
+        checkSessionStatus(); // Add session status check
+        const interval = setInterval(() => {
             getDebugInfo();
             getSyncStatus();
-            checkSessionStatus(); // Add session status check
-            const interval = setInterval(() => {
-                getDebugInfo();
-                getSyncStatus();
-            }, 30000);
-            return () => clearInterval(interval);
-        }
+        }, 30000);
+        return () => clearInterval(interval);
     }, [session]);
 
     const runHistoricalCollection = async () => {

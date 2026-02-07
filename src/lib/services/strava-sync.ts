@@ -117,11 +117,11 @@ export class StravaDataSync {
       WHERE id = ${athleteId}
     `;
 
-    if (userResult.rows.length === 0) {
+    const user = userResult.rows[0];
+    if (!user) {
       throw new Error(`No user found with athlete ID: ${athleteId}`);
     }
 
-    const user = userResult.rows[0];
     const expiresAt = new Date(user.token_expires_at);
     const now = new Date();
     
@@ -349,6 +349,16 @@ export class StravaDataSync {
     `;
 
     const stats = result.rows[0];
+    
+    if (!stats) {
+      return {
+        totalRuns: 0,
+        totalDistance: 0,
+        lastSyncDate: null,
+        oldestRun: null,
+        newestRun: null
+      };
+    }
     
     return {
       totalRuns: parseInt(stats.total_runs) || 0,
