@@ -1,140 +1,148 @@
-# AGENTS.md - Camilo Martinez Portfolio Project Constitution
+# AGENTS.md - camilomartinez-portfolio
 
 ## Project Overview
 
-Camilo Martinez Portfolio is **AI-driven fitness analytics platform with Next.js frontend and FastAPI backend.**.
+**Purpose:** AI-driven fitness analytics platform with Next.js frontend and FastAPI backend. Delivers production-grade analytics turning wearable data (WHOOP, Strava) into actionable fitness insights: workout/sleep analytics, AI-assisted insights.
 
-**Vision:** Deliver an end-to-end, production-grade analytics product that turns wearable data into actionable fitness insights.
+**Status:** MVP (0-8 weeks: Stabilize core data ingestion, analytics views, backend reliability; V1.5 8-16w; V2 16+w)
 
-## Build Phases
-
-| Phase | Timeline | Focus |
-|-------|----------|-------|
-| **MVP** | 0-8 weeks | Stabilize core data ingestion, analytics views, and backend reliability |
-| **V1.5** | 8-16 weeks | Expand automation and improve user-facing analytics quality |
-| **V2** | 16+ weeks | Multi-environment hardening and operational maturity |
-
-## Quick Commands
-
-| Command | Purpose |
-|---------|---------|
-| `pnpm install && cd backend && uv sync` | Install dependencies |
-| `pnpm dev:all` | Start dev server |
-| `pnpm build` | Production build |
-| `pnpm test:db-schema` | Run tests |
-| `pnpm exec next lint` | Lint and auto-fix |
+**Port:** Frontend ~3000 (Next.js dev); Backend (FastAPI, TBD)
 
 ## Tech Stack
 
-- **Framework:** Next.js + FastAPI
-- **Language:** TypeScript + Python
-- **Database:** PostgreSQL/SQLite
-- **Integrations: WHOOP, Strava, Render, Vercel**
+| Layer          | Technology                  |
+|----------------|-----------------------------|
+| Language       | TypeScript + Python         |
+| Framework      | Next.js + FastAPI           |
+| Database       | PostgreSQL/SQLite           |
+| Key Libraries  | Tailwind CSS; uv (Python deps); Integrations: WHOOP, Strava |
+| Deployment     | Render, Vercel              |
 
-## Project Structure
+## Roles
+
+Adopt based on task. Standard roles + project AI agents from `.ai/agents/`.
+
+### Frontend Developer
+- Next.js UI/pages/components (`src/components/`, `src/lib/`)
+- State management, styling (Tailwind), responsiveness
+- Client-side integrations
+
+### Backend Developer
+- FastAPI endpoints/business logic (`backend/`)
+- Wearable data ingestion (WHOOP/Strava), analytics (workout/sleep)
+- Error handling, validation
+
+### DBA (Database Administrator)
+- Schema/migrations (PostgreSQL/SQLite)
+- Query optimization, data integrity for fitness data
+
+### DevOps
+- Deployment configs (Render/Vercel, `render.yaml`)
+- CI/CD (`.github/`), Python deps (`uv sync`)
+
+### Builder (AI Agent)
+- Technical builds: `.ai/agents/builder.md`
+
+### Operator (AI Agent)
+- Runtime ops: `.ai/agents/operator.md`
+
+### Communicator (AI Agent)
+- Human comms: `.ai/agents/communicator.md`
+
+### Strategist (AI Agent)
+- Decisions: `.ai/agents/strategist.md`
+
+## File Structure
 
 ```
 camilomartinez-portfolio/
-├── src/           # Source code
-├── src/components/       # Reusable components
-├── src/lib/              # Utilities and libraries
-├── backend/           # API routes and server logic
-└── backend/tests/            # Test files
+├── src/                    # Next.js frontend
+│   ├── components/         # Reusable UI
+│   └── lib/                # Utilities
+├── backend/                # FastAPI backend
+│   └── tests/              # Backend tests
+├── .ai/                    # AI system: agents/, standards/, workflows/, contexts/, templates/
+├── docs/                   # Playbooks (human-facing), docs
+│   └── playbooks/          # Workflow guides
+├── specs/                  # Feature specs (mvp-foundation.md)
+├── .github/                # Workflows
+├── docs/project-overrides/ # Pre-merge overrides (AGENTS.premerge.md)
+├── package.json            # Node deps/scripts
+└── render.yaml             # Deployment
 ```
 
-## Two Parallel Systems
+**Two Parallel Systems:**
+- **Playbooks** (`docs/playbooks/`): Human-guided AI workflows
+- **.ai/**: Autonomous AI operation
 
-| System | Location | Purpose |
-|--------|----------|---------|
-| **Playbooks** | `docs/playbooks/` | Human-facing prompts for driving AI sessions |
-| **.ai** | `.ai/` | AI-facing context and standards for autonomous operation |
+**Standards:** `.ai/standards/` (code/typescript.md, nextjs.md, testing.md, api/, security/, comms/)
 
-Use **playbooks** when you want to guide an AI through a specific workflow step-by-step.
-Use **.ai** when you want AI to operate autonomously with full context.
+**Workflows:** `.ai/workflows/` (ship-feature.md, investigate-bug.md, etc.)
 
-## Agent System
+**Contexts:** `.ai/contexts/` (product-context.md, current-priorities.md, camilomartinez-portfolio.md)
 
-| Task Type | Agent | File |
-|-----------|-------|------|
-| Build anything technical | Builder | `.ai/agents/builder.md` |
-| Keep it running | Operator | `.ai/agents/operator.md` |
-| Talk to humans | Communicator | `.ai/agents/communicator.md` |
-| Decide what to build | Strategist | `.ai/agents/strategist.md` |
+## Conventions
 
-## Standards
+### Git Commits
+- Format: `type: description`
+- Types: feat, fix, docs, refactor, test, chore
+- Example: `feat: add WHOOP data ingestion`
+- Always: `pnpm exec next lint`; align docs/specs/code
 
-- TypeScript + Python: `.ai/standards/code/typescript.md`
-- Next.js + FastAPI: `.ai/standards/code/nextjs.md`
-- Testing: `.ai/standards/code/testing.md`
-- API: `.ai/standards/api/design.md`
-- Security: `.ai/standards/security/baseline.md`
-- Voice: `.ai/standards/comms/voice.md`
+### Code Style
+- TypeScript/Python: Strict mode (see `.ai/standards/code/`)
+- Linting: `pnpm exec next lint` (auto-fix)
+- Testing: Write for business logic (`pnpm test:db-schema`)
+- Docs: JSDoc/exported functions
+- `.ai/standards/` authoritative
 
-## Workflows
+### Branch Strategy
+- `main`: Production-ready
+- `feature/*`: New features
+- `fix/*`: Bugs
 
-- Ship Feature: `.ai/workflows/ship-feature.md`
-- Investigate Bug: `.ai/workflows/investigate-bug.md`
-- Customer Feedback: `.ai/workflows/customer-feedback.md`
-- Weekly Ops: `.ai/workflows/weekly-ops.md`
+**Core Rules:**
+- **Always:** Type strict, tests, lint, docs aligned, no secrets
+- **Ask First:** New deps, DB changes, auth, arch, prod creds
+- **Never:** Disable types, skip errors/auth/audit
+- **Escalate:** >1d work, breaking changes, sec>med, low conf (`.ai/decision-boundaries.md`)
 
-## Contexts
+## Entry Points
 
-- Product: `.ai/contexts/product-context.md`
-- Priorities: `.ai/contexts/current-priorities.md`
-- Optional project-specific context: `.ai/contexts/camilomartinez-portfolio.md`
+| What            | Where                          |
+|-----------------|--------------------------------|
+| Frontend App    | `src/` (Next.js `app/` router) |
+| Backend Server  | `backend/main.py` (FastAPI)    |
+| API Routes      | `backend/`                     |
+| Database Schema | `backend/` (migrations/SQL)    |
+| Config          | `.env`, `package.json`, `render.yaml` |
+| Tests           | `backend/tests/`, `pnpm test:db-schema` |
+| AI Contexts     | `.ai/contexts/`                |
 
-## Templates
+## Dependencies
 
-- PR Description: `.ai/templates/pr-description.md`
-- Changelog Entry: `.ai/templates/changelog-entry.md`
-- Customer Response: `.ai/templates/customer-response.md`
-- Weekly Update: `.ai/templates/weekly-update.md`
+**External APIs:** WHOOP, Strava
+**Services:** Render, Vercel
+**Internal:** None (self-contained)
+**Overrides:** `docs/project-overrides/AGENTS.premerge.md`
 
-## Core Rules
+## Getting Started
 
-### Always
+```bash
+# Install dependencies
+pnpm install && cd backend && uv sync
 
-- Use TypeScript + Python strict mode
-- Write tests for business logic
-- Run `pnpm exec next lint` before committing
-- Add documentation to exported functions
-- Keep docs, specs, and context files aligned with shipped code
+# Run dev server (both frontend/backend)
+pnpm dev:all
 
-### Ask First
+# Production build
+pnpm build
 
-- Adding new dependencies
-- Modifying database schema
-- Changing authentication flow
-- Major architectural changes
-- Changes to production credentials, billing, or automation schedules
+# Lint & fix
+pnpm exec next lint
 
-### Never
+# Tests
+pnpm test:db-schema
+```
 
-- Commit API keys or secrets
-- Disable type checking
-- Skip error handling
-- Never bypass auth, rate limits, or audit logging controls
-
-## Escalation (All Agents)
-
-- Work estimate > 1 day
-- Breaking change to API or database
-- Security severity > Medium
-- Confidence is low
-
-See `.ai/decision-boundaries.md` for full authority matrix.
-
-## Domain Concepts
-
-- Wearable data ingestion\n- Workout and sleep analytics\n- AI-assisted insights generation
-
-## Specs
-
-- **MVP:** `specs/mvp-foundation.md`
-
-## Project Overrides
-
-- Pre-merge AGENTS (if present):
-- `docs/project-overrides/AGENTS.premerge.md`
-- Project-specific context source: `.ai/contexts/camilomartinez-portfolio.md`
-- Existing repository docs remain authoritative for business/domain details.
+*See README.md, WARP.md, ARCHITECTURE.md, CLAUDE.md for more. Keep updated as project evolves.*
