@@ -5,9 +5,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdminAccess } from '@/lib/security/route-auth';
 
 export async function GET(request: NextRequest) {
   try {
+    const access = await requireAdminAccess(request, {
+      secrets: [process.env.CRON_SECRET, process.env.STRAVA_CRON_SECRET],
+      allowQuerySecret: false,
+    });
+    if (access.response) {
+      return access.response;
+    }
+
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const clientId = process.env.STRAVA_CLIENT_ID;
     const hasClientSecret = !!process.env.STRAVA_CLIENT_SECRET;

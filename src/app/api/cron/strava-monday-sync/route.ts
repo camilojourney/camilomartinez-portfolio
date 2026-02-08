@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { StravaDataSyncCoordinator } from '@/lib/services/strava-data-sync';
+import { requestMatchesAnySecret } from '@/lib/security/route-auth';
 
 export const maxDuration = 300; // 5 minutes timeout for Vercel Pro
 
@@ -34,19 +35,22 @@ export async function POST(request: NextRequest) {
   const overallStartTime = new Date();
 
   try {
-    // Verify cron secret to prevent unauthorized access
-    const authHeader = request.headers.get('authorization');
-    const url = new URL(request.url);
-    const secret = url.searchParams.get('secret') || url.searchParams.get('token');
     const expected = process.env.CRON_SECRET;
 
-    // For development, allow bypass if no secret is set
-    if (process.env.NODE_ENV !== 'development' && (authHeader !== `Bearer ${expected}` && secret !== expected)) {
-      console.error('❌ Unauthorized Monday sync cron request');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (process.env.NODE_ENV !== 'development') {
+      if (!expected) {
+        return NextResponse.json({ error: 'CRON_SECRET must be configured' }, { status: 500 });
+      }
+
+      const authorized = requestMatchesAnySecret(request, [expected], { allowQuerySecret: true });
+      if (!authorized) {
+        console.error('❌ Unauthorized Monday sync cron request');
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     // Dry run: validate wiring without heavy work
+    const url = new URL(request.url);
     const dryRun = url.searchParams.get('dryRun') === 'true';
     if (dryRun) {
       return NextResponse.json({

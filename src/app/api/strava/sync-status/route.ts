@@ -6,9 +6,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { stravaDataSyncCoordinator } from '@/lib/services/strava-data-sync';
+import { requireAdminAccess } from '@/lib/security/route-auth';
 
 export async function GET(request: NextRequest) {
   try {
+    const access = await requireAdminAccess(request, {
+      secrets: [process.env.STRAVA_CRON_SECRET, process.env.CRON_SECRET],
+      allowQuerySecret: true,
+    });
+    if (access.response) {
+      return access.response;
+    }
+
     console.log('📊 Getting Strava sync status...');
 
     const syncStatus = await stravaDataSyncCoordinator.getSyncStatus();

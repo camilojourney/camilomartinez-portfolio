@@ -49,11 +49,7 @@ export class StravaClient {
 
     const tokenData: StravaTokenResponse = await response.json();
     
-    // Log successful token refresh (remove in production)
-    console.log('✅ Strava token refreshed successfully', {
-      expires_at: new Date(tokenData.expires_at * 1000).toISOString(),
-      expires_in: tokenData.expires_in,
-    });
+    console.log('✅ Strava token refreshed successfully');
 
     return tokenData;
   }
@@ -65,7 +61,7 @@ export class StravaClient {
     const config: StravaConfig = {
       clientId: process.env.STRAVA_CLIENT_ID!,
       clientSecret: process.env.STRAVA_CLIENT_SECRET!,
-      redirectUri: `${process.env.NEXTAUTH_URL}/api/strava/callback`,
+      redirectUri: `${process.env.NEXTAUTH_URL}/api/auth/strava/callback`,
       scope: ['read', 'activity:read_all'],
     };
 

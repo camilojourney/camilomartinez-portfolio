@@ -1,8 +1,24 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db/db';
+import { auth } from '@/lib/auth';
+import { requestMatchesAnySecret } from '@/lib/security/route-auth';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const allowPublicData = process.env.ALLOW_PUBLIC_DASHBOARD_DATA === 'true';
+        if (!allowPublicData) {
+            const session = await auth();
+            const hasInternalSecret = requestMatchesAnySecret(
+                request,
+                [process.env.CRON_SECRET, process.env.INTERNAL_API_SECRET],
+                { allowQuerySecret: false }
+            );
+
+            if (!session && !hasInternalSecret) {
+                return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+            }
+        }
+
         // Get recent data from each table
         const users = await sql`SELECT COUNT(*) as count FROM whoop_users`;
         const cycles = await sql`SELECT COUNT(*) as count FROM whoop_cycles`;
@@ -15,26 +31,30 @@ export async function GET() {
             SELECT id, start_time, end_time, strain,
                    TO_CHAR(start_time, 'YYYY-MM-DD') AS formatted_date
             FROM whoop_cycles
-            ORDER BY start_time DESC;
+            ORDER BY start_time DESC
+            LIMIT 1000;
         `;
 
         const recentRecovery = await sql`
             SELECT cycle_id, recovery_percentage
             FROM whoop_recovery
-            ORDER BY cycle_id DESC;
+            ORDER BY cycle_id DESC
+            LIMIT 1000;
         `;
 
         const recentSleep = await sql`
             SELECT id, start_time, end_time, sleep_performance_percentage
             FROM whoop_sleep
             ORDER BY start_time DESC
+            LIMIT 1000
         `;
 
         const recentWorkouts = await sql`
             SELECT id, start_time, end_time, sport_name, strain
             FROM whoop_workouts
             WHERE sport_name IN ('running', 'cycling', 'boxing', 'weightlifting', 'weightlifting_msk')
-            ORDER BY start_time DESC;
+            ORDER BY start_time DESC
+            LIMIT 1000;
         `;
 
         // Get the most recent dates to check data freshness
@@ -50,6 +70,7 @@ export async function GET() {
                 strain
             FROM whoop_cycles
             WHERE strain IS NOT NULL
+              AND start_time >= NOW() - INTERVAL '2 years'
             ORDER BY start_time ASC
         `;
 

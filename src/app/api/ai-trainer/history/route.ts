@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
+import { requireAdminAccess } from '@/lib/security/route-auth';
 
 // Database connection using your actual Neon PostgreSQL
 const pool = new Pool({
@@ -17,6 +18,14 @@ const pool = new Pool({
 
 export async function GET(request: NextRequest) {
   try {
+    const access = await requireAdminAccess(request, {
+      secrets: [process.env.CRON_SECRET],
+      allowQuerySecret: false,
+    });
+    if (access.response) {
+      return access.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
     const user_id = searchParams.get('user_id') || 'trainer-user';

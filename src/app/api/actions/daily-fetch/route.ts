@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdminAccess } from '@/lib/security/route-auth'
 
 function baseUrl() {
   const url = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || 'http://localhost:3000'
@@ -7,6 +8,14 @@ function baseUrl() {
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireAdminAccess(request, {
+      secrets: [process.env.CRON_SECRET],
+      allowQuerySecret: false,
+    })
+    if (access.response) {
+      return access.response
+    }
+
     const secret = process.env.CRON_SECRET
     if (!secret) {
       return NextResponse.json({ ok: false, error: 'CRON_SECRET not configured' }, { status: 500 })
@@ -16,7 +25,6 @@ export async function POST(request: NextRequest) {
     const dryRun = body?.dryRun === true
 
     const url = new URL('/api/cron/daily-data-fetch', baseUrl())
-    url.searchParams.set('secret', secret)
     if (dryRun) url.searchParams.set('dryRun', 'true')
 
     const res = await fetch(url.toString(), {
@@ -33,4 +41,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : String(err) }, { status: 500 })
   }
 }
-

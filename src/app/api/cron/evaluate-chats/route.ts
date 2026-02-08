@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { requestMatchesAnySecret } from '@/lib/security/route-auth';
 
 /**
  * Daily Batch Evaluation Cron Job
@@ -17,9 +18,12 @@ import path from 'path';
  * }
  */
 export async function GET(req: Request) {
-  // Verify cron secret
-  const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET must be configured' }, { status: 500 });
+  }
+
+  if (!requestMatchesAnySecret(req, [cronSecret], { allowQuerySecret: false })) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

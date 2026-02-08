@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
 import { getErrorMessage } from '@/lib/utils/errors';
+import { requestMatchesAnySecret } from '@/lib/security/route-auth';
 
 const connectionString = process.env.POSTGRES_URL_NONPRISMA;
 
@@ -25,12 +26,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const secret = process.env.CRON_SECRET_KEY;
-    if (secret) {
-      const authHeader = req.headers.get('authorization');
-      if (authHeader !== `Bearer ${secret}`) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+    const secret = process.env.CRON_SECRET_KEY || process.env.CRON_SECRET;
+    if (process.env.NODE_ENV !== 'development' && !secret) {
+      return NextResponse.json({ error: 'CRON_SECRET_KEY or CRON_SECRET must be configured' }, { status: 500 });
+    }
+
+    if (secret && !requestMatchesAnySecret(req, [secret], { allowQuerySecret: false })) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const client = await pool.connect();

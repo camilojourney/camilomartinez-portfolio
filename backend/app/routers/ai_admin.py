@@ -15,11 +15,12 @@ Endpoints:
 
 import logging
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Depends, Query, status
+from fastapi import APIRouter, HTTPException, Depends, Query, Request, status
 from pydantic import BaseModel, Field
 
 from app.services.ai.self_improving_agent import self_improving_agent, SelfImprovingAgentError
 from app.services.ai.error_handling import handle_exceptions
+from app.utils.auth import verify_admin_request
 
 logger = logging.getLogger(__name__)
 
@@ -64,26 +65,13 @@ class ImprovementStatsResponse(BaseModel):
     validated_embeddings: int
 
 
-# ==================== AUTH DEPENDENCY (PLACEHOLDER) ====================
+# ==================== AUTH DEPENDENCY ====================
 
 async def verify_admin_auth(
-    # TODO: Implement actual authentication
-    # For now, this is a placeholder
-    # admin_token: str = Header(...)
+    request: Request
 ) -> str:
-    """
-    Verify admin authentication.
-
-    TODO: Implement proper authentication:
-    - JWT token validation
-    - API key validation
-    - Role-based access control (RBAC)
-
-    For now, returns a default admin user.
-    """
-    # In production, validate token and return user info
-    # For development, return placeholder
-    return "admin_user"
+    """Verify admin authentication for HITL endpoints."""
+    return await verify_admin_request(request)
 
 
 # ==================== ENDPOINTS ====================

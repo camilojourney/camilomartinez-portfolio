@@ -6,9 +6,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { weeklySyncService } from '@/lib/services/strava-data-sync';
+import { requireAdminAccess } from '@/lib/security/route-auth';
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireAdminAccess(request, {
+      secrets: [process.env.STRAVA_CRON_SECRET, process.env.CRON_SECRET],
+      allowQuerySecret: true,
+    });
+    if (access.response) {
+      return access.response;
+    }
+
     const body = await request.json().catch(() => ({}));
     const { userId } = body;
 

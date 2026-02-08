@@ -8,21 +8,41 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stravaUserService } from '@/lib/db/strava-database';
 import { StravaOAuthResponse, StravaTokens, StravaProfile } from '@/types/strava-auth';
 
+function resolveBaseUrl(request: NextRequest): string {
+  const configured = process.env.NEXTAUTH_URL || process.env.VERCEL_URL;
+  if (configured) {
+    return configured.startsWith('http') ? configured : `https://${configured}`;
+  }
+  return request.nextUrl.origin;
+}
+
+function buildErrorRedirect(baseUrl: string, errorCode: string): string {
+  return `${baseUrl}?strava_error=${encodeURIComponent(errorCode)}`;
+}
+
 export async function GET(request: NextRequest) {
   try {
+    const baseUrl = resolveBaseUrl(request);
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');
     const error = searchParams.get('error');
+    const state = searchParams.get('state');
+    const storedState = request.cookies.get('strava_oauth_state')?.value;
 
     // Handle authorization denial
     if (error) {
-      console.log(`❌ Strava authorization denied: ${error}`);
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      return NextResponse.redirect(`${baseUrl}?strava_error=${error}`);
+      const denied = NextResponse.redirect(buildErrorRedirect(baseUrl, error));
+      denied.cookies.delete('strava_oauth_state');
+      return denied;
+    }
+
+    if (!state || !storedState || state !== storedState) {
+      const invalidState = NextResponse.redirect(buildErrorRedirect(baseUrl, 'invalid_state'));
+      invalidState.cookies.delete('strava_oauth_state');
+      return invalidState;
     }
 
     if (!code) {
-      console.error('❌ No authorization code provided in callback');
       return NextResponse.json(
         { error: 'No authorization code provided' },
         { status: 400 }
@@ -33,18 +53,11 @@ export async function GET(request: NextRequest) {
     const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      console.error('❌ Strava client credentials not configured');
-      console.error(`Client ID present: ${!!clientId}`);
-      console.error(`Client Secret present: ${!!clientSecret}`);
       return NextResponse.json(
         { error: 'Strava client credentials not configured' },
         { status: 500 }
       );
     }
-
-    console.log(`🔄 Exchanging Strava authorization code for tokens...`);
-    console.log(`🔧 Using Client ID: ${clientId}`);
-    console.log(`🔧 Authorization code: ${code.substring(0, 10)}...`);
 
     // Exchange authorization code for access token
     const tokenResponse = await fetch('https://www.strava.com/oauth/token', {
@@ -56,20 +69,16 @@ export async function GET(request: NextRequest) {
         client_id: clientId,
         client_secret: clientSecret,
         code,
+        redirect_uri: `${baseUrl}/api/auth/strava/callback`,
         grant_type: 'authorization_code',
       }),
     });
 
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.json();
-      console.error('❌ Token exchange failed:', errorData);
-      console.error(`❌ Response status: ${tokenResponse.status}`);
-      console.error(`❌ Response headers:`, tokenResponse.headers);
       return NextResponse.json(
         { 
-          error: 'Failed to exchange authorization code', 
-          details: errorData,
-          status: tokenResponse.status 
+          error: 'Failed to exchange authorization code',
+          status: tokenResponse.status
         },
         { status: 400 }
       );
@@ -102,22 +111,17 @@ export async function GET(request: NextRequest) {
       profilePictureUrl: oauthData.athlete.profile || '',
     };
 
-    console.log(`✅ Received Strava OAuth data for athlete ${profile.id} (${profile.firstname} ${profile.lastname})`);
-
     // Save user and tokens to database
     await stravaUserService.upsertUserWithTokens(profile, tokens);
 
-    console.log(`💾 Saved Strava user data for athlete ${profile.id}`);
-
     // Redirect to success page
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const successUrl = `${baseUrl}?strava_connected=true&athlete_id=${profile.id}`;
-    return NextResponse.redirect(successUrl);
+    const successResponse = NextResponse.redirect(successUrl);
+    successResponse.cookies.delete('strava_oauth_state');
+    return successResponse;
 
   } catch (error) {
-    console.error('❌ Error in Strava OAuth callback:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('❌ Error details:', errorMessage);
     
     return NextResponse.json(
       { 

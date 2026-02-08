@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db/db';
+import { requireAdminAccess } from '@/lib/security/route-auth';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const access = await requireAdminAccess(request, {
+            secrets: [process.env.CRON_SECRET],
+            allowQuerySecret: false,
+        });
+        if (access.response) {
+            return access.response;
+        }
+
         const result = await sql`
             SELECT
                 TO_CHAR(start_time, 'YYYY-MM-DD') AS formatted_date,

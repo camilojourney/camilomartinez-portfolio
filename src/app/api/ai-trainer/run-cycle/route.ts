@@ -8,6 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Pool } from 'pg';
+import { requireAdminAccess } from '@/lib/security/route-auth';
 
 // Database connection using your actual Neon PostgreSQL
 const pool = new Pool({
@@ -17,6 +18,14 @@ const pool = new Pool({
 
 export async function POST(request: NextRequest) {
   try {
+    const access = await requireAdminAccess(request, {
+      secrets: [process.env.CRON_SECRET],
+      allowQuerySecret: false,
+    });
+    if (access.response) {
+      return access.response;
+    }
+
     const body = await request.json();
     const { analysis_period = 90, user_goals, save_evaluation = true } = body;
 

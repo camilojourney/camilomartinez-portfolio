@@ -4,6 +4,7 @@ Automatically loads and validates environment variables.
 """
 from pydantic_settings import BaseSettings
 from typing import Optional
+from urllib.parse import urlparse
 
 
 class Settings(BaseSettings):
@@ -41,6 +42,7 @@ class Settings(BaseSettings):
 
     # Authentication & Security (optional for standalone scripts)
     SECRET_KEY: Optional[str] = None
+    ADMIN_API_KEY: Optional[str] = None
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -59,6 +61,7 @@ class Settings(BaseSettings):
 
     # Development
     CORS_ORIGINS: str = '["http://localhost:3000", "http://127.0.0.1:3000"]'
+    TRUSTED_HOSTS: str = '["*"]'
     LOG_LEVEL: str = "INFO"
 
     class Config:
@@ -90,6 +93,36 @@ class Settings(BaseSettings):
         except (json.JSONDecodeError, TypeError):
             # Fallback to default origins
             return ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+    @property
+    def trusted_hosts_list(self) -> list[str]:
+        """Parse TRUSTED_HOSTS and include deployment hostnames when available."""
+        import json
+
+        parsed_hosts: list[str]
+        try:
+            parsed = json.loads(self.TRUSTED_HOSTS)
+            parsed_hosts = [str(host).strip() for host in parsed if str(host).strip()]
+        except (json.JSONDecodeError, TypeError):
+            parsed_hosts = []
+
+        if self.NEXTAUTH_URL:
+            try:
+                hostname = urlparse(self.NEXTAUTH_URL).hostname
+                if hostname:
+                    parsed_hosts.append(hostname)
+            except Exception:
+                pass
+
+        if not parsed_hosts:
+            return ["*"]
+
+        # Preserve order while removing duplicates
+        deduplicated: list[str] = []
+        for host in parsed_hosts:
+            if host not in deduplicated:
+                deduplicated.append(host)
+        return deduplicated
 
 
 # Create global settings instance

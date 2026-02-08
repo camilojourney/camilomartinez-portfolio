@@ -7,39 +7,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { TokenRefreshService } from '@/lib/services/token-refresh-service';
-import { WhoopDatabaseService } from '@/lib/db/whoop-database';
 
 export async function POST(request: NextRequest) {
   try {
-    // Get current session
     const session = await auth();
-    
-    if (!session || !session.refreshToken) {
+
+    if (!session?.user) {
       return NextResponse.json(
-        { error: 'No WHOOP session or refresh token found' },
+        { error: 'No WHOOP session found' },
         { status: 401 }
       );
     }
 
-    console.log('🔄 Manual WHOOP token refresh requested...');
-    
-    // Refresh the tokens
-    const tokenService = new TokenRefreshService();
-    const refreshedTokens = await tokenService.refreshWhoopToken(session.refreshToken as string);
-
-    // Update database if we have user info
-    if (session.user) {
-      try {
-        const dbService = new WhoopDatabaseService();
-        await dbService.upsertUserWithTokens(session.user as any, refreshedTokens);
-        console.log('✅ Updated WHOOP tokens in database');
-      } catch (error) {
-        console.error('❌ Failed to update WHOOP tokens in database:', error);
-      }
+    const rawUserId = (session.user as any)?.user_id ?? (session.user as any)?.id;
+    const userId = typeof rawUserId === 'number' ? rawUserId : parseInt(String(rawUserId), 10);
+    if (!userId || Number.isNaN(userId)) {
+      return NextResponse.json(
+        { error: 'Unable to resolve WHOOP user id from session' },
+        { status: 400 }
+      );
     }
 
-    console.log('✅ WHOOP tokens refreshed successfully');
-    
+    const tokenService = new TokenRefreshService();
+    const refreshedTokens = await tokenService.getFreshTokensForUser(userId, true);
+    if (!refreshedTokens) {
+      return NextResponse.json(
+        {
+          error: 'Failed to refresh WHOOP tokens',
+          requiresReauth: true,
+        },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: 'WHOOP tokens refreshed successfully',

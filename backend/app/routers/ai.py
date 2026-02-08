@@ -16,8 +16,10 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import jwt, JWTError
 from pydantic import BaseModel, Field
 
+from app.config.settings import settings
 from app.services.ai.openai_client import openai_service, OpenAIError
 from app.services.ai.rag_service import rag_service, RAGError
 from app.services.ai.query_processor import query_processor, QueryProcessingError
@@ -84,42 +86,34 @@ class APIResponse(BaseModel):
 
 # Utility Functions
 
-async def get_user_id(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
-) -> Optional[str]:
-    """
-    Extract user ID from authorization token.
-    
-    TODO: Implement proper JWT token validation
-    Current implementation is a placeholder that returns a mock user ID.
-    
-    To implement real JWT validation:
-    1. Add JWT_SECRET to environment variables
-    2. Use python-jose to decode and validate the token
-    3. Extract user_id from the token claims
-    4. Validate token expiration and signature
-    
-    Example implementation:
-        from jose import jwt, JWTError
-        from app.config import settings
-        
-        if not credentials:
-            return None
-        try:
-            payload = jwt.decode(
-                credentials.credentials,
-                settings.JWT_SECRET,
-                algorithms=["HS256"]
-            )
-            return payload.get("user_id")
-        except JWTError:
-            return None
-    """
-    if credentials and credentials.credentials:
-        # Placeholder: returns mock user ID
-        # Replace with JWT validation in production
-        return "mock_user_123"
-    return None
+async def get_user_id(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[str]:
+    """Extract and validate user ID from bearer token."""
+    if not credentials or not credentials.credentials:
+        return None
+
+    if credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Invalid authentication scheme")
+
+    if not settings.SECRET_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Authentication is not configured on this deployment."
+        )
+
+    try:
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid or expired authentication token") from exc
+
+    user_id = payload.get("sub") or payload.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Token missing user identity")
+
+    return str(user_id)
 
 
 def handle_ai_service_error(error: Exception, operation: str) -> HTTPException:

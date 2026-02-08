@@ -14,6 +14,7 @@ from app.utils.rate_limiting import (
     get_client_ip,
     get_user_id_from_request,
 )
+from app.utils.auth import verify_admin_request
 from app.config.settings import settings
 
 router = APIRouter()
@@ -97,7 +98,8 @@ async def system_status():
 @router.get("/debug/rate-limit")
 async def debug_rate_limit(
     request: Request,
-    db: AsyncSession = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session),
+    admin_user: str = Depends(verify_admin_request)
 ):
     """Debug endpoint to check rate limit status."""
     
@@ -137,7 +139,8 @@ async def debug_rate_limit(
 @router.post("/debug/test-rate-limit")
 async def test_rate_limit(
     request: Request,
-    db: AsyncSession = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session),
+    admin_user: str = Depends(verify_admin_request)
 ):
     """Test rate limiting by simulating an AI query."""
     
@@ -189,12 +192,11 @@ async def test_rate_limit(
 @router.post("/debug/create-bypass-token")
 async def create_bypass_token(
     description: str,
-    db: AsyncSession = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session),
+    admin_user: str = Depends(verify_admin_request)
 ):
     """Create a new bypass token for testing. (Remove in production!)"""
-    
-    # TODO: Add authentication check for admin users
-    
+
     bypass = await rate_limit_service.create_bypass_token(
         db=db,
         description=f"Test bypass: {description}"

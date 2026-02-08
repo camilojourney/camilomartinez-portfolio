@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { requireAdminAccess } from '@/lib/security/route-auth';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const access = await requireAdminAccess(request, {
+            secrets: [process.env.CRON_SECRET],
+            allowQuerySecret: false,
+        });
+        if (access.response) {
+            return access.response;
+        }
+
         const session = await auth();
         const sessionWithToken = session as typeof session & { 
             accessToken?: string; 
