@@ -65,16 +65,21 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
     const formatWeekLabel = (weekStart: string, weekEnd: string) => {
         // Parse YYYY-MM-DD format directly to avoid UTC timezone shift
         const parseLocalDate = (dateStr: string) => {
-            const [year, month, day] = dateStr.split('T')[0].split('-').map(Number);
-            return { year, month, day };
+            const datePart = dateStr.split('T')[0] ?? dateStr;
+            const parts = datePart.split('-').map(Number);
+            return { 
+                year: parts[0] ?? 2024, 
+                month: parts[1] ?? 1, 
+                day: parts[2] ?? 1 
+            };
         };
 
         const start = parseLocalDate(weekStart);
         const end = parseLocalDate(weekEnd);
 
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthStart = months[start.month - 1];
-        const monthEnd = months[end.month - 1];
+        const monthStart = months[start.month - 1] ?? 'Jan';
+        const monthEnd = months[end.month - 1] ?? 'Jan';
 
         if (monthStart === monthEnd) {
             return `${monthStart} ${start.day}-${end.day}`;
