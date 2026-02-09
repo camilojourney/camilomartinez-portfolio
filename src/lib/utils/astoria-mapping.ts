@@ -100,6 +100,7 @@ export function gpsPointsToSegments(points: GPSPoint[]): RouteSegment[] {
   for (let i = 0; i < points.length - 1; i++) {
     const start = points[i];
     const end = points[i + 1];
+    if (!start || !end) continue;
     
     segments.push({
       start,
@@ -117,20 +118,25 @@ export function gpsPointsToSegments(points: GPSPoint[]): RouteSegment[] {
  * This helps reduce noise and improves performance
  */
 export function simplifyGPSTrack(points: GPSPoint[], minDistance: number = 10): GPSPoint[] {
+  if (points.length === 0) return [];
   if (points.length <= 2) return points;
   
-  const simplified = [points[0]]; // Always keep first point
+  const first = points[0];
+  if (!first) return [];
+  const simplified = [first]; // Always keep first point
   
   for (let i = 1; i < points.length - 1; i++) {
     const lastKept = simplified[simplified.length - 1];
     const current = points[i];
+    if (!lastKept || !current) continue;
     
     if (calculateDistance(lastKept, current) >= minDistance) {
       simplified.push(current);
     }
   }
   
-  simplified.push(points[points.length - 1]); // Always keep last point
+  const last = points[points.length - 1];
+  if (last) simplified.push(last); // Always keep last point
   return simplified;
 }
 
@@ -230,12 +236,14 @@ export function prepareRouteForVisualization(
   completed: boolean;
 }> {
   if (segments.length === 0) return [];
+  const first = segments[0];
+  if (!first) return [];
   
   // Group consecutive segments into paths
   const coordinates: Array<[number, number]> = [];
   
   // Add first point
-  coordinates.push([segments[0].start.lng, segments[0].start.lat]);
+  coordinates.push([first.start.lng, first.start.lat]);
   
   // Add all end points
   segments.forEach(segment => {

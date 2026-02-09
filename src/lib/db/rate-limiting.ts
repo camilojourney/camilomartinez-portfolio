@@ -49,7 +49,8 @@ export async function checkRateLimit(ipAddress: string): Promise<RateLimitStatus
       WHERE ip_address = $1
     `, [ipAddress]);
 
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    // Avoid `split()[0]` because `noUncheckedIndexedAccess` makes it `string | undefined`.
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
     let questionsUsed = 0;
 
     if (existingRecords && existingRecords.length > 0) {
@@ -58,8 +59,8 @@ export async function checkRateLimit(ipAddress: string): Promise<RateLimitStatus
       
       // Convert database date to YYYY-MM-DD format for comparison
       const lastResetDateStr = lastResetDate instanceof Date 
-        ? lastResetDate.toISOString().split('T')[0]
-        : new Date(lastResetDate).toISOString().split('T')[0];
+        ? lastResetDate.toISOString().slice(0, 10)
+        : new Date(lastResetDate).toISOString().slice(0, 10);
       
       // Check if we need to reset the counter for a new day
       if (lastResetDateStr !== today) {
@@ -99,7 +100,7 @@ export async function checkRateLimit(ipAddress: string): Promise<RateLimitStatus
       isBlocked: false,
       questionsUsed: 0,
       questionsRemaining: DAILY_QUESTION_LIMIT,
-      resetDate: new Date().toISOString().split('T')[0],
+      resetDate: new Date().toISOString().slice(0, 10),
     };
   }
 }
@@ -111,7 +112,7 @@ export async function checkRateLimit(ipAddress: string): Promise<RateLimitStatus
  */
 export async function incrementQuestionCount(ipAddress: string): Promise<RateLimitStatus> {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().slice(0, 10);
     
     // Increment the counter or create new record
     await executeRateLimitQuery(`
@@ -148,7 +149,8 @@ export function getClientIP(request: Request): string {
   
   if (forwardedFor) {
     // x-forwarded-for can contain multiple IPs, get the first one
-    return forwardedFor.split(',')[0].trim();
+    const first = forwardedFor.split(',')[0];
+    if (first) return first.trim();
   }
   
   if (realIP) {
@@ -171,7 +173,7 @@ export async function cleanupOldRateLimitRecords(daysToKeep: number = 7): Promis
   try {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-    const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
+    const cutoffDateStr = cutoffDate.toISOString().slice(0, 10);
     
     const result = await executeRateLimitQuery(`
       DELETE FROM question_rate_limits 

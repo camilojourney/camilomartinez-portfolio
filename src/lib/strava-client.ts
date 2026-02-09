@@ -134,7 +134,9 @@ export class StravaClient {
     const rateLimitUsage = response.headers.get('X-RateLimit-Usage');
     
     if (rateLimitUsage) {
-      const [shortTermUsage, dailyUsage] = rateLimitUsage.split(',').map(Number);
+      const usageParts = rateLimitUsage.split(',').map(Number);
+      const shortTermUsage = usageParts[0] ?? 0;
+      const dailyUsage = usageParts[1] ?? 0;
       this.rateLimitRemaining = 100 - shortTermUsage; // Strava allows 100 requests per 15 minutes
       console.log(`📊 Strava API usage: ${shortTermUsage}/100 (15min), ${dailyUsage}/1000 (daily)`);
     }

@@ -124,7 +124,8 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   }
 
   // Check for data validation errors
-  if (data && data.length > 0 && typeof data[0].timeAsMinutes !== 'number') {
+  const first = data?.[0];
+  if (first && typeof first.timeAsMinutes !== 'number') {
     return (
       <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
         <div className="text-red-400 text-3xl mb-3">⚠️</div>
@@ -158,7 +159,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   // RENDERING LOGIC (all hooks called, all validations done)
   // ====================================================================
 
-  const [goalHours, goalMinutes] = goalTime.split(':').map(Number);
+  const [goalHours = 0, goalMinutes = 0] = goalTime.split(':').map(Number);
   const goalTimeInMinutes = goalHours * 60 + goalMinutes;
   
   const formatTime = (minutes: number) => {

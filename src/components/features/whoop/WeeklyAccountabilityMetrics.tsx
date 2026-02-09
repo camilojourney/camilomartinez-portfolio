@@ -118,23 +118,21 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
         yearData.forEach(week => {
             const date = new Date(week.weekStart);
             const month = date.getMonth(); // 0-11
-            if (!monthlyData[month]) {
-                monthlyData[month] = [];
-            }
-            monthlyData[month].push(week);
+            const bucket = monthlyData[month] ?? (monthlyData[month] = []);
+            bucket.push(week);
         });
 
         // Calculate averages for each month
         return Object.keys(monthlyData)
             .map(monthKey => {
                 const month = parseInt(monthKey);
-                const weeks = monthlyData[month];
+                const weeks = monthlyData[month] ?? [];
                 const validWakeWeeks = weeks.filter(w => w.wakeTimeStdDev > 0);
                 const validWorkoutWeeks = weeks.filter(w => w.workoutStartStdDev > 0);
                 const validSleepWeeks = weeks.filter(w => w.sleepStartStdDev > 0);
 
                 return {
-                    month: months[month],
+                    month: months[month] ?? String(month),
                     avgTrainingDays: Math.round(weeks.reduce((sum, w) => sum + w.trainingDays, 0) / weeks.length),
                     avgMeditations: Math.round(weeks.reduce((sum, w) => sum + w.meditationSessions, 0) / weeks.length),
                     avgWakeStdDev: validWakeWeeks.length > 0

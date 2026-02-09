@@ -47,6 +47,9 @@ export default function SocialMediaPipelineProjectPage() {
     }
   ]
 
+  const active = examples[activeExample] ?? examples[0]
+  if (!active) return null
+
   return (
     <StandardPage currentPage="projects" maxWidth="wide">
       <div className="space-y-20">
@@ -149,94 +152,94 @@ export default function SocialMediaPipelineProjectPage() {
                 <span>📝</span>
                 <span>Raw Input (Authentic)</span>
               </h3>
-              <div className="p-4 bg-white/[0.05] border border-white/[0.15] rounded-lg">
-                <p className="text-white/80 text-sm leading-relaxed italic">
-                  "{examples[activeExample]?.raw}"
-                </p>
-              </div>
-              <div className="mt-4 text-xs text-white/50">
-                Character count: {examples[activeExample]?.raw?.length || 0}
-              </div>
-            </Card>
+	              <div className="p-4 bg-white/[0.05] border border-white/[0.15] rounded-lg">
+	                <p className="text-white/80 text-sm leading-relaxed italic">
+	                  "{active.raw}"
+	                </p>
+	              </div>
+	              <div className="mt-4 text-xs text-white/50">
+	                Character count: {active.raw.length}
+	              </div>
+	            </Card>
 
-            {/* Outputs */}
+	            {/* Outputs */}
             <Card className="p-6 border-white/10 bg-white/[0.03]">
               <h3 className="text-xl font-bold text-white mb-4 flex items-center space-x-2">
                 <span>✨</span>
                 <span>AI-Enhanced Outputs</span>
               </h3>
               
-              <div className="space-y-4">
-                {/* Tweet/Thread Output */}
-                <div className="p-4 bg-blue-500/10 border border-blue-400/20 rounded-lg">
-                  <h4 className="font-medium text-blue-300 mb-2 flex items-center space-x-2">
-                    {examples[activeExample].outputs.thread ? (
-                      <>
-                        <Hash className="w-4 h-4" />
-                        <span>Twitter Thread</span>
-                      </>
+	              <div className="space-y-4">
+	                {/* Tweet/Thread Output */}
+	                <div className="p-4 bg-blue-500/10 border border-blue-400/20 rounded-lg">
+	                  <h4 className="font-medium text-blue-300 mb-2 flex items-center space-x-2">
+	                    {active.outputs.thread ? (
+	                      <>
+	                        <Hash className="w-4 h-4" />
+	                        <span>Twitter Thread</span>
+	                      </>
                     ) : (
                       <>
                         <Twitter className="w-4 h-4" />
                         <span>Optimized Tweet</span>
-                      </>
-                    )}
-                  </h4>
-                  <div className="text-white/90 text-sm space-y-2">
-                    {examples[activeExample]?.outputs?.thread ? (
-                      examples[activeExample]?.outputs?.thread?.map((tweet, i) => (
-                        <div key={i} className="p-2 bg-black/20 rounded border-l-2 border-blue-400/50">
-                          {tweet}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-2 bg-black/20 rounded border-l-2 border-blue-400/50">
-                        {examples[activeExample]?.outputs?.tweet}
-                      </div>
-                    )}
-                  </div>
-                </div>
+	                      </>
+	                    )}
+	                  </h4>
+	                  <div className="text-white/90 text-sm space-y-2">
+	                    {active.outputs.thread ? (
+	                      active.outputs.thread.map((tweet, i) => (
+	                        <div key={i} className="p-2 bg-black/20 rounded border-l-2 border-blue-400/50">
+	                          {tweet}
+	                        </div>
+	                      ))
+	                    ) : (
+	                      <div className="p-2 bg-black/20 rounded border-l-2 border-blue-400/50">
+	                        {active.outputs.tweet}
+	                      </div>
+	                    )}
+	                  </div>
+	                </div>
 
-                {/* Reel Script */}
-                {examples[activeExample]?.outputs?.reel && (
-                  <div className="p-4 bg-purple-500/10 border border-purple-400/20 rounded-lg">
-                    <h4 className="font-medium text-purple-300 mb-2 flex items-center space-x-2">
-                      <Play className="w-4 h-4" />
-                      <span>Instagram Reel Script</span>
-                    </h4>
-                    <div className="text-white/90 text-sm">
-                      <pre className="whitespace-pre-wrap font-sans">
-                        {examples[activeExample]?.outputs?.reel}
-                      </pre>
-                    </div>
-                  </div>
-                )}
+	                {/* Reel Script */}
+	                {active.outputs.reel && (
+	                  <div className="p-4 bg-purple-500/10 border border-purple-400/20 rounded-lg">
+	                    <h4 className="font-medium text-purple-300 mb-2 flex items-center space-x-2">
+	                      <Play className="w-4 h-4" />
+	                      <span>Instagram Reel Script</span>
+	                    </h4>
+	                    <div className="text-white/90 text-sm">
+	                      <pre className="whitespace-pre-wrap font-sans">
+	                        {active.outputs.reel}
+	                      </pre>
+	                    </div>
+	                  </div>
+	                )}
 
                 {/* Captions */}
                 <div className="p-4 bg-green-500/10 border border-green-400/20 rounded-lg">
-                  <h4 className="font-medium text-green-300 mb-2 flex items-center space-x-2">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Caption Variations</span>
-                  </h4>
-                  <div className="space-y-2 text-white/90 text-sm">
-                    {examples[activeExample].outputs.captions?.map((caption, i) => (
-                      <div key={i} className="p-2 bg-black/20 rounded">
-                        <span className="text-green-400 font-medium">Option {i + 1}: </span>
-                        {caption}
+	                  <h4 className="font-medium text-green-300 mb-2 flex items-center space-x-2">
+	                    <MessageCircle className="w-4 h-4" />
+	                    <span>Caption Variations</span>
+	                  </h4>
+	                  <div className="space-y-2 text-white/90 text-sm">
+	                    {active.outputs.captions?.map((caption, i) => (
+	                      <div key={i} className="p-2 bg-black/20 rounded">
+	                        <span className="text-green-400 font-medium">Option {i + 1}: </span>
+	                        {caption}
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Spanish Translation (if available) */}
-                {examples[activeExample].outputs.spanish && (
+                {active.outputs.spanish && (
                   <div className="p-4 bg-orange-500/10 border border-orange-400/20 rounded-lg">
                     <h4 className="font-medium text-orange-300 mb-2 flex items-center space-x-2">
                       <Globe className="w-4 h-4" />
                       <span>Spanish Translation</span>
                     </h4>
                     <div className="text-white/90 text-sm p-2 bg-black/20 rounded">
-                      {examples[activeExample].outputs.spanish}
+                      {active.outputs.spanish}
                     </div>
                   </div>
                 )}

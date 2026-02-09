@@ -12,9 +12,10 @@ export function proxy(request: NextRequest) {
     '/tools': '/apps',
   }
 
-  if (redirects[pathname]) {
+  const redirectTo = redirects[pathname]
+  if (redirectTo) {
     const url = request.nextUrl.clone()
-    url.pathname = redirects[pathname]
+    url.pathname = redirectTo
     return NextResponse.redirect(url, 301)
   }
 

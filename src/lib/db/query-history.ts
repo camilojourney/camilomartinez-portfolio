@@ -58,7 +58,11 @@ export async function logQueryHistory(entry: QueryHistoryEntry): Promise<number>
     RETURNING id
   `;
 
-  return result.rows[0].id;
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error('Failed to insert query_history row (no id returned).');
+  }
+  return row.id;
 }
 
 /**
