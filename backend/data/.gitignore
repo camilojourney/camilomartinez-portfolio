@@ -5,5 +5,10 @@ astoria-conquest/cache/*.geojson
 # OSMnx HTTP cache (generated)
 osmnx-cache/*.json
 
+# Local data stores (generated)
+*.db
+*.sqlite
+*.sqlite3
+
 # Keep directory structure
 !.gitkeep
