@@ -1,0 +1,31 @@
+name: Cron - Strava Monday Sync
+
+on:
+  schedule:
+    # 13:00 UTC every Monday (matches previous Vercel cron schedule)
+    - cron: '0 13 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: cron-strava-monday-sync
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Strava Monday sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "Missing CRON_SECRET GitHub Actions secret."
+            exit 1
+          fi
+
+          curl -fsS -X POST \
+            -H "x-cron-secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            --max-time 600 \
+            "https://camilomartinez.co/api/cron/strava-monday-sync"
+

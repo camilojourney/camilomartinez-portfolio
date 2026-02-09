@@ -22,17 +22,13 @@ async function diagnoseWhoopCron() {
     // Step 1: Check environment variables
     console.log('1️⃣ Environment Variable Check:');
     const cronSecret = process.env.CRON_SECRET;
-    const expectedSecret = 'REDACTED_CRON_SECRET'; // From vercel.json
-    
+
     console.log(`   CRON_SECRET: ${cronSecret ? '✅ Set' : '❌ Missing'}`);
-    console.log(`   Expected: ${expectedSecret}`);
-    console.log(`   Match: ${cronSecret === expectedSecret ? '✅ YES' : '❌ NO - THIS IS THE PROBLEM!'}`);
-    
-    if (cronSecret !== expectedSecret) {
+    if (!cronSecret) {
       console.log('\n🚨 MAJOR ISSUE FOUND:');
-      console.log('   The CRON_SECRET in your .env file does not match');
-      console.log('   the hardcoded secret in vercel.json');
-      console.log('   This means Vercel cron jobs are failing authorization!');
+      console.log('   CRON_SECRET is not set in your environment.');
+      console.log('   The cron endpoints require CRON_SECRET (via x-cron-secret header).');
+      console.log('   Set CRON_SECRET in your local .env and in Vercel env vars.');
     }
 
     // Step 2: Check recent WHOOP data in database
@@ -112,7 +108,7 @@ async function diagnoseWhoopCron() {
     console.log('\n4️⃣ Production Endpoint Test:');
     console.log('   Testing: https://camilomartinez.co/api/cron/daily-data-fetch');
     
-    const testUrl = `https://camilomartinez.co/api/cron/daily-data-fetch?secret=${cronSecret}&dryRun=true`;
+    const testUrl = `https://camilomartinez.co/api/cron/daily-data-fetch?dryRun=true`;
     
     try {
       const response = await fetch(testUrl, {
@@ -143,11 +139,10 @@ async function diagnoseWhoopCron() {
     console.log('\n5️⃣ Diagnosis Summary:');
     console.log('========================');
     
-    if (cronSecret !== expectedSecret) {
-      console.log('🚨 PRIMARY ISSUE: Secret mismatch');
-      console.log('   SOLUTION: Update your .env file with:');
-      console.log(`   CRON_SECRET="${expectedSecret}"`);
-      console.log('   OR update vercel.json to match your current secret');
+    if (!cronSecret) {
+      console.log('🚨 PRIMARY ISSUE: CRON_SECRET is missing');
+      console.log('   SOLUTION: Set CRON_SECRET locally and in production (Vercel env vars).');
+      console.log('   Use a long random value and rotate it if it was ever committed.');
     }
     
     if (recentCycles.rows.length === 0 && recentRecovery.rows.length === 0) {
@@ -160,7 +155,7 @@ async function diagnoseWhoopCron() {
 
     console.log('\n💡 Next Steps:');
     console.log('==============');
-    console.log('1. Fix the CRON_SECRET mismatch (most critical)');
+    console.log('1. Ensure CRON_SECRET is set (most critical)');
     console.log('2. Check Vercel dashboard for cron job logs');
     console.log('3. Test endpoint manually after fixing secrets');
     console.log('4. Monitor database for new data after fixes');

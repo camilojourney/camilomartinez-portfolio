@@ -1,14 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/daily-data-fetch?secret=REDACTED_CRON_SECRET",
-      "schedule": "0 19 * * *"
-    },
-    {
-      "path": "/api/cron/strava-monday-sync?secret=REDACTED_STRAVA_CRON_SECRET",
-      "schedule": "0 13 * * 1"
-    }
-  ],
   "redirects": [
     {
       "source": "/:path*",
