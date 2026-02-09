@@ -1,11 +1,11 @@
 """Configuration package initialization."""
 
+from .database import Base, close_database, get_db_session, init_database
 from .settings import settings
-from .database import get_db_session, init_database, close_database, Base
 
 __all__ = [
     "settings",
-    "get_db_session", 
+    "get_db_session",
     "init_database",
     "close_database",
     "Base"

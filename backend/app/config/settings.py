@@ -2,9 +2,9 @@
 Configuration management using Pydantic Settings.
 Automatically loads and validates environment variables.
 """
-from pydantic_settings import BaseSettings
-from typing import Optional
 from urllib.parse import urlparse
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -17,32 +17,32 @@ class Settings(BaseSettings):
 
     # Database Configuration (using your existing Neon setup)
     DATABASE_URL: str
-    DATABASE_URL_SYNC: Optional[str] = None  # For migrations
+    DATABASE_URL_SYNC: str | None = None  # For migrations
 
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # OpenAI Configuration (optional for standalone scripts)
-    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: str | None = None
     OPENAI_MODEL: str = "gpt-4-turbo-preview"
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
 
     # Translation Services
-    DEEPL_API_KEY: Optional[str] = None
+    DEEPL_API_KEY: str | None = None
 
     # Strava API (optional for standalone scripts)
-    STRAVA_CLIENT_ID: Optional[str] = None
-    STRAVA_CLIENT_SECRET: Optional[str] = None
-    STRAVA_ACCESS_TOKEN: Optional[str] = None
-    STRAVA_REFRESH_TOKEN: Optional[str] = None
+    STRAVA_CLIENT_ID: str | None = None
+    STRAVA_CLIENT_SECRET: str | None = None
+    STRAVA_ACCESS_TOKEN: str | None = None
+    STRAVA_REFRESH_TOKEN: str | None = None
 
     # WHOOP API (optional for standalone scripts)
-    WHOOP_CLIENT_ID: Optional[str] = None
-    WHOOP_CLIENT_SECRET: Optional[str] = None
+    WHOOP_CLIENT_ID: str | None = None
+    WHOOP_CLIENT_SECRET: str | None = None
 
     # Authentication & Security (optional for standalone scripts)
-    SECRET_KEY: Optional[str] = None
-    ADMIN_API_KEY: Optional[str] = None
+    SECRET_KEY: str | None = None
+    ADMIN_API_KEY: str | None = None
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
@@ -50,14 +50,14 @@ class Settings(BaseSettings):
     RATE_LIMIT_DEFAULT: int = 5
     RATE_LIMIT_PER_DAY: int = 5  # For compatibility with existing .env
     RATE_LIMIT_WINDOW: int = 86400  # 24 hours in seconds
-    RATE_LIMIT_BYPASS_SECRET: Optional[str] = None
+    RATE_LIMIT_BYPASS_SECRET: str | None = None
 
     # Cron Job Security (optional for standalone scripts)
-    CRON_SECRET: Optional[str] = None
+    CRON_SECRET: str | None = None
 
     # External Services
     NEXTAUTH_URL: str = "http://localhost:3000"
-    VERCEL_OIDC_TOKEN: Optional[str] = None
+    VERCEL_OIDC_TOKEN: str | None = None
 
     # Development
     CORS_ORIGINS: str = '["http://localhost:3000", "http://127.0.0.1:3000"]'

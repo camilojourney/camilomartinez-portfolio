@@ -10,19 +10,18 @@ This implementation uses OpenAI GPT-4o-mini and DeepL for high-quality
 bilingual content generation across multiple social media platforms.
 """
 
+import asyncio
 import json
 import os
 import re
-import asyncio
-import aiohttp
 import time
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
-import openai
-from openai import AsyncOpenAI
+import aiohttp
 from dotenv import load_dotenv
+from openai import AsyncOpenAI
 
 # Load environment variables
 load_dotenv()
@@ -38,32 +37,32 @@ class ProcessingResult:
     original_text: str
     character_count: int
     mode: ContentMode
-    english_content: Dict[str, Any]
-    spanish_content: Optional[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    english_content: dict[str, Any]
+    spanish_content: dict[str, Any] | None
+    metadata: dict[str, Any]
     processing_time: float
 
 class SocialMediaPipeline:
     """
     Main class for the Social Media Pipeline system.
-    
+
     Handles content processing, AI integration, and bilingual translation
     while preserving authentic voice and optimizing for engagement.
     """
-    
+
     def __init__(self):
         """Initialize the pipeline with API keys and configuration."""
         self.openai_client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         self.deepl_api_key = os.getenv('DEEPL_API_KEY')
         self.deepl_url = "https://api-free.deepl.com/v2/translate"
-        
+
         # Character threshold for determining processing mode
         self.character_threshold = 280
-        
+
         # System prompts (exact copies from the original implementation)
         self.system_prompt_short = self._get_short_content_prompt()
         self.system_prompt_threads = self._get_long_content_prompt()
-    
+
     def _get_short_content_prompt(self) -> str:
         """Get the system prompt for short content (≤280 characters)."""
         return """You are an expert at refining short scripts while meticulously preserving the author's exact voice, tone, and meaning. Your primary goal is to enhance impact through subtle improvements, logical completion, and generating derivative content.
@@ -140,13 +139,13 @@ Execute three tasks based on the source text:
   "category": "Label"
 }"""
 
-    def _select_prompt(self, character_count: int) -> Tuple[str, ContentMode]:
+    def _select_prompt(self, character_count: int) -> tuple[str, ContentMode]:
         """
         Select appropriate prompt based on character count.
-        
+
         Args:
             character_count: Number of characters in input text
-            
+
         Returns:
             Tuple of (system_prompt, content_mode)
         """
@@ -165,10 +164,10 @@ Execute three tasks based on the source text:
     async def _translate_to_spanish(self, text: str) -> str:
         """
         Translate text to Spanish using DeepL API.
-        
+
         Args:
             text: Text to translate
-            
+
         Returns:
             Translated text or original text if translation fails
         """
@@ -177,16 +176,16 @@ Execute three tasks based on the source text:
                 'Authorization': f'DeepL-Auth-Key {self.deepl_api_key}',
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
-            
+
             data = {
                 'text': text,
                 'target_lang': 'ES',
             }
-            
+
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    self.deepl_url, 
-                    headers=headers, 
+                    self.deepl_url,
+                    headers=headers,
                     data=data
                 ) as response:
                     if response.status == 200:
@@ -195,19 +194,19 @@ Execute three tasks based on the source text:
                     else:
                         print(f"DeepL API error: {response.status}")
                         return text
-                        
+
         except Exception as error:
             print(f"Translation error: {error}")
             return text
 
-    async def _process_with_openai(self, text: str, system_prompt: str) -> Dict[str, Any]:
+    async def _process_with_openai(self, text: str, system_prompt: str) -> dict[str, Any]:
         """
         Process content with OpenAI GPT-4o-mini.
-        
+
         Args:
             text: Input text to process
             system_prompt: System prompt to use
-            
+
         Returns:
             Parsed JSON response from OpenAI
         """
@@ -221,27 +220,27 @@ Execute three tasks based on the source text:
                 temperature=0.7,
                 max_tokens=2000,
             )
-            
+
             raw_content = completion.choices[0].message.content
             if not raw_content:
                 raise ValueError('Empty response from OpenAI')
-            
+
             # Clean and parse JSON response
             clean_content = self._strip_code_fences(raw_content)
             return json.loads(clean_content)
-            
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON response from OpenAI: {e}")
-        except Exception as e:
-            raise ValueError(f"OpenAI processing error: {e}")
 
-    async def _translate_content_parallel(self, english_content: Dict[str, Any]) -> Dict[str, Any]:
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON response from OpenAI: {e}") from e
+        except Exception as e:
+            raise ValueError(f"OpenAI processing error: {e}") from e
+
+    async def _translate_content_parallel(self, english_content: dict[str, Any]) -> dict[str, Any]:
         """
         Translate English content to Spanish in parallel.
-        
+
         Args:
             english_content: Content structure with English text
-            
+
         Returns:
             Content structure with Spanish translations
         """
@@ -249,23 +248,23 @@ Execute three tasks based on the source text:
         tasks = [
             self._translate_to_spanish(english_content['refined'])
         ]
-        
+
         # Add reel script translation if it exists
         if english_content.get('reel_script'):
             tasks.append(self._translate_to_spanish(english_content['reel_script']))
         else:
             tasks.append(asyncio.coroutine(lambda: None)())
-        
+
         # Add caption translations
         caption_tasks = [
-            self._translate_to_spanish(caption) 
+            self._translate_to_spanish(caption)
             for caption in english_content.get('captions', [])
         ]
-        
+
         # Execute all translations in parallel
         translated_results = await asyncio.gather(*tasks)
         translated_captions = await asyncio.gather(*caption_tasks)
-        
+
         return {
             'refined': translated_results[0],
             'reel_script': translated_results[1],
@@ -273,40 +272,40 @@ Execute three tasks based on the source text:
         }
 
     async def process_content(
-        self, 
-        text: str, 
+        self,
+        text: str,
         language: str = 'en'
     ) -> ProcessingResult:
         """
         Main method to process content through the pipeline.
-        
+
         Args:
             text: Raw input text to process
             language: Language preference ('en', 'es', or 'both')
-            
+
         Returns:
             ProcessingResult with all generated content
         """
         start_time = time.time()
-        
+
         if not text or not text.strip():
             raise ValueError('Text input is required')
-        
+
         # Analyze input and select processing mode
         character_count = len(text)
         system_prompt, mode = self._select_prompt(character_count)
-        
+
         print(f"Processing {character_count} characters with {mode.value.upper()} prompt")
-        
+
         # Process with OpenAI
         ai_result = await self._process_with_openai(text, system_prompt)
-        
+
         # Structure English content
         if mode == ContentMode.THREAD:
             english_refined = '\n\n'.join(ai_result.get('thread', []))
         else:
             english_refined = ai_result.get('improved_script', '')
-        
+
         english_content = {
             'refined': english_refined,
             'reel_script': ai_result.get('reel_script'),
@@ -314,16 +313,16 @@ Execute three tasks based on the source text:
             'emotions': ai_result.get('emotions', []),
             'category': ai_result.get('category', 'Other')
         }
-        
+
         # Handle Spanish translation if requested
         spanish_content = None
         if language in ['both', 'es']:
             print('Translating content to Spanish...')
             spanish_content = await self._translate_content_parallel(english_content)
-        
+
         # Calculate processing time
         processing_time = time.time() - start_time
-        
+
         # Create result object
         return ProcessingResult(
             original_text=text,
@@ -343,16 +342,16 @@ Execute three tasks based on the source text:
     def format_output(self, result: ProcessingResult, language: str = 'en') -> str:
         """
         Format processing result for display.
-        
+
         Args:
             result: ProcessingResult to format
             language: Language to display ('en' or 'es')
-            
+
         Returns:
             Formatted string output
         """
         content = result.spanish_content if language == 'es' and result.spanish_content else result.english_content
-        
+
         output = f"""
 🎯 SOCIAL MEDIA PIPELINE RESULTS
 {'='*50}
@@ -369,26 +368,26 @@ Execute three tasks based on the source text:
 {content['refined']}
 
 """
-        
+
         if content.get('reel_script'):
             output += f"""
 🎬 REEL SCRIPT:
 {content['reel_script']}
 
 """
-        
+
         if content.get('captions'):
             output += "📝 CAPTION OPTIONS:\n"
             for i, caption in enumerate(content['captions'], 1):
                 output += f"\n{i}. {caption}\n"
-        
+
         output += f"""
 🏷️ METADATA:
    Category: {result.metadata['category']}
    Emotions: {', '.join(result.metadata['emotions'])}
    Processed: {result.metadata['processed_at']}
 """
-        
+
         return output
 
 # CLI Interface for testing
@@ -396,10 +395,10 @@ async def main():
     """Main function for CLI testing."""
     print("🚀 Social Media Pipeline - Python Implementation")
     print("=" * 60)
-    
+
     # Initialize pipeline
     pipeline = SocialMediaPipeline()
-    
+
     # Test examples
     test_cases = [
         {
@@ -413,26 +412,26 @@ async def main():
             'language': 'both'
         }
     ]
-    
+
     for test_case in test_cases:
         print(f"\n🧪 TESTING: {test_case['name']}")
         print("-" * 40)
-        
+
         try:
             result = await pipeline.process_content(
-                test_case['text'], 
+                test_case['text'],
                 test_case['language']
             )
-            
+
             # Display English results
             print(pipeline.format_output(result, 'en'))
-            
+
             # Display Spanish results if available
             if result.spanish_content:
                 print("\n🌐 SPANISH VERSION:")
                 print("-" * 30)
                 print(pipeline.format_output(result, 'es'))
-                
+
         except Exception as e:
             print(f"❌ Error processing content: {e}")
 

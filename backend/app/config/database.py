@@ -1,9 +1,10 @@
 """Database configuration and session management with SQLAlchemy 2.0+ async support."""
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import DeclarativeBase
-from typing import AsyncGenerator
 import logging
+from collections.abc import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
 from .settings import settings
 
@@ -38,7 +39,7 @@ async_session_factory = async_sessionmaker(
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Dependency for getting a database session in FastAPI endpoints.
-    
+
     Usage in endpoints:
         async def my_endpoint(db: AsyncSession = Depends(get_db_session)):
             # Use db session here
@@ -58,8 +59,8 @@ async def init_database():
     """Initialize database tables. Call this on app startup."""
     async with engine.begin() as conn:
         # Import all models here to ensure they're registered
-        from app.models import user, strava, whoop, ai_query  # noqa: F401
-        
+        from app.models import ai_query, strava, user, whoop  # noqa: F401
+
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables initialized")

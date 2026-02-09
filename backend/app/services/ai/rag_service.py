@@ -3,19 +3,17 @@ RAG (Retrieval-Augmented Generation) Service for vector embeddings and similarit
 Integrates with PostgreSQL pgvector for document storage and retrieval.
 """
 
-import asyncio
-import logging
-from typing import List, Dict, Any, Optional, Tuple, Union
 import hashlib
+import logging
 import re
 from datetime import datetime
-from sqlalchemy import text, select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from pgvector.sqlalchemy import Vector
+from typing import Any
 
-from app.config.database import get_database_session, async_session_factory
-from app.models.ai_query import Embedding, QueryHistory
-from app.services.ai.openai_client import openai_service, OpenAIError
+from sqlalchemy import func, select, text
+
+from app.config.database import async_session_factory, get_database_session
+from app.models.ai_query import Embedding
+from app.services.ai.openai_client import OpenAIError, openai_service
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +28,7 @@ class DocumentChunker:
     Text chunking service for preparing documents for embedding.
     Handles various chunking strategies and content preprocessing.
     """
-    
+
     def __init__(
         self,
         chunk_size: int = 1000,
@@ -39,7 +37,7 @@ class DocumentChunker:
     ):
         """
         Initialize document chunker.
-        
+
         Args:
             chunk_size: Target size for each chunk in characters
             chunk_overlap: Overlap between consecutive chunks
@@ -48,38 +46,38 @@ class DocumentChunker:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.min_chunk_size = min_chunk_size
-        
-    def chunk_text(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+
+    def chunk_text(self, text: str, metadata: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         """
         Split text into overlapping chunks for embedding.
-        
+
         Args:
             text: Input text to chunk
             metadata: Optional metadata to attach to chunks
-            
+
         Returns:
             List of chunk dictionaries with text and metadata
         """
         if not text or len(text.strip()) < self.min_chunk_size:
             return []
-            
+
         # Clean and normalize text
         cleaned_text = self._clean_text(text)
-        
+
         # Split into sentences for better chunk boundaries
         sentences = self._split_sentences(cleaned_text)
-        
+
         chunks = []
         current_chunk = ""
         current_size = 0
-        
+
         for sentence in sentences:
             sentence_size = len(sentence)
-            
+
             # If adding this sentence would exceed chunk size, save current chunk
             if current_size + sentence_size > self.chunk_size and current_chunk:
                 chunks.append(self._create_chunk(current_chunk, metadata, len(chunks)))
-                
+
                 # Start new chunk with overlap
                 overlap_text = self._get_overlap_text(current_chunk)
                 current_chunk = overlap_text + sentence
@@ -87,29 +85,29 @@ class DocumentChunker:
             else:
                 current_chunk += sentence
                 current_size += sentence_size
-                
+
         # Add final chunk if it meets minimum size
         if current_chunk and len(current_chunk.strip()) >= self.min_chunk_size:
             chunks.append(self._create_chunk(current_chunk, metadata, len(chunks)))
-            
+
         logger.info(f"Chunked text into {len(chunks)} chunks")
         return chunks
-        
+
     def _clean_text(self, text: str) -> str:
         """Clean and normalize text content."""
         # Remove excessive whitespace
         text = re.sub(r'\s+', ' ', text.strip())
-        
+
         # Remove special characters that might interfere with embeddings
         text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', text)
-        
+
         return text
-        
-    def _split_sentences(self, text: str) -> List[str]:
+
+    def _split_sentences(self, text: str) -> list[str]:
         """Split text into sentences for better chunk boundaries."""
         # Simple sentence splitting - could be enhanced with NLP library
         sentences = re.split(r'[.!?]+\s+', text)
-        
+
         # Clean up sentences and add back punctuation
         cleaned_sentences = []
         for i, sentence in enumerate(sentences):
@@ -119,26 +117,26 @@ class DocumentChunker:
                 if i < len(sentences) - 1:
                     sentence += '. '
                 cleaned_sentences.append(sentence)
-                
+
         return cleaned_sentences
-        
+
     def _get_overlap_text(self, text: str) -> str:
         """Extract overlap text from the end of current chunk."""
         if len(text) <= self.chunk_overlap:
             return text
-            
+
         # Find a good break point within overlap region
         overlap_start = len(text) - self.chunk_overlap
         overlap_text = text[overlap_start:]
-        
+
         # Try to find a sentence boundary
         sentence_end = overlap_text.find('. ')
         if sentence_end > 0:
             return overlap_text[sentence_end + 2:]
-            
+
         return overlap_text
-        
-    def _create_chunk(self, text: str, metadata: Optional[Dict[str, Any]], chunk_index: int) -> Dict[str, Any]:
+
+    def _create_chunk(self, text: str, metadata: dict[str, Any] | None, chunk_index: int) -> dict[str, Any]:
         """Create a chunk dictionary with text and metadata."""
         chunk = {
             "text": text.strip(),
@@ -146,24 +144,24 @@ class DocumentChunker:
             "character_count": len(text.strip()),
             "created_at": datetime.utcnow(),
         }
-        
+
         if metadata:
             chunk.update(metadata)
-            
+
         return chunk
 
 
 class RAGService:
     """
     Retrieval-Augmented Generation service for document embedding and similarity search.
-    
+
     Features:
     - Document chunking and embedding storage
     - Vector similarity search with pgvector
     - Context retrieval for AI queries
     - Duplicate detection and content management
     """
-    
+
     def __init__(self):
         """Initialize RAG service with configuration."""
         self.chunker = DocumentChunker(
@@ -172,17 +170,17 @@ class RAGService:
             min_chunk_size=100,  # ~25 tokens minimum
         )
         self.embedding_dimensions = 1536  # text-embedding-3-small default dimensions
-        
+
         logger.info("RAG service initialized")
 
     async def embed_document(
         self,
         content: str,
         embedding_type: str,
-        metadata: Optional[Dict[str, Any]] = None,
-        user_id: Optional[str] = None,
+        metadata: dict[str, Any] | None = None,
+        user_id: str | None = None,
         is_validated: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process a document by chunking and creating embeddings.
 
@@ -246,7 +244,7 @@ class RAGService:
                 # Store chunks and embeddings in database using new unified model
                 created_chunks = 0
 
-                for chunk, embedding_vector in zip(chunks, embeddings):
+                for chunk, embedding_vector in zip(chunks, embeddings, strict=True):
                     chunk_metadata = chunk.copy()
                     chunk_metadata.pop("text", None)  # Remove text from metadata
 
@@ -274,20 +272,20 @@ class RAGService:
 
         except OpenAIError as e:
             logger.error(f"OpenAI error during document embedding: {e}")
-            raise RAGError(f"Failed to create embeddings: {e}")
+            raise RAGError(f"Failed to create embeddings: {e}") from e
 
         except Exception as e:
             logger.error(f"Error embedding document: {e}")
-            raise RAGError(f"Document embedding failed: {e}")
+            raise RAGError(f"Document embedding failed: {e}") from e
 
     async def similarity_search(
         self,
         query: str,
         limit: int = 5,
         similarity_threshold: float = 0.7,
-        embedding_types: Optional[List[str]] = None,
+        embedding_types: list[str] | None = None,
         only_validated: bool = True,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Perform similarity search for relevant document chunks.
 
@@ -331,7 +329,7 @@ class RAGService:
                     query_stmt = query_stmt.where(Embedding.embedding_type.in_(embedding_types))
 
                 if only_validated:
-                    query_stmt = query_stmt.where(Embedding.is_validated == True)
+                    query_stmt = query_stmt.where(Embedding.is_validated.is_(True))
 
                 # Order by similarity and limit results
                 query_stmt = query_stmt.order_by(text('similarity DESC')).limit(limit)
@@ -353,17 +351,17 @@ class RAGService:
                         "created_at": doc.created_at.isoformat() if doc.created_at else None,
                     }
                     formatted_results.append(result)
-                    
+
                 logger.info(f"Found {len(formatted_results)} similar documents")
                 return formatted_results
-                
+
         except OpenAIError as e:
             logger.error(f"OpenAI error during similarity search: {e}")
-            raise RAGError(f"Failed to create query embedding: {e}")
-            
+            raise RAGError(f"Failed to create query embedding: {e}") from e
+
         except Exception as e:
             logger.error(f"Error in similarity search: {e}")
-            raise RAGError(f"Similarity search failed: {e}")
+            raise RAGError(f"Similarity search failed: {e}") from e
 
     async def schema_vector_search(
         self,
@@ -435,7 +433,7 @@ class RAGService:
                         # Store view names for temporal enhancement
                         if table_name:
                             view_names.add(table_name)
-                
+
                 # Check if query needs temporal context
                 temporal_keywords = [
                     'recent', 'latest', 'today', 'yesterday', 'last', 'current', 'newest',
@@ -446,15 +444,15 @@ class RAGService:
                     'may', 'jun', 'june', 'jul', 'july', 'aug', 'august',
                     'sep', 'sept', 'september', 'oct', 'october', 'nov', 'november', 'dec', 'december'
                 ]
-                
+
                 lower_query = query.lower()
                 needs_temporal_context = any(keyword in lower_query for keyword in temporal_keywords)
-                
+
                 # Always include temporal columns for daily_fitness_snapshot
                 always_include_temporal = {
                     'daily_fitness_snapshot': ['snapshot_date']
                 }
-                
+
                 # Enhance with temporal context if needed
                 if needs_temporal_context:
                     for view_name in view_names:
@@ -485,33 +483,33 @@ class RAGService:
 
                                 except Exception as e:
                                     logger.warning(f"Failed to include temporal column {view_name}.{column_name}: {e}")
-                
+
                 context_string = '\n'.join(contexts)
-                
+
                 if not context_string.strip():
                     raise RAGError("Schema embeddings returned empty context.")
-                
+
                 logger.info(f"Schema search returned {len(contexts)} context items")
                 return context_string
-        
+
         except Exception as e:
             logger.error(f"Error in schema vector search: {e}")
-            raise RAGError(f"Schema vector search failed: {e}")
+            raise RAGError(f"Schema vector search failed: {e}") from e
 
     async def get_context_for_query(
         self,
         query: str,
         max_context_length: int = 3000,
-        user_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        user_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Retrieve relevant context for an AI query using similarity search.
-        
+
         Args:
             query: User's query text
             max_context_length: Maximum characters in context
             user_id: User ID for personalized context
-            
+
         Returns:
             Dict with context text, sources, and metadata
         """
@@ -524,7 +522,7 @@ class RAGService:
                 embedding_types=None,  # Search all types
                 only_validated=True  # Only validated embeddings
             )
-            
+
             if not relevant_docs:
                 logger.info("No relevant context found for query")
                 return {
@@ -533,16 +531,16 @@ class RAGService:
                     "total_similarity": 0.0,
                     "context_length": 0
                 }
-                
+
             # Build context string within character limit
             context_parts = []
             sources = []
             total_similarity = 0.0
             current_length = 0
-            
+
             for doc in relevant_docs:
                 content = doc["content"]
-                
+
                 # Check if adding this content would exceed limit
                 if current_length + len(content) > max_context_length:
                     # Try to fit partial content
@@ -551,7 +549,7 @@ class RAGService:
                         content = content[:remaining_space - 3] + "..."
                     else:
                         break
-                        
+
                 context_parts.append(content)
                 sources.append({
                     "embedding_id": doc["id"],
@@ -559,15 +557,15 @@ class RAGService:
                     "similarity": doc["similarity"],
                     "created_at": doc["created_at"]
                 })
-                
+
                 total_similarity += doc["similarity"]
                 current_length += len(content)
-                
+
             # Join context with separators
             context = "\n\n---\n\n".join(context_parts)
-            
+
             logger.info(f"Built context from {len(sources)} sources, {len(context)} characters")
-            
+
             return {
                 "context": context,
                 "sources": sources,
@@ -575,16 +573,16 @@ class RAGService:
                 "context_length": len(context),
                 "sources_count": len(sources)
             }
-            
+
         except Exception as e:
             logger.error(f"Error building context for query: {e}")
-            raise RAGError(f"Context retrieval failed: {e}")
+            raise RAGError(f"Context retrieval failed: {e}") from e
 
     async def delete_embeddings_by_type(
         self,
         embedding_type: str,
-        metadata_filter: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        metadata_filter: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Delete embeddings by type and optional metadata filters.
 
@@ -635,9 +633,9 @@ class RAGService:
 
         except Exception as e:
             logger.error(f"Error deleting embeddings: {e}")
-            raise RAGError(f"Embedding deletion failed: {e}")
+            raise RAGError(f"Embedding deletion failed: {e}") from e
 
-    async def get_embedding_stats(self) -> Dict[str, Any]:
+    async def get_embedding_stats(self) -> dict[str, Any]:
         """
         Get statistics about stored embeddings.
 
@@ -682,7 +680,7 @@ class RAGService:
 
         except Exception as e:
             logger.error(f"Error getting embedding stats: {e}")
-            raise RAGError(f"Stats retrieval failed: {e}")
+            raise RAGError(f"Stats retrieval failed: {e}") from e
 
     async def generate_and_store_hyde_embedding(
         self,
@@ -765,11 +763,11 @@ If multiple columns are needed, create separate descriptions for each."""
 
         except OpenAIError as e:
             logger.error(f"OpenAI error generating HyDE: {e}")
-            raise RAGError(f"Failed to generate HyDE embedding: {e}")
+            raise RAGError(f"Failed to generate HyDE embedding: {e}") from e
 
         except Exception as e:
             logger.error(f"Error generating HyDE embedding: {e}")
-            raise RAGError(f"HyDE embedding generation failed: {e}")
+            raise RAGError(f"HyDE embedding generation failed: {e}") from e
 
 
 # Global service instance

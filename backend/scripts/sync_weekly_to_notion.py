@@ -16,8 +16,10 @@ DO NOT create new pages - only update existing ones!
 """
 import asyncio
 import os
+
 import requests
 from sqlalchemy import text
+
 from app.config.database import async_session_factory
 
 # Notion credentials from environment variables
@@ -84,7 +86,7 @@ async def main():
     print(f"📊 Syncing Whoop Data to Notion for Week: {week_start} to {week_end}")
     print("=" * 80)
     print()
-    print(f"📈 Data Summary:")
+    print("📈 Data Summary:")
     print(f"   Training sessions: {training}")
     print(f"   Meditation sessions: {meditation}")
     print(f"   Avg wake time: {avg_wake}")
@@ -121,7 +123,7 @@ async def main():
 
     if not pages:
         print(f"⚠️  No pages found for week starting {week_start}")
-        print(f"   Make sure duplicate_weekly_pages.py ran successfully")
+        print("   Make sure duplicate_weekly_pages.py ran successfully")
         return
 
     print(f"1️⃣  Found {len(pages)} pages for this week")

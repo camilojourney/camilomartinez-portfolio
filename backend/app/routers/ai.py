@@ -12,17 +12,18 @@ Cleanup log (2026-02-07):
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends, Query
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 from pydantic import BaseModel, Field
 
 from app.config.settings import settings
-from app.services.ai.openai_client import openai_service, OpenAIError
-from app.services.ai.rag_service import rag_service, RAGError
-from app.services.ai.query_processor import query_processor, QueryProcessingError
+from app.services.ai.openai_client import OpenAIError, openai_service
+from app.services.ai.query_processor import QueryProcessingError, query_processor
+from app.services.ai.rag_service import RAGError, rag_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -39,9 +40,9 @@ class ChatMessage(BaseModel):
 
 class ChatCompletionRequest(BaseModel):
     """Chat completion request model."""
-    messages: List[ChatMessage] = Field(..., min_length=1)
+    messages: list[ChatMessage] = Field(..., min_length=1)
     temperature: float = Field(0.7, ge=0.0, le=2.0)
-    max_tokens: Optional[int] = Field(None, ge=1, le=2000)
+    max_tokens: int | None = Field(None, ge=1, le=2000)
     include_context: bool = Field(True)
     context_days: int = Field(30, ge=1, le=365)
 
@@ -51,13 +52,13 @@ class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=5000)
     include_context: bool = Field(True)
     context_days: int = Field(30, ge=1, le=365)
-    user_goals: Optional[str] = Field(None, max_length=1000)
+    user_goals: str | None = Field(None, max_length=1000)
 
 
 class EmbeddingRequest(BaseModel):
     """Embedding creation request model."""
     text: str = Field(..., min_length=1, max_length=8000)
-    dimensions: Optional[int] = Field(None, ge=128, le=3072)
+    dimensions: int | None = Field(None, ge=128, le=3072)
 
 
 class DocumentEmbedRequest(BaseModel):
@@ -65,7 +66,7 @@ class DocumentEmbedRequest(BaseModel):
     content: str = Field(..., min_length=10, max_length=100000)
     document_type: str = Field(..., min_length=1, max_length=50)
     document_id: str = Field(..., min_length=1, max_length=100)
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: dict[str, Any] | None = None
 
 
 class SimilaritySearchRequest(BaseModel):
@@ -73,20 +74,20 @@ class SimilaritySearchRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=1000)
     limit: int = Field(5, ge=1, le=20)
     similarity_threshold: float = Field(0.7, ge=0.0, le=1.0)
-    document_types: Optional[List[str]] = None
+    document_types: list[str] | None = None
 
 
 class APIResponse(BaseModel):
     """Standard API response model."""
     status: str
-    data: Optional[Dict[str, Any]] = None
-    message: Optional[str] = None
+    data: dict[str, Any] | None = None
+    message: str | None = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
 # Utility Functions
 
-async def get_user_id(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[str]:
+async def get_user_id(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> str | None:
     """Extract and validate user ID from bearer token."""
     if not credentials or not credentials.credentials:
         return None
@@ -131,27 +132,27 @@ def handle_ai_service_error(error: Exception, operation: str) -> HTTPException:
 @router.post("/chat/completion", response_model=APIResponse)
 async def create_chat_completion(
     request: ChatCompletionRequest,
-    user_id: Optional[str] = Depends(get_user_id)
+    user_id: str | None = Depends(get_user_id)
 ):
     """
     Create a chat completion using GPT-4 with optional RAG context.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/chat`
     - `/api/openai/completion`
     """
     try:
         logger.info(f"Chat completion request from user {user_id or 'anonymous'}")
-        
+
         messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
-        
+
         response = await openai_service.create_chat_completion(
             messages=messages,
             temperature=request.temperature,
             max_tokens=request.max_tokens,
             user_id=user_id
         )
-        
+
         return APIResponse(
             status="success",
             data={
@@ -161,19 +162,19 @@ async def create_chat_completion(
                 "finish_reason": response["finish_reason"]
             }
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "chat completion")
+        raise handle_ai_service_error(e, "chat completion") from e
 
 
 @router.post("/chat/query", response_model=APIResponse)
 async def process_ai_query(
     request: QueryRequest,
-    user_id: Optional[str] = Depends(get_user_id)
+    user_id: str | None = Depends(get_user_id)
 ):
     """
     Process an AI query with context augmentation and personalized response.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/query`
     - `/api/ai/ask`
@@ -181,33 +182,33 @@ async def process_ai_query(
     """
     try:
         logger.info(f"AI query from user {user_id or 'anonymous'}: '{request.query[:50]}...'")
-        
+
         result = await query_processor.process_query_with_sql(
             question=request.query,
             user_id=user_id,
             include_context=request.include_context
         )
-        
+
         return APIResponse(
             status="success",
             data=result
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "AI query processing")
+        raise handle_ai_service_error(e, "AI query processing") from e
 
 
 @router.post("/query", response_model=APIResponse)
 async def ai_query_with_sql(
     request: QueryRequest,
-    user_id: Optional[str] = Depends(get_user_id)
+    user_id: str | None = Depends(get_user_id)
 ):
     """
     Process AI queries with full DIN-SQL pipeline.
-    
+
     **Canonical endpoint** - Replaces TypeScript implementation:
     - `/api/ai-query/route.ts`
-    
+
     Features:
     - Schema vector search
     - SQL generation
@@ -216,32 +217,32 @@ async def ai_query_with_sql(
     """
     try:
         logger.info(f"AI query (SQL) from user {user_id or 'anonymous'}: '{request.query[:50]}...'")
-        
+
         result = await query_processor.process_query_with_sql(
             question=request.query,
             user_id=user_id,
             include_context=request.include_context
         )
-        
+
         return APIResponse(
             status="success",
             data=result,
             timestamp=datetime.utcnow()
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "AI SQL query processing")
+        raise handle_ai_service_error(e, "AI SQL query processing") from e
 
 
 @router.get("/chat/history", response_model=APIResponse)
 async def get_query_history(
-    user_id: Optional[str] = Depends(get_user_id),
+    user_id: str | None = Depends(get_user_id),
     limit: int = Query(20, ge=1, le=100),
     days: int = Query(30, ge=1, le=365)
 ):
     """
     Get user's AI query history.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/history`
     - `/api/chat/history/{user_id}`
@@ -249,13 +250,13 @@ async def get_query_history(
     try:
         if not user_id:
             raise HTTPException(status_code=401, detail="Authentication required")
-            
+
         history = await query_processor.get_query_history(
             user_id=user_id,
             limit=limit,
             days=days
         )
-        
+
         return APIResponse(
             status="success",
             data={
@@ -264,9 +265,9 @@ async def get_query_history(
                 "period_days": days
             }
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "query history retrieval")
+        raise handle_ai_service_error(e, "query history retrieval") from e
 
 
 # Embedding Endpoints
@@ -274,11 +275,11 @@ async def get_query_history(
 @router.post("/embeddings/create", response_model=APIResponse)
 async def create_embedding(
     request: EmbeddingRequest,
-    user_id: Optional[str] = Depends(get_user_id)
+    user_id: str | None = Depends(get_user_id)
 ):
     """
     Create text embeddings using OpenAI's text-embedding-3-small.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/embeddings`
     - `/api/openai/embeddings`
@@ -289,24 +290,24 @@ async def create_embedding(
             user_id=user_id,
             dimensions=request.dimensions
         )
-        
+
         return APIResponse(
             status="success",
             data=result
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "embedding creation")
+        raise handle_ai_service_error(e, "embedding creation") from e
 
 
 @router.post("/embeddings/documents", response_model=APIResponse)
 async def embed_document(
     request: DocumentEmbedRequest,
-    user_id: Optional[str] = Depends(get_user_id)
+    user_id: str | None = Depends(get_user_id)
 ):
     """
     Embed a document by chunking and storing in vector database.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/embed-document`
     - `/api/rag/embed`
@@ -319,24 +320,24 @@ async def embed_document(
             metadata=request.metadata,
             user_id=user_id
         )
-        
+
         return APIResponse(
             status="success",
             data=result
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "document embedding")
+        raise handle_ai_service_error(e, "document embedding") from e
 
 
 @router.post("/embeddings/search", response_model=APIResponse)
 async def similarity_search(
     request: SimilaritySearchRequest,
-    user_id: Optional[str] = Depends(get_user_id)
+    user_id: str | None = Depends(get_user_id)
 ):
     """
     Perform similarity search on embedded documents.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/search`
     - `/api/rag/search`
@@ -350,7 +351,7 @@ async def similarity_search(
             document_types=request.document_types,
             user_id=user_id
         )
-        
+
         return APIResponse(
             status="success",
             data={
@@ -359,32 +360,32 @@ async def similarity_search(
                 "matches_found": len(results)
             }
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "similarity search")
+        raise handle_ai_service_error(e, "similarity search") from e
 
 
 @router.get("/embeddings/stats", response_model=APIResponse)
 async def get_embedding_stats(
-    user_id: Optional[str] = Depends(get_user_id)
+    user_id: str | None = Depends(get_user_id)
 ):
     """
     Get statistics about stored embeddings and documents.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/stats`
     - `/api/rag/stats`
     """
     try:
         stats = await rag_service.get_document_stats(user_id=user_id)
-        
+
         return APIResponse(
             status="success",
             data=stats
         )
-        
+
     except Exception as e:
-        raise handle_ai_service_error(e, "embedding stats retrieval")
+        raise handle_ai_service_error(e, "embedding stats retrieval") from e
 
 
 # Health and Status Endpoints
@@ -393,7 +394,7 @@ async def get_embedding_stats(
 async def ai_health_check():
     """
     Health check for AI services including OpenAI connectivity.
-    
+
     **Canonical endpoint** - Replaces Next.js API routes:
     - `/api/ai/health`
     - `/api/openai/status`
@@ -401,9 +402,9 @@ async def ai_health_check():
     try:
         openai_health = await openai_service.health_check()
         rag_stats = await rag_service.get_document_stats()
-        
+
         overall_status = "healthy" if openai_health["status"] == "healthy" else "degraded"
-        
+
         return APIResponse(
             status="success",
             data={
@@ -417,7 +418,7 @@ async def ai_health_check():
                 "services_checked": ["openai", "rag", "query_processor"]
             }
         )
-        
+
     except Exception as e:
         logger.error(f"AI health check failed: {e}")
         return APIResponse(

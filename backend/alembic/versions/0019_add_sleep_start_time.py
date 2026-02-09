@@ -5,8 +5,9 @@ Revises: 0018_weekly_habits_summary
 Create Date: 2026-01-12
 
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0019_sleep_start_time"

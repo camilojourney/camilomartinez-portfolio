@@ -23,11 +23,12 @@ Usage:
 import os
 import pickle
 from pathlib import Path
-import requests
-import pandas as pd
+
 import geopandas as gpd
-import osmnx as ox
 import networkx as nx
+import osmnx as ox
+import pandas as pd
+import requests
 from shapely.geometry import shape
 from shapely.ops import unary_union
 

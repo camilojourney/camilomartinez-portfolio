@@ -1,14 +1,21 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+
+from sqlalchemy import engine_from_config, pool
+
 from alembic import context
 
-# Import your models here to ensure they're registered
+# Import models so Alembic autogenerate sees them.
 from app.config.database import Base
-from app.models.user import User
-from app.models.strava import StravaUser, StravaRun
-from app.models.whoop import WHOOPUser, WHOOPCycle, WHOOPSleep, WHOOPRecovery, WHOOPWorkout
-from app.models.ai_query import QueryHistory, Embedding  # Updated: removed old models
+from app.models.ai_query import Embedding, QueryHistory  # noqa: F401
+from app.models.strava import StravaRun, StravaUser  # noqa: F401
+from app.models.user import User  # noqa: F401
+from app.models.whoop import (  # noqa: F401
+    WHOOPCycle,
+    WHOOPRecovery,
+    WHOOPSleep,
+    WHOOPUser,
+    WHOOPWorkout,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -65,7 +72,7 @@ def run_migrations_online() -> None:
     if url and "postgresql+asyncpg://" in url:
         url = url.replace("postgresql+asyncpg://", "postgresql+psycopg://")
         config.set_main_option("sqlalchemy.url", url)
-    
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

@@ -2,11 +2,11 @@
 Pytest configuration and fixtures for backend tests.
 """
 
+import asyncio
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, patch
-from typing import AsyncGenerator
-import asyncio
 
 from app.main import app
 

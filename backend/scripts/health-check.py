@@ -4,12 +4,12 @@ Professional Backend Health Check Script
 Checks multiple endpoints and services
 """
 
+import json
 import sys
 import time
-import json
-import requests
-from typing import Dict, List, Tuple
 from datetime import datetime
+
+import requests
 
 # Configuration
 BACKEND_URL = "http://localhost:9000"
@@ -24,7 +24,7 @@ class Colors:
     BOLD = '\033[1m'
     END = '\033[0m'
 
-def check_endpoint(url: str, method: str = "GET", expected_status: int = 200) -> Tuple[bool, Dict]:
+def check_endpoint(url: str, method: str = "GET", expected_status: int = 200) -> tuple[bool, dict]:
     """Check a single endpoint"""
     try:
         start_time = time.time()
@@ -52,7 +52,7 @@ def print_header():
     print(f"{Colors.BOLD}{Colors.BLUE}  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{Colors.END}")
     print(f"{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.END}\n")
 
-def print_result(name: str, success: bool, details: Dict):
+def print_result(name: str, success: bool, details: dict):
     """Print check result"""
     status = f"{Colors.GREEN}✓ PASS{Colors.END}" if success else f"{Colors.RED}✗ FAIL{Colors.END}"
     print(f"{status} {Colors.BOLD}{name}{Colors.END}")
@@ -67,7 +67,7 @@ def print_result(name: str, success: bool, details: Dict):
     elif "content" in details:
         try:
             print(f"  Response: {json.dumps(details['content'], indent=2)}")
-        except:
+        except Exception:
             print(f"  Response: {details['content']}")
 
     print()

@@ -11,19 +11,19 @@ This script:
 Can be run manually or via cron job every Sunday to update the latest week.
 """
 
-import sys
-from pathlib import Path
-from datetime import datetime, timedelta
-from typing import Optional
 import asyncio
+import sys
+from datetime import datetime, timedelta
+from pathlib import Path
 
 # Add the backend directory to Python path
 backend_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(backend_dir))
 
-from sqlalchemy import text, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.config.database import async_session_factory
+from sqlalchemy import text  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
+
+from app.config.database import async_session_factory  # noqa: E402
 
 
 async def get_week_bounds(date: datetime) -> tuple[datetime, datetime]:
@@ -47,7 +47,7 @@ async def get_week_bounds(date: datetime) -> tuple[datetime, datetime]:
     return week_start, week_end
 
 
-async def calculate_weekly_summary(db: AsyncSession, week_start: datetime) -> Optional[dict]:
+async def calculate_weekly_summary(db: AsyncSession, week_start: datetime) -> dict | None:
     """
     Calculate weekly summary statistics for a given week.
 
@@ -252,7 +252,7 @@ async def upsert_weekly_summary(db: AsyncSession, summary: dict) -> None:
     await db.commit()
 
 
-async def get_date_range(db: AsyncSession) -> tuple[Optional[datetime], Optional[datetime]]:
+async def get_date_range(db: AsyncSession) -> tuple[datetime | None, datetime | None]:
     """
     Get the earliest and latest dates from workout and sleep data.
 
@@ -301,7 +301,7 @@ async def populate_all_weeks(recalculate_all: bool = False):
             weeks_processed = 0
             weeks_with_data = 0
 
-            print(f"\n🔄 Processing all weeks...")
+            print("\n🔄 Processing all weeks...")
 
             while current_date <= latest_date:
                 week_start, _ = await get_week_bounds(current_date)

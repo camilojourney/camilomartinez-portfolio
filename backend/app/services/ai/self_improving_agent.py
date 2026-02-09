@@ -18,15 +18,16 @@ Architecture:
 """
 
 import logging
-from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timedelta
-from sqlalchemy import select, func, and_, desc, text
+from typing import Any
+
+from sqlalchemy import Float, and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config.database import get_database_session, async_session_factory
-from app.models.ai_query import QueryHistory, Embedding
-from app.services.ai.openai_client import openai_service, OpenAIError
+from app.config.database import async_session_factory
+from app.models.ai_query import Embedding, QueryHistory
 from app.services.ai.error_handling import handle_exceptions
+from app.services.ai.openai_client import openai_service
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +72,8 @@ class SelfImprovingRAGAgent:
     async def learn_from_feedback(
         self,
         query_id: int,
-        failure_classification: Optional[str] = None
-    ) -> Dict[str, Any]:
+        failure_classification: str | None = None
+    ) -> dict[str, Any]:
         """
         Main learning method - analyzes a failed query and applies improvements.
 
@@ -175,7 +176,7 @@ class SelfImprovingRAGAgent:
     async def classify_failure(
         self,
         query_history: QueryHistory
-    ) -> Tuple[str, float]:
+    ) -> tuple[str, float]:
         """
         Uses LLM to classify failure type and confidence.
 
@@ -254,7 +255,7 @@ class SelfImprovingRAGAgent:
         self,
         query_history: QueryHistory,
         confidence: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Handle MISSING_CONTEXT failures by generating HyDE embeddings.
 
@@ -272,7 +273,7 @@ class SelfImprovingRAGAgent:
             "confidence": confidence,
             "missing_context": {
                 "triggering_question": query_history.user_question,
-                "missing_concept": f"Schema context was insufficient. Generated HyDE document.",
+                "missing_concept": "Schema context was insufficient. Generated HyDE document.",
                 "hypothetical_document": hyde_result["hypothetical_document"],
                 "generated_embedding_ids": []  # Will be populated after embedding creation
             },
@@ -284,7 +285,7 @@ class SelfImprovingRAGAgent:
         self,
         query_history: QueryHistory,
         confidence: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Handle INCORRECT_LOGIC failures by creating correction guidelines.
 
@@ -358,7 +359,7 @@ class SelfImprovingRAGAgent:
         self,
         query_history: QueryHistory,
         confidence: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Handle SYNTAX_ERROR failures."""
         return {
             "pattern_type": "SYNTAX_ERROR",
@@ -373,7 +374,7 @@ class SelfImprovingRAGAgent:
             "analyzer_version": self.analyzer_version
         }
 
-    async def _handle_timeout(self, query_history: QueryHistory, confidence: float) -> Dict[str, Any]:
+    async def _handle_timeout(self, query_history: QueryHistory, confidence: float) -> dict[str, Any]:
         """Handle TIMEOUT failures."""
         return {
             "pattern_type": "TIMEOUT",
@@ -383,7 +384,7 @@ class SelfImprovingRAGAgent:
             "analyzer_version": self.analyzer_version
         }
 
-    async def _handle_ambiguous_question(self, query_history: QueryHistory, confidence: float) -> Dict[str, Any]:
+    async def _handle_ambiguous_question(self, query_history: QueryHistory, confidence: float) -> dict[str, Any]:
         """Handle AMBIGUOUS_QUESTION failures."""
         return {
             "pattern_type": "AMBIGUOUS_QUESTION",
@@ -393,7 +394,7 @@ class SelfImprovingRAGAgent:
             "analyzer_version": self.analyzer_version
         }
 
-    async def _handle_permission_denied(self, query_history: QueryHistory, confidence: float) -> Dict[str, Any]:
+    async def _handle_permission_denied(self, query_history: QueryHistory, confidence: float) -> dict[str, Any]:
         """Handle PERMISSION_DENIED failures."""
         return {
             "pattern_type": "PERMISSION_DENIED",
@@ -409,7 +410,7 @@ class SelfImprovingRAGAgent:
         self,
         question: str,
         context_used: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         HyDE: Generate hypothetical perfect document that would answer the question.
 
@@ -462,14 +463,14 @@ class SelfImprovingRAGAgent:
 
         except Exception as e:
             logger.error(f"HyDE generation failed: {e}")
-            raise SelfImprovingAgentError(f"Failed to generate hypothetical document: {e}")
+            raise SelfImprovingAgentError(f"Failed to generate hypothetical document: {e}") from e
 
     async def _create_hyde_embeddings(
         self,
         query_history: QueryHistory,
-        learned_pattern: Dict[str, Any],
+        learned_pattern: dict[str, Any],
         session: AsyncSession
-    ) -> List[int]:
+    ) -> list[int]:
         """
         Creates HyDE embeddings from learned pattern.
 
@@ -526,7 +527,7 @@ class SelfImprovingRAGAgent:
         self,
         current_question: str,
         lookback_days: int = 30
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Finds similar past failures using semantic search on questions.
 
@@ -545,7 +546,7 @@ class SelfImprovingRAGAgent:
                 select(QueryHistory)
                 .where(
                     and_(
-                        QueryHistory.was_successful == False,
+                        QueryHistory.was_successful.is_(False),
                         QueryHistory.learned_pattern.isnot(None),
                         QueryHistory.created_at >= cutoff_date
                     )
@@ -575,7 +576,7 @@ class SelfImprovingRAGAgent:
     async def analyze_failure_trends(
         self,
         time_window_days: int = 7
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Identifies trending failure patterns for proactive improvement.
 
@@ -606,7 +607,7 @@ class SelfImprovingRAGAgent:
                 .where(
                     and_(
                         QueryHistory.created_at >= cutoff_date,
-                        QueryHistory.was_successful == False,
+                        QueryHistory.was_successful.is_(False),
                         QueryHistory.failure_type.isnot(None)
                     )
                 )
@@ -667,9 +668,9 @@ class SelfImprovingRAGAgent:
 
     def _generate_recommendation(
         self,
-        failure_distribution: Dict[str, int],
-        missing_contexts: List[str],
-        logic_errors: List[str]
+        failure_distribution: dict[str, int],
+        missing_contexts: list[str],
+        logic_errors: list[str]
     ) -> str:
         """Generate actionable recommendation based on trends."""
         if not failure_distribution:
@@ -691,7 +692,7 @@ class SelfImprovingRAGAgent:
         self,
         question: str,
         limit: int = 3
-    ) -> List[Dict[str, str]]:
+    ) -> list[dict[str, str]]:
         """
         Retrieves successful queries to use as few-shot examples in prompts.
 
@@ -722,7 +723,7 @@ class SelfImprovingRAGAgent:
                 select(QueryHistory)
                 .where(
                     and_(
-                        QueryHistory.was_successful == True,
+                        QueryHistory.was_successful.is_(True),
                         QueryHistory.user_feedback.in_([0, 1]),  # Neutral or positive
                         QueryHistory.created_at >= cutoff_date,
                         QueryHistory.generated_sql.isnot(None),
@@ -828,7 +829,7 @@ Remember to apply these learned corrections to avoid previous mistakes.
     async def get_pending_reviews(
         self,
         limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Fetches learned patterns awaiting human validation.
 
@@ -879,7 +880,7 @@ Remember to apply these learned corrections to avoid previous mistakes.
         self,
         query_id: int,
         reviewer_id: str,
-        notes: Optional[str] = None
+        notes: str | None = None
     ) -> bool:
         """
         Marks a learned pattern as approved and enables associated embeddings.
@@ -993,7 +994,7 @@ Remember to apply these learned corrections to avoid previous mistakes.
 
     # ==================== AUTO-IMPROVEMENT JOBS ====================
 
-    async def run_daily_improvement_cycle(self) -> Dict[str, Any]:
+    async def run_daily_improvement_cycle(self) -> dict[str, Any]:
         """
         Scheduled job (runs daily via cron/Celery) to:
         1. Analyze failure trends from past 24 hours
@@ -1069,7 +1070,7 @@ Remember to apply these learned corrections to avoid previous mistakes.
         self,
         embedding_id: int,
         time_window_days: int = 14
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Measures if a corrective embedding actually improved outcomes.
 
@@ -1121,8 +1122,6 @@ Remember to apply these learned corrections to avoid previous mistakes.
 
             # Simple effectiveness check: count successes before and after
             # TODO: Implement semantic similarity for better matching
-            question_keywords = source_query.user_question.lower().split()
-
             # Count successful queries before embedding
             before_result = await session.execute(
                 select(func.count(QueryHistory.id))
@@ -1130,7 +1129,7 @@ Remember to apply these learned corrections to avoid previous mistakes.
                     and_(
                         QueryHistory.created_at >= cutoff_before,
                         QueryHistory.created_at < creation_date,
-                        QueryHistory.was_successful == True
+                        QueryHistory.was_successful.is_(True)
                     )
                 )
             )
@@ -1155,7 +1154,7 @@ Remember to apply these learned corrections to avoid previous mistakes.
                     and_(
                         QueryHistory.created_at >= creation_date,
                         QueryHistory.created_at <= cutoff_after,
-                        QueryHistory.was_successful == True
+                        QueryHistory.was_successful.is_(True)
                     )
                 )
             )

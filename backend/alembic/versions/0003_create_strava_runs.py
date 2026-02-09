@@ -1,8 +1,10 @@
 """Create strava_runs table"""
 
-from alembic import op
-import sqlalchemy as sa
 from textwrap import dedent
+
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0003_create_strava_runs"

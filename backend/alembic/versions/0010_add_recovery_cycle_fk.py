@@ -1,8 +1,10 @@
 """Add recovery cycle foreign key"""
 
-from alembic import op
-import sqlalchemy as sa
 from textwrap import dedent
+
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0010_add_recovery_cycle_fk"

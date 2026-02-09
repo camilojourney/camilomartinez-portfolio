@@ -2,20 +2,19 @@
 System operation routers for health checks, monitoring, and debugging.
 """
 
-from fastapi import APIRouter, Depends, Request, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Dict, Any, Optional
-import time
 from datetime import datetime
 
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.config.database import get_db_session
+from app.config.settings import settings
+from app.utils.auth import verify_admin_request
 from app.utils.rate_limiting import (
-    rate_limit_service,
     get_client_ip,
     get_user_id_from_request,
+    rate_limit_service,
 )
-from app.utils.auth import verify_admin_request
-from app.config.settings import settings
 
 router = APIRouter()
 
@@ -34,7 +33,7 @@ async def health_check():
 @router.get("/health/detailed")
 async def detailed_health_check(db: AsyncSession = Depends(get_db_session)):
     """Detailed health check with database connectivity."""
-    
+
     health_data = {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
@@ -42,7 +41,7 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db_session)):
         "service": "camilo-ai-analytics-backend",
         "checks": {}
     }
-    
+
     # Database connectivity check
     try:
         # Simple query to test database
@@ -54,10 +53,10 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db_session)):
     except Exception as e:
         health_data["status"] = "unhealthy"
         health_data["checks"]["database"] = {
-            "status": "unhealthy", 
+            "status": "unhealthy",
             "message": f"Database connection failed: {str(e)}"
         }
-    
+
     # Redis connectivity check (if configured)
     try:
         from app.config.redis import get_redis
@@ -72,7 +71,7 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db_session)):
             "status": "degraded",
             "message": f"Redis connection failed: {str(e)} (non-critical)"
         }
-    
+
     return health_data
 
 
@@ -102,17 +101,17 @@ async def debug_rate_limit(
     admin_user: str = Depends(verify_admin_request)
 ):
     """Debug endpoint to check rate limit status."""
-    
+
     ip_address = get_client_ip(request)
     user_id = get_user_id_from_request(request)
-    
+
     # Get current rate limit status
     status = await rate_limit_service.get_rate_limit_status(
         db=db,
         ip_address=ip_address,
         user_id=user_id
     )
-    
+
     return {
         "ip_address": ip_address,
         "user_id": user_id,
@@ -143,17 +142,17 @@ async def test_rate_limit(
     admin_user: str = Depends(verify_admin_request)
 ):
     """Test rate limiting by simulating an AI query."""
-    
+
     ip_address = get_client_ip(request)
     user_id = get_user_id_from_request(request)
-    
+
     # Check rate limit
     rate_limit_result = await rate_limit_service.check_rate_limit(
         db=db,
         ip_address=ip_address,
         user_id=user_id
     )
-    
+
     if not rate_limit_result.allowed:
         raise HTTPException(
             status_code=429,
@@ -166,14 +165,14 @@ async def test_rate_limit(
                 "reset_date": rate_limit_result.reset_date.isoformat()
             }
         )
-    
+
     # Increment usage (simulate successful query)
     await rate_limit_service.increment_usage(
         db=db,
         ip_address=ip_address,
         user_id=user_id
     )
-    
+
     return {
         "message": "Rate limit test successful",
         "ip_address": ip_address,
@@ -201,7 +200,7 @@ async def create_bypass_token(
         db=db,
         description=f"Test bypass: {description}"
     )
-    
+
     return {
         "message": "Bypass token created successfully",
         "token": bypass.token,

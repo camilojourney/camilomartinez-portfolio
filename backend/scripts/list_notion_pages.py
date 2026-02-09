@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """List all pages in Notion database to understand structure"""
-import requests
-import json
 import os
+
+import requests
 
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
 DATABASE_ID = os.getenv("NOTION_DATABASE_ID", "2e3e98e30a3080c6a15ae087562cf137")

@@ -5,6 +5,7 @@ from the AI query processor's fallback system.
 
 from datetime import datetime, timedelta
 
+
 def simulate_fallback_response(question: str):
     """Simulate the _fallback_response method logic"""
     normalized = question.lower()
@@ -309,7 +310,7 @@ for i, question in enumerate(questions, 1):
         print("DATA RETURNED: None")
 
     if result['sql']:
-        print(f"\nGENERATED SQL:")
+        print("\nGENERATED SQL:")
         print(f"  {result['sql']}")
 
     print(f"\nFallback Used: {result['fallback']}")

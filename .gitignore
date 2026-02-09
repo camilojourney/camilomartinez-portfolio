@@ -35,6 +35,9 @@ pnpm-debug.log*
 
 # Testing
 coverage/
+.coverage
+coverage.xml
+htmlcov/
 
 # Temporary files
 *.tmp

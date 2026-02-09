@@ -14,12 +14,15 @@ Endpoints:
 """
 
 import logging
-from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Depends, Query, Request, status
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
-from app.services.ai.self_improving_agent import self_improving_agent, SelfImprovingAgentError
 from app.services.ai.error_handling import handle_exceptions
+from app.services.ai.self_improving_agent import (
+    self_improving_agent,
+)
 from app.utils.auth import verify_admin_request
 
 logger = logging.getLogger(__name__)
@@ -31,7 +34,7 @@ router = APIRouter(prefix="/api/v1/ai/admin", tags=["AI Admin"])
 
 class PatternApprovalRequest(BaseModel):
     """Request model for approving a learned pattern."""
-    notes: Optional[str] = Field(None, description="Optional review notes")
+    notes: str | None = Field(None, description="Optional review notes")
 
 
 class PatternRejectionRequest(BaseModel):
@@ -43,13 +46,13 @@ class PendingReviewResponse(BaseModel):
     """Response model for pending review."""
     query_id: int
     question: str
-    failure_type: Optional[str]
+    failure_type: str | None
     confidence: float
-    learned_pattern: Dict[str, Any]
-    generated_sql: Optional[str]
-    error_message: Optional[str]
-    created_at: Optional[str]
-    corrective_embeddings: List[int]
+    learned_pattern: dict[str, Any]
+    generated_sql: str | None
+    error_message: str | None
+    created_at: str | None
+    corrective_embeddings: list[int]
 
 
 class ImprovementStatsResponse(BaseModel):
@@ -59,8 +62,8 @@ class ImprovementStatsResponse(BaseModel):
     pending_review: int
     manually_approved: int
     rejected: int
-    success_rate_improvement: Optional[float]
-    trending_failures: Dict[str, int]
+    success_rate_improvement: float | None
+    trending_failures: dict[str, int]
     embeddings_created: int
     validated_embeddings: int
 
@@ -78,7 +81,7 @@ async def verify_admin_auth(
 
 @router.get(
     "/pending-reviews",
-    response_model=List[PendingReviewResponse],
+    response_model=list[PendingReviewResponse],
     summary="Get pending pattern reviews",
     description="Retrieve learned patterns awaiting human validation"
 )
@@ -109,7 +112,7 @@ async def get_pending_pattern_reviews(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve pending reviews: {str(e)}"
-        )
+        ) from e
 
 
 @router.post(
@@ -164,7 +167,7 @@ async def approve_learned_pattern(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to approve pattern: {str(e)}"
-        )
+        ) from e
 
 
 @router.post(
@@ -220,7 +223,7 @@ async def reject_learned_pattern(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to reject pattern: {str(e)}"
-        )
+        ) from e
 
 
 @router.get(
@@ -251,9 +254,11 @@ async def get_improvement_statistics(
     """
     try:
         from datetime import datetime, timedelta
-        from sqlalchemy import select, func, and_
+
+        from sqlalchemy import and_, func, select
+
         from app.config.database import async_session_factory
-        from app.models.ai_query import QueryHistory, Embedding
+        from app.models.ai_query import Embedding, QueryHistory
 
         cutoff_date = datetime.utcnow() - timedelta(days=time_window_days)
 
@@ -295,7 +300,7 @@ async def get_improvement_statistics(
             embedding_result = await session.execute(
                 select(
                     func.count(Embedding.id).label('total'),
-                    func.count(Embedding.id).filter(Embedding.is_validated == True).label('validated')
+                    func.count(Embedding.id).filter(Embedding.is_validated.is_(True)).label('validated')
                 )
                 .where(
                     and_(
@@ -329,7 +334,7 @@ async def get_improvement_statistics(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve statistics: {str(e)}"
-        )
+        ) from e
 
 
 @router.get(
@@ -366,7 +371,7 @@ async def get_failure_trends(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to analyze trends: {str(e)}"
-        )
+        ) from e
 
 
 @router.post(
@@ -422,7 +427,7 @@ async def validate_embedding_effectiveness(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to validate embedding: {str(e)}"
-        )
+        ) from e
 
 
 @router.post(
@@ -463,7 +468,7 @@ async def run_improvement_cycle_manually(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to run improvement cycle: {str(e)}"
-        )
+        ) from e
 
 
 # ==================== HEALTH CHECK ====================

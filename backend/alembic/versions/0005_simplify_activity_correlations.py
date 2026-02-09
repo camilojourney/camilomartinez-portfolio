@@ -1,8 +1,9 @@
 """Simplify activity correlations table"""
 
-from alembic import op
+
 import sqlalchemy as sa
-from textwrap import dedent
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0005_simplify_activity"

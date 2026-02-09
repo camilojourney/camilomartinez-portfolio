@@ -5,12 +5,13 @@ Includes social media pipeline for content optimization and thread generation.
 
 import json
 import logging
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Body
+from typing import Any
+
+from fastapi import APIRouter, Body, HTTPException
 from pydantic import BaseModel, Field
 
-from app.services.ai.openai_client import openai_service, OpenAIError
+from app.services.ai.openai_client import openai_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -27,15 +28,15 @@ class SocialMediaRequest(BaseModel):
 class SocialMediaContent(BaseModel):
     """Processed social media content."""
     refined: str = Field(..., description="Optimized text content")
-    reelScript: Optional[str] = Field(None, description="Instagram reel script")
-    captions: List[str] = Field(default_factory=list, description="Caption variations")
-    emotions: List[str] = Field(default_factory=list, description="Content emotions")
+    reelScript: str | None = Field(None, description="Instagram reel script")
+    captions: list[str] = Field(default_factory=list, description="Caption variations")
+    emotions: list[str] = Field(default_factory=list, description="Content emotions")
     category: str = Field("Other", description="Content category")
 
 
 class SocialMediaMetadata(BaseModel):
     """Content processing metadata."""
-    emotions: List[str] = Field(default_factory=list)
+    emotions: list[str] = Field(default_factory=list)
     category: str = Field("Other")
     processedAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
@@ -43,8 +44,8 @@ class SocialMediaMetadata(BaseModel):
 class SocialMediaResponse(BaseModel):
     """Social media pipeline response."""
     success: bool = Field(True)
-    data: Dict[str, Any] = Field(...)
-    error: Optional[str] = Field(None)
+    data: dict[str, Any] = Field(...)
+    error: str | None = Field(None)
 
 
 # Social Media Processing Prompts
@@ -70,7 +71,7 @@ SYSTEM_PROMPT_SHORT = """You are an expert social media content optimizer. Your 
 ### **CAPTION GENERATION**
 Generate three short caption options (2-4 lines each) based on the core message:
 1. **Option 1: The Bold Statement** - Direct and provocative
-2. **Option 2: The Insightful Reflection** - Philosophical and inspirational  
+2. **Option 2: The Insightful Reflection** - Philosophical and inspirational
 3. **Option 3: The Engaging Question** - Designed to spark comments
 
 ### **OUTPUT (JSON ONLY):**
@@ -115,7 +116,7 @@ SYSTEM_PROMPT_THREADS = """You are an expert Twitter/X thread creator. Transform
 ### **REEL SCRIPT STRUCTURE**
 Generate 4-act Instagram reel script:
 - **Act I: The Hook (2-7 words)** - Scroll-stopping opener
-- **Act II: Value Proposition (7-22 words)** - Clear promise  
+- **Act II: Value Proposition (7-22 words)** - Clear promise
 - **Act III: Key Content (22-99 words)** - Main explanation
 - **Act IV: Call-to-Action (Conditional)** - Only for educational/opinion content
 
@@ -124,7 +125,7 @@ Generate 4-act Instagram reel script:
   "thread": ["<Hook Tweet 1>", "<Body Tweet 2>", "..."],
   "reel_script": "<4-act script with acts separated by \\n\\n>",
   "captions": ["<Bold Statement>", "<Insightful Reflection>", "<Engaging Question>"],
-  "emotions": ["Primary", "Secondary"], 
+  "emotions": ["Primary", "Secondary"],
   "category": "Label"
 }
 """
@@ -150,18 +151,18 @@ async def translate_to_spanish(text: str) -> str:
     try:
         messages = [
             {
-                "role": "system", 
+                "role": "system",
                 "content": "You are a professional translator. Translate the following text to natural, engaging Spanish while preserving the original tone and style. Return only the translation."
             },
             {"role": "user", "content": text}
         ]
-        
+
         response = await openai_service.create_chat_completion(
             messages=messages,
             temperature=0.3,
             max_tokens=1000
         )
-        
+
         return response.get("content", text)
     except Exception as e:
         logger.error(f"Translation error: {e}")
@@ -174,55 +175,55 @@ async def translate_to_spanish(text: str) -> str:
 async def process_social_media_content(request: SocialMediaRequest = Body(...)):
     """
     Process text content for social media optimization.
-    
+
     Transforms raw thoughts into polished social media content including:
     - Optimized tweets or thread creation
-    - Instagram reel scripts  
+    - Instagram reel scripts
     - Caption variations
     - Multilingual support (English/Spanish)
     """
     try:
         text = request.text.strip()
         language = request.language
-        
+
         if not text:
             raise HTTPException(status_code=400, detail="Text input is required")
-        
+
         # Select appropriate prompt based on character count
         character_count = len(text)
         system_prompt = select_prompt(character_count)
-        
+
         logger.info(f"Processing {character_count} characters with {'THREADS' if character_count >= 280 else 'SHORT'} prompt")
-        
+
         # Generate content with OpenAI
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": text}
         ]
-        
+
         response = await openai_service.create_chat_completion(
             messages=messages,
             temperature=0.7,
             max_tokens=2000
         )
-        
+
         raw_content = response.get("content")
         if not raw_content:
             raise HTTPException(status_code=500, detail="No response from OpenAI")
-        
+
         # Parse JSON response
         clean_content = strip_code_fences(raw_content)
-        
+
         try:
             parsed_result = json.loads(clean_content)
         except json.JSONDecodeError as e:
             logger.error(f"JSON parsing error: {e}, content: {clean_content}")
-            raise HTTPException(status_code=500, detail="Failed to parse AI response")
-        
+            raise HTTPException(status_code=500, detail="Failed to parse AI response") from e
+
         # Prepare English content
         english_content = {
             "refined": (
-                parsed_result.get("thread", [""])[0] if character_count >= 280 and parsed_result.get("thread") 
+                parsed_result.get("thread", [""])[0] if character_count >= 280 and parsed_result.get("thread")
                 else parsed_result.get("improved_script", "")
             ),
             "reelScript": parsed_result.get("reel_script"),
@@ -230,30 +231,30 @@ async def process_social_media_content(request: SocialMediaRequest = Body(...)):
             "emotions": parsed_result.get("emotions", []),
             "category": parsed_result.get("category", "Other")
         }
-        
+
         # If thread mode, join all tweets
         if character_count >= 280 and parsed_result.get("thread"):
             english_content["refined"] = "\n\n".join(parsed_result["thread"])
-        
+
         # Translate to Spanish if requested
         spanish_content = None
         if language in ["both", "es"]:
             logger.info("Translating content to Spanish...")
-            
+
             refined_sp = await translate_to_spanish(english_content["refined"])
             reel_script_sp = await translate_to_spanish(english_content["reelScript"]) if english_content["reelScript"] else None
             captions_sp = []
-            
+
             for caption in english_content["captions"]:
                 translated_caption = await translate_to_spanish(caption)
                 captions_sp.append(translated_caption)
-            
+
             spanish_content = {
                 "refined": refined_sp,
                 "reelScript": reel_script_sp,
                 "captions": captions_sp
             }
-        
+
         # Return structured response
         return SocialMediaResponse(
             success=True,
@@ -272,7 +273,7 @@ async def process_social_media_content(request: SocialMediaRequest = Body(...)):
                 }
             }
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -280,7 +281,7 @@ async def process_social_media_content(request: SocialMediaRequest = Body(...)):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to process content: {str(e)}"
-        )
+        ) from e
 
 
 @router.get("/social-media-pipeline")
@@ -291,7 +292,7 @@ async def get_social_media_info():
         "description": "AI-powered content optimization for social media platforms",
         "features": [
             "Tweet optimization and thread creation",
-            "Instagram reel script generation", 
+            "Instagram reel script generation",
             "Caption variations",
             "Multilingual support (English/Spanish)",
             "Emotion and category analysis"

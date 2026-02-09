@@ -1,8 +1,10 @@
 """Allow nullable WHOOP sleep foreign key"""
 
-from alembic import op
-import sqlalchemy as sa
 from textwrap import dedent
+
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0011_nullable_sleep_fk"

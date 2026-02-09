@@ -20,9 +20,9 @@ The 9 consolidated identities:
 """
 import asyncio
 import os
-import requests
 from datetime import datetime, timedelta
-from typing import Optional
+
+import requests
 
 # 9 Consolidated Identity Templates with Pull Motivation
 IDENTITY_TEMPLATES = [
@@ -302,7 +302,7 @@ async def main():
     print(f"\n📅 Creating pages for week: {target_week_start.date()} to {target_week_end.date()}")
 
     # Check if pages already exist for this week
-    print(f"\n1️⃣  Checking for existing pages...")
+    print("\n1️⃣  Checking for existing pages...")
     existing_pages = check_pages_exist_for_week(target_week_start.date().isoformat())
 
     if existing_pages and not args.force:
@@ -327,10 +327,10 @@ async def main():
             target_week_start.date().isoformat(),
             target_week_end.date().isoformat()
         ):
-            print(f"      ✅ Created")
+            print("      ✅ Created")
             success_count += 1
         else:
-            print(f"      ❌ Failed")
+            print("      ❌ Failed")
 
     print("\n" + "=" * 100)
     print(f"✅ Successfully created {success_count}/{len(IDENTITY_TEMPLATES)} identity pages")

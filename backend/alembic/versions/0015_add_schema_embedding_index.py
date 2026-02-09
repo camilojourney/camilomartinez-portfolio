@@ -1,8 +1,10 @@
 """Add HNSW index for schema embeddings"""
 
-from alembic import op
-import sqlalchemy as sa
 from textwrap import dedent
+
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0015_add_schema_embedding_index"

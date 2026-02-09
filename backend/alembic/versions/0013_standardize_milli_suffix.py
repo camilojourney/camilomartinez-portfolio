@@ -1,8 +1,10 @@
 """Standardize *_milli columns to *_ms"""
 
-from alembic import op
-import sqlalchemy as sa
 from textwrap import dedent
+
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0013_standardize_milli"

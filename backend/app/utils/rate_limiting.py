@@ -7,12 +7,12 @@ minimal in-memory service here alongside the helper utilities that other
 modules expect.
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
 import ipaddress
 import logging
 import secrets
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any
 
 from fastapi import Header, Request
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def get_client_ip(request: Request) -> Optional[str]:
+def get_client_ip(request: Request) -> str | None:
     """
     Extract client IP address from FastAPI requests, respecting common proxy
     headers before falling back to the direct client host.
@@ -54,9 +54,9 @@ def get_client_ip(request: Request) -> Optional[str]:
 
 
 def get_bypass_token(
-    authorization: Optional[str] = Header(None),
-    x_bypass_token: Optional[str] = Header(None, alias="X-Bypass-Token"),
-) -> Optional[str]:
+    authorization: str | None = Header(None),
+    x_bypass_token: str | None = Header(None, alias="X-Bypass-Token"),
+) -> str | None:
     """Extract bypass token from supported headers."""
 
     if authorization and authorization.startswith("Bypass "):
@@ -68,7 +68,7 @@ def get_bypass_token(
     return None
 
 
-def get_user_id_from_request(request: Request) -> Optional[int]:
+def get_user_id_from_request(request: Request) -> int | None:
     """
     Extract user id using the provisional `x-user-id` header that we leverage
     during development. Real authentication will replace this in the future.
@@ -98,9 +98,9 @@ def format_rate_limit_response(
     current_count: int,
     remaining: int,
     reset_date: datetime,
-    message: Optional[str] = None,
+    message: str | None = None,
     bypass_used: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Return a consistent response payload for rate limit checks."""
 
     return {
@@ -120,7 +120,7 @@ def create_rate_limit_headers(
     remaining: int,
     reset_date: datetime,
     bypass_used: bool = False,
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Build HTTP headers describing the current rate limit state."""
 
     headers = {
@@ -181,11 +181,11 @@ def should_bypass_rate_limiting(path: str) -> bool:
 
 def log_rate_limit_event(
     event_type: str,
-    ip_address: Optional[str] = None,
-    user_id: Optional[int] = None,
-    bypass_token: Optional[str] = None,
-    limit: Optional[int] = None,
-    count: Optional[int] = None,
+    ip_address: str | None = None,
+    user_id: int | None = None,
+    bypass_token: str | None = None,
+    limit: int | None = None,
+    count: int | None = None,
     **extra: Any,
 ) -> None:
     """Convenience wrapper for structured logging of rate limit interactions."""
@@ -249,8 +249,8 @@ class RateLimitStatus:
     remaining: int
     reset_date: datetime
     is_bypassed: bool = False
-    ip_limits: Optional[RateLimitRecord] = None
-    user_limits: Optional[RateLimitRecord] = None
+    ip_limits: RateLimitRecord | None = None
+    user_limits: RateLimitRecord | None = None
 
 
 @dataclass
@@ -273,9 +273,9 @@ class RateLimitService:
     async def check_rate_limit(
         self,
         db,  # unused placeholder kept for compatibility
-        ip_address: Optional[str] = None,
-        user_id: Optional[int] = None,
-        bypass_token: Optional[str] = None,
+        ip_address: str | None = None,
+        user_id: int | None = None,
+        bypass_token: str | None = None,
     ) -> RateLimitResult:
         reset_at = datetime.utcnow() + RESET_WINDOW
         message = "Rate limiting currently disabled"
@@ -292,17 +292,17 @@ class RateLimitService:
     async def increment_usage(
         self,
         db,
-        ip_address: Optional[str] = None,
-        user_id: Optional[int] = None,
-        bypass_token: Optional[str] = None,
+        ip_address: str | None = None,
+        user_id: int | None = None,
+        bypass_token: str | None = None,
     ) -> None:
         return None
 
     async def get_rate_limit_status(
         self,
         db,
-        ip_address: Optional[str] = None,
-        user_id: Optional[int] = None,
+        ip_address: str | None = None,
+        user_id: int | None = None,
     ) -> RateLimitStatus:
         reset_at = datetime.utcnow() + RESET_WINDOW
         record = RateLimitRecord(last_reset_date=datetime.utcnow())

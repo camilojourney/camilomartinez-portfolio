@@ -1,9 +1,10 @@
 """Refactor to self-improving RAG system with unified embeddings and enhanced query history"""
 
-from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 from textwrap import dedent
+
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0016_refactor_self_improving_rag"
@@ -51,15 +52,15 @@ def upgrade() -> None:
                 BEGIN
                     -- Check if schema_embeddings table exists
                     IF EXISTS (
-                        SELECT FROM information_schema.tables 
-                        WHERE table_schema = 'public' 
+                        SELECT FROM information_schema.tables
+                        WHERE table_schema = 'public'
                         AND table_name = 'schema_embeddings'
                     ) THEN
                         -- Check if required columns exist (table_name, column_name, description, embedding)
                         IF EXISTS (
-                            SELECT FROM information_schema.columns 
-                            WHERE table_schema = 'public' 
-                            AND table_name = 'schema_embeddings' 
+                            SELECT FROM information_schema.columns
+                            WHERE table_schema = 'public'
+                            AND table_name = 'schema_embeddings'
                             AND column_name = 'table_name'
                         ) THEN
                             -- Table exists with expected structure, proceed with migration
@@ -78,7 +79,7 @@ def upgrade() -> None:
                                 COALESCE(created_at, NOW()) AS created_at
                             FROM schema_embeddings
                             WHERE embedding IS NOT NULL;  -- Only migrate valid embeddings
-                            
+
                             RAISE NOTICE 'Successfully migrated data from schema_embeddings table';
                         ELSE
                             RAISE NOTICE 'schema_embeddings table exists but missing expected columns - skipping data migration';

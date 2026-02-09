@@ -3,22 +3,20 @@ Data analysis and dashboard API endpoints.
 Analytics services for dashboard data visualization.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from typing import List, Dict, Any
+import logging
 from datetime import datetime
 from decimal import Decimal
-import logging
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.database import get_db_session
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-# Pydantic models for response validation
-from pydantic import BaseModel
 
 
 class StrainDataPoint(BaseModel):
@@ -60,10 +58,10 @@ class ViewDataCounts(BaseModel):
 
 
 class ViewDataRecent(BaseModel):
-    cycles: List[Dict[str, Any]]
-    recovery: List[Dict[str, Any]]
-    sleep: List[Dict[str, Any]]
-    workouts: List[Dict[str, Any]]
+    cycles: list[dict[str, Any]]
+    recovery: list[dict[str, Any]]
+    sleep: list[dict[str, Any]]
+    workouts: list[dict[str, Any]]
 
 
 class ViewDataResponse(BaseModel):
@@ -71,7 +69,7 @@ class ViewDataResponse(BaseModel):
     counts: ViewDataCounts
     recent: ViewDataRecent
     latest_date: Any
-    strain: List[Dict[str, Any]]
+    strain: list[dict[str, Any]]
     timestamp: str
 
 
@@ -91,7 +89,7 @@ async def analytics_info():
     }
 
 
-@router.get("/strain-data", response_model=List[StrainDataPoint])
+@router.get("/strain-data", response_model=list[StrainDataPoint])
 async def get_strain_data(db: AsyncSession = Depends(get_db_session)):
     """Get daily strain data for visualization."""
     try:
@@ -103,10 +101,10 @@ async def get_strain_data(db: AsyncSession = Depends(get_db_session)):
             WHERE strain IS NOT NULL
             ORDER BY start_time ASC
         """)
-        
+
         result = await db.execute(query)
         rows = result.fetchall()
-        
+
         # Process data for client components
         processed_data = [
             StrainDataPoint(
@@ -115,16 +113,16 @@ async def get_strain_data(db: AsyncSession = Depends(get_db_session)):
             )
             for row in rows
         ]
-        
+
         logger.info(f"Retrieved {len(processed_data)} strain data points")
         return processed_data
-        
+
     except Exception as e:
         logger.error(f"Error fetching strain data: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch strain data")
+        raise HTTPException(status_code=500, detail="Failed to fetch strain data") from e
 
 
-@router.get("/monthly-strain", response_model=List[MonthlyStrainData])
+@router.get("/monthly-strain", response_model=list[MonthlyStrainData])
 async def get_monthly_strain_data(db: AsyncSession = Depends(get_db_session)):
     """Get monthly strain averages for visualization."""
     try:
@@ -138,10 +136,10 @@ async def get_monthly_strain_data(db: AsyncSession = Depends(get_db_session)):
             GROUP BY TO_CHAR(start_time, 'YYYY-MM')
             ORDER BY month ASC
         """)
-        
+
         result = await db.execute(query)
         rows = result.fetchall()
-        
+
         # Process data for client components
         processed_data = [
             MonthlyStrainData(
@@ -151,16 +149,16 @@ async def get_monthly_strain_data(db: AsyncSession = Depends(get_db_session)):
             )
             for row in rows
         ]
-        
+
         logger.info(f"Retrieved {len(processed_data)} monthly strain data points")
         return processed_data
-        
+
     except Exception as e:
         logger.error(f"Error fetching monthly strain data: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch monthly strain data")
+        raise HTTPException(status_code=500, detail="Failed to fetch monthly strain data") from e
 
 
-@router.get("/strain-recovery", response_model=List[StrainRecoveryData])
+@router.get("/strain-recovery", response_model=list[StrainRecoveryData])
 async def get_strain_recovery_data(db: AsyncSession = Depends(get_db_session)):
     """Get strain vs recovery correlation data."""
     try:
@@ -185,10 +183,10 @@ async def get_strain_recovery_data(db: AsyncSession = Depends(get_db_session)):
                 AND r2.recovery_percentage > 0
             ORDER BY c1.start_time ASC
         """)
-        
+
         result = await db.execute(query)
         rows = result.fetchall()
-        
+
         # Process data for client components
         processed_data = [
             StrainRecoveryData(
@@ -198,16 +196,16 @@ async def get_strain_recovery_data(db: AsyncSession = Depends(get_db_session)):
             )
             for row in rows
         ]
-        
+
         logger.info(f"Retrieved {len(processed_data)} strain-recovery correlation points")
         return processed_data
-        
+
     except Exception as e:
         logger.error(f"Error fetching strain-recovery data: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch strain-recovery data")
+        raise HTTPException(status_code=500, detail="Failed to fetch strain-recovery data") from e
 
 
-@router.get("/workout-data", response_model=List[WorkoutData])
+@router.get("/workout-data", response_model=list[WorkoutData])
 async def get_workout_data(db: AsyncSession = Depends(get_db_session)):
     """Get workout activity data for current year."""
     try:
@@ -229,10 +227,10 @@ async def get_workout_data(db: AsyncSession = Depends(get_db_session)):
                 )
             ORDER BY start_time ASC
         """)
-        
+
         result = await db.execute(query)
         rows = result.fetchall()
-        
+
         # Process data for client components
         processed_data = [
             WorkoutData(
@@ -243,16 +241,16 @@ async def get_workout_data(db: AsyncSession = Depends(get_db_session)):
             )
             for row in rows
         ]
-        
+
         logger.info(f"Retrieved {len(processed_data)} workout data points")
         return processed_data
-        
+
     except Exception as e:
         logger.error(f"Error fetching workout data: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch workout data")
+        raise HTTPException(status_code=500, detail="Failed to fetch workout data") from e
 
 
-@router.get("/workout-times", response_model=List[WorkoutTimeData])
+@router.get("/workout-times", response_model=list[WorkoutTimeData])
 async def get_workout_times(db: AsyncSession = Depends(get_db_session)):
     """Get workout time patterns for visualization."""
     try:
@@ -265,29 +263,29 @@ async def get_workout_times(db: AsyncSession = Depends(get_db_session)):
             GROUP BY workout_date
             ORDER BY workout_date
         """)
-        
+
         result = await db.execute(query)
         rows = result.fetchall()
-        
+
         # Process data for client components
         processed_data = []
         for row in rows:
             # Convert time to minutes for comparison
             hours, minutes = row.first_workout_time.split(':')
             time_as_minutes = int(hours) * 60 + int(minutes)
-            
+
             processed_data.append(WorkoutTimeData(
                 date=str(row.workout_date),
                 time=str(row.first_workout_time),
                 timeAsMinutes=time_as_minutes
             ))
-        
+
         logger.info(f"Retrieved {len(processed_data)} workout time data points")
         return processed_data
-        
+
     except Exception as e:
         logger.error(f"Error fetching workout times: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch workout times")
+        raise HTTPException(status_code=500, detail="Failed to fetch workout times") from e
 
 
 @router.get("/view-data", response_model=ViewDataResponse)
@@ -302,7 +300,7 @@ async def get_view_data(db: AsyncSession = Depends(get_db_session)):
             "workouts": "SELECT COUNT(*) as count FROM whoop_workouts",
         }
 
-        counts: Dict[str, int] = {}
+        counts: dict[str, int] = {}
         for key, sql_query in counts_queries.items():
             result = await db.execute(text(sql_query))
             counts[key] = int(result.scalar() or 0)
@@ -351,7 +349,7 @@ async def get_view_data(db: AsyncSession = Depends(get_db_session)):
             ORDER BY start_time DESC
         """))
 
-        def serialize_row(row_mapping) -> Dict[str, Any]:
+        def serialize_row(row_mapping) -> dict[str, Any]:
             row_dict = dict(row_mapping)
             for key, value in row_dict.items():
                 if isinstance(value, datetime):
@@ -393,4 +391,4 @@ async def get_view_data(db: AsyncSession = Depends(get_db_session)):
 
     except Exception as e:
         logger.error(f"Error fetching view data: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch view data")
+        raise HTTPException(status_code=500, detail="Failed to fetch view data") from e

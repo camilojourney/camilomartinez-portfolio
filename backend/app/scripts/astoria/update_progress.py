@@ -19,17 +19,16 @@ Usage:
     # Or called automatically by Celery worker (weekly)
 """
 
-import os
 import json
+import os
 import pickle
 import time
-import math
-from math import radians, sin, cos, sqrt, atan2
-from pathlib import Path
 from decimal import Decimal
-import geopandas as gpd
-import osmnx as ox
+from math import atan2, cos, radians, sin, sqrt
+from pathlib import Path
+
 import networkx as nx
+import osmnx as ox
 import polyline
 import psycopg2
 from dotenv import load_dotenv
@@ -220,7 +219,7 @@ for encoded_polyline in all_polylines:
     )
 
     candidate_nodes = []
-    for (u, v, k), (lat, lon), d in zip(edge_triplets, clustered_coords, snap_dists):
+    for (u, v, _k), (lat, lon), d in zip(edge_triplets, clustered_coords, snap_dists, strict=False):
         if d is None:
             continue
         du = haversine(lat, lon, G_final.nodes[u]['y'], G_final.nodes[u]['x'])
@@ -233,12 +232,12 @@ for encoded_polyline in all_polylines:
             snapped_nodes.append(n)
 
     # 3. RECONSTRUCT PATH
-    for a, b in zip(snapped_nodes[:-1], snapped_nodes[1:]):
+    for a, b in zip(snapped_nodes[:-1], snapped_nodes[1:], strict=False):
         if a == b:
             continue
         try:
             path = nx.shortest_path(G_u, a, b, weight='length')
-            for u, v in zip(path[:-1], path[1:]):
+            for u, v in zip(path[:-1], path[1:], strict=False):
                 all_covered_edges.add(tuple(sorted((u, v))))
         except (nx.NetworkXNoPath, Exception):
             continue

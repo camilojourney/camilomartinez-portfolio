@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import secrets
-from typing import Optional
 
 from fastapi import HTTPException, Request, status
 
 from app.config.settings import settings
 
 
-def _extract_bearer_token(request: Request) -> Optional[str]:
+def _extract_bearer_token(request: Request) -> str | None:
     auth_header = request.headers.get("Authorization")
     if not auth_header:
         return None

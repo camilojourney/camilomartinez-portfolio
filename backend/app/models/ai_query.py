@@ -3,15 +3,25 @@ AI Query models for self-improving RAG system.
 Supports unified embeddings and enhanced query history with learning patterns.
 """
 
-from sqlalchemy import Column, Integer, BigInteger, String, DateTime, Float, Text, Boolean, ForeignKey, ARRAY
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from pgvector.sqlalchemy import Vector
-from pydantic import BaseModel, validator
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-import uuid
+from typing import Any
+
+from pgvector.sqlalchemy import Vector
+from pydantic import BaseModel
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.config.database import Base
 
@@ -87,21 +97,21 @@ class EmbeddingBase(BaseModel):
     """Base embedding model."""
     content: str
     embedding_type: str
-    metadata: Dict[str, Any] = {}
-    confidence_score: Optional[float] = None
+    metadata: dict[str, Any] = {}
+    confidence_score: float | None = None
     is_validated: bool = False
 
 
 class EmbeddingCreate(EmbeddingBase):
     """Embedding creation model."""
-    embedding: List[float]
-    source_query_id: Optional[int] = None
+    embedding: list[float]
+    source_query_id: int | None = None
 
 
 class EmbeddingResponse(EmbeddingBase):
     """Embedding response model."""
     id: int
-    source_query_id: Optional[int] = None
+    source_query_id: int | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -112,33 +122,33 @@ class EmbeddingResponse(EmbeddingBase):
 class QueryHistoryBase(BaseModel):
     """Base query history model."""
     user_question: str
-    retrieved_context: Optional[str] = None
-    generated_sql: Optional[str] = None
-    execution_result: Optional[Dict[str, Any]] = None
-    natural_language_response: Optional[str] = None
-    was_successful: Optional[bool] = None
-    failure_type: Optional[str] = None
-    error_message: Optional[str] = None
-    user_feedback: Optional[int] = None
-    latency_ms: Optional[int] = None
-    tokens_used: Optional[int] = None
-    retrieval_confidence: Optional[float] = None
+    retrieved_context: str | None = None
+    generated_sql: str | None = None
+    execution_result: dict[str, Any] | None = None
+    natural_language_response: str | None = None
+    was_successful: bool | None = None
+    failure_type: str | None = None
+    error_message: str | None = None
+    user_feedback: int | None = None
+    latency_ms: int | None = None
+    tokens_used: int | None = None
+    retrieval_confidence: float | None = None
 
 
 class QueryHistoryCreate(QueryHistoryBase):
     """Query history creation model."""
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
+    user_id: str | None = None
+    session_id: str | None = None
 
 
 class QueryHistoryResponse(QueryHistoryBase):
     """Query history response model."""
     id: int
     improvement_applied: bool = False
-    learned_pattern: Optional[Dict[str, Any]] = None
-    corrective_embeddings: Optional[List[int]] = None
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
+    learned_pattern: dict[str, Any] | None = None
+    corrective_embeddings: list[int] | None = None
+    user_id: str | None = None
+    session_id: str | None = None
     created_at: datetime
 
     class Config:
@@ -147,10 +157,10 @@ class QueryHistoryResponse(QueryHistoryBase):
 
 class QueryHistoryUpdate(BaseModel):
     """Query history update model (mainly for feedback)."""
-    user_feedback: Optional[int] = None
-    was_successful: Optional[bool] = None
-    improvement_applied: Optional[bool] = None
-    learned_pattern: Optional[Dict[str, Any]] = None
+    user_feedback: int | None = None
+    was_successful: bool | None = None
+    improvement_applied: bool | None = None
+    learned_pattern: dict[str, Any] | None = None
 
 
 class LearnedPattern(BaseModel):
@@ -164,15 +174,15 @@ class LearnedPattern(BaseModel):
     confidence: float
 
     # Optional fields based on pattern_type
-    missing_context: Optional[Dict[str, Any]] = None
-    incorrect_logic: Optional[Dict[str, Any]] = None
-    syntax_error: Optional[Dict[str, Any]] = None
+    missing_context: dict[str, Any] | None = None
+    incorrect_logic: dict[str, Any] | None = None
+    syntax_error: dict[str, Any] | None = None
 
     # Metadata
     analyzed_at: str
     analyzer_version: str
-    human_reviewer: Optional[str] = None
-    review_notes: Optional[str] = None
+    human_reviewer: str | None = None
+    review_notes: str | None = None
 
 
 class AIQueryRequest(BaseModel):
@@ -186,12 +196,12 @@ class AIQueryRequest(BaseModel):
 class AIQueryResponse(BaseModel):
     """AI query response model."""
     answer: str
-    query_id: Optional[int] = None
-    context_used: Optional[List[str]] = None
-    sql_generated: Optional[str] = None
-    data: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
-    latency_ms: Optional[int] = None
+    query_id: int | None = None
+    context_used: list[str] | None = None
+    sql_generated: str | None = None
+    data: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
+    latency_ms: int | None = None
 
 
 class AIQueryFeedback(BaseModel):
