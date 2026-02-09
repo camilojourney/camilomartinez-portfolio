@@ -1,29 +1,34 @@
-# Camilo Martinez – AI Developer Portfolio
+# camilomartinez-portfolio
 
-This repository powers Camilo's AI-driven fitness analytics platform built with Next.js on the frontend and FastAPI on the backend. The codebase is production-ready, integrates WHOOP and Strava data sources, and ships with automated AI evaluation pipelines.
+My personal site and fitness analytics app (WHOOP + Strava), deployed on Vercel.
 
-## Documentation Hub
-- [`docs/README.md`](docs/README.md) – Master navigation with role-based entry points.
-- [`docs/overview/PORTFOLIO_OVERVIEW.md`](docs/overview/PORTFOLIO_OVERVIEW.md) – Full portfolio narrative and system walkthrough.
-- [`docs/backend/DEVELOPER_GUIDE.md`](docs/backend/DEVELOPER_GUIDE.md) – Backend setup, tooling, and API quick start.
-- [`docs/frontend/README.md`](docs/frontend/README.md) – Frontend architecture and component catalog.
-- [`docs/projects/quarto/`](docs/projects/quarto) – Quarto project templates and guides.
+- Frontend: Next.js
+- Backend: FastAPI
+
+## Docs
+
+- [`docs/README.md`](docs/README.md): Navigation and runbooks
+- [`docs/overview/PORTFOLIO_OVERVIEW.md`](docs/overview/PORTFOLIO_OVERVIEW.md): Product overview
+- [`docs/backend/DEVELOPER_GUIDE.md`](docs/backend/DEVELOPER_GUIDE.md): Backend setup
+- [`docs/frontend/README.md`](docs/frontend/README.md): Frontend architecture
 
 ## Quick Start
-Use `pnpm install && pnpm dev` for the frontend and follow the backend setup in [`docs/backend/DEVELOPER_GUIDE.md`](docs/backend/DEVELOPER_GUIDE.md). The docs hub above links to role-specific runbooks, AI operations, and integration guides.
 
----
+Frontend:
 
-Looking for the previous long-form README? It now lives in [`docs/overview/PORTFOLIO_OVERVIEW.md`](docs/overview/PORTFOLIO_OVERVIEW.md).
+```bash
+pnpm install
+pnpm dev
+```
 
-## AI Framework Integration
+Backend:
 
-This repository includes a merged AI workflow framework for consistent execution across tools.
+```bash
+cd backend
+uv sync
+uv run uvicorn app.main:app --reload --port 8000
+```
 
-- Universal entrypoint: `AGENTS.md`
-- Quick runtime context: `CLAUDE.md`
-- Framework architecture: `ARCHITECTURE.md`
-- AI standards/workflows: `.ai/`
-- Human playbooks: `docs/playbooks/`
+## Environment Variables
 
-Project-specific pre-merge docs are preserved in `docs/project-overrides/` when applicable.
+This repo ships with safe placeholders in `.env.example`. Secrets should be configured in Vercel env vars (and locally via `.env.local`), never committed.
