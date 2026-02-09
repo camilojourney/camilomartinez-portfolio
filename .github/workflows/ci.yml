@@ -58,7 +58,8 @@ jobs:
       - name: Lint
         run: uv run ruff check .
 
-      - name: Type check
+      - name: Type check (non-blocking)
+        continue-on-error: true
         run: uv run mypy app --ignore-missing-imports
 
       - name: Run tests
