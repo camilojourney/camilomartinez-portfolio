@@ -53,6 +53,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if self._should_skip_rate_limiting(request):
             return await call_next(request)
 
+        # If the database is not configured, we cannot persist or enforce rate
+        # limiting. Allow the request through rather than failing the app.
+        if async_session_factory is None:
+            return await call_next(request)
+
         # Extract identification from request
         ip_address = self._get_client_ip(request)
         user_id = self._get_user_id(request)

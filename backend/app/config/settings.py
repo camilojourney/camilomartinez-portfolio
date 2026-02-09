@@ -15,8 +15,12 @@ class Settings(BaseSettings):
     VERSION: str = "0.1.0"
     DEBUG: bool = False
 
-    # Database Configuration (using your existing Neon setup)
-    DATABASE_URL: str
+    # Database Configuration
+    #
+    # Production deployments should set DATABASE_URL (e.g. Postgres/Neon).
+    # Local development and CI can run without a database, in which case we
+    # skip DB initialization and DB-backed features return 503.
+    DATABASE_URL: str | None = None
     DATABASE_URL_SYNC: str | None = None  # For migrations
 
     # Redis Configuration
@@ -70,8 +74,10 @@ class Settings(BaseSettings):
         extra = "ignore"  # Ignore extra fields in .env file
 
     @property
-    def database_url_async(self) -> str:
+    def database_url_async(self) -> str | None:
         """Convert sync PostgreSQL URL to async (psycopg driver)."""
+        if not self.DATABASE_URL:
+            return None
         # Handle both postgres:// (old) and postgresql:// (new) formats
         if self.DATABASE_URL.startswith("postgres://"):
             return self.DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
