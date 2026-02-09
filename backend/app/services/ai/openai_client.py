@@ -40,14 +40,14 @@ class OpenAIService:
 
     def __init__(self):
         """Initialize OpenAI client with configuration."""
-        if not settings.OPENAI_API_KEY:
-            raise OpenAIError("OPENAI_API_KEY not configured")
+        self.client: AsyncOpenAI | None = None
 
-        self.client = AsyncOpenAI(
-            api_key=settings.OPENAI_API_KEY,
-            timeout=30.0,  # 30 second timeout
-            max_retries=3,  # Built-in retry mechanism
-        )
+        if settings.OPENAI_API_KEY:
+            self.client = AsyncOpenAI(
+                api_key=settings.OPENAI_API_KEY,
+                timeout=30.0,  # 30 second timeout
+                max_retries=3,  # Built-in retry mechanism
+            )
 
         # Model configurations
         self.chat_model = "gpt-4"
@@ -55,7 +55,14 @@ class OpenAIService:
         self.max_tokens_chat = 1000
         self.max_tokens_embedding = 8191  # text-embedding-3-small limit
 
-        logger.info(f"OpenAI client initialized with models: {self.chat_model}, {self.embedding_model}")
+        if self.client:
+            logger.info(
+                "OpenAI client initialized with models: %s, %s",
+                self.chat_model,
+                self.embedding_model,
+            )
+        else:
+            logger.warning("OPENAI_API_KEY not configured; OpenAIService is disabled.")
 
     @retry(
         retry=retry_if_exception_type((openai.RateLimitError, openai.APITimeoutError)),
@@ -88,6 +95,9 @@ class OpenAIService:
             OpenAIError: For API errors or invalid responses
         """
         try:
+            if self.client is None:
+                raise OpenAIError("OPENAI_API_KEY not configured")
+
             # Validate messages format
             if not messages or not isinstance(messages, list):
                 raise OpenAIError("Messages must be a non-empty list")
@@ -177,6 +187,9 @@ class OpenAIService:
             OpenAIError: For API errors or invalid inputs
         """
         try:
+            if self.client is None:
+                raise OpenAIError("OPENAI_API_KEY not configured")
+
             # Validate input
             if not text:
                 raise OpenAIError("Text input cannot be empty")
@@ -334,6 +347,15 @@ class OpenAIService:
             Dict with health status and model information
         """
         try:
+            if self.client is None:
+                return {
+                    "status": "unhealthy",
+                    "error": "OPENAI_API_KEY not configured",
+                    "chat_model": self.chat_model,
+                    "embedding_model": self.embedding_model,
+                    "api_accessible": False,
+                }
+
             # Test with a minimal embedding request
             test_result = await self.create_embedding("test", user_id="health_check")
 
@@ -358,7 +380,7 @@ class OpenAIService:
 
     async def close(self):
         """Close the OpenAI client connection."""
-        if hasattr(self.client, 'close'):
+        if self.client and hasattr(self.client, "close"):
             await self.client.close()
         logger.info("OpenAI client closed")
 
