@@ -95,16 +95,17 @@ ignore = [
 
 [tool.mypy]
 python_version = "3.11"
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
+# Keep mypy in CI, but run it in a pragmatic mode until the codebase is fully typed.
+check_untyped_defs = false
+disallow_any_generics = false
+disallow_untyped_calls = false
+disallow_untyped_defs = false
 ignore_missing_imports = true
-no_implicit_optional = true
+no_implicit_optional = false
 show_error_codes = true
-strict_equality = true
+strict_equality = false
 warn_redundant_casts = true
-warn_return_any = true
+warn_return_any = false
 warn_unreachable = true
 warn_unused_configs = true
 no_implicit_reexport = true

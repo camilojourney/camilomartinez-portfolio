@@ -19,8 +19,8 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           if [ -z "$CRON_SECRET" ]; then
-            echo "Missing CRON_SECRET GitHub Actions secret."
-            exit 1
+            echo "CRON_SECRET is not set. Skipping."
+            exit 0
           fi
 
           curl -fsS -X POST \
@@ -28,4 +28,3 @@ jobs:
             -H "Content-Type: application/json" \
             --max-time 600 \
             "https://camilomartinez.co/api/cron/daily-data-fetch"
-
