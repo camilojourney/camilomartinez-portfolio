@@ -3,6 +3,7 @@ name: devops-guardian
 model: anthropic/claude-sonnet-4-6
 description: Health checks for camilomartinez-portfolio. Checks WHOOP and Strava API connectivity, token freshness, deployment status.
 memory: project
+isolation: worktree
 tools: Read, Grep, Glob, Bash
 disallowedTools: Write, Edit
 permissionMode: default
