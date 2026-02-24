@@ -1,91 +1,57 @@
 # Camilo Martinez Portfolio
 
-AI-driven fitness analytics platform with Next.js frontend and FastAPI backend.
-
-## The Vision
-
-Deliver an end-to-end, production-grade analytics product that turns wearable data into actionable fitness insights.
+Next.js + FastAPI fitness analytics platform. Pulls data from WHOOP and Strava. Deployed on Vercel + Render.
 
 ## Commands
 
-- Dev: `pnpm dev:all`
-- Test: `pnpm test:db-schema`
-- Lint: `pnpm exec next lint`
+- Dev (all): `pnpm dev:all`
+- Dev (frontend only): `pnpm dev`
+- Dev (backend only): `cd backend && uv run uvicorn app.main:app --reload --port 8000`
+- Test (frontend): `pnpm test:run`
+- Test (backend): `pnpm test:backend`
+- Test (all): `pnpm test:all`
+- Lint: `pnpm lint`
 - Build: `pnpm build`
 
 ## Structure
 
-- Pages: `src/app/`
-- Components: `src/components/`
-- Lib: `src/lib/`
-- Server: `backend/`
-- Tests: `backend/tests/`
-
-## Agents
-
-Load from `.ai/agents/`:
-
-- builder.md (features, bugs, tests, review)
-- operator.md (deploy, security, infrastructure)
-- communicator.md (docs, UI, support)
-- strategist.md (prioritization, feedback, growth)
-
-## Standards
-
-- `.ai/standards/code/` (TypeScript + Python, Next.js + FastAPI, testing)
-- `.ai/standards/api/design.md`
-- `.ai/standards/security/baseline.md`
-- `.ai/standards/comms/voice.md`
+| Content | Location |
+|---------|----------|
+| Pages | `src/app/<route>/page.tsx` |
+| Components | `src/components/` |
+| Utilities | `src/lib/` |
+| Backend services | `backend/app/services/` |
+| Backend tests | `backend/tests/` |
+| Specs | `specs/` |
+| ADRs | `docs/decisions/` |
+| Playbooks | `docs/playbooks/` |
+| Agent prompts | `.claude/agents/` |
+| Agent memory | `.claude/agent-memory/<agent>/MEMORY.md` |
 
 ## Critical Rules
 
-- Keep frontend-backend API contracts synchronized\n- Validate auth/session handling for integrations\n- Do not break ingestion pipelines without migration plan
+- **No secrets in client bundle** — `NEXT_PUBLIC_` vars are public; keep `NEXTAUTH_SECRET`, `WHOOP_CLIENT_SECRET`, `STRAVA_CLIENT_SECRET`, `CRON_SECRET` server-side only
+- **OAuth token refresh is critical path** — Strava tokens expire in 6h; WHOOP tokens must also auto-refresh
+- **Never break ingestion pipelines** — downstream analytics depend on continuous data sync
+- **ALLOW_PUBLIC_DASHBOARD_DATA defaults to false** — health data is personal
 
-## Key Files
+## Agents
 
-- `src/app/`\n- `backend/app/main.py`\n- `docs/README.md`
-
-## Database Tables
-
-- Managed by backend migrations and analytics scripts
+All agents in `.claude/agents/`. Dispatch by task type:
+- Code changes: `code-improver`
+- Security audit: `security-sentinel`
+- Frontend quality (Mission C): `ux-frontend-builder`
+- Infrastructure health: `devops-guardian`
+- Weekly coordination: `manager`
 
 ## External Services
 
-- WHOOP API\n- Strava API\n- Deployment platforms (Render/Vercel)
+- WHOOP API (HRV, sleep, recovery, strain)
+- Strava API (activities: runs, rides, workouts)
+- Vercel (frontend deployment)
+- Render (backend deployment)
+- Vercel Postgres (token + data storage)
 
-## Current Focus
-
-See `.ai/contexts/current-priorities.md`
-
-## Two Parallel Systems
-
-| System | Location | Purpose |
-|--------|----------|---------|
-| **Playbooks** | `docs/playbooks/` | Human-facing prompts for driving AI sessions |
-| **.ai** | `.ai/` | AI-facing context and standards for autonomous operation |
-
-Use **playbooks** when you want to guide an AI through a specific workflow step-by-step.
-Use **.ai** when you want AI to operate autonomously with full context.
-
-## Development Workflow
-
-Phase-based playbook in `docs/playbooks/`:
-
-1. `1-spec-create.md` - Write detailed specs from ideas
-2. `2-spec-review.md` - QA specs before implementation
-3. `3-implement.md` - Build from specs
-4. `4-audit-logic.md` - Hostile bug hunting (be adversarial)
-5. `5-audit-intent.md` - UX and intent verification
-6. `6-fix-iterate.md` - Apply fixes with minimal changes
-
-Usage: "Read docs/playbooks/4-audit-logic.md and audit the feature I just built"
-
-## MCP Servers
-
-Configured in `.mcp.json` - filesystem, memory, GitHub access.
-
-## Project Overrides
-
-- Pre-merge CLAUDE notes (if present):
-- `docs/project-overrides/CLAUDE.premerge.md`
-- Use repository READMEs and docs for feature-level constraints before implementation.
+@.claude/rules/structure.md
+@.claude/rules/security.md
+@.claude/rules/code-style.md

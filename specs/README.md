@@ -1,7 +1,21 @@
-# Specs Folder
+# Specs — camilomartinez-portfolio
 
-Store feature specs here.
+Feature specifications and project docs for the portfolio site.
 
-Suggested naming pattern:
-- `001-feature-name.md`
-- `002-another-feature.md`
+## Feature Specs (Standard Format)
+| # | Spec | Type | Status |
+|---|------|------|--------|
+| 000 | [Template](000-template.md) | Template | - |
+
+## Project Reference Docs (Pre-existing)
+| File | Content |
+|------|---------|
+| [001-project-overview.md](001-project-overview.md) | Product overview and goals |
+| [002-features.md](002-features.md) | Feature inventory |
+| [003-future-roadmap.md](003-future-roadmap.md) | Legacy roadmap (see docs/roadmap.md for current) |
+| [deployment-customization.md](deployment-customization.md) | Deployment guide |
+| [features-components.md](features-components.md) | Component reference |
+| [site-structure-architecture.md](site-structure-architecture.md) | Site structure reference |
+
+> For new pages or features, create a feature spec using `000-template.md` and add it to the table above.
+> Current roadmap: [docs/roadmap.md](../docs/roadmap.md)

@@ -1,0 +1,56 @@
+# Worker registry for camilomartinez-portfolio
+# Generated: 2026-02-24 | Self-improvement system v0.8
+
+repo: camilomartinez-portfolio
+tier: support
+cycle_schedule: "0 5 * * 0"  # Sunday 5 AM ET
+
+workers:
+  - id: manager
+    file: .claude/agents/manager.md
+    model: anthropic/claude-opus-4-6
+    schedule: weekly
+    prompt_version: v1.0
+    last_updated: 2026-02-24
+
+  - id: code-improver
+    file: .claude/agents/code-improver.md
+    model: anthropic/claude-opus-4-6
+    schedule: weekly
+    prompt_version: v1.0
+    last_updated: 2026-02-24
+
+  - id: security-sentinel
+    file: .claude/agents/security-sentinel.md
+    model: xai/grok-4-1-fast
+    schedule: weekly
+    prompt_version: v1.0
+    last_updated: 2026-02-24
+
+  - id: judge-agent
+    file: .claude/agents/judge-agent.md
+    model: anthropic/claude-haiku-4-5
+    schedule: weekly
+    prompt_version: v1.0
+    last_updated: 2026-02-24
+
+  - id: prompt-optimizer
+    file: .claude/agents/prompt-optimizer.md
+    model: anthropic/claude-sonnet-4-6
+    schedule: monthly
+    prompt_version: v1.0
+    last_updated: 2026-02-24
+
+  - id: ux-frontend-builder
+    file: .claude/agents/ux-frontend-builder.md
+    model: anthropic/claude-opus-4-6
+    schedule: weekly
+    prompt_version: v1.0
+    last_updated: 2026-02-24
+
+  - id: devops-guardian
+    file: .claude/agents/devops-guardian.md
+    model: anthropic/claude-sonnet-4-6
+    schedule: weekly
+    prompt_version: v1.0
+    last_updated: 2026-02-24

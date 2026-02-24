@@ -1,140 +1,84 @@
-# AGENTS.md - Camilo Martinez Portfolio Project Constitution
+# AGENTS.md — camilomartinez-portfolio
 
 ## Project Overview
 
-Camilo Martinez Portfolio is **AI-driven fitness analytics platform with Next.js frontend and FastAPI backend.**.
+Next.js + FastAPI fitness analytics portfolio for Camilo Martinez. Pulls wearable data from WHOOP (HRV, sleep, recovery) and Strava (runs, rides, workouts) into a personal analytics dashboard. Deployed on Vercel + Render.
 
-**Vision:** Deliver an end-to-end, production-grade analytics product that turns wearable data into actionable fitness insights.
-
-## Build Phases
-
-| Phase | Timeline | Focus |
-|-------|----------|-------|
-| **MVP** | 0-8 weeks | Stabilize core data ingestion, analytics views, and backend reliability |
-| **V1.5** | 8-16 weeks | Expand automation and improve user-facing analytics quality |
-| **V2** | 16+ weeks | Multi-environment hardening and operational maturity |
+**Vision:** See [docs/vision.md](docs/vision.md)
+**Roadmap:** See [docs/roadmap.md](docs/roadmap.md)
 
 ## Quick Commands
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm install && cd backend && uv sync` | Install dependencies |
-| `pnpm dev:all` | Start dev server |
+| `pnpm dev:all` | Start full dev stack |
 | `pnpm build` | Production build |
-| `pnpm test:db-schema` | Run tests |
-| `pnpm exec next lint` | Lint and auto-fix |
+| `pnpm test:all` | Run all tests |
+| `pnpm lint` | Lint check |
 
 ## Tech Stack
 
-- **Framework:** Next.js + FastAPI
-- **Language:** TypeScript + Python
-- **Database:** PostgreSQL/SQLite
-- **Integrations: WHOOP, Strava, Render, Vercel**
-
-## Project Structure
-
-```
-camilomartinez-portfolio/
-├── src/           # Source code
-├── src/components/       # Reusable components
-├── src/lib/              # Utilities and libraries
-├── backend/           # API routes and server logic
-└── backend/tests/            # Test files
-```
-
-## Two Parallel Systems
-
-| System | Location | Purpose |
-|--------|----------|---------|
-| **Playbooks** | `docs/playbooks/` | Human-facing prompts for driving AI sessions |
-| **.ai** | `.ai/` | AI-facing context and standards for autonomous operation |
-
-Use **playbooks** when you want to guide an AI through a specific workflow step-by-step.
-Use **.ai** when you want AI to operate autonomously with full context.
+- **Frontend:** Next.js (App Router), TypeScript strict, Tailwind CSS
+- **Backend:** FastAPI, Python 3.11+, Pydantic v2
+- **Database:** PostgreSQL via Vercel Postgres
+- **Auth:** NextAuth 5 beta + WHOOP/Strava OAuth 2.0
+- **Deploy:** Vercel (frontend) + Render (backend)
+- **Testing:** Vitest (frontend), pytest (backend)
 
 ## Agent System
 
-| Task Type | Agent | File |
-|-----------|-------|------|
-| Build anything technical | Builder | `.ai/agents/builder.md` |
-| Keep it running | Operator | `.ai/agents/operator.md` |
-| Talk to humans | Communicator | `.ai/agents/communicator.md` |
-| Decide what to build | Strategist | `.ai/agents/strategist.md` |
+| Task | Agent | File |
+|------|-------|------|
+| Code improvements | code-improver | `.claude/agents/code-improver.md` |
+| Security audit | security-sentinel | `.claude/agents/security-sentinel.md` |
+| Frontend quality (Mission C) | ux-frontend-builder | `.claude/agents/ux-frontend-builder.md` |
+| Infrastructure health | devops-guardian | `.claude/agents/devops-guardian.md` |
+| Verdict / validation | judge-agent | `.claude/agents/judge-agent.md` |
+| Prompt improvement | prompt-optimizer | `.claude/agents/prompt-optimizer.md` |
+| Weekly coordination | manager | `.claude/agents/manager.md` |
 
-## Standards
+Agent cycle: weekly (Sunday 5 AM ET). See `.self-improvement/workers.yaml`.
 
-- TypeScript + Python: `.ai/standards/code/typescript.md`
-- Next.js + FastAPI: `.ai/standards/code/nextjs.md`
-- Testing: `.ai/standards/code/testing.md`
-- API: `.ai/standards/api/design.md`
-- Security: `.ai/standards/security/baseline.md`
-- Voice: `.ai/standards/comms/voice.md`
+## Playbooks
 
-## Workflows
+See `docs/playbooks/` for human-facing workflow guides:
+- `docs/playbooks/development.md` — local setup and dev workflow
+- `docs/playbooks/performance.md` — performance targets and optimization notes
 
-- Ship Feature: `.ai/workflows/ship-feature.md`
-- Investigate Bug: `.ai/workflows/investigate-bug.md`
-- Customer Feedback: `.ai/workflows/customer-feedback.md`
-- Weekly Ops: `.ai/workflows/weekly-ops.md`
-
-## Contexts
-
-- Product: `.ai/contexts/product-context.md`
-- Priorities: `.ai/contexts/current-priorities.md`
-- Optional project-specific context: `.ai/contexts/camilomartinez-portfolio.md`
-
-## Templates
-
-- PR Description: `.ai/templates/pr-description.md`
-- Changelog Entry: `.ai/templates/changelog-entry.md`
-- Customer Response: `.ai/templates/customer-response.md`
-- Weekly Update: `.ai/templates/weekly-update.md`
-
-## Core Rules
+## Rules
 
 ### Always
-
-- Use TypeScript + Python strict mode
-- Write tests for business logic
-- Run `pnpm exec next lint` before committing
-- Add documentation to exported functions
-- Keep docs, specs, and context files aligned with shipped code
+- TypeScript strict mode — no `any` types
+- Python type hints everywhere — Pydantic v2 models for all API contracts
+- Run `pnpm lint` before committing
+- Keep TypeScript types in `src/types/` aligned with Pydantic models in `backend/app/models/`
 
 ### Ask First
-
-- Adding new dependencies
-- Modifying database schema
-- Changing authentication flow
+- Adding new npm or Python dependencies
+- Changing database schema
+- Modifying OAuth scope for WHOOP or Strava
 - Major architectural changes
-- Changes to production credentials, billing, or automation schedules
 
 ### Never
-
-- Commit API keys or secrets
-- Disable type checking
-- Skip error handling
-- Never bypass auth, rate limits, or audit logging controls
+- Commit secrets or API keys
+- Push directly to `main`
+- Make dashboard data publicly accessible without explicit ALLOW_PUBLIC_DASHBOARD_DATA=true
+- Change infrastructure (Render/Vercel) beyond free tier without approval
+- Store health data in any new location not already in the schema
 
 ## Escalation (All Agents)
 
+Escalate to Camilo if:
 - Work estimate > 1 day
 - Breaking change to API or database
-- Security severity > Medium
-- Confidence is low
-
-See `.ai/decision-boundaries.md` for full authority matrix.
+- Security severity >= HIGH
+- OAuth scope change for WHOOP or Strava
+- Confidence < 70%
 
 ## Domain Concepts
 
-- Wearable data ingestion\n- Workout and sleep analytics\n- AI-assisted insights generation
-
-## Specs
-
-- **MVP:** `specs/mvp-foundation.md`
-
-## Project Overrides
-
-- Pre-merge AGENTS (if present):
-- `docs/project-overrides/AGENTS.premerge.md`
-- Project-specific context source: `.ai/contexts/camilomartinez-portfolio.md`
-- Existing repository docs remain authoritative for business/domain details.
+- **HRV** — Heart Rate Variability (WHOOP primary signal)
+- **Recovery score** — WHOOP daily readiness (0-100%)
+- **Strain** — WHOOP cardiovascular load metric
+- **Strava activity** — A logged workout (run, ride, swim, etc.)
+- **Token TTL** — Strava tokens expire in 6h; WHOOP tokens last longer but must still auto-refresh

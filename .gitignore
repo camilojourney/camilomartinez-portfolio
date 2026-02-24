@@ -71,3 +71,10 @@ research/**/astoria_running_routes
 
 # Large data files
 backend/projects_quarto/hollywood_analysis/*.tsv.gz
+
+# Self-improvement system
+.self-improvement/memory/*.sqlite
+CLAUDE.local.md
+.claude/agent-memory-local/
+sandboxes/
+*.bak
