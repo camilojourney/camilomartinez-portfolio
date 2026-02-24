@@ -45,3 +45,18 @@ next.config.js, tailwind.config.js, tsconfig.json, vercel.json, render.yaml
 2. External packages
 3. Internal imports (`@/components/...`, `@/lib/...`)
 4. Relative imports
+
+## Docs (`docs/`)
+
+**Exactly four categories — no others.**
+
+| Path | Purpose |
+|------|---------|
+| `docs/README.md` | Navigation index. |
+| `docs/vision.md` | Product vision. Update at most yearly. |
+| `docs/roadmap.md` | Versioned feature plan. |
+| `docs/decisions/NNNN-*.md` | ADRs — why we made each design choice. Immutable once accepted. |
+| `docs/playbooks/*.md` | Step-by-step operational guides. |
+
+**NEVER create** ad-hoc docs files like `docs/architecture.md`, `docs/notes.md`, `docs/guides/`, etc.
+Architecture → `ARCHITECTURE.md` (root). Specs → `specs/`. Everything else → the four categories above.
