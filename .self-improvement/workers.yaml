@@ -54,3 +54,10 @@ workers:
     schedule: weekly
     prompt_version: v1.0
     last_updated: 2026-02-24
+
+  - id: portfolio-trends-expert
+    file: .claude/agents/portfolio-trends-expert.md
+    model: anthropic/claude-opus-4-6
+    schedule: monthly
+    prompt_version: v1.0
+    last_updated: 2026-02-24

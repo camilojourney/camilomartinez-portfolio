@@ -55,3 +55,7 @@ All agents in `.claude/agents/`. Dispatch by task type:
 @.claude/rules/structure.md
 @.claude/rules/security.md
 @.claude/rules/code-style.md
+
+## Rule Imports
+
+@import .claude/rules/delegation.md
