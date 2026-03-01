@@ -56,7 +56,7 @@
     "lucide-react": "^0.542.0",
     "next": "^16.0.10",
     "next-auth": "5.0.0-beta.30",
-    "next-mdx-remote": "^4.4.1",
+    "next-mdx-remote": "^6.0.0",
     "node-fetch": "^3.3.2",
     "openai": "^5.15.0",
     "pg": "^8.11.3",
@@ -77,12 +77,12 @@
     "@types/node": "20.11.17",
     "@types/pg": "^8.11.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "^16.0.10",
+    "@vitest/coverage-v8": "^2.1.8",
     "baseline-browser-mapping": "^2.9.19",
     "concurrently": "^9.2.1",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.10",
     "ts-node": "^10.9.2",
-    "vitest": "^2.1.8",
-    "@vitest/coverage-v8": "^2.1.8"
+    "vitest": "^2.1.8"
   }
 }
