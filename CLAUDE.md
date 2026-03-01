@@ -52,10 +52,4 @@ All agents in `.claude/agents/`. Dispatch by task type:
 - Render (backend deployment)
 - Vercel Postgres (token + data storage)
 
-@.claude/rules/structure.md
-@.claude/rules/security.md
-@.claude/rules/code-style.md
-
-## Rule Imports
-
-@import .claude/rules/delegation.md
+@import .claude/rules/workflow.md
