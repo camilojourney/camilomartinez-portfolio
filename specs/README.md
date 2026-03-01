@@ -1,21 +1,21 @@
-# Specs — camilomartinez-portfolio
+# Specs — Camilo Martinez Consulting Site
 
-Feature specifications and project docs for the portfolio site.
+Feature specifications for the consulting site (formerly portfolio).
 
-## Feature Specs (Standard Format)
-| # | Spec | Type | Status |
-|---|------|------|--------|
-| 000 | [Template](000-template.md) | Template | - |
+## Feature Specs
+| # | Spec | Status |
+|---|------|--------|
+| 000 | [Template](000-template.md) | - |
+| 001 | [Project Overview — Consulting Site](001-project-overview.md) | in-progress |
+| 007 | [Consulting Chatbot — RAG Lead Gen](007-consulting-chatbot.md) | planned |
 
-## Project Reference Docs (Pre-existing)
+## Reference Docs (Legacy)
 | File | Content |
 |------|---------|
-| [001-project-overview.md](001-project-overview.md) | Product overview and goals |
-| [002-features.md](002-features.md) | Feature inventory |
-| [003-future-roadmap.md](003-future-roadmap.md) | Legacy roadmap (see docs/roadmap.md for current) |
+| [002-features.md](002-features.md) | Feature inventory (fitness apps, dashboards) |
+| [003-future-roadmap.md](003-future-roadmap.md) | Legacy roadmap (see docs/roadmap.md) |
 | [004-deployment-customization.md](004-deployment-customization.md) | Deployment guide |
 | [005-features-components.md](005-features-components.md) | Component reference |
 | [006-site-structure-architecture.md](006-site-structure-architecture.md) | Site structure reference |
 
-> For new pages or features, create a feature spec using `000-template.md` and add it to the table above.
-> Current roadmap: [docs/roadmap.md](../docs/roadmap.md)
+> New features use `000-template.md` format. Current roadmap: [docs/roadmap.md](../docs/roadmap.md)

@@ -26,13 +26,12 @@ export default function AboutPage() {
                     {/* Hero Section */}
                     <div className="text-center mb-16">
                         <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
-                            Interactive About Me
+                            About Me
                         </h1>
                         <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
-                            Ask me anything about my background, skills, experience, or interests. 
-                            This{' '}
-                            <span className="text-cyan-400 font-semibold">AI-powered chatbot</span>{' '}
-                            knows all about my professional journey.
+                            AI engineer with an MSBA, building production ML systems and data pipelines.{' '}
+                            <span className="text-cyan-400 font-semibold">Ask the AI assistant</span>{' '}
+                            anything about my experience, approach, or technical background.
                         </p>
                     </div>
 

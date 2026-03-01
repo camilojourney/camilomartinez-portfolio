@@ -1,73 +1,91 @@
-# 001 - Project Overview
+# Spec 001: Project Overview — Consulting Site
 
-## What the Portfolio Does
+**Status:** in-progress
+**Phase:** Phase 1
+**Author:** Camilo Martinez
+**Created:** 2025-10-01
+**Updated:** 2026-03-01
 
-Camilo Martinez's portfolio is a **production-ready AI-driven fitness analytics platform** that transforms raw wearable data (WHOOP, Strava) into actionable insights. It serves dual purposes:
-- **Public Showcase**: Demonstrates Camilo's full-stack AI engineering skills.
-- **Live Product**: Functional analytics dashboard for personal fitness tracking with AI-powered recommendations.
+## Problem
+
+The portfolio site showcases personal projects but doesn't convert visitors into consulting clients. It reads as "look at my work" instead of "I can solve your problem." No clear path from browsing → contacting → hiring.
+
+## Goals
+
+- Position Camilo as an AI engineering consultant, not a job seeker
+- Drive inbound leads: visitors → email/call → paid engagement
+- Showcase case studies (not just projects) with business outcomes
+- Provide an AI chatbot that answers prospect questions and captures leads
+- Maintain the technical showcase as proof of capability
+
+## Non-Goals
+
+- Multi-user accounts or SaaS features — this is a consulting site
+- E-commerce or payment processing on-site — invoicing happens offline
+- Blog CMS — blog stays as MDX, manual publishing
+
+## What the Site Does
+
+Consulting site and technical showcase. Demonstrates AI engineering capability while converting visitors into consulting clients.
 
 **Core Value Proposition**:
-- Ingests sleep, recovery, strain, and workout data.
-- Generates visualizations, trends, and AI insights (e.g., optimal training windows).
-- Includes geo-spatial analytics (e.g., Astoria walkability conquest).
+- Professional consulting positioning: ML Systems, RAG/LLM Integration, Data Engineering
+- Case studies showing real systems built from concept to production
+- AI chatbot for prospect engagement and lead capture
+- Contact flow optimized for booking calls and starting projects
 
 ## Tech Stack
 
 ### Frontend
-- **Framework**: Next.js 16 (App Router, Turbopack support)
-- **UI**: React 19, Tailwind CSS 3.4, shadcn/ui (class-variance-authority), Framer Motion 12
-- **Charts/Maps**: Recharts 3, Leaflet + React-Leaflet 5, Turf.js 7 (geo operations)
-- **State/Auth**: NextAuth v5 beta, Redux Toolkit 2.8
-- **Other**: MDX for docs, OpenAI JS SDK, Vercel Postgres
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **UI**: React 19, Tailwind CSS 3.4, custom glassmorphism design system
+- **Charts/Maps**: Recharts 3, Leaflet + React-Leaflet 5, Turf.js 7
+- **Auth**: NextAuth v5 beta
+- **Other**: MDX for blog/case studies, OpenAI JS SDK
 
 ### Backend
-- **Framework**: FastAPI (uvicorn, Poetry/uv)
-- **ORM/DB**: SQLAlchemy 2.0, PostgreSQL + pgvector (vector embeddings), asyncpg
+- **Framework**: FastAPI (uvicorn)
+- **ORM/DB**: SQLAlchemy 2.0, PostgreSQL + pgvector (RAG embeddings), asyncpg
 - **Task Queue**: Celery 5.3, Redis 5
-- **AI/ML**: OpenAI GPT-4, geopandas/osmnx (spatial), pandas/numpy
-- **Security**: python-jose, passlib (bcrypt), fastapi-limiter
-- **Integrations**: WHOOP/Strava OAuth, polyline decoding
+- **AI/ML**: OpenAI GPT-4, RAG pipeline for chatbot
+- **Security**: python-jose, passlib, fastapi-limiter
 
 ### Deployment
 - **Frontend**: Vercel
-- **Backend**: Render (render.yaml)
-- **DB**: Vercel Postgres / Neon Serverless
-
-### AI Framework
-- Custom `.ai/` system: Agents (builder/operator), standards (TS/Python), workflows (ship-feature).
-- Embeddings/RAG for docs and schema.
+- **Backend**: Render
+- **DB**: Neon Serverless Postgres
 
 ## Architecture
 
-**Monorepo Full-Stack**:
 ```
-Frontend (Next.js) → API Calls → Backend (FastAPI)
-                              ↓
-                       PostgreSQL (pgvector)
-                              ↓
-                       Celery/Redis (async tasks)
+Frontend (Next.js) → API Routes → Backend (FastAPI)
+                                       ↓
+                                PostgreSQL (pgvector)
+                                       ↓
+                                Celery/Redis (async)
 ```
 
-- **62+ Next.js APIs migrated** to 5 FastAPI routers: `/api/ai`, `/integrations`, `/analytics`, `/system`, `/tools`.
-- **Lifespan Events**: DB init/shutdown.
-- **Middleware**: CORS, Rate Limiting (Redis), Logging, Process Timing.
-- **Domain Boundaries**: AI analytics isolated; integrations firewalled.
+- 5 FastAPI routers: `/api/ai`, `/integrations`, `/analytics`, `/system`, `/tools`
+- RAG pipeline: pgvector embeddings over background, projects, expertise
+- Chatbot: streaming responses with lead capture
 
-**Data Flow**:
-1. OAuth → Strava/WHOOP → ETL (polyline → geojson).
-2. Store in Postgres (workouts, sleep, spatial).
-3. Query → Turf.js (maps) / Recharts (trends).
-4. AI Router → OpenAI + RAG (insights).
+## Pages
 
-**Key Files**:
-- `src/app/`: Pages (whoop-dashboard, ai-trainer).
-- `backend/app/main.py`: App factory.
-- `backend/app/routers/*`: Domain routers.
-- `.ai/`: AI ops framework.
+| Page | Purpose |
+|------|---------|
+| `/` (Home) | Hero + services + case studies grid |
+| `/about` | AI chatbot + background |
+| `/contact` | "Start a Project" — email, LinkedIn, call booking |
+| `/blog` | Technical articles (MDX) |
+| `/projects/*` | Individual case study pages |
+| `/apps/*` | Live demo apps (fitness dashboard, etc.) |
 
 ## Acceptance Criteria
-- [ ] Runs locally: `pnpm dev:all`.
-- [ ] Deploys to Vercel/Render.
-- [ ] Integrates WHOOP/Strava (test tokens).
-- [ ] AI endpoints respond with insights.
-- [ ] Maps render Astoria data.
+
+- [ ] Homepage communicates consulting services clearly
+- [ ] "Start a Project" CTA on every page path
+- [ ] Case studies show business context, not just tech
+- [ ] Chatbot answers prospect questions about expertise
+- [ ] Chatbot captures email and suggests scheduling a call
+- [ ] Site loads < 3s on mobile
+- [ ] SEO metadata targets "AI consulting" keywords

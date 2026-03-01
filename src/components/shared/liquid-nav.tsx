@@ -43,7 +43,7 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
     }, [])
 
     const navItems = [
-        { href: '/projects', label: 'projects', key: 'projects' },
+        { href: '/projects', label: 'work', key: 'projects' },
         { href: '/about', label: 'about', key: 'about' },
         { href: '/blog', label: 'blog', key: 'blog' },
         { href: '/contact', label: 'contact', key: 'contact' },

@@ -21,13 +21,13 @@ export default function ContactPage() {
                     {/* Hero Section */}
                     <div className="text-center mb-20">
                         <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
-                            Get In Touch
+                            Start a Project
                         </h1>
                         <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
-                            Ready to discuss your next{' '}
-                            <span className="text-cyan-400 font-semibold">AI project</span> or{' '}
-                            <span className="text-blue-400 font-semibold">data initiative</span>?{' '}
-                            Let's connect and explore how we can work together.
+                            Have an{' '}
+                            <span className="text-cyan-400 font-semibold">AI challenge</span> or{' '}
+                            <span className="text-blue-400 font-semibold">data problem</span>?{' '}
+                            Let's talk about how to turn it into a working system.
                         </p>
                     </div>
 
@@ -138,17 +138,17 @@ export default function ContactPage() {
                     <div className="backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl shadow-black/20 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-500 max-w-4xl mx-auto">
                         <div className="p-8 text-center">
                             <h2 className="text-2xl md:text-3xl font-semibold text-white mb-6">
-                                Let's Work Together
+                                Currently Accepting Projects
                             </h2>
                             <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
-                                I'm currently available for AI consulting projects, data analytics work, 
-                                and full-stack development opportunities. Whether you're looking to build 
-                                something new or optimize existing systems, I'd love to hear about your project.
+                                I take on a limited number of consulting engagements at a time to ensure
+                                deep focus on each project. Whether you need an ML system built from scratch
+                                or want to add AI capabilities to your existing product — let's talk.
                             </p>
                             
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <a
-                                    href="mailto:juancamilomabe@gmail.com?subject=Project%20Inquiry"
+                                    href="mailto:juancamilomabe@gmail.com?subject=Consulting%20Inquiry"
                                     className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
