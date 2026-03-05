@@ -1,0 +1,44 @@
+product:
+  name: "Camilo Martinez Portfolio"
+  tagline: "AI Engineer & Full-Stack Developer"
+  audience: "Recruiters, hiring managers, potential clients, tech community"
+  type: "Personal portfolio / developer showcase"
+  url: "https://camilomartinez.co"
+
+server:
+  base_url: "http://localhost:3005"
+  start_command: "pnpm dev"
+  type: "nextjs"
+
+screenshots:
+  output_dir: "e2e/screenshots/audit"
+  viewports:
+    desktop: { width: 1440, height: 900 }
+    mobile: { width: 375, height: 812 }
+
+routes:
+  public:
+    - { path: "/", name: "home" }
+    - { path: "/about", name: "about" }
+    - { path: "/projects", name: "projects" }
+    - { path: "/projects/trading-bot", name: "project-trading-bot" }
+    - { path: "/projects/fitness-dashboard", name: "project-fitness" }
+    - { path: "/projects/social-media-pipeline", name: "project-social-media" }
+    - { path: "/projects/rag-system", name: "project-rag" }
+    - { path: "/projects/focus-time", name: "project-focus-time" }
+    - { path: "/projects/accountability-partner", name: "project-accountability" }
+    - { path: "/apps", name: "apps" }
+    - { path: "/apps/trading-bot", name: "app-trading-bot" }
+    - { path: "/apps/fitness-dashboard", name: "app-fitness" }
+    - { path: "/apps/focus-time", name: "app-focus-time" }
+    - { path: "/apps/social-media-pipeline", name: "app-social-media" }
+    - { path: "/blog", name: "blog" }
+    - { path: "/bookshelf", name: "bookshelf" }
+    - { path: "/contact", name: "contact" }
+    - { path: "/live-data", name: "live-data" }
+    - { path: "/tools", name: "tools" }
+    - { path: "/privacy-policy", name: "privacy-policy" }
+    - { path: "/terms-of-service", name: "terms-of-service" }
+    - { path: "/whoop-dashboard", name: "whoop-dashboard" }
+
+  authenticated: []
