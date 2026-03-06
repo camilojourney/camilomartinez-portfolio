@@ -1,9 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:turbo": "next dev --turbopack",
-    "dev:backend": "cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8000",
+    "dev": "next dev --port 3005",
+    "dev:turbo": "next dev --turbopack --port 3005",
+    "dev:backend": "cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8005",
     "dev:all": "concurrently \"pnpm dev:backend\" \"pnpm dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
     "build": "next build",
     "start": "next start",
@@ -83,6 +83,7 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.10",
     "ts-node": "^10.9.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "yaml": "^2.8.2"
   }
 }
