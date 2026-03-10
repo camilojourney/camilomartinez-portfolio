@@ -159,7 +159,7 @@ export function closestPointOnSegment(
   
   if (lenSq === 0) return segmentStart; // Segment is a point
   
-  let param = dot / lenSq;
+  const param = dot / lenSq;
   
   if (param < 0) return segmentStart;
   if (param > 1) return segmentEnd;

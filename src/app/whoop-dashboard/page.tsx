@@ -188,7 +188,7 @@ export default function WhoopDashboard() {
             const apiData = (result as any)?.data || result;
 
             // Transform the userResults array into a single summary object for display
-            let transformedResult = {
+            const transformedResult = {
                 totalUsers: apiData.totalUsers || 0,
                 successfulUsers: apiData.successfulUsers || 0,
                 failedUsers: apiData.failedUsers || 0,

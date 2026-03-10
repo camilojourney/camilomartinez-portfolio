@@ -10,10 +10,10 @@ interface TableData {
 }
 
 function Table({ data }: { data: TableData }) {
-  let headers = data.headers.map((header, index) => (
+  const headers = data.headers.map((header, index) => (
     <th key={index}>{header}</th>
   ))
-  let rows = data.rows.map((row, index) => (
+  const rows = data.rows.map((row, index) => (
     <tr key={index}>
       {row.map((cell, cellIndex) => (
         <td key={cellIndex}>{cell}</td>
@@ -61,7 +61,7 @@ function RoundedImage(props: ImageProps) {
 function Code(props: { children: React.ReactNode } & React.HTMLAttributes<HTMLElement>) {
   const { children, ...rest } = props
   if (typeof children !== 'string') return null
-  let codeHTML = highlight(children)
+  const codeHTML = highlight(children)
   return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...rest} />
 }
 
@@ -78,7 +78,7 @@ function slugify(str: string) {
 
 function createHeading(level: number) {
   const Heading = ({ children }: { children: React.ReactNode }) => {
-    let slug = slugify(children?.toString() || '')
+    const slug = slugify(children?.toString() || '')
     return React.createElement(
       `h${level}`,
       { id: slug },

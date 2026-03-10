@@ -212,7 +212,7 @@ When Claude tokens are low or the user says "delegate", "use codex", "use gemini
 
 | Agent | Model | Best For |
 |-------|-------|----------|
-| **Codex** | `gpt-5.3-codex` (medium reasoning) | Write/fix code, refactor, multi-file changes |
+| **Codex** | `$MODEL_CODER` (medium reasoning) | Write/fix code, refactor, multi-file changes |
 | **Gemini** | Auto (Gemini 3) — routes to `gemini-3-pro` or `gemini-3-flash` by complexity | Research, review, web search, analysis (1M+ context) |
 
 ### Commands
