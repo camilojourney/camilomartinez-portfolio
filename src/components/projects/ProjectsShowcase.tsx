@@ -61,18 +61,18 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
       <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
         <div className="max-w-5xl mx-auto text-center mb-16">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
-            AI Engineering<br />Consulting
+            Juan Camilo Martinez<br />AI Engineer
           </h1>
           <p className="text-xl md:text-2xl text-white/70 leading-relaxed max-w-3xl mx-auto mb-10">
-            I help companies build <span className="text-cyan-400 font-semibold">production ML systems</span>,{' '}
-            <span className="text-blue-400 font-semibold">data pipelines</span>, and{' '}
-            <span className="text-purple-400 font-semibold">AI-powered products</span> that actually ship.
+            Building <span className="text-cyan-400 font-semibold">multi-agent systems</span>,{' '}
+            <span className="text-blue-400 font-semibold">RAG pipelines</span>, and{' '}
+            <span className="text-purple-400 font-semibold">production ML infrastructure</span>. Open to AI Engineer roles.
           </p>
           <a
             href="/contact"
             className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20"
           >
-            <span>Start a Project</span>
+            <span>Get in touch</span>
             <ArrowRight className="w-5 h-5" />
           </a>
         </div>

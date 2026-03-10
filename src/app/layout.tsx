@@ -10,32 +10,34 @@ import { baseUrl } from '@/lib/site'
 import LiquidNav from '@/components/shared/liquid-nav'
 import Footer from '@/components/shared/footer'
 // import { GlobalChatbot } from '@/components/features/GlobalChatbot' // Temporarily hidden
+import ChatWidget from "@/components/ChatWidget";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Camilo Martinez | AI Engineering Consultant',
-    template: '%s | Camilo Martinez',
+    default: 'Juan Camilo Martinez | AI Engineer',
+    template: '%s | Juan Camilo Martinez',
   },
-  description: 'AI engineering consulting for startups and enterprises. Custom ML systems, data pipelines, RAG architectures, and LLM integrations. Based in New York City.',
+  description: 'AI Engineer based in NYC. Builder of multi-agent systems, RAG pipelines, and production ML infrastructure. Baruch MSA. Open to AI Engineer / AI Systems roles.',
   keywords: [
-    'AI consulting',
-    'AI engineer',
-    'machine learning consulting',
+    'AI Engineer',
+    'AI Systems',
+    'multi-agent systems',
+    'RAG',
+    'LLM',
+    'machine learning',
     'data engineering',
-    'RAG systems',
-    'LLM integration',
-    'AI strategy',
     'New York City',
+    'Juan Camilo Martinez',
     'Camilo Martinez',
   ],
   authors: [{ name: 'Camilo Martinez' }],
   creator: 'Camilo Martinez',
   openGraph: {
-    title: 'Camilo Martinez | AI Engineering Consultant',
-    description: 'AI engineering consulting for startups and enterprises. Custom ML systems, data pipelines, RAG architectures, and LLM integrations.',
+    title: 'Juan Camilo Martinez | AI Engineer',
+    description: 'AI Engineer in NYC. Multi-agent systems, RAG pipelines, production ML infrastructure.',
     url: baseUrl,
-    siteName: 'Camilo Martinez Consulting',
+    siteName: 'Juan Camilo Martinez',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -50,8 +52,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Camilo Martinez | AI Engineering Consultant',
-    description: 'AI engineering consulting: ML systems, data pipelines, RAG, LLM integrations.',
+    title: 'Juan Camilo Martinez | AI Engineer',
+    description: 'AI Engineer in NYC — multi-agent systems, RAG, production ML.',
     images: [`${baseUrl}/og-image.png`],
     creator: '@camilojourney',
   },
@@ -89,8 +91,8 @@ export default function RootLayout({
     '@type': 'Person',
     name: 'Camilo Martinez',
     url: baseUrl,
-    jobTitle: 'AI Engineering Consultant',
-    description: 'AI engineering consulting for startups and enterprises. Custom ML systems, data pipelines, RAG, and LLM integrations.',
+    jobTitle: 'AI Engineer',
+    description: 'AI Engineer in NYC. Builder of multi-agent systems, RAG pipelines, and production ML infrastructure.',
     sameAs: [
       'https://github.com/camilojourney',
       'https://linkedin.com/in/camilomartinez',
@@ -109,9 +111,9 @@ export default function RootLayout({
     image: `${baseUrl}/og-image.png`,
     mainEntity: {
       '@type': 'WebSite',
-      name: 'Camilo Martinez Consulting',
+      name: 'Juan Camilo Martinez',
       url: baseUrl,
-      description: 'AI engineering consulting — custom ML systems, data pipelines, and intelligent automation',
+      description: 'AI engineering portfolio — multi-agent systems, RAG, ML infrastructure',
     },
   }
 
@@ -150,7 +152,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          {/* <GlobalChatbot /> */} {/* Temporarily hidden - will show when AI answers are optimized */}
+          <ChatWidget />
           <Analytics />
           <SpeedInsights />
         </div>
