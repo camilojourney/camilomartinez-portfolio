@@ -45,7 +45,7 @@ export const metadata: Metadata = {
         url: `${baseUrl}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: 'Camilo Martinez - AI Engineering Consultant',
+        alt: 'Juan Camilo Martinez - AI Engineer',
         type: 'image/png',
       },
     ],
