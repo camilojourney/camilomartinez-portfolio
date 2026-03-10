@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, X } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -10,14 +10,13 @@ interface Message {
 
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
-  content:
-    "Hi! I can answer questions about Camilo's background, skills, and projects. What would you like to know?",
+  content: "Ask me anything about Camilo's work, projects, or background.",
 };
 
-const SUGGESTED_QUESTIONS = [
-  'What projects is he building right now?',
-  'What are his values and how does he work?',
-  'What roles is he looking for?',
+const SUGGESTED = [
+  'What is he building right now?',
+  'What are his values?',
+  'Is he open to new roles?',
 ];
 
 export default function ChatWidget() {
@@ -26,185 +25,149 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  async function sendMessage(text?: string) {
-    const trimmed = (text ?? input).trim();
-    if (!trimmed || loading) return;
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 100);
+  }, [open]);
 
-    const userMsg: Message = { role: 'user', content: trimmed };
-    const history = messages.filter((m) => m.role !== 'assistant' || m !== INITIAL_MESSAGE);
-
-    setMessages((prev) => [...prev, userMsg]);
+  async function send(text?: string) {
+    const msg = (text ?? input).trim();
+    if (!msg || loading) return;
     setInput('');
     setLoading(true);
 
-    // Add empty assistant message for streaming
-    setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+    const history = messages.slice(1); // skip initial
+    setMessages((p) => [...p, { role: 'user', content: msg }, { role: 'assistant', content: '' }]);
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: trimmed,
-          conversationHistory: history,
-        }),
+        body: JSON.stringify({ message: msg, conversationHistory: history }),
       });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`${res.status}`);
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
-
-      if (!reader) throw new Error('No response body');
-
+      if (!reader) throw new Error('no body');
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
-        const text = decoder.decode(value);
-        const lines = text.split('\n');
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6);
-          if (data === '[DONE]') break;
-
+        for (const line of decoder.decode(value).split('\n')) {
+          if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
           try {
-            const parsed = JSON.parse(data) as { content: string };
-            if (parsed.content) {
-              setMessages((prev) => {
-                const updated = [...prev];
-                const last = updated[updated.length - 1];
-                if (!last) return updated;
-                updated[updated.length - 1] = {
-                  role: 'assistant',
-                  content: last.content + parsed.content,
-                };
-                return updated;
-              });
-            }
-          } catch {
-            // skip malformed chunks
-          }
+            const { content } = JSON.parse(line.slice(6)) as { content: string };
+            if (content) setMessages((p) => {
+              const u = [...p];
+              u[u.length - 1] = { role: 'assistant', content: u[u.length - 1].content + content };
+              return u;
+            });
+          } catch { /* skip */ }
         }
       }
     } catch {
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1] = {
-          role: 'assistant',
-          content: 'Sorry, something went wrong. Please try again.',
-        };
-        return updated;
-      });
+      setMessages((p) => { const u = [...p]; u[u.length - 1] = { role: 'assistant', content: 'Something went wrong. Try again.' }; return u; });
     } finally {
       setLoading(false);
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  }
-
-  const showSuggestions = messages.length === 1 && !loading;
+  const fresh = messages.length === 1;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="w-80 sm:w-96 h-[500px] flex flex-col rounded-2xl overflow-hidden shadow-2xl bg-slate-900/95 backdrop-blur-xl border border-white/10">
+        <div className="w-[360px] flex flex-col rounded-2xl shadow-2xl overflow-hidden"
+          style={{ height: 480, background: 'rgba(10,10,20,0.97)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)' }}>
+
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-              CM
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                C
+              </div>
+              <div>
+                <p className="text-white text-sm font-semibold leading-none">Camilo&apos;s AI</p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Ask anything</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold leading-tight">Camilo&apos;s AI</p>
-              <p className="text-white/50 text-xs">Ask about skills &amp; projects</p>
-            </div>
+            <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white/70 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white'
-                      : 'bg-white/7 text-white/90'
-                  }`}
-                >
-                  {msg.content || (loading && i === messages.length - 1 ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : null)}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ scrollbarWidth: 'none' }}>
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  m.role === 'user'
+                    ? 'text-white rounded-br-sm'
+                    : 'rounded-bl-sm'
+                }`} style={m.role === 'user'
+                  ? { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }
+                  : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.85)' }
+                }>
+                  {m.content || (loading && i === messages.length - 1
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin opacity-60" />
+                    : null)}
                 </div>
               </div>
             ))}
 
-            {/* Suggested questions — shown only on fresh open */}
-            {showSuggestions && (
-              <div className="flex flex-col gap-2 pt-1">
-                {SUGGESTED_QUESTIONS.map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    className="text-left text-xs text-cyan-300/80 border border-cyan-400/20 rounded-xl px-3 py-2 hover:bg-cyan-400/10 hover:text-cyan-200 transition-colors"
-                  >
+            {fresh && (
+              <div className="flex flex-col gap-1.5 pt-1">
+                {SUGGESTED.map((q) => (
+                  <button key={q} onClick={() => send(q)}
+                    className="text-left text-xs px-3 py-2 rounded-xl transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    onMouseEnter={e => { (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.8)'; (e.target as HTMLElement).style.borderColor = 'rgba(99,102,241,0.4)'; }}
+                    onMouseLeave={e => { (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; (e.target as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; }}>
                     {q}
                   </button>
                 ))}
               </div>
             )}
-
             <div ref={bottomRef} />
           </div>
 
           {/* Input */}
-          <div className="px-4 py-3 border-t border-white/10 flex items-center gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-              placeholder="Ask anything..."
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-cyan-400/50 disabled:opacity-50"
-            />
-            <button
-              onClick={() => sendMessage()}
-              disabled={loading || !input.trim()}
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white disabled:opacity-40 hover:opacity-90 transition-opacity flex-shrink-0"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </button>
+          <div className="px-3 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }}}
+                disabled={loading}
+                placeholder="Ask anything..."
+                className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
+              />
+              <button onClick={() => send()} disabled={loading || !input.trim()}
+                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-opacity disabled:opacity-30"
+                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white" /> : <Send className="w-3.5 h-3.5 text-white" />}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Toggle button */}
+      {/* Trigger button */}
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg hover:opacity-90 transition-opacity"
-        aria-label={open ? 'Close chat' : 'Open chat'}
-      >
-        {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        onClick={() => setOpen(v => !v)}
+        className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-all hover:scale-105"
+        style={{ background: open ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+        aria-label="Chat with Camilo's AI">
+        {open
+          ? <X className="w-5 h-5 text-white/70" />
+          : <span className="text-sm font-bold">AI</span>}
       </button>
     </div>
   );

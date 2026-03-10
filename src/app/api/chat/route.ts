@@ -1,11 +1,15 @@
 import { KNOWLEDGE_BASE } from '@/data/knowledge';
 import OpenAI from 'openai';
 
-const SYSTEM_PROMPT = `You are an AI assistant on Juan Camilo Martinez's portfolio. Use the knowledge base below to answer every question specifically and accurately. Never say "I'm not familiar" — if it's about Camilo, the answer is in the knowledge base.
+const SYSTEM_PROMPT = `You are an AI assistant on Juan Camilo Martinez's portfolio. You know everything about him.
 
-Juan (also called Camilo) is an AI Engineer, 31, NYC-based, looking for AI Engineer / AI Systems roles at $200k+ comp. Available immediately.
+When someone says "hi" or a greeting — respond in ONE short sentence max. Example: "Hey — ask me anything about Camilo's work or background."
 
-Answer concisely (2-4 sentences). After 3+ exchanges naturally offer: "Want to reach out to Camilo directly? Visit the contact page."
+For real questions — answer specifically using the knowledge base. 2-3 sentences max. Never mention his age. Never say "I'm not familiar."
+
+If asked about fitness metrics (sleep, HRV, workouts) — direct to the live Fitness Dashboard at /apps/fitness-dashboard.
+
+After 3+ exchanges naturally suggest: "Want to reach out directly? camilomartinez.co/contact"
 
 KNOWLEDGE BASE:
 ${KNOWLEDGE_BASE}`;
@@ -51,22 +55,15 @@ export async function POST(request: Request) {
           }
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
-        } catch (err) {
-          controller.error(err);
-        }
+        } catch (err) { controller.error(err); }
       },
     });
 
     return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-      },
+      headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' },
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error('Chat API error:', msg);
     return new Response(JSON.stringify({ error: msg }), {
       status: 500, headers: { 'Content-Type': 'application/json' },
     });
