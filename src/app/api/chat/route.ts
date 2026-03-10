@@ -12,46 +12,38 @@ function loadKnowledgeBase(): string {
     try { return fs.readFileSync(path.join(knowledgeDir, file), 'utf-8'); }
     catch { return ''; }
   });
-  knowledgeBase = contents.join('\n\n---\n\n');
+  knowledgeBase = contents.filter(Boolean).join('\n\n---\n\n');
   return knowledgeBase;
 }
 
-function retrieveContext(query: string): string {
-  const kb = loadKnowledgeBase();
-  const sections = kb.split(/\n(?=## )/);
-  const queryWords = new Set(query.toLowerCase().split(/\W+/).filter((w) => w.length > 2));
-  const scored = sections.map((section) => {
-    const overlap = section.toLowerCase().split(/\W+/).filter((w) => queryWords.has(w)).length;
-    return { section, score: overlap };
-  });
-  return scored.sort((a, b) => b.score - a.score).slice(0, 5).map((s) => s.section).join('\n\n');
-}
+const SYSTEM_PROMPT = `You are an AI assistant on Juan Camilo Martinez's portfolio. You have detailed knowledge about him below. Use it to answer every question specifically and accurately. Do not say "I'm not familiar" — the knowledge base has the answer.
 
-const GROQ_BASE = process.env.AI_PROXY_BASE_URL ?? 'https://api.groq.com/openai/v1';
-const GROQ_KEY = process.env.AI_PROXY_API_KEY ?? '';
-const CHAT_MODEL = process.env.AI_CHAT_MODEL ?? 'llama-3.3-70b-versatile';
+Juan (also called Camilo) is an AI Engineer, 31, based in NYC, actively looking for AI Engineer / AI Systems roles at $200k+ total comp. Available immediately.
 
-const SYSTEM_PROMPT = "You are an AI assistant on Juan Camilo Martinez's portfolio website. Answer questions about his background, skills, projects, job search, values, daily routine, and fitness habits. He is an AI Engineer actively looking for AI Engineer / AI Systems roles in NYC at $200k+ comp. Be helpful, concise, and professional. Keep responses under 150 words unless more detail is needed. For specific fitness metrics (sleep hours, HRV, workout count) always direct people to the live Fitness Dashboard at /apps/fitness-dashboard";
+Answer concisely (2-4 sentences). After 3+ exchanges offer: "Want to reach out to Camilo directly? [Contact page]"
+
+KNOWLEDGE BASE:
+{KNOWLEDGE}`;
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as { message: string; conversationHistory?: Array<{ role: string; content: string }> };
     const { message, conversationHistory = [] } = body;
 
-    const baseURL = GROQ_BASE;
-    const apiKey = GROQ_KEY;
-    const model = CHAT_MODEL;
+    const baseURL = process.env.AI_PROXY_BASE_URL ?? 'https://api.groq.com/openai/v1';
+    const apiKey = process.env.AI_PROXY_API_KEY ?? '';
+    const model = (process.env.AI_CHAT_MODEL ?? 'llama-3.3-70b-versatile').trim();
 
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'No API key configured' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     const client = new OpenAI({ baseURL, apiKey });
-    const context = retrieveContext(message);
-    const systemWithContext = `${SYSTEM_PROMPT}\n\nRelevant knowledge:\n${context}`;
+    const kb = loadKnowledgeBase();
+    const systemWithKnowledge = SYSTEM_PROMPT.replace('{KNOWLEDGE}', kb);
 
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemWithContext },
+      { role: 'system', content: systemWithKnowledge },
       ...conversationHistory.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       { role: 'user', content: message },
     ];
