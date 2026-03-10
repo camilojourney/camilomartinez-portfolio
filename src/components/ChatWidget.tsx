@@ -63,7 +63,8 @@ export default function ChatWidget() {
             const { content } = JSON.parse(line.slice(6)) as { content: string };
             if (content) setMessages((p) => {
               const u = [...p];
-              u[u.length - 1] = { role: 'assistant', content: u[u.length - 1].content + content };
+              const last = u[u.length - 1];
+              if (last) u[u.length - 1] = { role: 'assistant', content: last.content + content };
               return u;
             });
           } catch { /* skip */ }
