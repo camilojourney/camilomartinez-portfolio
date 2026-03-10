@@ -35,6 +35,7 @@ const SUGGESTED = [
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [showTeaser, setShowTeaser] = useState(true);
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -92,6 +93,9 @@ export default function ChatWidget() {
   }
 
   const fresh = messages.length === 1;
+  const [hint, setHint] = useState(true);
+  useEffect(() => { const t = setTimeout(() => setHint(false), 6000); return () => clearTimeout(t); }, []);
+  useEffect(() => { if (open) setHint(false); }, [open]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -131,7 +135,11 @@ export default function ChatWidget() {
                   {m.content
                     ? <span dangerouslySetInnerHTML={{ __html: renderContent(m.content) }} />
                     : (loading && i === messages.length - 1
-                      ? <Loader2 className="w-3.5 h-3.5 animate-spin opacity-60" />
+                      ? <span className="flex gap-1 items-center h-4">
+                          <span style={{ width:6,height:6,borderRadius:'50%',background:'rgba(255,255,255,0.4)',display:'inline-block',animation:'dotbounce 1.2s infinite',animationDelay:'0ms' }} />
+                          <span style={{ width:6,height:6,borderRadius:'50%',background:'rgba(255,255,255,0.4)',display:'inline-block',animation:'dotbounce 1.2s infinite',animationDelay:'200ms' }} />
+                          <span style={{ width:6,height:6,borderRadius:'50%',background:'rgba(255,255,255,0.4)',display:'inline-block',animation:'dotbounce 1.2s infinite',animationDelay:'400ms' }} />
+                        </span>
                       : null)}
                 </div>
               </div>
@@ -176,15 +184,56 @@ export default function ChatWidget() {
         </div>
       )}
 
+      {/* Speech bubble teaser */}
+      {!open && showTeaser && (
+        <div
+          onClick={() => { setOpen(true); setShowTeaser(false); }}
+          className="cursor-pointer select-none"
+          style={{
+            background: 'rgba(10,10,20,0.97)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            borderRadius: 14,
+            padding: '10px 14px',
+            fontSize: 13,
+            color: 'rgba(255,255,255,0.85)',
+            maxWidth: 220,
+            lineHeight: 1.45,
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            animation: 'fadeSlideUp 0.3s ease',
+            position: 'relative',
+          }}>
+          <button
+            onClick={e => { e.stopPropagation(); setShowTeaser(false); }}
+            style={{ position:'absolute', top:6, right:8, background:'none', border:'none', color:'rgba(255,255,255,0.3)', cursor:'pointer', fontSize:14, lineHeight:1 }}>×</button>
+          <span style={{ marginRight: 6 }}>💬</span>
+          Want to know about Camilo&apos;s projects?
+          {/* tail */}
+          <div style={{ position:'absolute', bottom:-7, right:22, width:0, height:0,
+            borderLeft:'7px solid transparent', borderRight:'7px solid transparent',
+            borderTop:'7px solid rgba(10,10,20,0.97)' }} />
+        </div>
+      )}
+
       {/* Trigger button */}
+      <style>{`
+        @keyframes dotbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+        @keyframes widgetbounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        @keyframes fadeSlideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
       <button
-        onClick={() => setOpen(v => !v)}
-        className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-all hover:scale-105"
-        style={{ background: open ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+        onClick={() => { setOpen(v => !v); setShowTeaser(false); }}
+        className="flex items-center justify-center text-white shadow-xl"
+        style={{
+          width: 52, height: 52, borderRadius: '50%',
+          background: open ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+          animation: open ? 'none' : 'widgetbounce 2.5s ease-in-out infinite',
+          border: 'none', cursor: 'pointer', transition: 'background 0.2s',
+        }}
         aria-label="Chat with Camilo's AI">
         {open
           ? <X className="w-5 h-5 text-white/70" />
-          : <span className="text-sm font-bold">AI</span>}
+          : <span style={{ fontSize: 22 }}>🤖</span>}
       </button>
     </div>
   );
