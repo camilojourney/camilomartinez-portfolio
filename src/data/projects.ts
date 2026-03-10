@@ -50,8 +50,8 @@ export const projects: ProjectMeta[] = [
     status: 'in-progress',
     category: 'Live App',
     caseStudyHref: '/projects/holus',
-    appHref: 'https://holusight.com',
-    appLabel: 'View live app',
+    appHref: 'https://holus-demo.vercel.app',
+    appLabel: 'Try live demo',
     isExternalApp: true,
   },
   {
