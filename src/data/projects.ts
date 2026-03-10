@@ -18,6 +18,19 @@ export interface ProjectMeta {
 
 export const projects: ProjectMeta[] = [
   {
+    slug: 'invoz-ai',
+    title: 'Invoz.ai',
+    description: 'Privacy-first, on-device speech coach: dictation + real-time grammar correction + personalized pronunciation feedback powered by federated learning.',
+    tags: ['Speech AI', 'Accessibility', 'Productivity'],
+    status: 'in-progress',
+    category: 'Live App',
+    caseStudyHref: '/projects/invoz-ai',
+    appHref: 'https://invoz.io',
+    appLabel: 'View live app',
+    isExternalApp: true,
+    previewImage: '/images/previews_main/invoz.png',
+  },
+  {
     slug: 'pilaster',
     title: 'Pilaster',
     description: 'AI content versioning system — creative studio for structured content creation with version control.',
@@ -142,19 +155,6 @@ export const projects: ProjectMeta[] = [
     appHref: '/about',
     appLabel: 'Try the chatbot',
     previewImage: '/images/previews_main/self_improving_ai_chat.png',
-  },
-  {
-    slug: 'invoz-ai',
-    title: 'Invoz.ai',
-    description: 'Privacy-first, on-device speech coach: dictation + real-time grammar correction + personalized pronunciation feedback powered by federated learning.',
-    tags: ['Speech AI', 'Accessibility', 'Productivity'],
-    status: 'in-progress',
-    category: 'Live App',
-    caseStudyHref: '/projects/invoz-ai',
-    appHref: 'https://invoz.io',
-    appLabel: 'View live app',
-    isExternalApp: true,
-    previewImage: '/images/previews_main/invoz.png',
   },
   {
     slug: 'focus-time',
