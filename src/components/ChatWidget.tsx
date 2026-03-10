@@ -8,6 +8,20 @@ interface Message {
   content: string;
 }
 
+function renderContent(text: string): string {
+  return text
+    // [text](url) → link
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#a5b4fc;text-decoration:underline;text-underline-offset:2px">$1</a>')
+    // bare URLs
+    .replace(/(^|[\s(])(https?:\/\/[^\s)]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#a5b4fc;text-decoration:underline;text-underline-offset:2px">$2</a>')
+    // **bold**
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    // bullet lines
+    .replace(/^[-•]\s(.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0"><span style="opacity:0.4;flex-shrink:0">•</span><span>$1</span></div>')
+    // newlines
+    .replace(/\n/g, '<br/>');
+}
+
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
   content: "Ask me anything about Camilo's work, projects, or background.",
@@ -114,9 +128,11 @@ export default function ChatWidget() {
                   ? { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }
                   : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.85)' }
                 }>
-                  {m.content || (loading && i === messages.length - 1
-                    ? <Loader2 className="w-3.5 h-3.5 animate-spin opacity-60" />
-                    : null)}
+                  {m.content
+                    ? <span dangerouslySetInnerHTML={{ __html: renderContent(m.content) }} />
+                    : (loading && i === messages.length - 1
+                      ? <Loader2 className="w-3.5 h-3.5 animate-spin opacity-60" />
+                      : null)}
                 </div>
               </div>
             ))}
