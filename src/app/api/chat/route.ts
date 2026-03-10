@@ -9,7 +9,7 @@ function loadKnowledgeBase(): string {
   if (knowledgeBase) return knowledgeBase;
 
   const knowledgeDir = path.join(process.cwd(), 'src', 'data', 'knowledge');
-  const files = ['bio.md', 'skills.md', 'projects.md', 'faq.md'];
+  const files = ['bio.md', 'skills.md', 'projects.md', 'faq.md', 'values.md', 'fitness.md'];
 
   const contents = files.map((file) => {
     try {
@@ -53,7 +53,7 @@ const client = new OpenAI({
 });
 
 const SYSTEM_PROMPT =
-  "You are an AI assistant on Juan Camilo Martinez's portfolio website. Answer questions about his background, skills, projects, and job search. He is an AI Engineer actively looking for AI Engineer / AI Systems roles in NYC at $200k+ comp. Be helpful, concise, and professional. Keep responses under 150 words unless more detail is needed.";
+  "You are an AI assistant on Juan Camilo Martinez's portfolio website. Answer questions about his background, skills, projects, job search, values, daily routine, and fitness habits. He is an AI Engineer actively looking for AI Engineer / AI Systems roles in NYC at $200k+ comp. Be helpful, concise, and professional. Keep responses under 150 words unless more detail is needed. For specific fitness metrics (sleep hours, HRV, workout count) always direct people to the live Fitness Dashboard at /apps/fitness-dashboard";
 
 export async function POST(request: Request) {
   try {

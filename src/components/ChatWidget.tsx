@@ -14,6 +14,12 @@ const INITIAL_MESSAGE: Message = {
     "Hi! I can answer questions about Camilo's background, skills, and projects. What would you like to know?",
 };
 
+const SUGGESTED_QUESTIONS = [
+  'What projects is he building right now?',
+  'What are his values and how does he work?',
+  'What roles is he looking for?',
+];
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
@@ -25,8 +31,8 @@ export default function ChatWidget() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  async function sendMessage() {
-    const trimmed = input.trim();
+  async function sendMessage(text?: string) {
+    const trimmed = (text ?? input).trim();
     if (!trimmed || loading) return;
 
     const userMsg: Message = { role: 'user', content: trimmed };
@@ -110,6 +116,8 @@ export default function ChatWidget() {
     }
   }
 
+  const showSuggestions = messages.length === 1 && !loading;
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
@@ -145,6 +153,22 @@ export default function ChatWidget() {
                 </div>
               </div>
             ))}
+
+            {/* Suggested questions — shown only on fresh open */}
+            {showSuggestions && (
+              <div className="flex flex-col gap-2 pt-1">
+                {SUGGESTED_QUESTIONS.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => sendMessage(q)}
+                    className="text-left text-xs text-cyan-300/80 border border-cyan-400/20 rounded-xl px-3 py-2 hover:bg-cyan-400/10 hover:text-cyan-200 transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div ref={bottomRef} />
           </div>
 
@@ -160,7 +184,7 @@ export default function ChatWidget() {
               className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-cyan-400/50 disabled:opacity-50"
             />
             <button
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
               disabled={loading || !input.trim()}
               className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white disabled:opacity-40 hover:opacity-90 transition-opacity flex-shrink-0"
             >
