@@ -141,14 +141,14 @@ export default function ContactPage() {
                                 Currently Accepting Projects
                             </h2>
                             <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
-                                I take on a limited number of consulting engagements at a time to ensure
+                                I am actively looking for AI Engineer roles. Open to discussing full-time opportunities —
                                 deep focus on each project. Whether you need an ML system built from scratch
                                 or want to add AI capabilities to your existing product — let's talk.
                             </p>
                             
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <a
-                                    href="mailto:juancamilomabe@gmail.com?subject=Consulting%20Inquiry"
+                                    href="mailto:juancamilomabe@gmail.com?subject=AI%20Engineer%20Opportunity"
                                     className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
