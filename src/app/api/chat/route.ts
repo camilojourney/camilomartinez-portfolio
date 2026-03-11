@@ -26,11 +26,20 @@ const SYSTEM_PROMPT = [
   'BAD: "You can contact Camilo through the contact page."',
   'GOOD: "Reach him at [juancamilomabe@gmail.com](mailto:juancamilomabe@gmail.com)"',
   '',
-  'If asked about fitness numbers → direct to [Fitness Dashboard](/apps/fitness-dashboard)',
+  'If asked about fitness numbers → share the LIVE DATA below, then link to [Fitness Dashboard](/apps/fitness-dashboard) for full charts.',
   '',
   'KNOWLEDGE BASE:',
   KNOWLEDGE_BASE,
 ].join('\n');
+
+async function getLiveContext(baseUrl: string): Promise<string> {
+  try {
+    const res = await fetch(`${baseUrl}/api/chatbot/context`, { next: { revalidate: 300 } });
+    const data = await res.json() as { ok: boolean; snapshot: string };
+    if (data.ok && data.snapshot) return `\n\nLIVE FITNESS DATA (as of now):\n${data.snapshot}`;
+  } catch { /* silently fail — chatbot still works without live data */ }
+  return '';
+}
 
 export async function POST(request: Request) {
   try {
@@ -50,9 +59,13 @@ export async function POST(request: Request) {
       });
     }
 
+    const host = request.headers.get('host') ?? 'camilomartinez.co';
+    const proto = host.includes('localhost') ? 'http' : 'https';
+    const liveContext = await getLiveContext(`${proto}://${host}`);
+
     const client = new OpenAI({ baseURL, apiKey });
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: SYSTEM_PROMPT + liveContext },
       ...conversationHistory.map((m) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,

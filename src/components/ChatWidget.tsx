@@ -9,11 +9,14 @@ interface Message {
 }
 
 function renderContent(text: string): string {
+  const linkStyle = 'color:#a5b4fc;text-decoration:underline;text-underline-offset:2px';
   return text
-    // [text](url) → link
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#a5b4fc;text-decoration:underline;text-underline-offset:2px">$1</a>')
-    // bare URLs
-    .replace(/(^|[\s(])(https?:\/\/[^\s)]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#a5b4fc;text-decoration:underline;text-underline-offset:2px">$2</a>')
+    // [text](https://...) → external link
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, `<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$1</a>`)
+    // [text](/relative/path) → internal link (same tab)
+    .replace(/\[([^\]]+)\]\((\/[^\)]*)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
+    // bare https:// URLs
+    .replace(/(^|[\s(])(https?:\/\/[^\s)]+)/g, `$1<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$2</a>`)
     // **bold**
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     // bullet lines
