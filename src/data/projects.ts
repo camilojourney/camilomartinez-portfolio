@@ -81,7 +81,7 @@ export const projects: ProjectMeta[] = [
   {
     slug: 'holusight',
     title: 'Holusight',
-    description: 'Enterprise document intelligence platform — semantic search across internal knowledge bases with AI-powered consulting workflows.',
+    description: 'AI-powered document search engine — hybrid BM25 + vector + RRF retrieval with Claude answer synthesis. Local-first, no cloud required.',
     tags: ['AI Engineering', 'Enterprise', 'Search'],
     status: 'live',
     category: 'Live App',
