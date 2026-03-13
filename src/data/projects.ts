@@ -2,6 +2,8 @@
 export type ProjectStatus = 'live' | 'prototype' | 'in-progress' | 'concept';
 export type ProjectCategory = 'Live App' | 'Data Science';
 
+export type ProjectTier = 1 | 2 | 3;
+
 export interface ProjectMeta {
   slug: string;
   title: string;
@@ -9,6 +11,7 @@ export interface ProjectMeta {
   tags: string[];
   status: ProjectStatus;
   category: ProjectCategory;
+  tier: ProjectTier;
   caseStudyHref: string;
   appHref?: string;
   appLabel?: string;
@@ -20,10 +23,11 @@ export const projects: ProjectMeta[] = [
   {
     slug: 'invoz-ai',
     title: 'Invoz.ai',
-    description: 'Privacy-first, on-device speech coach: dictation + real-time grammar correction + personalized pronunciation feedback powered by federated learning.',
-    tags: ['Speech AI', 'Accessibility', 'Productivity'],
+    description: 'Multimodel speech coaching system built from 46 research papers. Scores spoken English across 11 dimensions using Whisper, wav2vec2, Parselmouth, and Silero VAD.',
+    tags: ['Audio/Speech ML', 'Signal Processing', 'Production ML'],
     status: 'in-progress',
     category: 'Live App',
+    tier: 1,
     caseStudyHref: '/projects/invoz-ai',
     appHref: 'https://invoz.io',
     appLabel: 'View live app',
@@ -37,6 +41,7 @@ export const projects: ProjectMeta[] = [
     tags: ['AI Engineering', 'RAG', 'Versioning'],
     status: 'in-progress',
     category: 'Live App',
+    tier: 2,
     caseStudyHref: '/projects/pilaster',
     appHref: 'https://pilaster.ai',
     appLabel: 'View live app',
@@ -49,8 +54,9 @@ export const projects: ProjectMeta[] = [
     tags: ['Multi-Agent', 'Orchestration', 'AI Systems'],
     status: 'in-progress',
     category: 'Live App',
+    tier: 1,
     caseStudyHref: '/projects/holus',
-    appHref: 'https://holus-demo.vercel.app',
+    appHref: 'https://holus-observatory.vercel.app',
     appLabel: 'Try live demo',
     isExternalApp: true,
   },
@@ -61,6 +67,7 @@ export const projects: ProjectMeta[] = [
     tags: ['Video AI', 'Automation', 'Content'],
     status: 'in-progress',
     category: 'Live App',
+    tier: 2,
     caseStudyHref: '/projects/genpeli',
     appHref: 'https://frontend-six-rho-96.vercel.app',
     appLabel: 'View live app',
@@ -73,6 +80,7 @@ export const projects: ProjectMeta[] = [
     tags: ['AI Engineering', 'Data Engineering', 'Automation'],
     status: 'live',
     category: 'Live App',
+    tier: 2,
     caseStudyHref: '/projects/job-tracker',
     appHref: 'https://job-tracker-swart-eta.vercel.app',
     appLabel: 'View live app',
@@ -85,6 +93,7 @@ export const projects: ProjectMeta[] = [
     tags: ['AI Engineering', 'Enterprise', 'Search'],
     status: 'live',
     category: 'Live App',
+    tier: 2,
     appHref: 'https://holusight.com',
     appLabel: 'View live app',
     isExternalApp: true,
@@ -97,6 +106,7 @@ export const projects: ProjectMeta[] = [
     tags: ['Data Engineering', 'APIs', 'Real-time'],
     status: 'live',
     category: 'Live App',
+    tier: 3,
     caseStudyHref: '/projects/fitness-dashboard',
     appHref: '/apps/fitness-dashboard',
     previewImage: '/images/previews_main/fitness.png',
@@ -108,6 +118,7 @@ export const projects: ProjectMeta[] = [
     tags: ['Accountability', 'Data Visualization', 'WHOOP API'],
     status: 'live',
     category: 'Live App',
+    tier: 3,
     caseStudyHref: '/projects/accountability-partner',
     appHref: '/apps/accountability-partner',
     previewImage: '/images/previews_main/accountable.png',
@@ -119,6 +130,7 @@ export const projects: ProjectMeta[] = [
     tags: ['Graph Theory', 'Mapping', 'Visualization'],
     status: 'live',
     category: 'Live App',
+    tier: 3,
     caseStudyHref: '/projects/astoria-conquest',
     appHref: '/apps/astoria-conquest',
     previewImage: '/images/previews_main/astoria_conquest.png',
@@ -130,6 +142,7 @@ export const projects: ProjectMeta[] = [
     tags: ['LLMs', 'Automation', 'Content'],
     status: 'live',
     category: 'Live App',
+    tier: 2,
     caseStudyHref: '/projects/social-media-pipeline',
     appHref: '/apps/social-media-pipeline',
     previewImage: '/images/previews_main/socia_media_creation.png',
@@ -141,6 +154,7 @@ export const projects: ProjectMeta[] = [
     tags: ['Multi-Agent', 'Strategy', 'LLM Systems'],
     status: 'live',
     category: 'Live App',
+    tier: 2,
     caseStudyHref: '/projects/ai-advisor-board',
     appHref: 'https://ai-advisor-board.vercel.app',
     appLabel: 'Launch live app',
@@ -154,6 +168,7 @@ export const projects: ProjectMeta[] = [
     tags: ['RAG', 'NLP', 'Self-Improvement'],
     status: 'live',
     category: 'Live App',
+    tier: 3,
     caseStudyHref: '/projects/interactive-chatbot',
     appHref: '/about',
     appLabel: 'Try the chatbot',
@@ -166,6 +181,7 @@ export const projects: ProjectMeta[] = [
     tags: ['Tauri 2', 'Rust', 'macOS', 'ADHD Tools'],
     status: 'live',
     category: 'Live App',
+    tier: 3,
     caseStudyHref: '/projects/focus-time',
     appHref: '/apps/focus-time',
     appLabel: 'Download app',
@@ -178,6 +194,7 @@ export const projects: ProjectMeta[] = [
     tags: ['NLP', 'Data Science', 'Python', 'Quarto'],
     status: 'live',
     category: 'Data Science',
+    tier: 3,
     caseStudyHref: '/projects/nlp-data-science',
     previewImage: '/images/previews_main/clear_speech.png',
   },
@@ -188,6 +205,7 @@ export const projects: ProjectMeta[] = [
     tags: ['Machine Learning', 'Data Science', 'Python', 'Health Analytics'],
     status: 'live',
     category: 'Data Science',
+    tier: 3,
     caseStudyHref: '/projects/hrv-research',
     previewImage: '/images/previews_main/Recovery_vs_strain.png',
   },
