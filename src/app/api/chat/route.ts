@@ -11,7 +11,7 @@ const SYSTEM_PROMPT = [
   '4. No filler: no "Want to learn more?", no "Feel free to ask", no "Visit the contact page" unless it is the ONLY relevant answer.',
   '5. Never mention age. Never say "I am not familiar."',
   '6. Include links inline when relevant:',
-  '   - Holus → [holusight.com](https://holusight.com)',
+  '   - Holus → [holus-observatory.vercel.app](https://holus-observatory.vercel.app)',
   '   - Pilaster → [pilaster.ai](https://pilaster.ai)',
   '   - Genpeli → [genpeli](https://frontend-six-rho-96.vercel.app)',
   '   - Invoz → [invoz.io](https://invoz.io)',
