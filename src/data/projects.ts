@@ -15,6 +15,8 @@ export interface ProjectMeta {
   caseStudyHref: string;
   appHref?: string;
   appLabel?: string;
+  apiHref?: string;
+  apiLabel?: string;
   previewImage?: string;
   isExternalApp?: boolean;
 }
@@ -38,28 +40,30 @@ export const projects: ProjectMeta[] = [
   {
     slug: 'holus-observatory',
     title: 'Holus Observatory',
-    description: 'Real-time monitoring dashboard for a 32-agent AI orchestration system. Agent status, quality heatmaps, pipeline progress, and execution logs.',
+    description: 'Live observability dashboard for a 32-agent autonomous content system. Watch agents reason, generate, review, and publish content across platforms in real time.',
     tags: ['Observability', 'Multi-Agent', 'Next.js'],
     status: 'live',
     category: 'Live App',
     tier: 1,
     caseStudyHref: '/projects/holus-observatory',
-    appHref: 'https://frontend-six-rho-96.vercel.app',
-    appLabel: 'Try live demo',
+    appHref: 'https://holus-observatory.vercel.app',
+    appLabel: 'Watch agents live',
     isExternalApp: true,
     previewImage: '/images/previews_main/holus_observatory.png',
   },
   {
     slug: 'holus',
-    title: 'Holus Content Engine',
-    description: 'Multi-agent AI system that observes analytics, reasons about content strategy, and coordinates 32 specialized agents to create and publish across platforms.',
-    tags: ['Multi-Agent', 'LangGraph', 'Redis', 'Orchestration'],
+    title: 'Social Media Automatization',
+    description: 'Multi-platform publishing API and content pipeline. One thought in, platform-native posts out — X, Threads, LinkedIn, Instagram, Facebook. Powered by the Holus agent system.',
+    tags: ['Publishing API', 'Multi-Agent', 'FastAPI'],
     status: 'live',
     category: 'Live App',
     tier: 1,
     caseStudyHref: '/projects/holus',
-    appHref: 'https://frontend-six-rho-96.vercel.app/content',
+    appHref: 'https://public-phi-rouge-11.vercel.app',
     appLabel: 'Try content generator',
+    apiHref: 'https://social-media-api-docs.vercel.app',
+    apiLabel: 'API Docs',
     isExternalApp: true,
     previewImage: '/images/previews_main/socia_media_creation.png',
   },
@@ -130,7 +134,7 @@ export const projects: ProjectMeta[] = [
     tier: 2,
     caseStudyHref: '/projects/genpeli',
     appHref: 'https://www.editai.ai',
-    appLabel: 'View live app',
+    appLabel: 'Try live demo',
     isExternalApp: true,
     previewImage: '/images/previews_main/genpeli.png',
   },

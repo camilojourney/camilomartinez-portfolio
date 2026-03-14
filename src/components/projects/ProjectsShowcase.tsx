@@ -55,6 +55,8 @@ function ProjectCard({ project }: { project: ProjectMeta }) {
   const previewClasses = getPreviewClasses(project.slug);
   const appHref = project.appHref;
   const appLabel = project.appLabel || (project.isExternalApp ? 'Launch live app' : 'View live app');
+  const apiHref = project.apiHref;
+  const apiLabel = project.apiLabel || 'API Docs';
 
   return (
     <Card className="h-full border-white/10 bg-white/[0.05] transition-all duration-300 hover:border-cyan-400/40 hover:shadow-2xl hover:shadow-cyan-500/20">
@@ -121,6 +123,17 @@ function ProjectCard({ project }: { project: ProjectMeta }) {
             >
               <span>{appLabel}</span>
               <span aria-hidden className="text-lg">{project.isExternalApp ? '↗' : '→'}</span>
+            </Link>
+          )}
+          {apiHref && (
+            <Link
+              href={apiHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white/50 transition-all duration-300 hover:border-violet-400/40 hover:bg-violet-500/10 hover:text-violet-300"
+            >
+              <span>{apiLabel}</span>
+              <span aria-hidden className="text-lg">↗</span>
             </Link>
           )}
         </div>

@@ -174,9 +174,9 @@ const projects: ProjectData[] = [
             'Three-layer prompt resolution for A/B testing agent prompts',
         ],
         status: 'live',
-        demoUrl: 'https://frontend-six-rho-96.vercel.app/content',
+        demoUrl: 'https://public-phi-rouge-11.vercel.app',
         imageUrl: '/images/previews_main/socia_media_creation.png',
-        appLink: 'https://frontend-six-rho-96.vercel.app/content',
+        appLink: 'https://public-phi-rouge-11.vercel.app',
     },
     {
         slug: 'holus-observatory',
