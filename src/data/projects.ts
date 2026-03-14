@@ -47,6 +47,7 @@ export const projects: ProjectMeta[] = [
     appHref: 'https://holus-observatory.vercel.app',
     appLabel: 'Try live demo',
     isExternalApp: true,
+    previewImage: '/images/previews_main/holus_observatory.png',
   },
   {
     slug: 'holus',
@@ -74,6 +75,7 @@ export const projects: ProjectMeta[] = [
     appHref: 'https://pilaster.ai',
     appLabel: 'View live app',
     isExternalApp: true,
+    previewImage: '/images/previews_main/pilaster.png',
   },
   {
     slug: 'ai-advisor-board',
@@ -101,6 +103,7 @@ export const projects: ProjectMeta[] = [
     appHref: 'https://holusight.com',
     appLabel: 'View live app',
     isExternalApp: true,
+    previewImage: '/images/previews_main/holusight.png',
   },
   {
     slug: 'job-tracker',
@@ -114,6 +117,7 @@ export const projects: ProjectMeta[] = [
     appHref: 'https://job-tracker-swart-eta.vercel.app',
     appLabel: 'View live app',
     isExternalApp: true,
+    previewImage: '/images/previews_main/job_tracker.png',
   },
   {
     slug: 'genpeli',
@@ -127,6 +131,7 @@ export const projects: ProjectMeta[] = [
     appHref: 'https://www.editai.ai',
     appLabel: 'View live app',
     isExternalApp: true,
+    previewImage: '/images/previews_main/genpeli.png',
   },
   // === TIER 3: Supporting projects ===
   {
