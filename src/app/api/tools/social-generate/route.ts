@@ -43,13 +43,18 @@ export async function POST(request: NextRequest) {
 
         const prompt = template(thought);
 
-        const llmResponse = await fetch('http://localhost:8080/v1/chat/completions', {
+        const baseURL = (process.env.AI_PROXY_BASE_URL ?? 'https://api.openai.com/v1').trim();
+        const apiKey = (process.env.AI_PROXY_API_KEY ?? process.env.OPENAI_API_KEY ?? '').trim();
+        const model = (process.env.AI_CHAT_MODEL ?? 'gpt-4o-mini').trim();
+
+        const llmResponse = await fetch(`${baseURL}/chat/completions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: 'anthropic/claude-sonnet-4-6',
+            model,
             messages: [{ role: 'user', content: prompt }],
             max_tokens: 2000,
             temperature: 0.7,
