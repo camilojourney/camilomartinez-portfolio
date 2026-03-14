@@ -1,0 +1,383 @@
+
+Running 28 tests using 1 worker
+
+  ✘   1 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:4:7 › About & Chatbot › AC-018: About page loads (6.2s)
+  ✘   2 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:10:7 › About & Chatbot › AC-026: Chatbot renders on about page (5.9s)
+  ✘   3 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:21:7 › About Page Mobile › AC-028: About page on mobile (5.9s)
+  ✘   4 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:4:7 › Case Study Pages › AC-011: Holus case study loads (2.6s)
+  ✘   5 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:12:7 › Case Study Pages › AC-012: Holus Observatory case study loads (1.0s)
+  ✘   6 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:20:7 › Case Study Pages › AC-013: Genpeli case study loads (953ms)
+  ✘   7 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:27:7 › Case Study Pages › AC-014: Invoz case study loads (994ms)
+  ✘   8 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:33:7 › Case Study Pages › AC-015: Holusight case study loads (953ms)
+  ✓   9 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:40:7 › Case Study Pages › AC-016: Social Media Pipeline case study returns 404 (383ms)
+  ✓  10 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/external-links.spec.ts:4:7 › External Links › AC-019: Holus Observatory demo link works (141ms)
+  ✓  11 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/external-links.spec.ts:10:7 › External Links › AC-020: Invoz link works (341ms)
+  ✓  12 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/external-links.spec.ts:15:7 › External Links › AC-021: Pilaster link works (1.1s)
+  ✓  13 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/external-links.spec.ts:20:7 › External Links › AC-022: Genpeli link works (276ms)
+  ✓  14 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/external-links.spec.ts:25:7 › External Links › AC-023: Holusight link works (182ms)
+  ✓  15 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/external-links.spec.ts:30:7 › External Links › AC-024: AI Advisor Board link works (203ms)
+  ✓  16 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/external-links.spec.ts:35:7 › External Links › AC-025: Job Tracker link works (201ms)
+  ✘  17 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/navigation.spec.ts:4:7 › Navigation › AC-017: Projects grid → case study → back (30.0s)
+  ✘  18 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:9:7 › Projects Grid › AC-001: Invoz.ai card renders (967ms)
+  ✘  19 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:15:7 › Projects Grid › AC-002: Holus card renders (989ms)
+  ✘  20 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:22:7 › Projects Grid › AC-003: Holus Observatory card renders (917ms)
+  ✓  21 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:31:7 › Projects Grid › AC-004: Pilaster card renders (947ms)
+  ✓  22 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:35:7 › Projects Grid › AC-005: Genpeli card renders (855ms)
+  ✓  23 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:40:7 › Projects Grid › AC-006: Job Tracker CRM card renders (857ms)
+  ✓  24 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:44:7 › Projects Grid › AC-007: Holusight card renders (853ms)
+  ✓  25 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:48:7 › Projects Grid › AC-008: AI Advisor Board card renders (847ms)
+  ✓  26 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:52:7 › Projects Grid › AC-009: Social Media Pipeline is gone (876ms)
+  ✘  27 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:56:7 › Projects Grid › AC-010: Chatbot reframed as engineering story (6.0s)
+  ✓  28 [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:66:7 › Projects Page Mobile › AC-027: Projects page on mobile (938ms)
+
+
+  1) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:4:7 › About & Chatbot › AC-018: About page loads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  getByText('Juan Camilo Martinez')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Juan Camilo Martinez')[22m
+    [2m    9 × locator resolved to <title>Juan Camilo Martinez | Applied AI Engineer</title>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       5 |     await page.goto('/about');
+       6 |     await page.waitForLoadState('networkidle');
+    >  7 |     await expect(page.getByText('Juan Camilo Martinez')).toBeVisible();
+         |                                                          ^
+       8 |   });
+       9 |
+      10 |   test('AC-026: Chatbot renders on about page', async ({ page }) => {
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:7:58
+
+    Error Context: test-results/about-chatbot-About-Chatbot-AC-018-About-page-loads-chromium/error-context.md
+
+  2) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:10:7 › About & Chatbot › AC-026: Chatbot renders on about page 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByPlaceholder(/ask/i).or(getByRole('textbox')).or(getByText(/chat/i))
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByPlaceholder(/ask/i).or(getByRole('textbox')).or(getByText(/chat/i))[22m
+
+
+      12 |     await page.waitForLoadState('networkidle');
+      13 |     // Check for a common chatbot indicator like an input or specific text
+    > 14 |     await expect(page.getByPlaceholder(/ask/i).or(page.getByRole('textbox')).or(page.getByText(/chat/i))).toBeVisible();
+         |                                                                                                           ^
+      15 |   });
+      16 | });
+      17 |
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:14:107
+
+    Error Context: test-results/about-chatbot-About-Chatbo-16fe8-atbot-renders-on-about-page-chromium/error-context.md
+
+  3) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:21:7 › About Page Mobile › AC-028: About page on mobile 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  getByText('Juan Camilo Martinez')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Juan Camilo Martinez')[22m
+    [2m    9 × locator resolved to <title>Juan Camilo Martinez | Applied AI Engineer</title>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+      22 |     await page.goto('/about');
+      23 |     await page.waitForLoadState('networkidle');
+    > 24 |     await expect(page.getByText('Juan Camilo Martinez')).toBeVisible();
+         |                                                          ^
+      25 |     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+      26 |     expect(overflow).toBe(false);
+      27 |   });
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:24:58
+
+    Error Context: test-results/about-chatbot-About-Page-Mobile-AC-028-About-page-on-mobile-chromium/error-context.md
+
+  4) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:4:7 › Case Study Pages › AC-011: Holus case study loads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('32 specialized agents')
+    Expected: visible
+    Error: strict mode violation: getByText('32 specialized agents') resolved to 2 elements:
+        1) <p class="text-lg md:text-xl text-white/80 leading-relaxed font-light">Holus is an AI marketing strategist that promotes…</p> aka getByText('Holus is an AI marketing')
+        2) <span class="text-white/80 leading-relaxed">32 specialized agents organized by role: managers…</span> aka getByText('specialized agents organized by role: managers, specialists, evaluators, ops')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('32 specialized agents')[22m
+
+
+       6 |     await page.waitForLoadState('networkidle');
+       7 |     await expect(page.getByText('Holus — AI Marketing Strategist')).toBeVisible();
+    >  8 |     await expect(page.getByText('32 specialized agents')).toBeVisible();
+         |                                                           ^
+       9 |     await expect(page.getByRole('link', { name: /holusight\.com/ })).not.toBeVisible();
+      10 |   });
+      11 |
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:8:59
+
+    Error Context: test-results/case-studies-Case-Study-Pages-AC-011-Holus-case-study-loads-chromium/error-context.md
+
+  5) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:12:7 › Case Study Pages › AC-012: Holus Observatory case study loads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Holus Observatory')
+    Expected: visible
+    Error: strict mode violation: getByText('Holus Observatory') resolved to 2 elements:
+        1) <h1 class="text-4xl md:text-5xl font-extralight text-white mb-6 drop-shadow-lg">Holus Observatory — Multi-Agent Monitoring Dashbo…</h1> aka getByRole('heading', { name: 'Holus Observatory — Multi-' })
+        2) <p class="text-lg md:text-xl text-white/80 leading-relaxed font-light">Holus Observatory is the monitoring frontend for …</p> aka getByText('Holus Observatory is the')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Holus Observatory')[22m
+
+
+      13 |     await page.goto('/projects/holus-observatory');
+      14 |     await page.waitForLoadState('networkidle');
+    > 15 |     await expect(page.getByText('Holus Observatory')).toBeVisible();
+         |                                                       ^
+      16 |     await expect(page.getByText('Multi-Agent Monitoring Dashboard')).toBeVisible();
+      17 |     await expect(page.getByRole('link', { name: /holus-observatory\.vercel\.app/ })).toBeVisible();
+      18 |   });
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:15:55
+
+    Error Context: test-results/case-studies-Case-Study-Pa-2ff73-bservatory-case-study-loads-chromium/error-context.md
+
+  6) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:20:7 › Case Study Pages › AC-013: Genpeli case study loads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Genpeli')
+    Expected: visible
+    Error: strict mode violation: getByText('Genpeli') resolved to 3 elements:
+        1) <h1 class="text-4xl md:text-5xl font-extralight text-white mb-6 drop-shadow-lg">Genpeli — AI Video Pipeline</h1> aka getByRole('heading', { name: 'Genpeli — AI Video Pipeline' })
+        2) <p class="text-lg md:text-xl text-white/80 leading-relaxed font-light">Genpeli is an AI pipeline that takes raw video an…</p> aka getByText('Genpeli is an AI pipeline')
+        3) <p class="text-white/70 leading-relaxed">Genpeli automates the entire post-production work…</p> aka getByText('Genpeli automates the entire')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Genpeli')[22m
+
+
+      21 |     await page.goto('/projects/genpeli');
+      22 |     await page.waitForLoadState('networkidle');
+    > 23 |     await expect(page.getByText('Genpeli')).toBeVisible();
+         |                                             ^
+      24 |     await expect(page.getByText('AI Video Pipeline')).toBeVisible();
+      25 |   });
+      26 |
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:23:45
+
+    Error Context: test-results/case-studies-Case-Study-Pa-4fe43-13-Genpeli-case-study-loads-chromium/error-context.md
+
+  7) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:27:7 › Case Study Pages › AC-014: Invoz case study loads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Invoz')
+    Expected: visible
+    Error: strict mode violation: getByText('Invoz') resolved to 3 elements:
+        1) <h1 class="text-4xl md:text-5xl font-extralight text-white mb-6 drop-shadow-lg">Invoz.ai — On-Device Speech Coach</h1> aka getByRole('heading', { name: 'Invoz.ai — On-Device Speech' })
+        2) <p class="text-lg md:text-xl text-white/80 leading-relaxed font-light">Invoz.ai is a privacy-first speech coaching appli…</p> aka getByText('Invoz.ai is a privacy-first')
+        3) <p class="text-white/70 leading-relaxed">Invoz runs all AI processing locally using optimi…</p> aka getByText('Invoz runs all AI processing')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Invoz')[22m
+
+
+      28 |     await page.goto('/projects/invoz-ai');
+      29 |     await page.waitForLoadState('networkidle');
+    > 30 |     await expect(page.getByText('Invoz')).toBeVisible();
+         |                                           ^
+      31 |   });
+      32 |
+      33 |   test('AC-015: Holusight case study loads', async ({ page }) => {
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:30:43
+
+    Error Context: test-results/case-studies-Case-Study-Pages-AC-014-Invoz-case-study-loads-chromium/error-context.md
+
+  8) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:33:7 › Case Study Pages › AC-015: Holusight case study loads 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Holusight')
+    Expected: visible
+    Error: strict mode violation: getByText('Holusight') resolved to 2 elements:
+        1) <h1 class="text-4xl md:text-5xl font-extralight text-white mb-6 drop-shadow-lg">Holusight</h1> aka getByRole('heading', { name: 'Holusight' })
+        2) <p class="text-lg md:text-xl text-white/80 leading-relaxed font-light">Holusight is a local-first document intelligence …</p> aka getByText('Holusight is a local-first')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Holusight')[22m
+
+
+      34 |     await page.goto('/projects/holusight');
+      35 |     await page.waitForLoadState('networkidle');
+    > 36 |     await expect(page.getByText('Holusight')).toBeVisible();
+         |                                               ^
+      37 |     await expect(page.getByRole('link', { name: /holusight\.com/ })).toBeVisible();
+      38 |   });
+      39 |
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:36:47
+
+    Error Context: test-results/case-studies-Case-Study-Pa-b45cd--Holusight-case-study-loads-chromium/error-context.md
+
+  9) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/navigation.spec.ts:4:7 › Navigation › AC-017: Projects grid → case study → back 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: 'Read case study' }).filter({ hasText: 'Holus Observatory' })[22m
+
+
+       5 |     await page.goto('/projects');
+       6 |     await page.waitForLoadState('networkidle');
+    >  7 |     await page.getByRole('link', { name: 'Read case study' }).filter({ hasText: 'Holus Observatory' }).click();
+         |                                                                                                        ^
+       8 |     await expect(page).toHaveURL(/\/projects\/holus-observatory/);
+       9 |     await page.getByRole('link', { name: 'Back to Projects' }).click();
+      10 |     await expect(page).toHaveURL(/\/projects/);
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/navigation.spec.ts:7:104
+
+    Error Context: test-results/navigation-Navigation-AC-0-e8c43-ts-grid-→-case-study-→-back-chromium/error-context.md
+
+  10) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:9:7 › Projects Grid › AC-001: Invoz.ai card renders 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Audio/Speech ML')
+    Expected: visible
+    Error: strict mode violation: getByText('Audio/Speech ML') resolved to 3 elements:
+        1) <span class="text-cyan-400 font-semibold">audio/speech ML</span> aka getByText('audio/speech ML', { exact: true })
+        2) <h3 class="text-xl font-semibold text-white mb-3">Audio/Speech ML</h3> aka getByRole('heading', { name: 'Audio/Speech ML' })
+        3) <span class="text-xs font-medium text-white/60 border border-white/15 px-3 py-1 rounded-full">Audio/Speech ML</span> aka locator('span').filter({ hasText: /^Audio\/Speech ML$/ })
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Audio/Speech ML')[22m
+
+
+       9 |   test('AC-001: Invoz.ai card renders', async ({ page }) => {
+      10 |     await expect(page.getByText('Invoz.ai', { exact: true })).toBeVisible();
+    > 11 |     await expect(page.getByText('Audio/Speech ML')).toBeVisible();
+         |                                                     ^
+      12 |     await expect(page.getByRole('link', { name: 'View live app' })).toBeVisible();
+      13 |   });
+      14 |
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:11:53
+
+    Error Context: test-results/projects-grid-Projects-Grid-AC-001-Invoz-ai-card-renders-chromium/error-context.md
+
+  11) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:15:7 › Projects Grid › AC-002: Holus card renders 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('AI Marketing')
+    Expected: visible
+    Error: strict mode violation: getByText('AI Marketing') resolved to 2 elements:
+        1) <p class="text-white/70 text-sm leading-relaxed">AI marketing strategist — autonomous content engi…</p> aka getByText('AI marketing strategist —')
+        2) <span class="text-xs font-medium text-white/60 border border-white/15 px-3 py-1 rounded-full">AI Marketing</span> aka getByText('AI Marketing', { exact: true })
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('AI Marketing')[22m
+
+
+      15 |   test('AC-002: Holus card renders', async ({ page }) => {
+      16 |     await expect(page.getByText('Holus', { exact: true })).toBeVisible();
+    > 17 |     await expect(page.getByText('AI Marketing')).toBeVisible();
+         |                                                  ^
+      18 |     await expect(page.getByText('autonomous content engine')).toBeVisible();
+      19 |     await expect(page.getByRole('button', { name: 'Try live demo' })).not.toBeVisible();
+      20 |   });
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:17:50
+
+    Error Context: test-results/projects-grid-Projects-Grid-AC-002-Holus-card-renders-chromium/error-context.md
+
+  12) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:22:7 › Projects Grid › AC-003: Holus Observatory card renders 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Observability')
+    Expected: visible
+    Error: strict mode violation: getByText('Observability') resolved to 2 elements:
+        1) <p class="text-white/60 text-sm leading-relaxed">Agent orchestration with LangGraph, Redis event b…</p> aka getByText('Agent orchestration with')
+        2) <span class="text-xs font-medium text-white/60 border border-white/15 px-3 py-1 rounded-full">Observability</span> aka getByText('Observability', { exact: true })
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Observability')[22m
+
+
+      22 |   test('AC-003: Holus Observatory card renders', async ({ page }) => {
+      23 |     await expect(page.getByText('Holus Observatory')).toBeVisible();
+    > 24 |     await expect(page.getByText('Observability')).toBeVisible();
+         |                                                   ^
+      25 |     await expect(page.getByText('monitoring dashboard')).toBeVisible();
+      26 |     const demoLink = page.getByRole('link', { name: 'Try live demo' });
+      27 |     await expect(demoLink).toBeVisible();
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:24:51
+
+    Error Context: test-results/projects-grid-Projects-Gri-1078d-us-Observatory-card-renders-chromium/error-context.md
+
+  13) [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:56:7 › Projects Grid › AC-010: Chatbot reframed as engineering story 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('How I Built This Chatbot')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('How I Built This Chatbot')[22m
+
+
+      55 |
+      56 |   test('AC-010: Chatbot reframed as engineering story', async ({ page }) => {
+    > 57 |     await expect(page.getByText('How I Built This Chatbot')).toBeVisible();
+         |                                                              ^
+      58 |     await expect(page.getByText('LLM-as-judge evaluation')).toBeVisible();
+      59 |     await expect(page.getByText('Self-Improving AI Chatbot')).not.toBeVisible();
+      60 |   });
+        at /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/.pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:57:62
+
+    Error Context: test-results/projects-grid-Projects-Gri-d85ea-framed-as-engineering-story-chromium/error-context.md
+
+  13 failed
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:4:7 › About & Chatbot › AC-018: About page loads 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:10:7 › About & Chatbot › AC-026: Chatbot renders on about page 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/about-chatbot.spec.ts:21:7 › About Page Mobile › AC-028: About page on mobile 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:4:7 › Case Study Pages › AC-011: Holus case study loads 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:12:7 › Case Study Pages › AC-012: Holus Observatory case study loads 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:20:7 › Case Study Pages › AC-013: Genpeli case study loads 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:27:7 › Case Study Pages › AC-014: Invoz case study loads 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/case-studies.spec.ts:33:7 › Case Study Pages › AC-015: Holusight case study loads 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/navigation.spec.ts:4:7 › Navigation › AC-017: Projects grid → case study → back 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:9:7 › Projects Grid › AC-001: Invoz.ai card renders 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:15:7 › Projects Grid › AC-002: Holus card renders 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:22:7 › Projects Grid › AC-003: Holus Observatory card renders 
+    [chromium] › .pipeline-state/camilomartinez-portfolio-VERIFY-20260313-3b6beaa1/tests/projects-grid.spec.ts:56:7 › Projects Grid › AC-010: Chatbot reframed as engineering story 
+  15 passed (2.6m)

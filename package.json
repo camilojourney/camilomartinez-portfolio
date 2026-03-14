@@ -73,6 +73,7 @@
     "typescript": "5.3.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/geojson": "^7946.0.16",
     "@types/node": "20.11.17",
     "@types/pg": "^8.11.0",

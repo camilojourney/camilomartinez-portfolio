@@ -1,0 +1,322 @@
+[
+  {
+    "id": "AC-001",
+    "title": "Invoz.ai card renders",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Invoz.ai\" title is visible",
+      "And \"Audio/Speech ML\" tag is visible",
+      "And a \"View live app\" link exists"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-002",
+    "title": "Holus card renders (content creation)",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Holus\" title is visible",
+      "And \"AI Marketing\" tag is visible",
+      "And \"autonomous content engine\" text is in the description",
+      "And Holus does NOT have a \"Try live demo\" button (no appHref)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-003",
+    "title": "Holus Observatory card renders (separate from Holus)",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Holus Observatory\" title is visible",
+      "And \"Observability\" tag is visible",
+      "And \"monitoring dashboard\" text is in the description",
+      "And a \"Try live demo\" link pointing to holus-observatory.vercel.app exists"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-004",
+    "title": "Pilaster card renders",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Pilaster\" title is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-005",
+    "title": "Genpeli card renders",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Genpeli\" title is visible",
+      "And \"Video AI\" tag is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-006",
+    "title": "Job Tracker CRM card renders",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Job Tracker CRM\" title is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-007",
+    "title": "Holusight card renders",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Holusight\" title is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-008",
+    "title": "AI Advisor Board card renders",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"AI Advisor Board\" title is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-009",
+    "title": "Social Media Pipeline is gone",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"Social Media Pipeline\" text is NOT visible anywhere on the page"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-010",
+    "title": "Chatbot reframed as engineering story",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the page loads",
+      "Then \"How I Built This Chatbot\" title is visible",
+      "And \"LLM-as-judge evaluation\" text is in the description",
+      "And \"Self-Improving AI Chatbot\" is NOT visible as a project title"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-011",
+    "title": "Holus case study loads",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects/holus",
+      "When the page loads",
+      "Then \"Holus — AI Marketing Strategist\" title is visible",
+      "And \"32 specialized agents\" text is visible",
+      "And the page does NOT link to holusight.com"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-012",
+    "title": "Holus Observatory case study loads",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects/holus-observatory",
+      "When the page loads",
+      "Then \"Holus Observatory\" title is visible",
+      "And \"Multi-Agent Monitoring Dashboard\" text is visible",
+      "And a link to holus-observatory.vercel.app exists"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-013",
+    "title": "Genpeli case study loads",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects/genpeli",
+      "When the page loads",
+      "Then \"Genpeli\" title is visible",
+      "And \"AI Video Pipeline\" text is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-014",
+    "title": "Invoz case study loads",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects/invoz-ai",
+      "When the page loads",
+      "Then \"Invoz\" title is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-015",
+    "title": "Holusight case study loads",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /projects/holusight",
+      "When the page loads",
+      "Then \"Holusight\" title is visible",
+      "And a link to holusight.com exists"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-016",
+    "title": "Social Media Pipeline case study returns 404",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects/social-media-pipeline",
+      "When the page loads",
+      "Then a 404 or \"not found\" response is returned"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-017",
+    "title": "Projects grid → case study → back",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /projects",
+      "When the user clicks \"Read case study\" on the Holus Observatory card",
+      "Then the user is on /projects/holus-observatory",
+      "When the user clicks \"Back to Projects\"",
+      "Then the user is on /projects"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-018",
+    "title": "About page loads",
+    "priority": "P0",
+    "steps": [
+      "Given the user navigates to /about",
+      "When the page loads",
+      "Then \"Juan Camilo Martinez\" text is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-019",
+    "title": "Holus Observatory demo link works",
+    "priority": "P0",
+    "steps": [
+      "Given the user opens https://holus-observatory.vercel.app",
+      "Then the page loads successfully (HTTP 200)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-020",
+    "title": "Invoz link works",
+    "priority": "P1",
+    "steps": [
+      "Given the user opens https://invoz.io",
+      "Then the page loads successfully (HTTP 200 or redirect)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-021",
+    "title": "Pilaster link works",
+    "priority": "P1",
+    "steps": [
+      "Given the user opens https://pilaster.ai",
+      "Then the page loads successfully (HTTP 200 or redirect)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-022",
+    "title": "Genpeli link works",
+    "priority": "P1",
+    "steps": [
+      "Given the user opens https://frontend-six-rho-96.vercel.app",
+      "Then the page loads successfully (HTTP 200)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-023",
+    "title": "Holusight link works",
+    "priority": "P1",
+    "steps": [
+      "Given the user opens https://holusight.com",
+      "Then the page loads successfully (HTTP 200 or redirect)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-024",
+    "title": "AI Advisor Board link works",
+    "priority": "P1",
+    "steps": [
+      "Given the user opens https://ai-advisor-board.vercel.app",
+      "Then the page loads successfully (HTTP 200)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-025",
+    "title": "Job Tracker link works",
+    "priority": "P1",
+    "steps": [
+      "Given the user opens https://job-tracker-swart-eta.vercel.app",
+      "Then the page loads successfully (HTTP 200)"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-026",
+    "title": "Chatbot renders on about page",
+    "priority": "P1",
+    "steps": [
+      "Given the user navigates to /about",
+      "When the page loads",
+      "Then a chat interface or chatbot component is visible"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-027",
+    "title": "Projects page on mobile",
+    "priority": "P1",
+    "steps": [
+      "Given the viewport is 375x667",
+      "When the user navigates to /projects",
+      "Then project cards are visible and do not overflow horizontally"
+    ],
+    "status": "READY"
+  },
+  {
+    "id": "AC-028",
+    "title": "About page on mobile",
+    "priority": "P1",
+    "steps": [
+      "Given the viewport is 375x667",
+      "When the user navigates to /about",
+      "Then content is visible and does not overflow horizontally"
+    ],
+    "status": "READY"
+  }
+]

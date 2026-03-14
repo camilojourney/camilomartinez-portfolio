@@ -174,9 +174,9 @@ const projects: ProjectData[] = [
             'Three-layer prompt resolution for A/B testing agent prompts',
         ],
         status: 'live',
-        demoUrl: '/apps/social-media-pipeline',
+        demoUrl: 'https://frontend-six-rho-96.vercel.app/content',
         imageUrl: '/images/previews_main/socia_media_creation.png',
-        appLink: '/apps/social-media-pipeline',
+        appLink: 'https://frontend-six-rho-96.vercel.app/content',
     },
     {
         slug: 'holus-observatory',
@@ -196,9 +196,9 @@ const projects: ProjectData[] = [
             'System health monitoring with service latency',
         ],
         status: 'live',
-        demoUrl: 'https://holus-observatory.vercel.app',
+        demoUrl: 'https://frontend-six-rho-96.vercel.app',
         imageUrl: '/images/previews_main/holus_observatory.png',
-        appLink: 'https://holus-observatory.vercel.app',
+        appLink: 'https://frontend-six-rho-96.vercel.app',
     },
     {
         slug: 'pilaster',

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, X, MessageCircle } from 'lucide-react';
+import { Send, Loader2, X } from 'lucide-react';
+import Image from 'next/image';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -117,12 +118,13 @@ export default function ChatWidget() {
             style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
           >
             <div className="flex items-center gap-2.5">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-white" />
-              </div>
+              <Image
+                src="/bot.png"
+                alt="AI Assistant"
+                width={28}
+                height={28}
+                className="rounded-full"
+              />
               <div>
                 <p className="text-white text-sm font-semibold leading-none">AI Assistant</p>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -301,11 +303,13 @@ export default function ChatWidget() {
         }}
         className="flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-105"
         style={{
-          width: 52,
-          height: 52,
+          width: 60,
+          height: 60,
           borderRadius: '50%',
-          background: open ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-          border: open ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(6, 182, 212, 0.3)',
+          background: open ? 'rgba(255,255,255,0.1)' : 'transparent',
+          border: open ? '1px solid rgba(255,255,255,0.1)' : 'none',
+          overflow: 'hidden',
+          padding: 0,
           cursor: 'pointer',
           backdropFilter: 'blur(12px)',
         }}
@@ -314,7 +318,7 @@ export default function ChatWidget() {
         {open ? (
           <X className="w-5 h-5 text-white/70" />
         ) : (
-          <MessageCircle className="w-5 h-5 text-white" />
+          <Image src="/bot.png" alt="Chat" width={60} height={60} className="rounded-full object-cover" />
         )}
       </button>
     </div>
