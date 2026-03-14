@@ -32,6 +32,7 @@
     "check:recent-data": "node scripts/testing/check-recent-data.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@googlemaps/polyline-codec": "^1.0.28",
     "@mapbox/polyline": "^1.2.1",
     "@radix-ui/react-slot": "^1.2.3",
