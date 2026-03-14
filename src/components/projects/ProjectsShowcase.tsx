@@ -89,7 +89,7 @@ function ProjectCard({ project }: { project: ProjectMeta }) {
             href={project.caseStudyHref}
             className="group block rounded-2xl border border-purple-400/40 bg-purple-500/10 p-4 transition-all duration-300 hover:border-purple-300/60 hover:bg-purple-500/20"
           >
-            <div className={`relative w-full h-40 rounded-xl overflow-hidden border border-purple-400/30 ${previewClasses.container}`}>
+            <div className={`relative w-full aspect-video rounded-xl overflow-hidden border border-purple-400/30 ${previewClasses.container}`}>
               {project.previewImage ? (
                 <Image
                   src={project.previewImage}
