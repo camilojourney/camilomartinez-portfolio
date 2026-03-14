@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     default: 'Juan Camilo Martinez | Applied AI Engineer',
     template: '%s | Juan Camilo Martinez',
   },
-  description: 'Applied AI Engineer specializing in audio/speech ML and multi-agent systems. Built a production speech pipeline from 46 research papers using Whisper, wav2vec2, and Parselmouth. NYC. Open to AI Engineer roles.',
+  description: 'Applied AI Engineer specializing in audio/speech ML and multi-agent systems. Built an audio ML pipeline from 46 research papers. NYC. Open to AI Engineer roles.',
   keywords: [
     'Applied AI Engineer',
     'audio ML',
@@ -94,7 +94,7 @@ export default function RootLayout({
     name: 'Camilo Martinez',
     url: baseUrl,
     jobTitle: 'Applied AI Engineer',
-    description: 'Applied AI Engineer specializing in audio/speech ML and multi-agent systems. Built production pipelines from 46 research papers.',
+    description: 'Applied AI Engineer specializing in audio/speech ML and multi-agent systems. Built an audio ML pipeline from 46 research papers.',
     sameAs: [
       'https://github.com/camilojourney',
       'https://linkedin.com/in/camilomartinez',

@@ -150,9 +150,9 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
             Juan Camilo Martinez<br />Applied AI Engineer
           </h1>
           <p className="text-xl md:text-2xl text-white/70 leading-relaxed max-w-3xl mx-auto mb-10">
-            Specializing in <span className="text-cyan-400 font-semibold">audio/speech ML</span> and{' '}
-            <span className="text-blue-400 font-semibold">multi-agent systems</span>. Built a production speech pipeline from{' '}
-            <span className="text-purple-400 font-semibold">46 research papers</span>.
+            I build <span className="text-cyan-400 font-semibold">audio/speech ML</span> pipelines and{' '}
+            <span className="text-blue-400 font-semibold">multi-agent systems</span>. Each project below explains{' '}
+            <span className="text-purple-400 font-semibold">what I built and why</span>.
           </p>
           <a
             href="/contact"

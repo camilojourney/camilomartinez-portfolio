@@ -11,8 +11,8 @@ Juan Camilo Martinez (also called Camilo) is an Applied AI Engineer based in New
 ## Career
 - Applied AI Engineer specializing in audio/speech ML and multi-agent systems
 - Built a production speech ML pipeline from 46 research papers that scores spoken English across 11 dimensions
-- Designed a federated multi-agent orchestration system with health checks, guardrails, and self-improvement loops
-- Built and deployed 10+ AI-powered applications
+- Designed a multi-agent orchestration framework with health checks, guardrails, and self-improvement loops
+- Built and deployed 10+ end-to-end AI projects
 - Based in NYC; open to remote and hybrid roles
 - Target role: Applied AI Engineer / AI Systems Engineer / ML Engineer
 - Target compensation: $200,000+ total comp
@@ -22,7 +22,7 @@ Juan Camilo Martinez (also called Camilo) is an Applied AI Engineer based in New
 - Originally from Colombia
 - Morning workout streak — documents daily workouts publicly
 - Running every street in Astoria, Queens (Astoria Conquest)
-- Bartends 4 nights/week while building AI products full-time
+- Bartends 4 nights/week while building AI projects and job searching full-time
 
 ---
 
@@ -34,7 +34,7 @@ Juan Camilo Martinez (also called Camilo) is an Applied AI Engineer based in New
 - Silero VAD (voice activity detection), phoneme alignment
 - 11-dimension scoring: pronunciation, fluency, prosody, grammar, vocabulary, coherence, rhythm, stress patterns, intonation, pacing, overall SQI
 - LLM-based coaching feedback generation
-- Unit economics: $10.65 margin per session after all inference costs
+- Cost-per-inference analysis at the architecture stage to keep the pipeline production-viable
 
 ## Multi-Agent Systems
 - LangGraph orchestration with phase-gated verification
@@ -69,19 +69,19 @@ Juan Camilo Martinez (also called Camilo) is an Applied AI Engineer based in New
 
 ## Invoz.ai — Multimodel Speech Coaching System (Flagship)
 Status: In Progress | URL: invoz.io
-Multimodel speech coaching system built from 46 research papers. Scores spoken English across 11 dimensions using Whisper, wav2vec2, Parselmouth, and Silero VAD. Generates LLM-based coaching feedback. Production pipeline with $10.65 margin per session.
+Audio ML pipeline built from 46 research papers. Scores spoken English across 11 dimensions (7 acoustic + 4 linguistic) using Whisper, wav2vec2, Parselmouth, Silero VAD, and LLM-based coaching. Deployed end to end at invoz.io.
 
-## Holus — Federated AI Orchestrator (Flagship)
-Status: In Progress | URL: holus-observatory.vercel.app
-Federated multi-agent OS for enterprise AI deployment. Agents communicate via Redis pub/sub event bus with silo isolation, guardrails, health preflight, and observability dashboards. Built with Python 3.12, LangGraph, Claude API, Redis, PostgreSQL/pgvector, Langfuse.
+## Holus — Multi-Agent AI Orchestration Framework (Flagship)
+Status: Live | URL: holus-observatory.vercel.app
+Multi-agent orchestration framework that coordinates content, product, and execution workflows across multiple AI projects. Agents communicate via Redis event bus with silo isolation, guardrails, health preflight, and an Observatory dashboard. Built with Python, LangGraph, Claude API, Redis.
 
-## Pilaster — AI Content Versioning
-Status: In Progress | URL: pilaster.ai
-Creative studio for structured content creation with version control. RAG-powered content management with version history.
+## Pilaster — AI Workflow Memory Platform
+Status: Live | URL: pilaster.ai
+Version control and memory system for AI generation workflows. Tracks iterations with intent notes, parameter diffs, and failure pattern warnings across ComfyUI and multi-backend pipelines.
 
-## Genpeli — AI Video Pipeline
-Status: In Progress | URL: genpeli.vercel.app
-AI video processing: smart cuts, word-by-word captions, audio normalization. Outputs ready-to-post social clips.
+## Genpeli — AI Video Editing Pipeline
+Status: Live | URL: editai.ai
+Local-first AI video editing pipeline. Smart cuts, word-by-word captions, audio normalization, and social media delivery for short-form content.
 
 ## Holusight — AI Document Search Engine
 Status: Live | URL: holusight.com
@@ -134,7 +134,7 @@ $200,000+ total compensation.
 New York City. Open to on-site, hybrid, or remote.
 
 ## What makes him different?
-Three things: (1) He built a production speech ML pipeline from 46 research papers — not a demo, a real scoring system with 11 dimensions and $10.65 margin per session. (2) He designed a federated multi-agent orchestrator with Redis pub/sub, guardrails, and self-improvement loops. (3) His business analytics background means he thinks about unit economics and user impact at the architecture stage, not after. Most AI engineers can build; few can explain why it makes money.
+Three things: (1) He built an audio ML pipeline from 46 research papers that scores spoken English across 11 dimensions — not a demo, a real scoring system deployed at invoz.io. (2) He designed a multi-agent orchestration framework with Redis event bus, guardrails, and self-improvement loops. (3) His business analytics background means he thinks about cost and feasibility at the architecture stage, not after. Most AI engineers can build; few think about whether it can run in production.
 
 ## What is his strongest technical skill?
 Audio/speech ML. He went deep on Whisper, wav2vec2, Parselmouth, Silero VAD, prosody analysis, and phoneme alignment. This is a scarce skill set — most ML engineers work on text/image, not audio.
