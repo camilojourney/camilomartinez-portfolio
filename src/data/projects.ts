@@ -57,6 +57,8 @@ export const projects: ProjectMeta[] = [
     category: 'Live App',
     tier: 1,
     caseStudyHref: '/projects/holus',
+    appHref: '/apps/social-media-pipeline',
+    appLabel: 'Try content generator',
     previewImage: '/images/previews_main/socia_media_creation.png',
   },
   // === TIER 2: Strong supporting projects ===
