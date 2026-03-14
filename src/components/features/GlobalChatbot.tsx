@@ -137,10 +137,18 @@ export function GlobalChatbot() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-white">AI Assistant</h3>
-                        <p className="text-xs text-gray-400">Ask about fitness data & projects</p>
+                        <p className="text-xs text-gray-400">Powered by RAG · Strava & WHOOP</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <a
+                        href="/projects/rag-system"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors px-2 py-1 rounded border border-cyan-400/30 hover:border-cyan-300/50 hover:bg-cyan-400/10"
+                      >
+                        Read case study →
+                      </a>
                       <button
                         onClick={() => setIsMinimized(true)}
                         className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-gray-400 hover:text-white transition-colors"

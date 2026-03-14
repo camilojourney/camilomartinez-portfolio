@@ -181,7 +181,7 @@ const initialAssistantMessage: Message = {
   id: 'assistant-intro',
   role: 'assistant',
   content:
-    "✨ Hello! I'm Camilo's AI assistant. I can query live fitness data from Strava & WHOOP, analyze project metrics, and answer questions about his work. What would you like to know?",
+    "✨ Hi! I'm a **RAG-powered AI assistant** built to demonstrate retrieval-augmented generation on real personal data.\n\n**What I'm connected to:**\n- 🏃 **Strava** — runs, rides, workouts (pace, distance, heart rate)\n- 💤 **WHOOP** — recovery scores, HRV, sleep quality, strain\n\n**What I can answer:**\n- Specific metrics: \"What was my fastest mile last week?\"\n- Trends: \"How is my sleep trending this month?\"\n- Comparisons: \"Recovery vs strain patterns\"\n- Project questions: \"What tech stack does Camilo use?\"\n\nThis assistant retrieves live data from a PostgreSQL database and uses Claude to generate natural-language answers. Ask me anything!",
 };
 
 export function Chatbot() {

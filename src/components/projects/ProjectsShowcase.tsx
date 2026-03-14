@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import LiquidNav from '@/components/shared/liquid-nav';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { projects } from '../../data/projects';
 import type { ProjectStatus, ProjectMeta } from '../../data/projects';
 
@@ -143,7 +142,6 @@ function ProjectCard({ project }: { project: ProjectMeta }) {
 }
 
 export default function ProjectsShowcase({ currentPage = 'projects' }: { currentPage?: NavKey }) {
-  const [showPersonal, setShowPersonal] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -236,31 +234,17 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
             </div>
           </section>
 
-          {/* Tier 3: Personal Projects (Collapsible) */}
+          {/* Tier 3: Personal Projects */}
           {tier3.length > 0 && (
             <section className="space-y-6">
-              <button
-                onClick={() => setShowPersonal(!showPersonal)}
-                aria-expanded={showPersonal}
-                className="mx-auto flex items-center gap-2 text-white/50 hover:text-white/80 transition-colors duration-300"
-              >
-                <span className="text-sm font-medium uppercase tracking-wider">
-                  Personal Projects ({tier3.length})
-                </span>
-                {showPersonal ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-
-              {showPersonal && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {tier3.map((project) => (
-                    <ProjectCard key={project.slug} project={project} />
-                  ))}
-                </div>
-              )}
+              <p className="mx-auto text-center text-sm font-medium uppercase tracking-wider text-white/50">
+                Personal Projects ({tier3.length})
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {tier3.map((project) => (
+                  <ProjectCard key={project.slug} project={project} />
+                ))}
+              </div>
             </section>
           )}
         </div>
