@@ -1,0 +1,215 @@
+'use client'
+
+import { Card } from '@/components/ui/Card';
+import { ActivityHeatmap } from '@/components/features/whoop/ActivityHeatmap';
+import { StrainVsRecoveryChart } from '@/components/features/whoop/StrainVsRecoveryChart';
+import { TrainingAnalytics } from '@/components/features/whoop/TrainingAnalytics';
+import LiquidNav from '@/components/shared/liquid-nav';
+import Link from 'next/link';
+import ScrollReveal from '@/components/shared/scroll-reveal';
+import TextReveal from '@/components/shared/text-reveal';
+import MagneticButton from '@/components/shared/magnetic-button';
+import { DashboardStrainData, DashboardMonthlyStrainData, DashboardStrainRecoveryData, DashboardWorkoutData } from '@/types/whoop';
+
+interface MonthlyTrainingDaysData {
+    month: string;
+    trainingDays: number;
+    daysInMonth: number;
+}
+
+interface FitnessDashboardClientProps {
+    strainData: DashboardStrainData[];
+    monthlyStrainData: DashboardMonthlyStrainData[];
+    strainRecoveryData: DashboardStrainRecoveryData[];
+    workoutData: DashboardWorkoutData[];
+    monthlyTrainingDays: MonthlyTrainingDaysData[];
+}
+
+export default function FitnessDashboardClient({
+    strainData,
+    monthlyStrainData,
+    strainRecoveryData,
+    workoutData,
+    monthlyTrainingDays,
+}: FitnessDashboardClientProps) {
+    return (
+        <div className="min-h-screen relative overflow-hidden">
+            {/* Navigation */}
+            <LiquidNav currentPage="apps" />
+
+            {/* Animated Background */}
+            <div className="fixed inset-0 -z-10">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
+                <div className="absolute top-0 left-0 w-full h-full opacity-20">
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
+                <div className="max-w-7xl mx-auto">
+                    {/* Hero Section */}
+                    <div className="text-center mb-20">
+                        <TextReveal
+                            as="h1"
+                            className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight"
+                            delay={0.1}
+                        >
+                            My Data Dashboard
+                        </TextReveal>
+                        <ScrollReveal delay={0.3}>
+                            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-8 py-4 mb-8">
+                                <span className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></span>
+                                <span className="text-cyan-300 font-semibold text-lg tracking-wide">Live Data Pipeline</span>
+                            </div>
+                        </ScrollReveal>
+                        <ScrollReveal delay={0.4}>
+                            <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
+                                Real-time insights into my health and performance. This dashboard showcases{' '}
+                                <span className="text-cyan-400 font-semibold">data engineering</span>,{' '}
+                                <span className="text-blue-400 font-semibold">API integration</span>, and{' '}
+                                <span className="text-purple-400 font-semibold">interactive visualization</span>.
+                            </p>
+                        </ScrollReveal>
+                    </div>
+
+                    {!strainData || !strainData.length ? (
+                        <ScrollReveal>
+                            <Card className="p-12 text-center border-white/10">
+                                <div className="text-white/60 mb-8">
+                                    <svg className="w-20 h-20 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                    <h3 className="text-2xl font-semibold mb-4 text-white">Building Your Performance Story</h3>
+                                    <p className="text-white/70 text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
+                                        No strain data found in the database yet. This dashboard will automatically update
+                                        as new strain data is added to the system.
+                                    </p>
+                                </div>
+                            </Card>
+                        </ScrollReveal>
+                    ) : (
+                        <div className="space-y-20">
+                            {/* Component 1: WHOOP Activity Heatmap */}
+                            <ScrollReveal>
+                                <Card className="p-8 border-white/10 hover:border-cyan-400/30 transition-all duration-300">
+                                    <div className="mb-8 text-center">
+                                        <ScrollReveal delay={0.1}>
+                                            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-6 py-3 mb-6">
+                                                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                                                <span className="text-cyan-300 font-semibold tracking-wide">Am I consistent with my workouts?</span>
+                                            </div>
+                                        </ScrollReveal>
+                                        <TextReveal
+                                            as="h2"
+                                            className="text-3xl md:text-4xl font-bold mb-4 text-white"
+                                            delay={0.2}
+                                        >
+                                            My Strain Journey
+                                        </TextReveal>
+                                        <ScrollReveal delay={0.3}>
+                                            <div className="space-y-4 text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-6">
+                                                <p>
+                                                    Movement goes beyond counting steps -- it is about <span className="font-bold text-white">real effort</span>. WHOOP&apos;s strain score combines <span className="font-bold text-white">heart rate and activity</span> to show how hard you actually push.
+                                                </p>
+                                                <p>
+                                                    Each month, I aim for an <span className="font-bold text-white">average strain of 10</span> -- that sweet spot between progress and burnout. <span className="text-yellow-400 font-semibold">The yellow dotted line</span> marks my North Star for daily movement.
+                                                </p>
+                                                <p className="text-white/60 text-base italic">
+                                                    Below: Each square = one day. Brighter greens = higher strain (max: 21).
+                                                </p>
+                                                <p className="text-cyan-400 font-semibold text-center">
+                                                    Skills: React Visualization · Real-time Data Processing · SQL Aggregation · Goal Tracking
+                                                </p>
+                                            </div>
+                                        </ScrollReveal>
+                                    </div>
+
+                                    {/* Daily Heatmap with integrated Monthly Chart */}
+                                    <ScrollReveal delay={0.4}>
+                                        <ActivityHeatmap data={strainData} monthlyData={monthlyStrainData} />
+                                    </ScrollReveal>
+                                </Card>
+                            </ScrollReveal>
+
+                            {/* Component 2: Strain vs. Recovery */}
+                            <ScrollReveal>
+                                <Card className="p-8 border-white/10 hover:border-cyan-400/30 transition-all duration-300">
+                                    <div className="mb-8 text-center">
+                                        <ScrollReveal delay={0.1}>
+                                            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-full px-6 py-3 mb-6">
+                                                <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                                                <span className="text-cyan-300 font-semibold tracking-wide">How does training impact recovery?</span>
+                                            </div>
+                                        </ScrollReveal>
+                                        <TextReveal
+                                            as="h2"
+                                            className="text-3xl md:text-4xl font-bold mb-4 text-white"
+                                            delay={0.2}
+                                        >
+                                            Strain vs. Recovery: The Core Performance Loop
+                                        </TextReveal>
+                                        <ScrollReveal delay={0.3}>
+                                            <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
+                                                Each dot represents <span className="font-bold text-white">one day</span>, showing how <span className="font-bold text-cyan-400">training intensity</span> impacts <span className="font-bold text-blue-400">recovery capacity</span>. The trend line reveals the fundamental relationship between <span className="font-bold text-white">effort and restoration</span>.
+                                            </p>
+                                        </ScrollReveal>
+                                    </div>
+                                    <ScrollReveal delay={0.4}>
+                                        <StrainVsRecoveryChart data={strainRecoveryData} />
+                                    </ScrollReveal>
+                                </Card>
+                            </ScrollReveal>
+
+                            {/* Component 3: Training Analytics */}
+                            <ScrollReveal>
+                                <div className="mb-4 text-center">
+                                    <ScrollReveal delay={0.1}>
+                                        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full px-6 py-3 mb-4">
+                                            <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                                            <span className="text-purple-300 font-semibold tracking-wide">How do I distribute my training time?</span>
+                                        </div>
+                                    </ScrollReveal>
+                                    <TextReveal
+                                        as="h2"
+                                        className="text-3xl md:text-4xl font-bold mb-3 text-white"
+                                        delay={0.2}
+                                    >
+                                        Training Analytics
+                                    </TextReveal>
+                                    <ScrollReveal delay={0.3}>
+                                        <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-0">
+                                            Time-series analysis showing <span className="font-bold text-purple-400">training distribution</span> across different sports and workout types. Each bar reveals <span className="font-bold text-white">session counts</span> and <span className="font-bold text-pink-400">total hours</span> of activity.
+                                        </p>
+                                    </ScrollReveal>
+                                </div>
+                                <ScrollReveal delay={0.4}>
+                                    <Card className="p-8 border-white/10 hover:border-purple-400/30 transition-all duration-300">
+                                        <TrainingAnalytics workoutData={workoutData} monthlyTrainingDays={monthlyTrainingDays} />
+                                    </Card>
+                                </ScrollReveal>
+                            </ScrollReveal>
+
+                            {/* Call to Action */}
+                            <ScrollReveal>
+                                <Card className="border-white/10 bg-gradient-to-br from-cyan-500/15 to-blue-500/10 border-cyan-400/30 p-8 md:p-10 text-center space-y-4">
+                                    <h3 className="text-2xl md:text-3xl font-semibold text-white">Want to see how this was built?</h3>
+                                    <p className="text-white/70 text-lg">Dive into the technical architecture, challenges solved, and the data pipeline powering this dashboard.</p>
+                                    <MagneticButton
+                                        as="a"
+                                        href="/projects/fitness-dashboard"
+                                        className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/20 px-6 py-3 text-white font-medium transition-all duration-300 hover:scale-105 hover:border-cyan-300/60 hover:bg-cyan-500/30 hover:text-cyan-100"
+                                    >
+                                        <span>Read the case study</span>
+                                        <span aria-hidden className="text-lg">&#8594;</span>
+                                    </MagneticButton>
+                                </Card>
+                            </ScrollReveal>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

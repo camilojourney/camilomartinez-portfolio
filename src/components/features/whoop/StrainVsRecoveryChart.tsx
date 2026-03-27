@@ -140,19 +140,19 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
         <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8">
             {/* Stats Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
-                <div className="text-center p-1 sm:p-2">
+                <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">{stats.totalPoints}</div>
                     <div className="text-white/60 text-xs sm:text-sm font-light">Data Points</div>
                 </div>
-                <div className="text-center p-1 sm:p-2">
+                <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">{stats.avgStrain}</div>
                     <div className="text-white/60 text-xs sm:text-sm font-light">Avg Strain</div>
                 </div>
-                <div className="text-center p-1 sm:p-2">
+                <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">{stats.avgRecovery}%</div>
                     <div className="text-white/60 text-xs sm:text-sm font-light">Avg Recovery</div>
                 </div>
-                <div className="text-center p-1 sm:p-2">
+                <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">
                         {correlation >= 0 ? '+' : ''}{(correlation * 100).toFixed(0)}%
                     </div>
@@ -241,7 +241,7 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                         opacity="0.8"
                     />
 
-                    {/* Data points */}
+                    {/* Data points with entrance animation */}
                     {processedData.map((point, index) => (
                         <circle
                             key={index}
@@ -249,8 +249,20 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                             cy={padding.top + yScale(point.recovery)}
                             r="5"
                             fill={point.color}
-                            opacity="0.8"
-                            className="hover:opacity-100 hover:r-6 transition-all duration-200"
+                            opacity="0.85"
+                            className="hover:opacity-100 transition-all duration-200 cursor-pointer"
+                            style={{
+                                animation: `count-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 15}ms both`,
+                                filter: `drop-shadow(0 0 3px ${point.color}40)`,
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.setAttribute('r', '7');
+                                e.currentTarget.setAttribute('opacity', '1');
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.setAttribute('r', '5');
+                                e.currentTarget.setAttribute('opacity', '0.85');
+                            }}
                         >
                             <title>
                                 {`Date: ${new Date(point.date).toLocaleDateString()}\nStrain: ${point.strain.toFixed(1)}\nRecovery: ${point.recovery.toFixed(0)}%`}

@@ -7,8 +7,11 @@ import { AstoriaStats } from '@/components/features/astoria-conquest/AstoriaStat
 import { MapContainer } from '@/components/features/astoria-conquest/MapContainer';
 import { RunCard } from '@/components/features/astoria-conquest/RunCard';
 import { RunSelector } from '@/components/features/astoria-conquest/RunSelector';
-import Link from 'next/link';
+import Link from 'next/link'; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { extractZoneDurations } from '@/lib/astoria/zones';
+import ScrollReveal from '@/components/shared/scroll-reveal';
+import TextReveal from '@/components/shared/text-reveal';
+import MagneticButton from '@/components/shared/magnetic-button';
 import type {
   StravaRun,
   RunCardData,
@@ -155,19 +158,34 @@ export function AstoriaConquestClient() {
     fetchData();
   }, []);
 
-  // Loading state
+  // Loading state - premium skeleton
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-        <div className="text-center">
-          <div className="mb-4">
-            <svg className="animate-spin h-12 w-12 mx-auto text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+        <LiquidNav currentPage="apps" />
+        <div className="pt-32 flex flex-col items-center justify-center px-4">
+          <div className="max-w-7xl w-full">
+            <div className="mb-12 conquest-loader-pulse">
+              <div className="h-12 w-64 bg-white/5 rounded-xl mb-4 mx-auto"></div>
+              <div className="h-6 w-96 bg-white/5 rounded-lg mx-auto"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="chart-skeleton h-28 rounded-xl"></div>
+              <div className="chart-skeleton h-28 rounded-xl"></div>
+            </div>
+            <div className="chart-skeleton h-[400px] rounded-xl mb-8 flex items-center justify-center">
+              <div className="text-center">
+                <svg className="animate-spin h-10 w-10 mx-auto text-cyan-400/50 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-white/40 text-sm">Loading map data...</p>
+                <div className="mt-3 w-48 h-1 bg-white/5 rounded-full overflow-hidden mx-auto">
+                  <div className="h-full bg-gradient-to-r from-cyan-400/40 to-blue-400/40 conquest-loader-bar rounded-full"></div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold mb-2">Loading Astoria Conquest...</h2>
-          <p className="text-gray-400">Fetching map data and statistics</p>
         </div>
       </div>
     );
@@ -217,26 +235,32 @@ export function AstoriaConquestClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      {/* Navigation */}
       <LiquidNav currentPage="apps" />
 
       {/* Hero Section */}
       <div className="relative h-[40vh] min-h-[300px] bg-black/40 mt-24 md:mt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent">
           <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-            <div className="mb-4">
-              <Link
-                href="/projects/astoria-conquest"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium text-white/70 transition-colors duration-300 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-200"
-              >
-                <span>Read how I built this</span>
-                <span aria-hidden className="text-lg">→</span>
-              </Link>
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-4">Astoria Conquest</h1>
-            <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">
-              Running every street in Astoria, Queens. Follow my journey as I explore the neighborhood, one run at a time.
-            </p>
+            <ScrollReveal delay={0.1}>
+              <div className="mb-4">
+                <MagneticButton
+                  as="a"
+                  href="/projects/astoria-conquest"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium text-white/70 transition-colors duration-300 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-200"
+                >
+                  <span>Read how I built this</span>
+                  <span aria-hidden className="text-lg">&#8594;</span>
+                </MagneticButton>
+              </div>
+            </ScrollReveal>
+            <TextReveal as="h1" className="text-5xl md:text-6xl font-bold mb-4" delay={0.2}>
+              Astoria Conquest
+            </TextReveal>
+            <ScrollReveal delay={0.4}>
+              <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">
+                Running every street in Astoria, Queens. Follow my journey as I explore the neighborhood, one run at a time.
+              </p>
+            </ScrollReveal>
           </div>
         </div>
       </div>
@@ -245,71 +269,86 @@ export function AstoriaConquestClient() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
         {/* Progress Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-black/20 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-gray-400">Streets Covered</h3>
-            <p className="text-3xl font-bold">{stats?.percent_complete}%</p>
-            <p className="text-sm text-gray-400">
-              {stats?.covered_segments} of {stats?.total_segments} streets
-            </p>
-          </div>
-          <div className="bg-black/20 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-gray-400">Total Distance</h3>
-            <p className="text-3xl font-bold">{stats?.covered_miles.toFixed(1)} mi</p>
-            <p className="text-sm text-gray-400">Across {runStats?.total_runs || 0} runs</p>
-          </div>
+          <ScrollReveal staggerIndex={0}>
+            <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6 stat-card-hover">
+              <h3 className="text-lg font-semibold text-gray-400">Streets Covered</h3>
+              <p className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{stats?.percent_complete}%</p>
+              <p className="text-sm text-gray-400 mt-1">
+                {stats?.covered_segments} of {stats?.total_segments} streets
+              </p>
+              <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full transition-all duration-1000"
+                  style={{ width: `${stats?.percent_complete || 0}%` }}
+                />
+              </div>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal staggerIndex={1}>
+            <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6 stat-card-hover">
+              <h3 className="text-lg font-semibold text-gray-400">Total Distance</h3>
+              <p className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">{stats?.covered_miles.toFixed(1)} mi</p>
+              <p className="text-sm text-gray-400 mt-1">Across {runStats?.total_runs || 0} runs</p>
+            </div>
+          </ScrollReveal>
         </div>
 
         {/* Run Selector */}
-        <RunSelector
-          runs={runsForButtons}
-          selectedRunId={selectedRunId}
-          onRunSelect={setSelectedRunId}
-        />
+        <ScrollReveal delay={0.1}>
+          <RunSelector
+            runs={runsForButtons}
+            selectedRunId={selectedRunId}
+            onRunSelect={setSelectedRunId}
+          />
+        </ScrollReveal>
 
-        {/* Map and Run Cards - Combined in one box */}
-        <div className="bg-black/20 rounded-xl p-6">
-          <div className="grid grid-cols-1 xl:grid-cols-[3fr,2fr] gap-6 items-start">
-            {/* Map */}
-            <div className="bg-black/10 rounded-lg p-4 aspect-[4/3]">
-              <MapContainer
-                baseMapData={baseMap}
-                coveredStreetsData={coveredStreets || { type: "FeatureCollection", features: [] }}
-                selectedRun={selectedRun || undefined}
-              />
-            </div>
+        {/* Map and Run Cards */}
+        <ScrollReveal delay={0.15}>
+          <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6">
+            <div className="grid grid-cols-1 xl:grid-cols-[3fr,2fr] gap-6 items-start">
+              <div className="bg-black/10 rounded-lg p-4 aspect-[4/3] animate-map-reveal">
+                <MapContainer
+                  baseMapData={baseMap}
+                  coveredStreetsData={coveredStreets || { type: "FeatureCollection", features: [] }}
+                  selectedRun={selectedRun || undefined}
+                />
+              </div>
 
-            {/* Run Cards - Shows 2 cards, rest scroll */}
-            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-              {(selectedRun ? [selectedRun] : sortedRuns).map((run: StravaRun) => {
-                const runData: RunCardData = {
-                  ...run,
-                  heart_rate_zones: extractZoneDurations(run.heart_rate_zones),
-                };
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                {(selectedRun ? [selectedRun] : sortedRuns).map((run: StravaRun, index: number) => {
+                  const runData: RunCardData = {
+                    ...run,
+                    heart_rate_zones: extractZoneDurations(run.heart_rate_zones),
+                  };
 
-                return (
-                  <RunCard
-                    key={run.id}
-                    run={runData}
-                    isSelected={run.id === selectedRunId}
-                    onClick={() => setSelectedRunId(run.id === selectedRunId ? null : run.id)}
-                  />
-                );
-              })}
+                  return (
+                    <ScrollReveal key={run.id} staggerIndex={index} staggerDelay={0.06}>
+                      <RunCard
+                        run={runData}
+                        isSelected={run.id === selectedRunId}
+                        onClick={() => setSelectedRunId(run.id === selectedRunId ? null : run.id)}
+                      />
+                    </ScrollReveal>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Charts and Stats below */}
-        <div className="bg-black/20 rounded-xl p-6">
-          <AstoriaStats
-            stats={displayedStats}
-          />
-        </div>
+        <ScrollReveal>
+          <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6">
+            <AstoriaStats stats={displayedStats} />
+          </div>
+        </ScrollReveal>
       </div>
 
-      <p className="text-center text-xs text-gray-500 mt-4 pb-8">
-        Last updated: {stats?.last_updated}
-      </p>
+      <ScrollReveal>
+        <p className="text-center text-xs text-gray-500 mt-4 pb-8">
+          Last updated: {stats?.last_updated}
+        </p>
+      </ScrollReveal>
     </div>
   );
 }
