@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { CustomMDX } from '@/components/features/blog/mdx'
 import { formatDate, getBlogPosts } from '../utils'
 import { baseUrl } from '@/lib/site'
+import LiquidNav from '@/components/shared/liquid-nav'
 
 interface BlogPost {
   slug: string;
@@ -18,6 +20,12 @@ interface PageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+function getReadingTime(content: string): number {
+  const wordsPerMinute = 238
+  const words = content.trim().split(/\s+/).length
+  return Math.max(1, Math.ceil(words / wordsPerMinute))
 }
 
 export async function generateStaticParams() {
@@ -71,14 +79,30 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function Blog({ params }: PageProps) {
   const { slug } = await params
-  const post = getBlogPosts().find((post: BlogPost) => post.slug === slug)
+  const allPosts = getBlogPosts().sort((a, b) =>
+    new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt) ? -1 : 1
+  )
+  const postIndex = allPosts.findIndex((post: BlogPost) => post.slug === slug)
 
-  if (!post) {
+  if (postIndex === -1) {
     notFound()
   }
 
+  const post = allPosts[postIndex]!
+  const prevPost = postIndex < allPosts.length - 1 ? allPosts[postIndex + 1] : null
+  const nextPost = postIndex > 0 ? allPosts[postIndex - 1] : null
+  const readingTime = getReadingTime(post.content)
+
   return (
-    <section>
+    <div className="min-h-screen relative overflow-hidden">
+      <LiquidNav currentPage="blog" />
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/20 to-cyan-900/10 animate-gradient-xy"></div>
+        <div className="absolute top-0 left-0 w-full h-full opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        </div>
+      </div>
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -96,22 +120,68 @@ export default async function Blog({ params }: PageProps) {
             url: `${baseUrl}/blog/${post.slug}`,
             author: {
               '@type': 'Person',
-              name: 'My Portfolio',
+              name: 'Juan Camilo Martinez',
             },
           }),
         }}
       />
-      <h1 className="title font-semibold text-2xl tracking-tighter">
-        {post.metadata.title}
-      </h1>
-      <div className="flex justify-between items-center mt-2 mb-8 text-sm">
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          {formatDate(post.metadata.publishedAt)}
-        </p>
+      <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
+        <div className="max-w-3xl mx-auto">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-cyan-400 transition-colors duration-200 mb-10"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+            </svg>
+            All posts
+          </Link>
+          <header className="mb-12">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight mb-6">
+              {post.metadata.title}
+            </h1>
+            <div className="flex items-center gap-3 text-sm text-white/40">
+              <time dateTime={post.metadata.publishedAt}>
+                {formatDate(post.metadata.publishedAt)}
+              </time>
+              <span className="w-1 h-1 rounded-full bg-white/20" />
+              <span>{readingTime} min read</span>
+            </div>
+          </header>
+          <article className="prose prose-premium">
+            <CustomMDX source={post.content} />
+          </article>
+          <div className="my-16 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <nav className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {prevPost ? (
+              <Link
+                href={`/blog/${prevPost.slug}`}
+                className="group rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.04]"
+              >
+                <span className="text-xs text-white/30 uppercase tracking-wider">Previous</span>
+                <p className="mt-2 text-white/80 font-medium group-hover:text-white transition-colors">
+                  {prevPost.metadata.title}
+                </p>
+              </Link>
+            ) : (
+              <div />
+            )}
+            {nextPost ? (
+              <Link
+                href={`/blog/${nextPost.slug}`}
+                className="group rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 text-right transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.04]"
+              >
+                <span className="text-xs text-white/30 uppercase tracking-wider">Next</span>
+                <p className="mt-2 text-white/80 font-medium group-hover:text-white transition-colors">
+                  {nextPost.metadata.title}
+                </p>
+              </Link>
+            ) : (
+              <div />
+            )}
+          </nav>
+        </div>
       </div>
-      <article className="prose">
-        <CustomMDX source={post.content} />
-      </article>
-    </section>
+    </div>
   )
 }
