@@ -88,17 +88,25 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const schemaData = {
+  const personSchema = {
     '@context': 'https://schema.org',
     '@type': 'Person',
-    name: 'Camilo Martinez',
+    '@id': `${baseUrl}/#person`,
+    name: 'Juan Camilo Martinez',
+    alternateName: 'Camilo Martinez',
     url: baseUrl,
     jobTitle: 'Applied AI Engineer',
     description: 'Applied AI Engineer specializing in audio/speech ML and multi-agent systems. Built an audio ML pipeline from 46 research papers.',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'New York',
+      addressRegion: 'NY',
+      addressCountry: 'US',
+    },
     sameAs: [
       'https://github.com/camilojourney',
-      'https://linkedin.com/in/camilomartinez',
-      'https://twitter.com/camilojourney',
+      'https://www.linkedin.com/in/camilomartinez-ai/',
+      'https://x.com/camilojourney',
     ],
     knowsAbout: [
       'Audio/Speech ML',
@@ -108,17 +116,27 @@ export default function RootLayout({
       'Parselmouth',
       'Agent Orchestration',
       'Machine Learning',
+      'Large Language Models',
       'FastAPI',
       'Python',
+      'Next.js',
+      'TypeScript',
     ],
     image: `${baseUrl}/og-image.png`,
-    mainEntity: {
-      '@type': 'WebSite',
-      name: 'Juan Camilo Martinez',
-      url: baseUrl,
-      description: 'Applied AI engineering portfolio — audio/speech ML, multi-agent systems, production pipelines',
-    },
+    email: 'mailto:juancamilomabe@gmail.com',
   }
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${baseUrl}/#website`,
+    name: 'Juan Camilo Martinez',
+    url: baseUrl,
+    description: 'Applied AI engineering portfolio — audio/speech ML, multi-agent systems, production pipelines',
+    author: { '@id': `${baseUrl}/#person` },
+  }
+
+  const schemaData = [personSchema, websiteSchema]
 
   return (
     <html
@@ -130,7 +148,6 @@ export default function RootLayout({
       )}
     >
       <head>
-        <link rel="canonical" href={baseUrl} />
         <meta name="theme-color" content="#000000" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -149,9 +166,16 @@ export default function RootLayout({
         suppressHydrationWarning
         className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}
       >
+        {/* Skip to content link for keyboard/screen reader users */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-cyan-500 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg focus:outline-none"
+        >
+          Skip to main content
+        </a>
         {/* <AuthProvider suppressHydrationWarning> */}
         <div className="min-h-screen flex flex-col">
-          <main className="flex-1 w-full">
+          <main id="main-content" className="flex-1 w-full" tabIndex={-1}>
             {children}
           </main>
           <Footer />
