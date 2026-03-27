@@ -2,42 +2,46 @@ import { ImageResponse } from 'next/og'
 
 export function GET(request: Request) {
   const url = new URL(request.url)
-  const title = url.searchParams.get('title') || 'Camilo Martinez — AI Engineer'
+  const title = url.searchParams.get('title') || 'Applied AI Engineer'
 
   return new ImageResponse(
     (
       <div
         tw="flex flex-col w-full h-full justify-between p-16"
-        style={{ backgroundColor: '#050810', color: '#ffffff' }}
+        style={{ backgroundColor: '#050810' }}
       >
-        <div tw="flex flex-col">
+        {/* Top accent line */}
+        <div tw="flex w-full">
           <div
-            tw="text-3xl font-bold mb-2"
-            style={{ color: '#06b6d4' }}
-          >
-            Camilo Martinez
+            tw="h-1 w-32 rounded-full"
+            style={{
+              background: 'linear-gradient(to right, #06b6d4, #3b82f6)',
+            }}
+          />
+        </div>
+
+        {/* Main content */}
+        <div tw="flex flex-col">
+          <div tw="flex text-2xl font-bold tracking-widest text-gray-500 mb-4" style={{ letterSpacing: '0.2em' }}>
+            CAMILO MARTINEZ
           </div>
           <div
-            tw="text-6xl font-bold leading-tight mt-4"
-            style={{ color: '#ffffff', maxWidth: '900px' }}
+            tw="flex text-6xl font-bold leading-tight"
+            style={{ color: '#f1f5f9' }}
           >
             {title}
           </div>
         </div>
+
+        {/* Bottom info */}
         <div tw="flex items-center justify-between w-full">
-          <div tw="flex items-center">
-            <div
-              tw="text-xl"
-              style={{ color: 'rgba(255,255,255,0.5)' }}
-            >
-              camilomartinez.co
+          <div tw="flex items-center gap-4">
+            <div tw="flex text-lg" style={{ color: '#94a3b8' }}>
+              Audio/Speech ML  |  Multi-Agent Systems  |  NYC
             </div>
           </div>
-          <div
-            tw="text-lg"
-            style={{ color: 'rgba(6,182,212,0.8)' }}
-          >
-            Applied AI Engineer · NYC
+          <div tw="flex text-lg" style={{ color: '#06b6d4' }}>
+            camilomartinez.com
           </div>
         </div>
       </div>

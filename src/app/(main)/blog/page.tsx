@@ -29,12 +29,13 @@ export default function Page() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <LiquidNav currentPage="blog" />
-      {/* Animated Background */}
+      {/* Background - brand consistent */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/20 to-cyan-900/10 animate-gradient-xy"></div>
-        <div className="absolute top-0 left-0 w-full h-full opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute inset-0 bg-[#050810]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-[#080d1c] to-[#050810]"></div>
+        <div className="absolute top-0 left-0 w-full h-full opacity-30">
+          <div className="absolute top-[15%] left-[10%] w-[600px] h-[600px] bg-blue-600/[0.04] rounded-full blur-[160px]"></div>
+          <div className="absolute top-[50%] right-[5%] w-[500px] h-[500px] bg-cyan-500/[0.03] rounded-full blur-[140px]"></div>
         </div>
       </div>
 

@@ -396,7 +396,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-extralight text-white mb-6 drop-shadow-lg">
+                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-[-0.03em]">
                             {project.title}
                         </h1>
                         <p className="text-lg md:text-xl text-white/80 leading-relaxed font-light">

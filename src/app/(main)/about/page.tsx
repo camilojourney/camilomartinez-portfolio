@@ -2,6 +2,7 @@
 
 import { Card } from '@/components/ui/Card';
 import LiquidNav from '@/components/shared/liquid-nav';
+import ScrollReveal from '@/components/shared/scroll-reveal';
 import { ArrowRight } from 'lucide-react';
 import Chat from './chat';
 
@@ -120,6 +121,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Story Section -- authentic, not corporate */}
+                    <ScrollReveal>
                     <Card className="border-white/[0.08] bg-white/[0.02] mb-16 rounded-2xl">
                         <div className="p-8 md:p-12">
                             <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-8 tracking-[-0.02em]">The Real Version</h2>
@@ -142,6 +144,7 @@ export default function AboutPage() {
                             </div>
                         </div>
                     </Card>
+                    </ScrollReveal>
 
                     {/* Visual break */}
                     <div className="mb-16">
@@ -149,6 +152,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Visual Timeline */}
+                    <ScrollReveal>
                     <div className="mb-16">
                         <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-10 tracking-[-0.02em]">Timeline</h2>
                         <div className="relative">
@@ -174,6 +178,7 @@ export default function AboutPage() {
                             </div>
                         </div>
                     </div>
+                    </ScrollReveal>
 
                     {/* Visual break */}
                     <div className="mb-16">
@@ -181,6 +186,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Skills Grid */}
+                    <ScrollReveal>
                     <div className="mb-16">
                         <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-10 tracking-[-0.02em]">What I Build With</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -199,6 +205,7 @@ export default function AboutPage() {
                             ))}
                         </div>
                     </div>
+                    </ScrollReveal>
 
                     {/* Visual break */}
                     <div className="mb-16">
@@ -206,6 +213,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Values Section */}
+                    <ScrollReveal>
                     <Card className="border-white/[0.08] bg-white/[0.02] mb-16 rounded-2xl">
                         <div className="p-8 md:p-12">
                             <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-10 tracking-[-0.02em]">How I Work</h2>
@@ -227,6 +235,7 @@ export default function AboutPage() {
                             </div>
                         </div>
                     </Card>
+                    </ScrollReveal>
 
                     {/* Visual break */}
                     <div className="mb-16">
@@ -234,6 +243,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Chat Widget */}
+                    <ScrollReveal>
                     <div className="mb-16">
                         <div className="text-center mb-8">
                             <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-3 tracking-[-0.02em]">Ask Me Anything</h2>
@@ -243,8 +253,10 @@ export default function AboutPage() {
                             <Chat />
                         </Card>
                     </div>
+                    </ScrollReveal>
 
                     {/* CTA */}
+                    <ScrollReveal>
                     <div className="text-center">
                         <p className="text-white/40 text-[17px] mb-8 leading-relaxed max-w-md mx-auto">
                             Looking for Applied AI Engineer roles. Available now. Based in NYC.
@@ -268,6 +280,7 @@ export default function AboutPage() {
                             </a>
                         </div>
                     </div>
+                    </ScrollReveal>
                 </div>
             </div>
         </div>

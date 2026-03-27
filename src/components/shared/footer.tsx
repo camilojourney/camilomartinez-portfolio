@@ -45,6 +45,21 @@ export default function Footer() {
             <p className="text-sm text-white/50 leading-relaxed max-w-xs">
               Applied AI Engineer in NYC. Building audio/speech ML pipelines and multi-agent systems.
             </p>
+            <div className="flex items-center gap-3 mt-4">
+              <a
+                href="https://github.com/camilojourney"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors duration-200 border border-white/[0.08] rounded-full px-3 py-1.5"
+              >
+                <GitHubIcon />
+                <span>15+ repos</span>
+              </a>
+              <span className="inline-flex items-center gap-1.5 text-xs text-white/40 border border-white/[0.08] rounded-full px-3 py-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70"></span>
+                10+ production systems
+              </span>
+            </div>
           </div>
 
           {/* Navigation column */}

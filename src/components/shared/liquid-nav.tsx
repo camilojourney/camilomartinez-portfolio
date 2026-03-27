@@ -86,7 +86,7 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
             <div className="fixed top-0 left-0 w-full z-50 p-4 md:hidden">
                 <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl shadow-black/10">
                     <div className="flex justify-between items-center">
-                        <span className="text-white font-semibold text-lg">Menu</span>
+                        <a href="/" className="text-white font-semibold text-lg tracking-tight">CM</a>
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="text-white/70 hover:text-white transition-colors p-2"

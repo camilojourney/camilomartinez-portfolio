@@ -8,6 +8,7 @@ import { ArrowRight, ArrowUpRight, FileText, Download } from 'lucide-react';
 import { useEffect, useRef, useCallback } from 'react';
 import { projects } from '../../data/projects';
 import type { ProjectStatus, ProjectMeta } from '../../data/projects';
+import TerminalDemo from '@/components/features/hero/TerminalDemo';
 
 type NavKey = 'projects' | 'about' | 'blog' | 'contact';
 
@@ -370,6 +371,11 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
               <span>Resume</span>
             </a>
           </div>
+
+          {/* Terminal Demo -- signature "wow" moment */}
+          <div className="hero-stagger hero-stagger-5 max-w-2xl mx-auto mt-16 md:mt-20">
+            <TerminalDemo />
+          </div>
         </header>
 
         {/* ═══ Section divider ═══ */}
@@ -406,11 +412,11 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tier2.map((project, i) => (
                   <ProjectCard key={project.slug} project={project} index={i} />
                 ))}
-              </div>
+              </StaggerGrid>
             </section>
           </ScrollReveal>
 
@@ -425,11 +431,11 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
                   </h2>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/[0.06]"></div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {tier3.map((project, i) => (
                     <ProjectCard key={project.slug} project={project} index={i} />
                   ))}
-                </div>
+                </StaggerGrid>
               </section>
             </ScrollReveal>
           )}
