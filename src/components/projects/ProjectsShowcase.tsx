@@ -85,8 +85,8 @@ function useScrollReveal() {
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
           el.classList.add('scroll-revealed');
           observer.unobserve(el);
         }
@@ -130,8 +130,8 @@ function useStaggerReveal() {
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
           container.querySelectorAll('[data-stagger-child]').forEach((el, i) => {
             const htmlEl = el as HTMLElement;
             htmlEl.style.animationDelay = `${i * 120}ms`;
