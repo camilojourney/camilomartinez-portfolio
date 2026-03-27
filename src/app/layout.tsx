@@ -75,9 +75,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: baseUrl,
   },
-  verification: {
-    google: 'YOUR_GOOGLE_VERIFICATION_CODE', // Update with actual code
-  },
+  // verification: Google Search Console code should be added here once registered
   category: 'Technology',
 }
 

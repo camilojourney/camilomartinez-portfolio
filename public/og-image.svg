@@ -1,0 +1,44 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#050810"/>
+      <stop offset="100%" stop-color="#0a1628"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="nameGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Ambient glow orbs -->
+  <circle cx="200" cy="500" r="200" fill="#06b6d4" opacity="0.06" filter="url(#glow)"/>
+  <circle cx="1000" cy="150" r="250" fill="#3b82f6" opacity="0.05" filter="url(#glow)"/>
+  <circle cx="600" cy="300" r="180" fill="#8b5cf6" opacity="0.04" filter="url(#glow)"/>
+  <!-- Accent line -->
+  <rect x="100" y="280" width="200" height="4" rx="2" fill="url(#accent)"/>
+  <!-- Name -->
+  <text x="100" y="240" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="72" font-weight="700" fill="url(#nameGrad)">Camilo Martinez</text>
+  <!-- Title -->
+  <text x="100" y="340" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="36" font-weight="400" fill="#06b6d4">Applied AI Engineer</text>
+  <!-- Subtitle -->
+  <text x="100" y="400" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="24" font-weight="300" fill="rgba(255,255,255,0.6)">Audio/Speech ML  ·  Multi-Agent Systems  ·  NYC</text>
+  <!-- Domain -->
+  <text x="100" y="540" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="20" font-weight="400" fill="rgba(255,255,255,0.4)">camilomartinez.co</text>
+  <!-- Border -->
+  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <!-- Bottom accent bar -->
+  <rect x="0" y="626" width="1200" height="4" fill="url(#accent)"/>
+</svg>

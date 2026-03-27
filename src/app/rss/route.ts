@@ -27,9 +27,9 @@ export async function GET() {
   const rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
   <rss version="2.0">
     <channel>
-        <title>My Portfolio</title>
+        <title>Juan Camilo Martinez — Applied AI Engineer</title>
         <link>${baseUrl}</link>
-        <description>This is my portfolio RSS feed</description>
+        <description>Blog posts on audio/speech ML, multi-agent systems, and applied AI engineering by Juan Camilo Martinez.</description>
         ${itemsXml}
     </channel>
   </rss>`
