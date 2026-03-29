@@ -78,3 +78,4 @@ CLAUDE.local.md
 .claude/agent-memory-local/
 sandboxes/
 *.bak
+test-results/

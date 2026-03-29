@@ -52,4 +52,13 @@ All agents in `.claude/agents/`. Dispatch by task type:
 - Render (backend deployment)
 - Vercel Postgres (token + data storage)
 
+## Type
+C — Full-Stack Application (Next.js 14 + FastAPI + WHOOP/Strava integrations)
+
+## Context
+
+@ARCHITECTURE.md
+@.claude/rules/structure.md
+@specs/README.md
+
 @import .claude/rules/workflow.md
