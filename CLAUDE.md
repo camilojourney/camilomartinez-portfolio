@@ -15,6 +15,8 @@ Next.js + FastAPI fitness analytics platform. Pulls data from WHOOP and Strava. 
 
 ## Structure
 
+> For detailed file placement rules, see `.claude/rules/structure.md`.
+
 | Content | Location |
 |---------|----------|
 | Pages | `src/app/<route>/page.tsx` |
