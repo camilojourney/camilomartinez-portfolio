@@ -25,8 +25,7 @@ Next.js + FastAPI fitness analytics platform. Pulls data from WHOOP and Strava. 
 | Specs | `specs/` |
 | ADRs | `docs/decisions/` |
 | Playbooks | `docs/playbooks/` |
-| Agent prompts | `.claude/agents/` |
-| Agent memory | `.claude/agent-memory/<agent>/MEMORY.md` |
+| Agent rules | `.claude/rules/` |
 
 ## Critical Rules
 
@@ -35,14 +34,13 @@ Next.js + FastAPI fitness analytics platform. Pulls data from WHOOP and Strava. 
 - **Never break ingestion pipelines** — downstream analytics depend on continuous data sync
 - **ALLOW_PUBLIC_DASHBOARD_DATA defaults to false** — health data is personal
 
-## Agents
+## Skills
 
-All agents in `.claude/agents/`. Dispatch by task type:
-- Code changes: `code-improver`
-- Security audit: `security-sentinel`
-- Frontend quality (Mission C): `ux-frontend-builder`
-- Infrastructure health: `devops-guardian`
-- Weekly coordination: `manager`
+All work dispatched via skills (see `.claude/rules/workflow.md`):
+- Code changes: `/code camilomartinez-portfolio`
+- UX/UI: `/ux camilomartinez-portfolio`
+- Maintenance: `/maintenance camilomartinez-portfolio`
+- Specs: `/specs camilomartinez-portfolio`
 
 ## External Services
 
