@@ -80,6 +80,9 @@ sandboxes/
 *.bak
 test-results/
 
+# Pipeline state
+.pipeline-state/
+
 # Environment
 .env
 .env.local
