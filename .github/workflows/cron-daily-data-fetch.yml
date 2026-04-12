@@ -23,8 +23,8 @@ jobs:
             exit 0
           fi
 
-          curl -fsS -X POST \
+          curl -fLsS -X POST \
             -H "x-cron-secret: ${CRON_SECRET}" \
             -H "Content-Type: application/json" \
             --max-time 600 \
-            "https://camilomartinez.co/api/cron/daily-data-fetch"
+            "https://www.camilomartinez.co/api/cron/daily-data-fetch"

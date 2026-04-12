@@ -16,6 +16,7 @@ DO NOT create new pages - only update existing ones!
 """
 import asyncio
 import os
+from datetime import date, timedelta
 
 import requests
 from sqlalchemy import text
@@ -44,11 +45,36 @@ def format_time(decimal_hour: float | None) -> str:
     return f"{hours:02d}:{minutes:02d}"
 
 
+def get_last_completed_week_bounds(today: date | None = None) -> tuple[date, date]:
+    """Return the Sunday-Saturday bounds for the most recently completed week."""
+    if today is None:
+        today = date.today()
+
+    days_since_sunday = today.weekday() + 1
+    if today.weekday() == 6:  # Sunday
+        days_since_sunday = 0
+
+    current_week_start = today - timedelta(days=days_since_sunday)
+    last_week_start = current_week_start - timedelta(days=7)
+    last_week_end = last_week_start + timedelta(days=6)
+    return last_week_start, last_week_end
+
+
 async def main():
     """Update existing Notion pages with Whoop data"""
 
-    # Get the most recent week's data from database
+    expected_week_start, expected_week_end = get_last_completed_week_bounds()
+
+    # Get the expected most recently completed week's data from database
     async with async_session_factory() as db:
+        latest_result = await db.execute(text("""
+            SELECT week_start_date, week_end_date
+            FROM weekly_habits_summary
+            ORDER BY week_start_date DESC
+            LIMIT 1
+        """))
+        latest_row = latest_result.fetchone()
+
         result = await db.execute(text("""
             SELECT
                 week_start_date,
@@ -62,14 +88,19 @@ async def main():
                 avg_sleep_start_hour,
                 std_sleep_start_hour
             FROM weekly_habits_summary
-            ORDER BY week_start_date DESC
+            WHERE week_start_date = :expected_week_start
             LIMIT 1
-        """))
+        """), {"expected_week_start": expected_week_start})
 
         row = result.fetchone()
         if not row:
-            print("❌ No data found in weekly_habits_summary")
-            return
+            latest_week = latest_row[0].isoformat() if latest_row else "none"
+            raise RuntimeError(
+                "Stale weekly_habits_summary data: "
+                f"expected completed week {expected_week_start} → {expected_week_end}, "
+                f"but latest available week is {latest_week}. "
+                "Daily WHOOP ingestion likely failed; refusing to sync stale data to Notion."
+            )
 
         week_start = row[0]
         week_end = row[1]

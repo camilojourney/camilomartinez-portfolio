@@ -103,19 +103,22 @@ async function handleDailyFetch(request: Request) {
         console.log(`[DAILY-FETCH] Completed: ${results.successfulUsers}/${results.totalUsers} users processed successfully`);
         console.log('[DAILY-FETCH] Refreshing materialized views for downstream analytics...');
 
+        let refreshWarning: string | null = null;
         try {
             await sql`SELECT refresh_all_materialized_views();`;
             console.log('[DAILY-FETCH] Materialized views refreshed successfully.');
         } catch (refreshError) {
+            refreshWarning = `Materialized view refresh failed: ${refreshError instanceof Error ? refreshError.message : 'Unknown error'}`;
             console.error('[DAILY-FETCH] Failed to refresh materialized views:', refreshError);
-            throw new Error(`Materialized view refresh failed: ${refreshError instanceof Error ? refreshError.message : 'Unknown error'}`);
+            console.warn('[DAILY-FETCH] Continuing because WHOOP raw data fetch already completed.');
         }
 
-        console.log('[DAILY-FETCH] Summary: Tokens refreshed → Data fetched → Views refreshed → Job complete');
+        console.log('[DAILY-FETCH] Summary: Tokens refreshed → Data fetched → Job complete');
 
         return NextResponse.json({
             success: true,
             data: results,
+            refreshWarning,
             timestamp: new Date().toISOString()
         });
 
