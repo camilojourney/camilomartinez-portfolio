@@ -14,17 +14,28 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from dash import Dash, Input, Output, dcc, html
+from dash import Dash, Input, Output, State, dcc, html
 
 HERE = Path(__file__).parent
 DATA = HERE / "data"
 
 # ── Theme ─────────────────────────────────────────────────────────────────────
-BG = "#0f0f1a"
-PANEL = "#1a1a2e"
-TEXT = "#e2e8f0"
-MUTED = "#94a3b8"
-GRID = "#2a2a3e"
+THEMES = {
+    "dark": {
+        "BG": "#0f0f1a",
+        "PANEL": "#1a1a2e",
+        "TEXT": "#e2e8f0",
+        "MUTED": "#94a3b8",
+        "GRID": "#2a2a3e",
+    },
+    "light": {
+        "BG": "#ffffff",
+        "PANEL": "#f8fafc",
+        "TEXT": "#0f172a",
+        "MUTED": "#64748b",
+        "GRID": "#e2e8f0",
+    },
+}
 UBER_GREEN = "#22c55e"
 LYFT_PINK = "#ec4899"
 TAXI_YELLOW = "#eab308"
@@ -44,6 +55,10 @@ TICKER_COLORS = {
     "COMBINED": "#a78bfa",
 }
 
+
+def get_theme(mode: str | None) -> dict:
+    return THEMES.get(mode or "dark", THEMES["dark"])
+
 # ── Data load ─────────────────────────────────────────────────────────────────
 trips = pd.read_csv(DATA / "trips_daily.csv", parse_dates=["date"])
 weather = pd.read_csv(DATA / "weather_nyc.csv", parse_dates=["date"])
@@ -59,7 +74,7 @@ DOW_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
 
 # slider marks: first of April, mid-April, first of May, mid-May, end
 def _mark(label: str) -> dict:
-    return {"label": label, "style": {"color": MUTED, "fontSize": 11}}
+    return {"label": label, "style": {"color": "var(--muted-color)", "fontSize": 11}}
 
 MARKS = {}
 for i, d in enumerate(DATE_INDEX):
@@ -83,7 +98,7 @@ def filter_range(df: pd.DataFrame, lo: int, hi: int) -> pd.DataFrame:
 
 def _chap_style() -> dict:
     return {
-        "color": TEXT,
+        "color": "var(--text-color)",
         "fontSize": 15,
         "fontWeight": 600,
         "marginTop": 22,
@@ -98,7 +113,7 @@ def _caption_style() -> dict:
         "background": "#14142b",
         "borderLeft": f"3px solid {UBER_GREEN}",
         "padding": "10px 14px",
-        "color": TEXT,
+        "color": "var(--text-color)",
         "fontSize": 13,
         "lineHeight": "1.5",
         "borderRadius": 6,
@@ -107,18 +122,33 @@ def _caption_style() -> dict:
     }
 
 
-def base_layout(title: str = "", height: int = 320) -> dict:
+def base_layout(theme: dict, title: str = "", height: int = 320) -> dict:
     return dict(
-        title=dict(text=title, font=dict(color=TEXT, size=14), x=0.02),
-        paper_bgcolor=PANEL,
-        plot_bgcolor=PANEL,
-        font=dict(color=TEXT, family="Inter, system-ui, -apple-system, sans-serif"),
+        title=dict(text=title, font=dict(color=theme["TEXT"], size=14), x=0.02),
+        paper_bgcolor=theme["PANEL"],
+        plot_bgcolor=theme["PANEL"],
+        font=dict(color=theme["TEXT"], family="Inter, system-ui, -apple-system, sans-serif"),
         height=height,
         margin=dict(l=55, r=55, t=45, b=40),
-        xaxis=dict(gridcolor=GRID, zeroline=False, color=MUTED),
-        yaxis=dict(gridcolor=GRID, zeroline=False, color=MUTED),
-        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT, size=10)),
+        xaxis=dict(gridcolor=theme["GRID"], zeroline=False, color=theme["MUTED"]),
+        yaxis=dict(gridcolor=theme["GRID"], zeroline=False, color=theme["MUTED"]),
+        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=theme["TEXT"], size=10)),
     )
+
+
+def root_style(theme: dict) -> dict:
+    return {
+        "--bg-color": theme["BG"],
+        "--panel-color": theme["PANEL"],
+        "--text-color": theme["TEXT"],
+        "--muted-color": theme["MUTED"],
+        "--grid-color": theme["GRID"],
+        "background": "var(--bg-color)",
+        "color": "var(--text-color)",
+        "minHeight": "100vh",
+        "padding": "20px 26px",
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+    }
 
 
 # ── Layout ────────────────────────────────────────────────────────────────────
@@ -129,12 +159,12 @@ server = app.server  # for gunicorn deploy
 def kpi_card(card_id: str, label: str, sub: str = "") -> html.Div:
     return html.Div(
         [
-            html.Div(label, className="kpi-label", style={"color": MUTED, "fontSize": 12}),
-            html.Div(id=card_id, className="kpi-value", style={"fontSize": 28, "fontWeight": 700, "color": TEXT}),
-            html.Div(sub, className="kpi-sub", style={"color": MUTED, "fontSize": 11}),
+            html.Div(label, className="kpi-label", style={"color": "var(--muted-color)", "fontSize": 12}),
+            html.Div(id=card_id, className="kpi-value", style={"fontSize": 28, "fontWeight": 700, "color": "var(--text-color)"}),
+            html.Div(sub, className="kpi-sub", style={"color": "var(--muted-color)", "fontSize": 11}),
         ],
         style={
-            "background": PANEL,
+            "background": "var(--panel-color)",
             "padding": "14px 18px",
             "borderRadius": 10,
             "flex": 1,
@@ -147,7 +177,7 @@ def graph_panel(graph_id: str, flex: str = "1") -> html.Div:
     return html.Div(
         dcc.Graph(id=graph_id, config={"displayModeBar": False}),
         style={
-            "background": PANEL,
+            "background": "var(--panel-color)",
             "borderRadius": 10,
             "padding": 8,
             "flex": flex,
@@ -158,21 +188,48 @@ def graph_panel(graph_id: str, flex: str = "1") -> html.Div:
 
 app.layout = html.Div(
     [
+        dcc.Store(id="theme-store", data="dark"),
         # Header
         html.Div(
             [
                 html.Div(
                     [
                         html.H1("Uber NYC · Spring 2025 Dashboard",
-                                style={"margin": 0, "color": TEXT, "fontSize": 22, "fontWeight": 700}),
+                                style={"margin": 0, "color": "var(--text-color)", "fontSize": 22, "fontWeight": 700}),
                         html.Div(
                             "How did Uber's stock, NYC trip demand, and weather align — Apr 1 to May 31, 2025?",
-                            style={"color": MUTED, "fontSize": 13, "marginTop": 4},
+                            style={"color": "var(--muted-color)", "fontSize": 13, "marginTop": 4},
                         ),
                     ],
                     style={"flex": 3},
                 ),
-                html.Div(id="range-readout", style={"color": TEXT, "fontSize": 13, "textAlign": "right", "flex": 1}),
+                html.Div(
+                    [
+                        html.Div(id="range-readout", style={"color": "var(--text-color)", "fontSize": 13}),
+                        html.Button(
+                            "Theme: Dark",
+                            id="theme-toggle",
+                            n_clicks=0,
+                            style={
+                                "background": "var(--panel-color)",
+                                "border": "1px solid var(--grid-color)",
+                                "borderRadius": 999,
+                                "color": "var(--text-color)",
+                                "cursor": "pointer",
+                                "fontSize": 12,
+                                "fontWeight": 600,
+                                "padding": "6px 12px",
+                            },
+                        ),
+                    ],
+                    style={
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "flex-end",
+                        "gap": 10,
+                        "flex": 1,
+                    },
+                ),
             ],
             style={"display": "flex", "alignItems": "center", "marginBottom": 16},
         ),
@@ -183,7 +240,7 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.Div("Date range (brushes all charts):",
-                                 style={"color": MUTED, "fontSize": 12, "marginBottom": 6}),
+                                 style={"color": "var(--muted-color)", "fontSize": 12, "marginBottom": 6}),
                         dcc.RangeSlider(
                             id="date-slider",
                             min=0,
@@ -199,22 +256,22 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     [
-                        html.Div("Compare UBER vs:", style={"color": MUTED, "fontSize": 12, "marginBottom": 8}),
+                        html.Div("Compare UBER vs:", style={"color": "var(--muted-color)", "fontSize": 12, "marginBottom": 8}),
                         dcc.Checklist(
                             id="comparators",
                             options=[{"label": t, "value": t} for t in ["LYFT", "XLY"]],
                             value=["LYFT", "XLY"],
                             inline=True,
                             inputStyle={"marginRight": 6, "width": 14, "height": 14, "accentColor": "#8b5cf6"},
-                            labelStyle={"marginRight": 16, "display": "inline-flex", "alignItems": "center", "whiteSpace": "nowrap", "color": TEXT},
-                            style={"color": TEXT, "fontSize": 13, "whiteSpace": "nowrap"},
+                            labelStyle={"marginRight": 16, "display": "inline-flex", "alignItems": "center", "whiteSpace": "nowrap", "color": "var(--text-color)"},
+                            style={"color": "var(--text-color)", "fontSize": 13, "whiteSpace": "nowrap"},
                         ),
                     ],
                     style={"flex": 3, "minWidth": 0},
                 ),
                 html.Div(
                     [
-                        html.Div("Stock mode:", style={"color": MUTED, "fontSize": 12, "marginBottom": 8}),
+                        html.Div("Stock mode:", style={"color": "var(--muted-color)", "fontSize": 12, "marginBottom": 8}),
                         dcc.RadioItems(
                             id="stock-mode",
                             options=[
@@ -225,15 +282,15 @@ app.layout = html.Div(
                             value="norm",
                             inline=True,
                             inputStyle={"marginRight": 6, "width": 14, "height": 14, "accentColor": "#8b5cf6"},
-                            labelStyle={"marginRight": 16, "display": "inline-flex", "alignItems": "center", "whiteSpace": "nowrap", "color": TEXT},
-                            style={"color": TEXT, "fontSize": 13},
+                            labelStyle={"marginRight": 16, "display": "inline-flex", "alignItems": "center", "whiteSpace": "nowrap", "color": "var(--text-color)"},
+                            style={"color": "var(--text-color)", "fontSize": 13},
                         ),
                     ],
                     style={"flex": 3, "minWidth": 0},
                 ),
             ],
             style={
-                "background": PANEL,
+                "background": "var(--panel-color)",
                 "padding": "14px 18px",
                 "borderRadius": 10,
                 "display": "flex",
@@ -274,21 +331,21 @@ app.layout = html.Div(
             style={"display": "flex", "gap": 10, "marginBottom": 14},
         ),
 
-        html.Hr(style={"border": "none", "borderTop": f"1px solid {GRID}", "margin": "24px 0 10px 0"}),
+        html.Hr(style={"border": "none", "borderTop": "1px solid var(--grid-color)", "margin": "24px 0 10px 0"}),
 
         # ── Chapters 1 & 2: shared service toggle, side-by-side charts ─────────
         html.Div("① Does rain or temperature affect trips?", style=_chap_style()),
         html.Div(
             [
-                html.Label("Service:", style={"color": MUTED, "fontSize": 12, "marginRight": 10, "alignSelf": "center"}),
+                html.Label("Service:", style={"color": "var(--muted-color)", "fontSize": 12, "marginRight": 10, "alignSelf": "center"}),
                 dcc.RadioItems(
                     id="service-pick",
                     options=[{"label": t, "value": t} for t in ["UBER", "LYFT", "TAXI", "Combined", "All"]],
                     value="UBER",
                     inline=True,
                     inputStyle={"marginRight": 6, "width": 14, "height": 14, "accentColor": "#8b5cf6"},
-                    labelStyle={"marginRight": 18, "display": "inline-flex", "alignItems": "center", "color": TEXT},
-                    style={"display": "inline-block", "color": TEXT, "fontSize": 13},
+                    labelStyle={"marginRight": 18, "display": "inline-flex", "alignItems": "center", "color": "var(--text-color)"},
+                    style={"display": "inline-block", "color": "var(--text-color)", "fontSize": 13},
                 ),
             ],
             style={"display": "flex", "alignItems": "center", "marginBottom": 10},
@@ -305,7 +362,7 @@ app.layout = html.Div(
             [
                 html.Span(
                     "Afiya Afnin Anika  ·  Daniel Hennessy  ·  Juan Camilo Martinez  ·  Ryan Ram",
-                    style={"color": TEXT, "fontSize": 13, "fontWeight": 500},
+                    style={"color": "var(--text-color)", "fontSize": 13, "fontWeight": 500},
                 ),
                 html.Div(
                     html.Img(
@@ -323,7 +380,7 @@ app.layout = html.Div(
                 ),
             ],
             style={
-                "background": PANEL,
+                "background": "var(--panel-color)",
                 "padding": "12px 18px",
                 "borderRadius": 10,
                 "display": "flex",
@@ -331,12 +388,8 @@ app.layout = html.Div(
             },
         ),
     ],
-    style={
-        "background": BG,
-        "minHeight": "100vh",
-        "padding": "20px 26px",
-        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
-    },
+    id="app-root",
+    style=root_style(get_theme("dark")),
 )
 
 
@@ -351,6 +404,27 @@ def update_readout(rng):
 
 
 @app.callback(
+    Output("app-root", "style"),
+    Output("theme-toggle", "children"),
+    Input("theme-store", "data"),
+)
+def apply_theme(mode):
+    theme_mode = mode if mode in THEMES else "dark"
+    return root_style(get_theme(theme_mode)), f"Theme: {theme_mode.title()}"
+
+
+@app.callback(
+    Output("theme-store", "data"),
+    Input("theme-toggle", "n_clicks"),
+    State("theme-store", "data"),
+)
+def toggle_theme(n_clicks, current_mode):
+    if not n_clicks:
+        return current_mode or "dark"
+    return "light" if (current_mode or "dark") == "dark" else "dark"
+
+
+@app.callback(
     Output("kpi-uber-trips", "children"),
     Output("kpi-lyft-trips", "children"),
     Output("kpi-taxi-trips", "children"),
@@ -359,8 +433,10 @@ def update_readout(rng):
     Output("kpi-avg-high", "children"),
     Output("kpi-rainy", "children"),
     Input("date-slider", "value"),
+    Input("theme-store", "data"),
 )
-def update_kpis(rng):
+def update_kpis(rng, theme_mode):
+    theme = get_theme(theme_mode)
     lo, hi = rng
     t = filter_range(trips, lo, hi)
     w = filter_range(weather, lo, hi)
@@ -374,9 +450,9 @@ def update_kpis(rng):
     if len(s) >= 2:
         ret = (s["close"].iloc[-1] / s["close"].iloc[0] - 1) * 100
         ret_txt = sign(ret, "%")
-        ret_colour = UBER_GREEN if ret >= 0 else "#ef4444"
+        ret_colour = UBER_GREEN if ret >= 0 else NEG_RED
     else:
-        ret_txt, ret_colour = "—", TEXT
+        ret_txt, ret_colour = "—", theme["TEXT"]
 
     avg_high = f"{w['tmax_f'].mean():.1f}°" if len(w) else "—"
     rainy = f"{int((w['prcp_in'] > 0.1).sum())}" if len(w) else "—"
@@ -390,8 +466,10 @@ def update_kpis(rng):
     Input("date-slider", "value"),
     Input("comparators", "value"),
     Input("stock-mode", "value"),
+    Input("theme-store", "data"),
 )
-def update_stocks(rng, comparators, mode):
+def update_stocks(rng, comparators, mode, theme_mode):
+    theme = get_theme(theme_mode)
     lo, hi = rng
     tickers = ["UBER"] + list(comparators or [])
 
@@ -422,7 +500,7 @@ def update_stocks(rng, comparators, mode):
 
     for row in series:
         t = row["t"]
-        color = TICKER_COLORS.get(t, MUTED)
+        color = TICKER_COLORS.get(t, theme["MUTED"])
         dash_style = "solid" if t == "UBER" else "dot"
         width = 2.6 if t == "UBER" else 1.7
 
@@ -447,7 +525,7 @@ def update_stocks(rng, comparators, mode):
             yanchor="middle",
             xshift=6,
             font=dict(color=color, size=11),
-            bgcolor="rgba(15, 15, 26, 0.85)",
+            bgcolor=theme["BG"],
             bordercolor=color,
             borderwidth=1,
             borderpad=3,
@@ -460,10 +538,11 @@ def update_stocks(rng, comparators, mode):
     }[mode]
 
     layout = base_layout(
+        theme,
         f"Stock Prices — {mode_label}",
         height=340,
     )
-    layout["yaxis"]["title"] = dict(text=y_label, font=dict(color=MUTED, size=11))
+    layout["yaxis"]["title"] = dict(text=y_label, font=dict(color=theme["MUTED"], size=11))
     layout["yaxis"]["autorange"] = True
     layout["xaxis"]["range"] = [
         DATE_INDEX[lo],
@@ -471,7 +550,7 @@ def update_stocks(rng, comparators, mode):
     ]
     layout["legend"] = dict(
         orientation="h", yanchor="top", y=1.14, xanchor="left", x=0,
-        bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT, size=11),
+        bgcolor="rgba(0,0,0,0)", font=dict(color=theme["TEXT"], size=11),
     )
     layout["margin"] = dict(l=55, r=95, t=80, b=40)
     layout["title"]["y"] = 0.97
@@ -481,9 +560,9 @@ def update_stocks(rng, comparators, mode):
 
     # Zero / 100 baseline for easy "above = growing" read
     if mode == "pct":
-        fig.add_hline(y=0, line=dict(color=MUTED, width=1, dash="solid"), opacity=0.5)
+        fig.add_hline(y=0, line=dict(color=theme["MUTED"], width=1, dash="solid"), opacity=0.5)
     elif mode == "norm":
-        fig.add_hline(y=100, line=dict(color=MUTED, width=1, dash="solid"), opacity=0.5)
+        fig.add_hline(y=100, line=dict(color=theme["MUTED"], width=1, dash="solid"), opacity=0.5)
 
     return fig
 
@@ -491,8 +570,10 @@ def update_stocks(rng, comparators, mode):
 @app.callback(
     Output("chart-weather", "figure"),
     Input("date-slider", "value"),
+    Input("theme-store", "data"),
 )
-def update_weather(rng):
+def update_weather(rng, theme_mode):
+    theme = get_theme(theme_mode)
     lo, hi = rng
     w = filter_range(weather, lo, hi).sort_values("date")
 
@@ -515,15 +596,15 @@ def update_weather(rng):
         hovertemplate="%{x|%b %d}<br>Low: %{y:.0f}°F<extra></extra>",
     ))
 
-    layout = base_layout("Daily Weather — NYC (Central Park)", height=340)
-    layout["yaxis"]["title"] = dict(text="Temperature (°F)", font=dict(color=MUTED, size=11))
+    layout = base_layout(theme, "Daily Weather — NYC (Central Park)", height=340)
+    layout["yaxis"]["title"] = dict(text="Temperature (°F)", font=dict(color=theme["MUTED"], size=11))
     layout["yaxis2"] = dict(
-        title=dict(text="Precip (in)", font=dict(color=MUTED, size=11)),
-        overlaying="y", side="right", gridcolor="rgba(0,0,0,0)", color=MUTED, showgrid=False,
+        title=dict(text="Precip (in)", font=dict(color=theme["MUTED"], size=11)),
+        overlaying="y", side="right", gridcolor="rgba(0,0,0,0)", color=theme["MUTED"], showgrid=False,
     )
     layout["legend"] = dict(
         orientation="h", yanchor="top", y=1.14, xanchor="left", x=0,
-        bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT, size=11),
+        bgcolor="rgba(0,0,0,0)", font=dict(color=theme["TEXT"], size=11),
     )
     layout["margin"] = dict(l=55, r=55, t=80, b=40)
     layout["title"]["y"] = 0.97
@@ -535,8 +616,10 @@ def update_weather(rng):
 @app.callback(
     Output("chart-trips-temp", "figure"),
     Input("date-slider", "value"),
+    Input("theme-store", "data"),
 )
-def update_trips_temp(rng):
+def update_trips_temp(rng, theme_mode):
+    theme = get_theme(theme_mode)
     lo, hi = rng
     t = filter_range(trips, lo, hi).sort_values("date")
     w = filter_range(weather, lo, hi).sort_values("date")
@@ -565,7 +648,8 @@ def update_trips_temp(rng):
         if d.dayofweek >= 5:
             fig.add_vrect(
                 x0=d - pd.Timedelta(hours=12), x1=d + pd.Timedelta(hours=12),
-                fillcolor="rgba(255,255,255,0.04)", line_width=0, layer="below",
+                fillcolor="rgba(15,23,42,0.06)" if theme_mode == "light" else "rgba(255,255,255,0.04)",
+                line_width=0, layer="below",
             )
 
     # Rainy days — umbrella marker above each bar stack, sized by rainfall
@@ -597,28 +681,28 @@ def update_trips_temp(rng):
         x=merged["date"], y=merged["tmax_f"], name="High °F",
         mode="lines+markers",
         line=dict(color=TEMP_ORANGE, width=3.2),
-        marker=dict(size=4, color=TEMP_ORANGE, line=dict(color="#0f0f1a", width=1)),
+        marker=dict(size=4, color=TEMP_ORANGE, line=dict(color=theme["BG"], width=1)),
         yaxis="y2",
         hovertemplate="%{x|%b %d}<br>High: %{y:.0f}°F<extra></extra>",
     ))
 
-    layout = base_layout("Daily Trips & Temperature — ☔ = rain day", height=400)
+    layout = base_layout(theme, "Daily Trips & Temperature — ☔ = rain day", height=400)
     layout["title"]["x"] = 0.5
     layout["title"]["xanchor"] = "center"
     layout["title"]["y"] = 0.97
     layout["title"]["yanchor"] = "top"
-    layout["yaxis"]["title"] = dict(text="Daily Trips", font=dict(color=MUTED, size=11))
+    layout["yaxis"]["title"] = dict(text="Daily Trips", font=dict(color=theme["MUTED"], size=11))
     if "total_trips" in merged.columns and merged["total_trips"].max() > 0:
         layout["yaxis"]["range"] = [0, float(merged["total_trips"].max()) * 1.18]
     layout["yaxis2"] = dict(
-        title=dict(text="Max Temp (°F)", font=dict(color=MUTED, size=11)),
-        overlaying="y", side="right", gridcolor="rgba(0,0,0,0)", color=MUTED, showgrid=False,
+        title=dict(text="Max Temp (°F)", font=dict(color=theme["MUTED"], size=11)),
+        overlaying="y", side="right", gridcolor="rgba(0,0,0,0)", color=theme["MUTED"], showgrid=False,
     )
     layout["barmode"] = "stack"
     layout["margin"] = dict(l=65, r=65, t=90, b=50)
     layout["legend"] = dict(
         orientation="h", yanchor="top", y=1.12, xanchor="center", x=0.5,
-        bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT, size=11),
+        bgcolor="rgba(0,0,0,0)", font=dict(color=theme["TEXT"], size=11),
     )
     fig.update_layout(**layout)
     return fig
@@ -627,12 +711,14 @@ def update_trips_temp(rng):
 @app.callback(
     Output("chart-dow", "figure"),
     Input("date-slider", "value"),
+    Input("theme-store", "data"),
 )
-def update_dow(rng):
+def update_dow(rng, theme_mode):
+    theme = get_theme(theme_mode)
     lo, hi = rng
     t = filter_range(trips, lo, hi)
     if t.empty:
-        return go.Figure(layout=base_layout("Avg Trips by Day of Week", height=340))
+        return go.Figure(layout=base_layout(theme, "Avg Trips by Day of Week", height=340))
     cols = [c for c in ["uber_trips", "lyft_trips", "taxi_trips"] if c in t.columns]
     agg = t.groupby("dow")[cols].mean().reindex(DOW_ORDER).reset_index()
     agg["dow_short"] = agg["dow"].str[:3]
@@ -652,17 +738,17 @@ def update_dow(rng):
             hovertemplate="%{x}<br>Taxi avg: %{y:,.0f}<extra></extra>",
         ))
 
-    layout = base_layout("Avg Trips by Day of Week", height=400)
+    layout = base_layout(theme, "Avg Trips by Day of Week", height=400)
     layout["title"]["x"] = 0.5
     layout["title"]["xanchor"] = "center"
     layout["title"]["y"] = 0.97
     layout["title"]["yanchor"] = "top"
-    layout["yaxis"]["title"] = dict(text="Avg Daily Trips", font=dict(color=MUTED, size=11))
+    layout["yaxis"]["title"] = dict(text="Avg Daily Trips", font=dict(color=theme["MUTED"], size=11))
     layout["barmode"] = "group"
     layout["margin"] = dict(l=65, r=30, t=90, b=50)
     layout["legend"] = dict(
         orientation="h", yanchor="top", y=1.12, xanchor="center", x=0.5,
-        bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT, size=11),
+        bgcolor="rgba(0,0,0,0)", font=dict(color=theme["TEXT"], size=11),
     )
     fig.update_layout(**layout)
     return fig
@@ -671,8 +757,10 @@ def update_dow(rng):
 @app.callback(
     Output("chart-scatter", "figure"),
     Input("date-slider", "value"),
+    Input("theme-store", "data"),
 )
-def update_scatter(rng):
+def update_scatter(rng, theme_mode):
+    theme = get_theme(theme_mode)
     lo, hi = rng
     t = filter_range(trips, lo, hi)
     u = filter_range(stocks[stocks["ticker"] == "UBER"], lo, hi)
@@ -688,15 +776,15 @@ def update_scatter(rng):
 
     fig = go.Figure()
     if merged.empty:
-        fig.update_layout(**base_layout("UBER Stock vs Daily Trip Volume", height=340))
+        fig.update_layout(**base_layout(theme, "UBER Stock vs Daily Trip Volume", height=340))
         return fig
 
     fig.add_trace(go.Scatter(
         x=merged["uber_trips"], y=merged["uber_close"], mode="markers",
         marker=dict(
             size=10, color=merged["tmax_f"], colorscale="RdYlGn",
-            colorbar=dict(title=dict(text="Temp °F", font=dict(color=MUTED, size=10)), tickfont=dict(color=MUTED, size=9)),
-            line=dict(color=BG, width=1),
+            colorbar=dict(title=dict(text="Temp °F", font=dict(color=theme["MUTED"], size=10)), tickfont=dict(color=theme["MUTED"], size=9)),
+            line=dict(color=theme["BG"], width=1),
         ),
         text=merged["date"].dt.strftime("%b %d"),
         hovertemplate="<b>%{text}</b><br>Trips: %{x:,}<br>UBER: $%{y:.2f}<extra></extra>",
@@ -713,21 +801,21 @@ def update_scatter(rng):
         r = float(np.corrcoef(x_vals, y_vals)[0, 1])
         fig.add_trace(go.Scatter(
             x=x_line, y=y_line, mode="lines", name=f"trend  r = {r:+.2f}",
-            line=dict(color=MUTED, width=1.5, dash="dash"),
+            line=dict(color=theme["MUTED"], width=1.5, dash="dash"),
             hoverinfo="skip",
         ))
 
-    layout = base_layout("UBER Stock vs Daily Uber Trips — colour = high temp", height=400)
+    layout = base_layout(theme, "UBER Stock vs Daily Uber Trips — colour = high temp", height=400)
     layout["title"]["x"] = 0.5
     layout["title"]["xanchor"] = "center"
     layout["title"]["y"] = 0.97
     layout["title"]["yanchor"] = "top"
-    layout["xaxis"]["title"] = dict(text="Daily Uber Trips", font=dict(color=MUTED, size=11))
-    layout["yaxis"]["title"] = dict(text="UBER Close ($)", font=dict(color=MUTED, size=11))
+    layout["xaxis"]["title"] = dict(text="Daily Uber Trips", font=dict(color=theme["MUTED"], size=11))
+    layout["yaxis"]["title"] = dict(text="UBER Close ($)", font=dict(color=theme["MUTED"], size=11))
     layout["margin"] = dict(l=65, r=30, t=90, b=50)
     layout["legend"] = dict(
         orientation="h", yanchor="top", y=1.12, xanchor="center", x=0.5,
-        bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT, size=11),
+        bgcolor="rgba(0,0,0,0)", font=dict(color=theme["TEXT"], size=11),
     )
     fig.update_layout(**layout)
     return fig
@@ -745,15 +833,17 @@ _TEMP_SERVICE_COLORS = {"UBER": UBER_GREEN, "LYFT": LYFT_PINK, "TAXI": TAXI_YELL
     Output("chart-temp-trips", "figure"),
     Input("date-slider", "value"),
     Input("service-pick", "value"),
+    Input("theme-store", "data"),
 )
-def update_temp_trips(rng, service):
+def update_temp_trips(rng, service, theme_mode):
+    theme = get_theme(theme_mode)
     service = service or "All"
     lo, hi = rng
     t = filter_range(trips, lo, hi)
     w = filter_range(weather, lo, hi)[["date", "tmax_f"]]
     m = t.merge(w, on="date", how="inner").dropna(subset=["tmax_f"])
     if m.empty:
-        return go.Figure(layout=base_layout("Warmer days = more trips?", height=400))
+        return go.Figure(layout=base_layout(theme, "Warmer days = more trips?", height=400))
 
     m["is_weekend"] = m["date"].dt.dayofweek >= 5
     m["total_trips"] = m["uber_trips"].fillna(0) + m["lyft_trips"].fillna(0) + (m["taxi_trips"].fillna(0) if "taxi_trips" in m.columns else 0)
@@ -809,34 +899,35 @@ def update_temp_trips(rng, service):
 
     # shared layout settings
     common = dict(
-        paper_bgcolor=PANEL, plot_bgcolor=PANEL,
-        font=dict(color=TEXT, family="Inter, system-ui, sans-serif"),
+        paper_bgcolor=theme["PANEL"], plot_bgcolor=theme["PANEL"],
+        font=dict(color=theme["TEXT"], family="Inter, system-ui, sans-serif"),
         height=420,
         legend=dict(
             orientation="v", yanchor="top", y=0.98, xanchor="left", x=1.01,
-            bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT, size=12),
-            title=dict(text="Trend", font=dict(color=MUTED, size=10)),
+            bgcolor="rgba(0,0,0,0)", font=dict(color=theme["TEXT"], size=12),
+            title=dict(text="Trend", font=dict(color=theme["MUTED"], size=10)),
         ),
         uirevision=f"temp-{service}",
     )
 
     if n > 1:
         for i in range(1, n + 1):
-            fig.update_xaxes(title_text="Max Temp (°F)", title_font=dict(color=MUTED, size=10),
-                             tickfont=dict(color=MUTED), gridcolor=GRID, row=1, col=i)
+            fig.update_xaxes(title_text="Max Temp (°F)", title_font=dict(color=theme["MUTED"], size=10),
+                             tickfont=dict(color=theme["MUTED"]), gridcolor=theme["GRID"], row=1, col=i)
             fig.update_yaxes(title_text="Daily Trips" if i == 1 else "",
-                             title_font=dict(color=MUTED, size=10),
-                             tickfont=dict(color=MUTED), gridcolor=GRID, row=1, col=i)
+                             title_font=dict(color=theme["MUTED"], size=10),
+                             tickfont=dict(color=theme["MUTED"]), gridcolor=theme["GRID"], row=1, col=i)
         title_txt = " · ".join(services) + " — daily trips by temperature"
         fig.update_layout(
             **common,
-            title=dict(text=title_txt, font=dict(color=TEXT, size=14),
+            title=dict(text=title_txt, font=dict(color=theme["TEXT"], size=14),
                        x=0.5, xanchor="center", y=0.97, yanchor="top"),
             margin=dict(l=55, r=90, t=60, b=50),
         )
     else:
         svc = services[0]
         layout = base_layout(
+            theme,
             f"{svc} — daily trips by temperature   r = {r_vals.get(svc, 0):+.2f}",
             height=420,
         )
@@ -844,8 +935,8 @@ def update_temp_trips(rng, service):
         layout["title"]["xanchor"] = "center"
         layout["title"]["y"] = 0.97
         layout["title"]["yanchor"] = "top"
-        layout["xaxis"]["title"] = dict(text="Max Temp (°F)", font=dict(color=MUTED, size=11))
-        layout["yaxis"]["title"] = dict(text="Daily Trips", font=dict(color=MUTED, size=11))
+        layout["xaxis"]["title"] = dict(text="Max Temp (°F)", font=dict(color=theme["MUTED"], size=11))
+        layout["yaxis"]["title"] = dict(text="Daily Trips", font=dict(color=theme["MUTED"], size=11))
         layout["margin"] = dict(l=55, r=20, t=60, b=50)
         layout["showlegend"] = False
         layout["uirevision"] = f"temp-{service}"
@@ -883,7 +974,7 @@ def _rideshare_rain_series(rng, ticker: str):
     return {"values": agg, "counts": counts, "lifts": lifts, "dry": dry}
 
 
-def _rain_bar_labels_trips(values, lifts, counts, minimal: bool = False):
+def _rain_bar_labels_trips(values, lifts, counts, theme: dict, minimal: bool = False):
     """Trip-count bar label. Full: 467k / ▲ 7.4% / n=10.
     Minimal (used for All view): just the lift %."""
     out = []
@@ -897,7 +988,7 @@ def _rain_bar_labels_trips(values, lifts, counts, minimal: bool = False):
                 out.append("")
             else:
                 arrow = "▲" if lift > 0 else "▼" if lift < 0 else "●"
-                color = POS_GREEN if lift > 0 else NEG_RED if lift < 0 else TEXT
+                color = POS_GREEN if lift > 0 else NEG_RED if lift < 0 else theme["TEXT"]
                 out.append(
                     f"<span style='color:{color};font-size:18px;font-weight:700'>"
                     f"{arrow} {abs(lift):.1f}%</span>"
@@ -907,15 +998,15 @@ def _rain_bar_labels_trips(values, lifts, counts, minimal: bool = False):
         if is_dry:
             out.append(
                 f"<b>{v_txt}</b><br>"
-                f"<span style='color:{MUTED};font-size:10px'>normal day · n={int(n)}</span>"
+                f"<span style='color:{theme['MUTED']};font-size:10px'>normal day · n={int(n)}</span>"
             )
         else:
             arrow = "▲" if lift > 0 else "▼" if lift < 0 else "●"
-            color = POS_GREEN if lift > 0 else NEG_RED if lift < 0 else TEXT
+            color = POS_GREEN if lift > 0 else NEG_RED if lift < 0 else theme["TEXT"]
             out.append(
                 f"<b>{v_txt}</b><br>"
                 f"<span style='color:{color};font-size:12px;font-weight:700'>{arrow} {abs(lift):.1f}%</span>"
-                f"<br><span style='color:{MUTED};font-size:10px'>n={int(n)}</span>"
+                f"<br><span style='color:{theme['MUTED']};font-size:10px'>n={int(n)}</span>"
             )
     return out
 
@@ -924,8 +1015,10 @@ def _rain_bar_labels_trips(values, lifts, counts, minimal: bool = False):
     Output("chart-per-group-rain", "figure"),
     Input("date-slider", "value"),
     Input("service-pick", "value"),
+    Input("theme-store", "data"),
 )
-def update_per_group_rain(rng, pick):
+def update_per_group_rain(rng, pick, theme_mode):
+    theme = get_theme(theme_mode)
     tickers = ["UBER", "LYFT", "TAXI"] if (pick or "UBER") == "All" else (["COMBINED"] if pick == "Combined" else [pick or "UBER"])
 
     results = []
@@ -935,7 +1028,7 @@ def update_per_group_rain(rng, pick):
             results.append((tk, r))
 
     if not results:
-        return go.Figure(layout=base_layout("No data in range", height=420))
+        return go.Figure(layout=base_layout(theme, "No data in range", height=420))
 
     n_panels = len(results)
     title_tk = results[0][0] if n_panels == 1 else " · ".join(tk for tk, _ in results)
@@ -947,13 +1040,13 @@ def update_per_group_rain(rng, pick):
     is_all = (pick or "UBER") == "All"
     for col_idx, (tk, r) in enumerate(results, start=1):
         color = TICKER_COLORS.get(tk, UBER_GREEN)
-        labels = _rain_bar_labels_trips(r["values"], r["lifts"], r["counts"], minimal=is_all)
+        labels = _rain_bar_labels_trips(r["values"], r["lifts"], r["counts"], theme, minimal=is_all)
         fig.add_trace(
             go.Bar(
                 x=_RAIN_LABELS, y=r["values"],
                 marker_color=color,
                 text=labels, textposition="outside",
-                textfont=dict(size=11, color=TEXT),
+                textfont=dict(size=11, color=theme["TEXT"]),
                 cliponaxis=False,
                 name=tk, showlegend=False,
                 hovertemplate=(
@@ -969,45 +1062,23 @@ def update_per_group_rain(rng, pick):
         )
         ymax = float(r["values"].max()) * 1.35 if pd.notna(r["values"].max()) else 1
         fig.update_yaxes(range=[0, ymax], row=1, col=col_idx,
-                         gridcolor=GRID, color=MUTED,
-                         title=dict(text="Avg daily trips", font=dict(color=MUTED, size=10)))
-        fig.update_xaxes(row=1, col=col_idx, color=MUTED, tickfont=dict(size=10))
+                         gridcolor=theme["GRID"], color=theme["MUTED"],
+                         title=dict(text="Avg daily trips", font=dict(color=theme["MUTED"], size=10)))
+        fig.update_xaxes(row=1, col=col_idx, color=theme["MUTED"], tickfont=dict(size=10))
 
     fig.update_layout(
         title=dict(
             text=f"{title_tk} — daily NYC trips by rain bucket",
-            font=dict(color=TEXT, size=14),
+            font=dict(color=theme["TEXT"], size=14),
             x=0.5, xanchor="center", y=0.97, yanchor="top",
         ),
-        paper_bgcolor=PANEL, plot_bgcolor=PANEL,
-        font=dict(color=TEXT, family="Inter, system-ui, -apple-system, sans-serif"),
+        paper_bgcolor=theme["PANEL"], plot_bgcolor=theme["PANEL"],
+        font=dict(color=theme["TEXT"], family="Inter, system-ui, -apple-system, sans-serif"),
         height=420,
         margin=dict(l=55, r=30, t=60, b=55),
         bargap=0.25,
         showlegend=False,
     )
-
-    # Caption
-    def _describe(lift):
-        if lift > 3:  return html.Span(f"rises {lift:+.1f}% on wet days", style={"color": UBER_GREEN})
-        if lift < -3: return html.Span(f"drops {lift:+.1f}% on wet days", style={"color": "#f87171"})
-        return html.Span(f"barely moves ({lift:+.1f}%)", style={"color": MUTED})
-
-    parts = [html.B("Takeaway: ")]
-    for i, (tk, r) in enumerate(results):
-        wet_lift = float(r["lifts"].iloc[1:].mean()) if len(r["lifts"]) > 1 else 0.0
-        parts.append(html.B(tk))
-        parts.append(" ")
-        parts.append(_describe(wet_lift))
-        parts.append(". " if i == len(results) - 1 else ";  ")
-    if len(results) == 2:
-        u_lift = float(results[0][1]["lifts"].iloc[1:].mean())
-        l_lift = float(results[1][1]["lifts"].iloc[1:].mean())
-        if abs(u_lift - l_lift) > 2:
-            more = results[0][0] if u_lift > l_lift else results[1][0]
-            parts.append(html.Span(f"{more} is the more rain-responsive of the two — possibly because it has more drivers available to absorb the surge.", style={"color": MUTED, "fontStyle": "italic"}))
-        else:
-            parts.append(html.Span("Both services show similar rain lift — the market is reacting uniformly.", style={"color": MUTED, "fontStyle": "italic"}))
     return fig
 
 
