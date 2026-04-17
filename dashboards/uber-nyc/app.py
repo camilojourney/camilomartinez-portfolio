@@ -41,6 +41,7 @@ TICKER_COLORS = {
     "BKNG": RAIN_BLUE,
     "EXPE": "#c4b5fd",
     "XLY":  "#a78bfa",
+    "COMBINED": "#a78bfa",
 }
 
 # ── Data load ─────────────────────────────────────────────────────────────────
@@ -282,7 +283,7 @@ app.layout = html.Div(
                 html.Label("Service:", style={"color": MUTED, "fontSize": 12, "marginRight": 10, "alignSelf": "center"}),
                 dcc.RadioItems(
                     id="service-pick",
-                    options=[{"label": t, "value": t} for t in ["UBER", "LYFT", "TAXI", "All"]],
+                    options=[{"label": t, "value": t} for t in ["UBER", "LYFT", "TAXI", "Combined", "All"]],
                     value="UBER",
                     inline=True,
                     inputStyle={"marginRight": 6, "width": 14, "height": 14, "accentColor": "#8b5cf6"},
@@ -736,8 +737,8 @@ def update_scatter(rng):
 
 
 # ── Chapter 1: do warmer days bring more trips? ──────────────────────────────
-_TEMP_SERVICE_COLS = {"UBER": "uber_trips", "LYFT": "lyft_trips", "TAXI": "taxi_trips"}
-_TEMP_SERVICE_COLORS = {"UBER": UBER_GREEN, "LYFT": LYFT_PINK, "TAXI": TAXI_YELLOW}
+_TEMP_SERVICE_COLS = {"UBER": "uber_trips", "LYFT": "lyft_trips", "TAXI": "taxi_trips", "COMBINED": "total_trips"}
+_TEMP_SERVICE_COLORS = {"UBER": UBER_GREEN, "LYFT": LYFT_PINK, "TAXI": TAXI_YELLOW, "COMBINED": "#a78bfa"}
 
 
 @app.callback(
@@ -755,8 +756,9 @@ def update_temp_trips(rng, service):
         return go.Figure(layout=base_layout("Warmer days = more trips?", height=400))
 
     m["is_weekend"] = m["date"].dt.dayofweek >= 5
+    m["total_trips"] = m["uber_trips"].fillna(0) + m["lyft_trips"].fillna(0) + (m["taxi_trips"].fillna(0) if "taxi_trips" in m.columns else 0)
     service = service or "UBER"
-    services = list(_TEMP_SERVICE_COLS.keys()) if service == "All" else [service]
+    services = list(k for k in _TEMP_SERVICE_COLS.keys() if k != "COMBINED") if service == "All" else (["COMBINED"] if service == "Combined" else [service])
 
     r_vals = {}
     n = len(services)
@@ -868,7 +870,11 @@ def _rideshare_rain_series(rng, ticker: str):
     t = filter_range(trips, lo, hi).merge(w, on="date", how="inner")
     if t.empty:
         return None
-    col = "uber_trips" if ticker == "UBER" else ("lyft_trips" if ticker == "LYFT" else "taxi_trips")
+    if ticker == "COMBINED":
+        t["total_trips"] = t["uber_trips"].fillna(0) + t["lyft_trips"].fillna(0) + (t["taxi_trips"].fillna(0) if "taxi_trips" in t.columns else 0)
+        col = "total_trips"
+    else:
+        col = "uber_trips" if ticker == "UBER" else ("lyft_trips" if ticker == "LYFT" else "taxi_trips")
     t["bucket"] = _rain_buckets(t["prcp_in"])
     agg = t.groupby("bucket", observed=True)[col].mean().reindex(_RAIN_LABELS)
     counts = t.groupby("bucket", observed=True).size().reindex(_RAIN_LABELS).fillna(0).astype(int)
@@ -920,7 +926,7 @@ def _rain_bar_labels_trips(values, lifts, counts, minimal: bool = False):
     Input("service-pick", "value"),
 )
 def update_per_group_rain(rng, pick):
-    tickers = ["UBER", "LYFT", "TAXI"] if (pick or "UBER") == "All" else [pick or "UBER"]
+    tickers = ["UBER", "LYFT", "TAXI"] if (pick or "UBER") == "All" else (["COMBINED"] if pick == "Combined" else [pick or "UBER"])
 
     results = []
     for tk in tickers:
