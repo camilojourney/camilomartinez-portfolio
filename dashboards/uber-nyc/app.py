@@ -62,7 +62,7 @@ def _mark(label: str) -> dict:
 
 MARKS = {}
 for i, d in enumerate(DATE_INDEX):
-    if d.day == 1 or d.day == 8 or d.day == 15 or d.day == 22 or d.day == 29:
+    if d.day == 1 or d.day == 15:
         MARKS[i] = _mark(d.strftime("%b %d"))
 MARKS[0] = _mark(DATE_INDEX[0].strftime("%b %d"))
 MARKS[N_DAYS - 1] = _mark(DATE_INDEX[-1].strftime("%b %d"))
