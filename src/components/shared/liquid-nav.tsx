@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { systemService } from '@/lib/api/config'
-import { ThemeToggle } from './theme-toggle'
 
 interface LiquidNavProps {
     currentPage?: 'home' | 'apps' | 'projects' | 'blog' | 'about' | 'contact' | 'bookshelf' | 'tools' | 'my-data'
@@ -81,7 +80,6 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                         ))}
                     </div>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                        <ThemeToggle />
                     </div>
                 </nav>
             </div>
@@ -92,7 +90,6 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                     <div className="flex justify-between items-center">
                         <a href="/" className="text-white font-semibold text-lg tracking-tight">CM</a>
                         <div className="flex items-center space-x-2">
-                            <ThemeToggle />
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                                 className="text-white/70 hover:text-white transition-colors p-2"
