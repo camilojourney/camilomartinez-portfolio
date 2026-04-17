@@ -238,4 +238,19 @@ export const projects: ProjectMeta[] = [
     caseStudyHref: '/projects/hrv-research',
     previewImage: '/images/previews_main/Recovery_vs_strain.png',
   },
+  {
+    slug: 'uber-nyc-dashboard',
+    title: 'Uber NYC · Spring 2025',
+    description:
+      'Plotly Dash dashboard analyzing how NYC rideshare demand (Uber, Lyft, Taxi) aligned with weather and Uber stock performance across Apr–May 2025. 5 coordinated charts, rain-bucket lift analysis, temperature-trip correlations, and day-of-week seasonality. Baruch College · Group 6.',
+    tags: ['Plotly Dash', 'Data Analysis', 'Python'],
+    status: 'live',
+    category: 'Data Science',
+    tier: 3,
+    caseStudyHref: 'https://uber.camilomartinez.co',
+    appHref: 'https://uber.camilomartinez.co',
+    appLabel: 'View live dashboard',
+    isExternalApp: true,
+    previewImage: '/images/previews_main/uber_dashboard.png',
+  },
 ];
