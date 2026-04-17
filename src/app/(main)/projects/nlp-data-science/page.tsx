@@ -25,7 +25,7 @@ export default function NLPDataSciencePage() {
         <div className="absolute top-6 left-6 z-50">
           <Link
             href="/projects"
-            className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-slate-900/90 px-4 py-2 text-white/70 hover:text-white hover:border-white/40 transition-all duration-300 text-sm font-medium backdrop-blur-sm"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-slate-900/90 px-4 py-2 text-white/70 hover:text-foreground hover:border-white/40 transition-all duration-300 text-sm font-medium backdrop-blur-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />

@@ -52,7 +52,7 @@ export function WeeklyHabitsSection() {
                         Loading...
                     </span>
                 </div>
-                <p className="mt-4 text-white/60">Loading weekly habits data...</p>
+                <p className="mt-4 text-muted-foreground">Loading weekly habits data...</p>
             </div>
         );
     }
@@ -61,7 +61,7 @@ export function WeeklyHabitsSection() {
         return (
             <div className="py-12 text-center">
                 <div className="text-red-400 font-semibold">{error}</div>
-                <p className="mt-2 text-white/60">Please try refreshing the page.</p>
+                <p className="mt-2 text-muted-foreground">Please try refreshing the page.</p>
             </div>
         );
     }
@@ -69,7 +69,7 @@ export function WeeklyHabitsSection() {
     if (data.length === 0) {
         return (
             <div className="py-12 text-center">
-                <p className="text-white/60">No weekly habits data available yet.</p>
+                <p className="text-muted-foreground">No weekly habits data available yet.</p>
             </div>
         );
     }
@@ -78,8 +78,8 @@ export function WeeklyHabitsSection() {
         <section className="py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-white">Weekly Goals Tracking</h2>
-                    <p className="mt-4 text-lg text-white/70">
+                    <h2 className="text-3xl font-bold text-foreground">Weekly Goals Tracking</h2>
+                    <p className="mt-4 text-lg text-muted-foreground">
                         Track your progress against weekly goals for training, meditation, wake time, and workout timing.
                     </p>
 
@@ -88,7 +88,7 @@ export function WeeklyHabitsSection() {
                         <button
                             onClick={() => setSelectedYear(2025)}
                             className={`px-6 py-2 rounded-md font-medium transition-all duration-200 ${selectedYear === 2025
-                                ? 'bg-purple-500 text-white shadow-lg'
+                                ? 'bg-purple-500 text-foreground shadow-lg'
                                 : 'text-white/60 hover:text-white/90 hover:bg-white/10'
                                 }`}
                         >
@@ -97,7 +97,7 @@ export function WeeklyHabitsSection() {
                         <button
                             onClick={() => setSelectedYear(2026)}
                             className={`px-6 py-2 rounded-md font-medium transition-all duration-200 ${selectedYear === 2026
-                                ? 'bg-purple-500 text-white shadow-lg'
+                                ? 'bg-purple-500 text-foreground shadow-lg'
                                 : 'text-white/60 hover:text-white/90 hover:bg-white/10'
                                 }`}
                         >

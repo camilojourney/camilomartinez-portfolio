@@ -7,12 +7,12 @@ export default function TermsOfServicePage() {
     <LiquidPage backgroundVariant="warm">
       <section className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 md:p-12 max-w-4xl w-full shadow-2xl shadow-black/20">
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-extralight text-white mb-4 drop-shadow-lg">Terms of Service</h1>
-          <p className="text-white max-w-2xl mx-auto font-light">Last Updated: August 19, 2025</p>
+          <h1 className="text-4xl md:text-5xl font-extralight text-foreground mb-4 drop-shadow-lg">Terms of Service</h1>
+          <p className="text-foreground max-w-2xl mx-auto font-light">Last Updated: August 19, 2025</p>
           <div className="w-20 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent mx-auto mt-6"></div>
         </div>
 
-        <div className="space-y-8 text-white">
+        <div className="space-y-8 text-foreground">
           <div>
             <h2 className="text-2xl font-light mb-3">1. Agreement to Terms</h2>
             <p className="mb-4">

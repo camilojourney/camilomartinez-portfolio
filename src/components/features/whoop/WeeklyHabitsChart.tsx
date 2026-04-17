@@ -51,16 +51,16 @@ interface SummaryStatsProps {
 const SummaryStats = ({ avgValue, avgLabel, last4WeeksAvg, totalCount, accentColor }: SummaryStatsProps) => (
     <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-white/10">
         <div className="text-center">
-            <p className="text-xs text-white/50">{avgLabel}</p>
+            <p className="text-xs text-muted-foreground">{avgLabel}</p>
             <p className="text-lg font-semibold" style={{ color: accentColor }}>{avgValue}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Last 4 Weeks</p>
-            <p className="text-lg font-semibold text-white/80">{last4WeeksAvg}</p>
+            <p className="text-xs text-muted-foreground">Last 4 Weeks</p>
+            <p className="text-lg font-semibold text-foreground">{last4WeeksAvg}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Weeks Tracked</p>
-            <p className="text-lg font-semibold text-white/60">{totalCount}</p>
+            <p className="text-xs text-muted-foreground">Weeks Tracked</p>
+            <p className="text-lg font-semibold text-muted-foreground">{totalCount}</p>
         </div>
     </div>
 );
@@ -76,16 +76,16 @@ interface StabilityStatsProps {
 const StabilityStats = ({ avgStdDev, last4WeeksAvg, totalCount, accentColor }: StabilityStatsProps) => (
     <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-white/10">
         <div className="text-center">
-            <p className="text-xs text-white/50">Average Variance</p>
+            <p className="text-xs text-muted-foreground">Average Variance</p>
             <p className="text-lg font-semibold" style={{ color: accentColor }}>{avgStdDev}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Last 4 Weeks</p>
-            <p className="text-lg font-semibold text-white/80">{last4WeeksAvg}</p>
+            <p className="text-xs text-muted-foreground">Last 4 Weeks</p>
+            <p className="text-lg font-semibold text-foreground">{last4WeeksAvg}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Weeks Tracked</p>
-            <p className="text-lg font-semibold text-white/60">{totalCount}</p>
+            <p className="text-xs text-muted-foreground">Weeks Tracked</p>
+            <p className="text-lg font-semibold text-muted-foreground">{totalCount}</p>
         </div>
     </div>
 );
@@ -239,8 +239,8 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
         <div className="space-y-8">
             {/* Training Days Chart */}
             <div className="bg-black/20 border border-blue-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Training Days per Week</h3>
-                <p className="text-sm text-white/60 mb-4">Building strength for longevity</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Training Days per Week</h3>
+                <p className="text-sm text-muted-foreground mb-4">Building strength for longevity</p>
                 <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -280,8 +280,8 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
 
             {/* Meditation Sessions Chart */}
             <div className="bg-black/20 border border-purple-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Meditation Sessions per Week</h3>
-                <p className="text-sm text-white/60 mb-4">Mental clarity for problem-solving</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Meditation Sessions per Week</h3>
+                <p className="text-sm text-muted-foreground mb-4">Mental clarity for problem-solving</p>
                 <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -321,8 +321,8 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
 
             {/* Wake Stability Chart (Std Dev only) */}
             <div className="bg-black/20 border border-cyan-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Wake Stability</h3>
-                <p className="text-sm text-white/60 mb-4">Consistent morning routine - lower variance is better</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Wake Stability</h3>
+                <p className="text-sm text-muted-foreground mb-4">Consistent morning routine - lower variance is better</p>
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -360,8 +360,8 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
 
             {/* Workout Consistency Chart (Std Dev only) */}
             <div className="bg-black/20 border border-green-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Workout Consistency</h3>
-                <p className="text-sm text-white/60 mb-4">Reliable routine = reliable output - lower variance is better</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Workout Consistency</h3>
+                <p className="text-sm text-muted-foreground mb-4">Reliable routine = reliable output - lower variance is better</p>
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -399,8 +399,8 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
 
             {/* Sleep Consistency Chart (Std Dev only) */}
             <div className="bg-black/20 border border-indigo-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Sleep Consistency</h3>
-                <p className="text-sm text-white/60 mb-4">Recovery routine stability - lower variance is better</p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Sleep Consistency</h3>
+                <p className="text-sm text-muted-foreground mb-4">Recovery routine stability - lower variance is better</p>
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />

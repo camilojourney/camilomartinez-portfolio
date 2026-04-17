@@ -54,7 +54,7 @@ export function AccountabilityDashboard({
                             <button
                                 onClick={() => setSelectedYear(2025)}
                                 className={`px-6 py-2 rounded-md font-medium transition-all duration-200 ${selectedYear === 2025
-                                    ? 'bg-purple-500 text-white shadow-lg'
+                                    ? 'bg-purple-500 text-foreground shadow-lg'
                                     : 'text-white/60 hover:text-white/90 hover:bg-white/10'
                                     }`}
                             >
@@ -63,7 +63,7 @@ export function AccountabilityDashboard({
                             <button
                                 onClick={() => setSelectedYear(2026)}
                                 className={`px-6 py-2 rounded-md font-medium transition-all duration-200 ${selectedYear === 2026
-                                    ? 'bg-purple-500 text-white shadow-lg'
+                                    ? 'bg-purple-500 text-foreground shadow-lg'
                                     : 'text-white/60 hover:text-white/90 hover:bg-white/10'
                                     }`}
                             >
@@ -81,11 +81,11 @@ export function AccountabilityDashboard({
 
             {/* Call to Action - Read how I built this */}
             <Card className="border-white/10 bg-gradient-to-br from-amber-500/15 to-orange-500/10 border-amber-400/30 p-8 md:p-10 text-center space-y-4">
-                <h3 className="text-2xl md:text-3xl font-semibold text-white">Want to see how this was built?</h3>
-                <p className="text-white/70 text-lg">Learn about the motivation, technical challenges, and how I track my morning workout commitment.</p>
+                <h3 className="text-2xl md:text-3xl font-semibold text-foreground">Want to see how this was built?</h3>
+                <p className="text-muted-foreground text-lg">Learn about the motivation, technical challenges, and how I track my morning workout commitment.</p>
                 <Link
                     href="/projects/accountability-partner"
-                    className="inline-flex items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/20 px-6 py-3 text-white font-medium transition-all duration-300 hover:scale-105 hover:border-amber-300/60 hover:bg-amber-500/30 hover:text-amber-100"
+                    className="inline-flex items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/20 px-6 py-3 text-foreground font-medium transition-all duration-300 hover:scale-105 hover:border-amber-300/60 hover:bg-amber-500/30 hover:text-amber-100"
                 >
                     <span>Read the case study</span>
                     <span aria-hidden className="text-lg">→</span>

@@ -58,13 +58,13 @@ export default function SocialMediaPipelineProjectPage() {
         <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-cyan-200 bg-clip-text text-transparent leading-tight">
           Social Media Pipeline
         </h1>
-        <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-8">
+        <p className="text-xl md:text-2xl text-foreground max-w-3xl mx-auto leading-relaxed mb-8">
           AI-powered content transformation that preserves your authentic voice while maximizing engagement
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/apps/social-media-pipeline"
-            className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-medium rounded-xl transition-all duration-300 transform hover:scale-105"
+            className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-foreground font-medium rounded-xl transition-all duration-300 transform hover:scale-105"
           >
             <Zap className="w-5 h-5" />
             <span>View Live App</span>
@@ -74,7 +74,7 @@ export default function SocialMediaPipelineProjectPage() {
             href="https://github.com/camilojourney/camilomartinez-portfolio"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium rounded-xl transition-all duration-300"
+            className="inline-flex items-center space-x-2 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-foreground font-medium rounded-xl transition-all duration-300"
           >
             <span>View Source</span>
             <ArrowRight className="w-4 h-4" />
@@ -83,7 +83,7 @@ export default function SocialMediaPipelineProjectPage() {
       </section>
 
       <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl overflow-hidden mb-16">
-        <div className="relative w-full h-64 md:h-80 bg-slate-950">
+        <div className="relative w-full h-64 md:h-80 bg-background">
           <Image
             src="/images/previews_main/socia_media_creation.png"
             alt="Social media pipeline content generation preview"
@@ -99,7 +99,7 @@ export default function SocialMediaPipelineProjectPage() {
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card className="p-8 border-red-400/20 bg-red-500/10">
             <h3 className="text-2xl font-bold text-red-300 mb-4">❌ The Problem</h3>
-            <ul className="space-y-3 text-white/80">
+            <ul className="space-y-3 text-foreground">
               <li>• Authentic thoughts get lost in algorithm optimization</li>
               <li>• Content creators sacrifice their voice for engagement</li>
               <li>• Manual adaptation across platforms is time-consuming</li>
@@ -109,7 +109,7 @@ export default function SocialMediaPipelineProjectPage() {
 
           <Card className="p-8 border-green-400/20 bg-green-500/10">
             <h3 className="text-2xl font-bold text-green-300 mb-4">✅ The Solution</h3>
-            <ul className="space-y-3 text-white/80">
+            <ul className="space-y-3 text-foreground">
               <li>• Preserve authentic voice while optimizing structure</li>
               <li>• Enhance clarity without changing personality</li>
               <li>• Generate multiple formats from one input</li>
@@ -121,7 +121,7 @@ export default function SocialMediaPipelineProjectPage() {
 
       {/* Live Examples */}
       <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12 text-white">
+        <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
           See the Transformation in Action
         </h2>
 
@@ -148,23 +148,23 @@ export default function SocialMediaPipelineProjectPage() {
             
             {/* Input */}
             <Card className="p-6 border-white/10 bg-white/[0.03]">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+              <h3 className="text-xl font-bold text-foreground mb-4 flex items-center space-x-2">
                 <span>📝</span>
                 <span>Raw Input (Authentic)</span>
               </h3>
 	              <div className="p-4 bg-white/[0.05] border border-white/[0.15] rounded-lg">
-	                <p className="text-white/80 text-sm leading-relaxed italic">
+	                <p className="text-foreground text-sm leading-relaxed italic">
 	                  "{active.raw}"
 	                </p>
 	              </div>
-	              <div className="mt-4 text-xs text-white/50">
+	              <div className="mt-4 text-xs text-muted-foreground">
 	                Character count: {active.raw.length}
 	              </div>
 	            </Card>
 
 	            {/* Outputs */}
             <Card className="p-6 border-white/10 bg-white/[0.03]">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+              <h3 className="text-xl font-bold text-foreground mb-4 flex items-center space-x-2">
                 <span>✨</span>
                 <span>AI-Enhanced Outputs</span>
               </h3>
@@ -185,7 +185,7 @@ export default function SocialMediaPipelineProjectPage() {
 	                      </>
 	                    )}
 	                  </h4>
-	                  <div className="text-white/90 text-sm space-y-2">
+	                  <div className="text-foreground text-sm space-y-2">
 	                    {active.outputs.thread ? (
 	                      active.outputs.thread.map((tweet, i) => (
 	                        <div key={i} className="p-2 bg-black/20 rounded border-l-2 border-blue-400/50">
@@ -207,7 +207,7 @@ export default function SocialMediaPipelineProjectPage() {
 	                      <Play className="w-4 h-4" />
 	                      <span>Instagram Reel Script</span>
 	                    </h4>
-	                    <div className="text-white/90 text-sm">
+	                    <div className="text-foreground text-sm">
 	                      <pre className="whitespace-pre-wrap font-sans">
 	                        {active.outputs.reel}
 	                      </pre>
@@ -221,7 +221,7 @@ export default function SocialMediaPipelineProjectPage() {
 	                    <MessageCircle className="w-4 h-4" />
 	                    <span>Caption Variations</span>
 	                  </h4>
-	                  <div className="space-y-2 text-white/90 text-sm">
+	                  <div className="space-y-2 text-foreground text-sm">
 	                    {active.outputs.captions?.map((caption, i) => (
 	                      <div key={i} className="p-2 bg-black/20 rounded">
 	                        <span className="text-green-400 font-medium">Option {i + 1}: </span>
@@ -252,7 +252,7 @@ export default function SocialMediaPipelineProjectPage() {
 
       {/* Technical Features */}
       <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12 text-white">
+        <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
           Technical Features
         </h2>
 
@@ -260,60 +260,60 @@ export default function SocialMediaPipelineProjectPage() {
           
           <Card className="p-6 text-center border-white/10 bg-white/[0.02]">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-6 h-6 text-white" />
+              <Zap className="w-6 h-6 text-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Smart Mode Detection</h3>
-            <p className="text-white/60 text-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Smart Mode Detection</h3>
+            <p className="text-muted-foreground text-sm">
               Automatically switches between tweet mode (&le;280 chars) and thread mode (&gt;280 chars)
             </p>
           </Card>
 
           <Card className="p-6 text-center border-white/10 bg-white/[0.02]">
             <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Hash className="w-6 h-6 text-white" />
+              <Hash className="w-6 h-6 text-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Multi-Format Generation</h3>
-            <p className="text-white/60 text-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Multi-Format Generation</h3>
+            <p className="text-muted-foreground text-sm">
               Creates tweets, threads, reel scripts, and captions from a single input
             </p>
           </Card>
 
           <Card className="p-6 text-center border-white/10 bg-white/[0.02]">
             <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Globe className="w-6 h-6 text-white" />
+              <Globe className="w-6 h-6 text-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Bilingual Support</h3>
-            <p className="text-white/60 text-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Bilingual Support</h3>
+            <p className="text-muted-foreground text-sm">
               DeepL integration for high-quality Spanish translations
             </p>
           </Card>
 
           <Card className="p-6 text-center border-white/10 bg-white/[0.02]">
             <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Heart className="w-6 h-6 text-white" />
+              <Heart className="w-6 h-6 text-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Voice Preservation</h3>
-            <p className="text-white/60 text-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Voice Preservation</h3>
+            <p className="text-muted-foreground text-sm">
               Advanced prompts ensure your authentic voice and tone remain intact
             </p>
           </Card>
 
           <Card className="p-6 text-center border-white/10 bg-white/[0.02]">
             <div className="w-12 h-12 bg-gradient-to-r from-indigo-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Copy className="w-6 h-6 text-white" />
+              <Copy className="w-6 h-6 text-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">One-Click Actions</h3>
-            <p className="text-white/60 text-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-2">One-Click Actions</h3>
+            <p className="text-muted-foreground text-sm">
               Copy content or share directly to social platforms with a single click
             </p>
           </Card>
 
           <Card className="p-6 text-center border-white/10 bg-white/[0.02]">
             <div className="w-12 h-12 bg-gradient-to-r from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Share className="w-6 h-6 text-white" />
+              <Share className="w-6 h-6 text-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Platform Optimization</h3>
-            <p className="text-white/60 text-sm">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Platform Optimization</h3>
+            <p className="text-muted-foreground text-sm">
               Content optimized for Twitter/X, Instagram, and other social platforms
             </p>
           </Card>
@@ -323,7 +323,7 @@ export default function SocialMediaPipelineProjectPage() {
 
       {/* Tech Stack */}
       <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12 text-white">
+        <h2 className="text-3xl font-bold text-center mb-12 text-foreground">
           Built With
         </h2>
 
@@ -333,34 +333,34 @@ export default function SocialMediaPipelineProjectPage() {
               
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white font-bold text-xl">Next</span>
+                  <span className="text-foreground font-bold text-xl">Next</span>
                 </div>
-                <h4 className="text-white font-medium">Next.js 13</h4>
-                <p className="text-white/60 text-sm">React Framework</p>
+                <h4 className="text-foreground font-medium">Next.js 13</h4>
+                <p className="text-muted-foreground text-sm">React Framework</p>
               </div>
 
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white font-bold text-xl">AI</span>
+                  <span className="text-foreground font-bold text-xl">AI</span>
                 </div>
-                <h4 className="text-white font-medium">OpenAI GPT</h4>
-                <p className="text-white/60 text-sm">Content Processing</p>
+                <h4 className="text-foreground font-medium">OpenAI GPT</h4>
+                <p className="text-muted-foreground text-sm">Content Processing</p>
               </div>
 
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white font-bold text-xl">DL</span>
+                  <span className="text-foreground font-bold text-xl">DL</span>
                 </div>
-                <h4 className="text-white font-medium">DeepL API</h4>
-                <p className="text-white/60 text-sm">Translation</p>
+                <h4 className="text-foreground font-medium">DeepL API</h4>
+                <p className="text-muted-foreground text-sm">Translation</p>
               </div>
 
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <span className="text-white font-bold text-xl">TS</span>
+                  <span className="text-foreground font-bold text-xl">TS</span>
                 </div>
-                <h4 className="text-white font-medium">TypeScript</h4>
-                <p className="text-white/60 text-sm">Type Safety</p>
+                <h4 className="text-foreground font-medium">TypeScript</h4>
+                <p className="text-muted-foreground text-sm">Type Safety</p>
               </div>
 
             </div>
@@ -371,16 +371,16 @@ export default function SocialMediaPipelineProjectPage() {
       {/* Call to Action */}
       <section className="text-center">
         <Card className="p-12 border-white/10 bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
             Ready to Amplify Your Authentic Voice?
           </h2>
-          <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-foreground mb-8 max-w-2xl mx-auto">
             Transform your thoughts into engaging content while preserving what makes you unique.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/apps/social-media-pipeline"
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-medium rounded-xl transition-all duration-300 transform hover:scale-105"
+              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-foreground font-medium rounded-xl transition-all duration-300 transform hover:scale-105"
             >
               <Zap className="w-5 h-5" />
               <span>View Live App</span>
@@ -390,14 +390,14 @@ export default function SocialMediaPipelineProjectPage() {
               href="/docs/social-media-pipeline-implementation.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium rounded-xl transition-all duration-300"
+              className="inline-flex items-center space-x-2 px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-foreground font-medium rounded-xl transition-all duration-300"
             >
               <span>📖</span>
               <span>Read the Technical Story</span>
               <ArrowRight className="w-4 h-4" />
             </a>
           </div>
-          <p className="text-white/60 text-sm mt-4">
+          <p className="text-muted-foreground text-sm mt-4">
             Want to see how this was built? Check out the complete technical documentation with code examples and implementation details.
           </p>
         </Card>

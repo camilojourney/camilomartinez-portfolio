@@ -12,7 +12,7 @@ export default function FocusTimeDownloadPage() {
   const [platform, setPlatform] = useState<'mac' | 'windows'>('mac')
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
+    <div className="min-h-screen relative overflow-hidden bg-background">
       <LiquidNav currentPage="apps" />
 
       {/* Advanced Neural Network Background */}
@@ -57,7 +57,7 @@ export default function FocusTimeDownloadPage() {
         >
           <Link
             href="/apps"
-            className="inline-flex items-center space-x-2 text-white/60 hover:text-white transition-colors group"
+            className="inline-flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Back to Apps</span>
@@ -113,7 +113,7 @@ export default function FocusTimeDownloadPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto leading-relaxed mb-12"
+            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-12"
           >
             The ultimate menu bar app for hyperfocus awareness
           </motion.p>
@@ -130,7 +130,7 @@ export default function FocusTimeDownloadPage() {
               download
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold text-lg rounded-2xl transition-all duration-300 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 overflow-hidden"
+              className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-foreground font-bold text-lg rounded-2xl transition-all duration-300 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity"></div>
               {platform === 'mac' ? <Apple className="w-7 h-7" /> : <Monitor className="w-7 h-7" />}
@@ -142,7 +142,7 @@ export default function FocusTimeDownloadPage() {
               onClick={() => setPlatform(platform === 'mac' ? 'windows' : 'mac')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-white/5 hover:bg-white/10 border-2 border-white/20 text-white font-semibold rounded-2xl transition-all duration-300"
+              className="inline-flex items-center justify-center gap-3 px-8 py-5 bg-white/5 hover:bg-white/10 border-2 border-white/20 text-foreground font-semibold rounded-2xl transition-all duration-300"
             >
               {platform === 'mac' ? <Monitor className="w-6 h-6" /> : <Apple className="w-6 h-6" />}
               <span>Switch to {platform === 'mac' ? 'Windows' : 'macOS'}</span>
@@ -158,7 +158,7 @@ export default function FocusTimeDownloadPage() {
           >
             <Link
               href="/projects/focus-time"
-              className="inline-flex items-center space-x-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white text-sm font-medium rounded-xl transition-all duration-300"
+              className="inline-flex items-center space-x-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-foreground text-sm font-medium rounded-xl transition-all duration-300"
             >
               <BookOpen className="w-4 h-4" />
               <span>How I built this</span>
@@ -167,7 +167,7 @@ export default function FocusTimeDownloadPage() {
               href="https://github.com/camilojourney/Focusing-App"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-white text-sm font-medium rounded-xl transition-all duration-300"
+              className="inline-flex items-center space-x-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 hover:text-foreground text-sm font-medium rounded-xl transition-all duration-300"
             >
               <Github className="w-4 h-4" />
               <span>View Source</span>
@@ -203,10 +203,10 @@ export default function FocusTimeDownloadPage() {
                     <Clock className="w-12 h-12 md:w-14 md:h-14 text-purple-300" strokeWidth={2} />
                   </div>
                 </motion.div>
-                <h3 className="text-2xl md:text-3xl font-black text-white mb-3 uppercase tracking-wide">
+                <h3 className="text-2xl md:text-3xl font-black text-foreground mb-3 uppercase tracking-wide">
                   BOOST<br />AWARENESS
                 </h3>
-                <p className="text-white/60 text-sm md:text-base">
+                <p className="text-muted-foreground text-sm md:text-base">
                   Periodic check-ins every 15 minutes
                 </p>
               </motion.div>
@@ -227,10 +227,10 @@ export default function FocusTimeDownloadPage() {
                     <Zap className="w-12 h-12 md:w-14 md:h-14 text-blue-300" strokeWidth={2} />
                   </div>
                 </motion.div>
-                <h3 className="text-2xl md:text-3xl font-black text-white mb-3 uppercase tracking-wide">
+                <h3 className="text-2xl md:text-3xl font-black text-foreground mb-3 uppercase tracking-wide">
                   SHARPEN<br />FOCUS
                 </h3>
-                <p className="text-white/60 text-sm md:text-base">
+                <p className="text-muted-foreground text-sm md:text-base">
                   Stay grounded during hyperfocus
                 </p>
               </motion.div>
@@ -251,10 +251,10 @@ export default function FocusTimeDownloadPage() {
                     <BarChart3 className="w-12 h-12 md:w-14 md:h-14 text-cyan-300" strokeWidth={2} />
                   </div>
                 </motion.div>
-                <h3 className="text-2xl md:text-3xl font-black text-white mb-3 uppercase tracking-wide">
+                <h3 className="text-2xl md:text-3xl font-black text-foreground mb-3 uppercase tracking-wide">
                   ENHANCE<br />INSIGHTS
                 </h3>
-                <p className="text-white/60 text-sm md:text-base">
+                <p className="text-muted-foreground text-sm md:text-base">
                   Review your focus patterns
                 </p>
               </motion.div>
@@ -277,7 +277,7 @@ export default function FocusTimeDownloadPage() {
             <div className="relative aspect-video rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 flex items-center justify-center overflow-hidden">
               <div className="text-center space-y-4">
                 <Brain className="w-20 h-20 mx-auto text-purple-400/50" />
-                <p className="text-white/40 text-sm">App Preview</p>
+                <p className="text-muted-foreground text-sm">App Preview</p>
               </div>
 
               {/* Optional: Floating elements to simulate UI */}
@@ -298,7 +298,7 @@ export default function FocusTimeDownloadPage() {
           transition={{ delay: 2.2 }}
           className="max-w-6xl mx-auto mb-20"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-white">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">
             Built for <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">ADHD Minds</span>
           </h2>
 
@@ -341,12 +341,12 @@ export default function FocusTimeDownloadPage() {
                 className={`relative group rounded-2xl border ${feature.border} bg-gradient-to-br ${feature.gradient} backdrop-blur-sm p-6 hover:scale-[1.02] transition-all duration-300`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} border ${feature.border} flex items-center justify-center flex-shrink-0 text-white`}>
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} border ${feature.border} flex items-center justify-center flex-shrink-0 text-foreground`}>
                     {feature.icon}
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                    <p className="text-white/70 text-sm leading-relaxed">
+                    <h3 className="text-xl font-bold text-foreground mb-2">{feature.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       {feature.description}
                     </p>
                   </div>
@@ -364,7 +364,7 @@ export default function FocusTimeDownloadPage() {
           className="max-w-4xl mx-auto text-center"
         >
           <div className="inline-flex flex-wrap items-center justify-center gap-3 px-8 py-4 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
-            <span className="text-white/60 text-sm font-medium">Built with:</span>
+            <span className="text-muted-foreground text-sm font-medium">Built with:</span>
             {['Tauri 2', 'Rust', 'macOS', 'EventKit'].map((tech) => (
               <span
                 key={tech}

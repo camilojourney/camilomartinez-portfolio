@@ -46,12 +46,12 @@ function ProjectCard({ title, summary, imageUrl, projectUrl, status = 'live', te
                     </div>
 
                     {/* Project Title */}
-                    <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 group-hover:text-cyan-300 transition-colors duration-300">
+                    <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-3 group-hover:text-cyan-300 transition-colors duration-300">
                         {title}
                     </h3>
 
                     {/* Project Summary */}
-                    <p className="text-white/70 leading-relaxed mb-4 text-sm md:text-base flex-grow">
+                    <p className="text-muted-foreground leading-relaxed mb-4 text-sm md:text-base flex-grow">
                         {summary}
                     </p>
 
@@ -64,7 +64,7 @@ function ProjectCard({ title, summary, imageUrl, projectUrl, status = 'live', te
                                 </span>
                             ))}
                             {techStack.length > 3 && (
-                                <span className="text-white/40 text-xs font-medium px-2 py-1">
+                                <span className="text-muted-foreground text-xs font-medium px-2 py-1">
                                     +{techStack.length - 3} more
                                 </span>
                             )}
@@ -103,7 +103,7 @@ export default function ProjectsPage() {
                         <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
                             My Work
                         </h1>
-                        <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
+                        <p className="text-xl md:text-2xl text-foreground max-w-4xl mx-auto leading-relaxed">
                             A collection of projects showcasing my expertise in{' '}
                             <span className="text-cyan-400 font-semibold">AI engineering</span>,{' '}
                             <span className="text-blue-400 font-semibold">data analytics</span>, and{' '}
@@ -173,12 +173,12 @@ export default function ProjectsPage() {
 
                     {/* Call to Action */}
                     <div className="text-center">
-                        <p className="text-white/60 mb-6 text-base md:text-lg">
+                        <p className="text-muted-foreground mb-6 text-base md:text-lg">
                             Interested in seeing more details about any of these projects?
                         </p>
                         <Link
                             href="/contact"
-                            className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20"
+                            className="inline-flex items-center gap-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-foreground text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20"
                         >
                             <span>Let's discuss your project</span>
                             <ArrowRight className="w-5 h-5" />

@@ -166,7 +166,7 @@ export default function Chat() {
                         className="rounded-full border border-white/10 flex-shrink-0"
                     />
                     <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl rounded-tl-md p-4 max-w-sm">
-                        <p className="text-[14px] text-white/80 leading-relaxed">Hey! Ask me anything about Camilo -- his skills, his story, what he built, or what he is looking for.</p>
+                        <p className="text-[14px] text-foreground leading-relaxed">Hey! Ask me anything about Camilo -- his skills, his story, what he built, or what he is looking for.</p>
                     </div>
                 </div>
 
@@ -189,11 +189,11 @@ export default function Chat() {
                             ? 'bg-cyan-500/15 border border-cyan-400/20 rounded-2xl rounded-tr-md'
                             : 'bg-white/[0.06] border border-white/[0.08] rounded-2xl rounded-tl-md'
                             } p-4 max-w-md`}>
-                            <p className="text-[14px] text-white/80 leading-relaxed">{msg.text}</p>
+                            <p className="text-[14px] text-foreground leading-relaxed">{msg.text}</p>
                         </div>
                         {msg.sender === 'user' && (
                             <div className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center flex-shrink-0">
-                                <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                 </svg>
                             </div>
@@ -232,7 +232,7 @@ export default function Chat() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Ask about skills, background, projects..."
-                            className="flex-1 bg-white/[0.04] border border-white/[0.08] text-white placeholder-white/30 rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-1 focus:ring-cyan-500/30 focus:border-cyan-400/30 transition-all duration-200"
+                            className="flex-1 bg-white/[0.04] border border-white/[0.08] text-foreground placeholder-white/30 rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-1 focus:ring-cyan-500/30 focus:border-cyan-400/30 transition-all duration-200"
                         />
                         <button
                             type="submit"

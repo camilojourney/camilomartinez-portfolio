@@ -12,7 +12,7 @@ export default function ToolsPage() {
         <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight">
           Resources & Templates
         </h1>
-        <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-12">
+        <p className="text-xl md:text-2xl text-foreground max-w-3xl mx-auto leading-relaxed mb-12">
           Curated learning resources, productivity templates, and valuable insights from{' '}
           <span className="text-purple-400 font-semibold">books</span>,{' '}
           <span className="text-pink-400 font-semibold">systems</span>, and{' '}
@@ -32,28 +32,28 @@ export default function ToolsPage() {
                   <div className="w-16 h-16 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <span className="text-3xl">✅</span>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-300" />
+                  <ArrowRight className="w-6 h-6 text-muted-foreground group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-300" />
                 </div>
                 
-                <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-emerald-400 transition-colors duration-300">
+                <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-emerald-400 transition-colors duration-300">
                   Signal-Based Productivity
                 </h3>
                 
-                <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+                <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                   Battle-tested productivity system built on Ivy Lee's method. 
                   Clarity, focus, and execution for teams or solo work.
                 </p>
                 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-emerald-400 rounded-full mr-3"></span>
                     TASK IVY LEE → Daily execution
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-cyan-400 rounded-full mr-3"></span>
                     FRONTLINES → Strategic projects
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Notion templates included
                   </div>
@@ -81,28 +81,28 @@ export default function ToolsPage() {
                   <div className="w-16 h-16 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <span className="text-3xl">📚</span>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-amber-400 group-hover:translate-x-1 transition-all duration-300" />
+                  <ArrowRight className="w-6 h-6 text-muted-foreground group-hover:text-amber-400 group-hover:translate-x-1 transition-all duration-300" />
                 </div>
                 
-                <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-amber-400 transition-colors duration-300">
+                <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-amber-400 transition-colors duration-300">
                   My Bookshelf
                 </h3>
                 
-                <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+                <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                   Curated collection of must-read books on AI, data science, systems thinking, and personal development. 
                   Books that shaped my thinking and approach to problem-solving.
                 </p>
                 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-amber-400 rounded-full mr-3"></span>
                     Technical deep dives
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
                     Systems & frameworks
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-red-400 rounded-full mr-3"></span>
                     Personal growth
                   </div>
@@ -131,25 +131,25 @@ export default function ToolsPage() {
                 </div>
               </div>
               
-              <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-blue-400 transition-colors duration-300">
+              <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-blue-400 transition-colors duration-300">
                 Learning Frameworks
               </h3>
               
-              <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+              <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                 Proven learning frameworks and mental models from Notion. 
                 Templates and systems for effective learning, note-taking, and knowledge management.
               </p>
               
               <div className="space-y-3 mb-6">
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                   Learning systems
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-cyan-400 rounded-full mr-3"></span>
                   Mental models
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
                   Notion templates
                 </div>
@@ -176,25 +176,25 @@ export default function ToolsPage() {
                 </div>
               </div>
               
-              <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-purple-400 transition-colors duration-300">
+              <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-purple-400 transition-colors duration-300">
                 Insights & Essays
               </h3>
               
-              <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+              <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                 Collection of valuable insights, essays, and thought pieces on technology, AI, 
                 and building systems. Lessons learned from real projects and experiences.
               </p>
               
               <div className="space-y-3 mb-6">
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
                   Technical insights
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-pink-400 rounded-full mr-3"></span>
                   Project retrospectives
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-fuchsia-400 rounded-full mr-3"></span>
                   Lessons learned
                 </div>

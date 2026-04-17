@@ -4,10 +4,10 @@ interface LiquidBackgroundProps {
 
 export default function LiquidBackground({ variant = 'default' }: LiquidBackgroundProps) {
     const backgrounds = {
-        default: 'from-slate-900 via-indigo-950 to-blue-950',
-        warm: 'from-slate-900 via-orange-950 to-red-950',
-        cool: 'from-slate-900 via-cyan-950 to-teal-950',
-        purple: 'from-slate-900 via-purple-950 to-violet-950'
+        default: 'from-background via-indigo-950 to-blue-950',
+        warm: 'from-background via-orange-950 to-red-950',
+        cool: 'from-background via-cyan-950 to-teal-950',
+        purple: 'from-background via-purple-950 to-violet-950'
     }
 
     const orbs = {

@@ -56,20 +56,20 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
                 className="bg-black/95 backdrop-blur-xl border border-white/15 rounded-xl p-4 shadow-2xl min-w-[200px]"
                 style={{ boxShadow: getBarGlow(recovery) }}
             >
-                <p className="text-white/90 text-sm font-medium mb-3 border-b border-white/10 pb-2">{label}</p>
+                <p className="text-foreground text-sm font-medium mb-3 border-b border-white/10 pb-2">{label}</p>
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-4">
-                        <span className="text-white/60 text-sm">Recovery</span>
+                        <span className="text-muted-foreground text-sm">Recovery</span>
                         <span className="text-lg font-bold" style={{ color: getBarColor(recovery) }}>
                             {recovery}%
                         </span>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                        <span className="text-white/60 text-sm">HRV</span>
+                        <span className="text-muted-foreground text-sm">HRV</span>
                         <span className="text-cyan-400 font-semibold">{data.hrv?.toFixed(0)} ms</span>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                        <span className="text-white/60 text-sm">Resting HR</span>
+                        <span className="text-muted-foreground text-sm">Resting HR</span>
                         <span className="text-purple-400 font-semibold">{data.rhr} bpm</span>
                     </div>
                     <div className="mt-2 pt-2 border-t border-white/10">
@@ -110,26 +110,26 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                        <h3 className="text-xl font-semibold text-white">7-Day Recovery Trend</h3>
+                        <h3 className="text-xl font-semibold text-foreground">7-Day Recovery Trend</h3>
                     </div>
-                    <p className="text-white/50 text-sm">Live recovery scores from WHOOP API</p>
+                    <p className="text-muted-foreground text-sm">Live recovery scores from WHOOP API</p>
                 </div>
                 <div className="flex gap-4">
                     <div className="text-center px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] stat-card-hover">
                         <div className="text-2xl font-bold" style={{ color: getBarColor(latestRecovery) }}>
                             {latestRecovery}%
                         </div>
-                        <div className="text-white/50 text-xs font-medium">Today</div>
+                        <div className="text-muted-foreground text-xs font-medium">Today</div>
                     </div>
                     <div className="text-center px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] stat-card-hover">
                         <div className="text-2xl font-bold text-cyan-400">{avgRecovery.toFixed(0)}%</div>
-                        <div className="text-white/50 text-xs font-medium">7d Avg</div>
+                        <div className="text-muted-foreground text-xs font-medium">7d Avg</div>
                     </div>
                     <div className="text-center px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] stat-card-hover">
                         <div className={`text-2xl font-bold ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {trend >= 0 ? '+' : ''}{trend}
                         </div>
-                        <div className="text-white/50 text-xs font-medium">Change</div>
+                        <div className="text-muted-foreground text-xs font-medium">Change</div>
                     </div>
                 </div>
             </div>
@@ -215,15 +215,15 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
             <div className="flex justify-center gap-6 mt-4 pt-4 border-t border-white/[0.06]">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(34,197,94,0.4)' }} />
-                    <span className="text-white/60 text-xs">Green (67%+)</span>
+                    <span className="text-muted-foreground text-xs">Green (67%+)</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(251,191,36,0.4)' }} />
-                    <span className="text-white/60 text-xs">Yellow (34-66%)</span>
+                    <span className="text-muted-foreground text-xs">Yellow (34-66%)</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(239,68,68,0.4)' }} />
-                    <span className="text-white/60 text-xs">Red (&lt;34%)</span>
+                    <span className="text-muted-foreground text-xs">Red (&lt;34%)</span>
                 </div>
             </div>
         </div>

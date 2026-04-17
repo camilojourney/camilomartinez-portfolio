@@ -84,8 +84,8 @@ function ChatMessage({ message }: { message: Message }) {
       <div
         className={`max-w-[85%] md:max-w-[90%] px-3.5 py-2.5 rounded-2xl space-y-2.5 ${
           isUser
-            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-            : 'bg-white/8 text-slate-100 border border-white/10 backdrop-blur-sm'
+            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-foreground shadow-lg'
+            : 'bg-white/8 text-foreground border border-white/10 backdrop-blur-sm'
         }`}
       >
         <div
@@ -151,7 +151,7 @@ function TypingIndicator() {
       exit={{ opacity: 0, y: -10 }}
       className="flex justify-start"
     >
-      <div className="bg-white/8 text-slate-100 border border-white/10 backdrop-blur-sm px-4 py-3 rounded-2xl">
+      <div className="bg-white/8 text-foreground border border-white/10 backdrop-blur-sm px-4 py-3 rounded-2xl">
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
             <motion.div
@@ -396,13 +396,13 @@ export function Chatbot() {
       </div>
 
       <div className="mb-4">
-        <p className="text-sm text-white/60 mb-3">Try asking:</p>
+        <p className="text-sm text-muted-foreground mb-3">Try asking:</p>
         <div className="flex flex-wrap gap-2">
           {suggestedQuestions.map((question, index) => (
             <button
               key={index}
               onClick={() => setInput(question)}
-              className="px-3 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm"
+              className="px-3 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/70 hover:text-foreground transition-all duration-200 backdrop-blur-sm"
             >
               {question}
             </button>
@@ -424,13 +424,13 @@ export function Chatbot() {
           }}
           placeholder="Ask anything about Camilo's fitness or projects..."
           disabled={isLoading}
-          className="flex-1 bg-white/5 border border-white/20 rounded-full px-3.5 py-2.5 text-sm text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="flex-1 bg-white/5 border border-white/20 rounded-full px-3.5 py-2.5 text-sm text-foreground placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={isLoading}
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full px-5 py-2.5 text-sm disabled:opacity-50 hover:from-cyan-400 hover:to-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
+          className="bg-gradient-to-r from-cyan-500 to-blue-600 text-foreground rounded-full px-5 py-2.5 text-sm disabled:opacity-50 hover:from-cyan-400 hover:to-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

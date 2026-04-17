@@ -83,7 +83,7 @@ export default function TerminalDemo() {
         <div className="w-3 h-3 rounded-full bg-red-500/60" />
         <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
         <div className="w-3 h-3 rounded-full bg-green-500/60" />
-        <span className="ml-3 text-[11px] text-white/30 font-medium tracking-wide">
+        <span className="ml-3 text-[11px] text-muted-foreground font-medium tracking-wide">
           invoz-demo &mdash; zsh
         </span>
       </div>
@@ -93,7 +93,7 @@ export default function TerminalDemo() {
         {/* Command line */}
         <div className="flex items-center">
           <span className="text-emerald-400/80 mr-2 select-none">~</span>
-          <span className="text-white/90">{typedCommand}</span>
+          <span className="text-foreground">{typedCommand}</span>
           {phase === 'typing' && (
             <span className="inline-block w-[8px] h-[18px] bg-white/70 ml-0.5 terminal-cursor" />
           )}
@@ -111,8 +111,8 @@ export default function TerminalDemo() {
                     : line.includes('suggestion')
                     ? 'text-emerald-400/70'
                     : line.includes('Analyzing')
-                    ? 'text-white/50'
-                    : 'text-white/70'
+                    ? 'text-muted-foreground'
+                    : 'text-muted-foreground'
                 } ${line.includes('/100') || line.includes('optimal') || line.includes('Natural') ? 'font-medium' : ''}`}
               >
                 {line || '\u00A0'}

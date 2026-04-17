@@ -171,7 +171,7 @@ export default async function AccountabilityPartnerPage() {
                             <span className="w-3 h-3 bg-amber-400 rounded-full animate-pulse"></span>
                             <span className="text-amber-300 font-semibold text-lg tracking-wide">Public Commitment Tracker</span>
                         </div>
-                        <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
+                        <p className="text-xl md:text-2xl text-foreground max-w-4xl mx-auto leading-relaxed">
                             My public accountability board for the morning workout challenge.{' '}
                             <span className="text-amber-400 font-semibold">Every workout</span>,{' '}
                             <span className="text-orange-400 font-semibold">every morning</span>,{' '}

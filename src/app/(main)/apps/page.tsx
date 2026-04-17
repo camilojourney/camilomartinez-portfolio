@@ -12,7 +12,7 @@ export default function AppsPage() {
         <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight">
           Try My Apps
         </h1>
-        <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-12">
+        <p className="text-xl md:text-2xl text-foreground max-w-3xl mx-auto leading-relaxed mb-12">
           Interactive applications and tools you can{' '}
           <span className="text-purple-400 font-semibold">use right now</span>.{' '}
           Real-time dashboards, AI-powered tools, and{' '}
@@ -32,27 +32,27 @@ export default function AppsPage() {
                   <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <span className="text-3xl">📊</span>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all duration-300" />
+                  <ArrowRight className="w-6 h-6 text-muted-foreground group-hover:text-cyan-400 group-hover:translate-x-1 transition-all duration-300" />
                 </div>
 
-                <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-cyan-400 transition-colors duration-300">
+                <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-cyan-400 transition-colors duration-300">
                   Fitness Dashboard
                 </h3>
 
-                <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+                <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                   Real-time WHOOP + Strava analytics with interactive visualizations. Daily strain, recovery trends, and performance insights.
                 </p>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-cyan-400 rounded-full mr-3"></span>
                     Updated daily with latest data
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Interactive charts & heatmaps
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
                     Performance metrics tracking
                   </div>
@@ -80,27 +80,27 @@ export default function AppsPage() {
                   <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <span className="text-3xl">✨</span>
                   </div>
-                  <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300" />
+                  <ArrowRight className="w-6 h-6 text-muted-foreground group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300" />
                 </div>
 
-                <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-purple-400 transition-colors duration-300">
+                <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-purple-400 transition-colors duration-300">
                   Social Media Pipeline
                 </h3>
 
-                <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+                <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                   AI-powered content generator for social media. Transform ideas into optimized tweets, threads, and multi-language content.
                 </p>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
                     Tweet & thread optimization
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-pink-400 rounded-full mr-3"></span>
                     English & Spanish support
                   </div>
-                  <div className="flex items-center text-sm text-white/60">
+                  <div className="flex items-center text-sm text-muted-foreground">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Instant content generation
                   </div>
@@ -127,27 +127,27 @@ export default function AppsPage() {
                 <div className="w-16 h-16 bg-gradient-to-r from-emerald-400 to-green-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <span className="text-3xl">📈</span>
                 </div>
-                <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="w-6 h-6 text-muted-foreground group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
 
-              <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-emerald-400 transition-colors duration-300">
+              <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-emerald-400 transition-colors duration-300">
                 Trading Bot
               </h3>
 
-              <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+              <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                 Algorithmic trading platform with real-time market analysis, strategy backtesting, and risk management.
               </p>
 
               <div className="space-y-3 mb-6">
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-emerald-400 rounded-full mr-3"></span>
                   Real-time market data
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
                   Strategy backtesting engine
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-teal-400 rounded-full mr-3"></span>
                   Advanced risk management
                 </div>
@@ -172,27 +172,27 @@ export default function AppsPage() {
                 <div className="w-16 h-16 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <span className="text-3xl">🧠</span>
                 </div>
-                <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ArrowRight className="w-6 h-6 text-muted-foreground group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
 
-              <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-indigo-400 transition-colors duration-300">
+              <h3 className="text-3xl font-bold mb-4 text-foreground group-hover:text-indigo-400 transition-colors duration-300">
                 Think Clear
               </h3>
 
-              <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
+              <p className="text-muted-foreground mb-6 flex-grow leading-relaxed text-lg">
                 Cognitive bias detection tool powered by AI. Analyze decisions, identify thinking patterns, and make clearer choices.
               </p>
 
               <div className="space-y-3 mb-6">
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-indigo-400 rounded-full mr-3"></span>
                   Real-time bias detection
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
                   Decision analysis framework
                 </div>
-                <div className="flex items-center text-sm text-white/60">
+                <div className="flex items-center text-sm text-muted-foreground">
                   <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                   AI-powered insights
                 </div>

@@ -235,12 +235,12 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
     if (!workoutData || workoutData.length === 0) {
         return (
             <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 text-center">
-                <div className="text-white/60">
+                <div className="text-muted-foreground">
                     <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <h3 className="text-xl font-light mb-3 text-white">No Activity Data Yet</h3>
-                    <p className="text-white/70 font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
+                    <h3 className="text-xl font-light mb-3 text-foreground">No Activity Data Yet</h3>
+                    <p className="text-muted-foreground font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
                         Your workout distribution will appear here once you have some weightlifting, running, or boxing activities recorded.
                     </p>
                 </div>
@@ -301,13 +301,13 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Monthly Bar Chart */}
                 <div className="lg:col-span-2 bg-black/20 rounded-2xl p-2 sm:p-6">
-                    <h3 className="text-lg font-light text-white mb-4 text-center">Monthly Training Hours</h3>
+                    <h3 className="text-lg font-light text-foreground mb-4 text-center">Monthly Training Hours</h3>
 
                     <div className="flex justify-center gap-6 mb-4">
                         {Object.entries(sportSolidColors).map(([sport, color]) => (
                             <div key={sport} className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }}></div>
-                                <span className="text-white/80 text-sm">{sport}</span>
+                                <span className="text-foreground text-sm">{sport}</span>
                             </div>
                         ))}
                     </div>
@@ -411,14 +411,14 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
 
                 {/* Yearly Donut Chart */}
                 <div className="lg:col-span-1 bg-black/20 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center gap-4">
-                    <h3 className="text-lg font-light text-white mb-2 text-center">Yearly Distribution</h3>
+                    <h3 className="text-lg font-light text-foreground mb-2 text-center">Yearly Distribution</h3>
 
                     <div className="flex flex-col items-center">
                         {!isMounted ? (
                             <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
                                 <div className="w-[85%] h-[85%] rounded-full relative bg-white/5 animate-pulse">
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-black/40 rounded-full flex items-center justify-center flex-col">
-                                        <span className="text-white/90 text-base font-medium">LOADING</span>
+                                        <span className="text-foreground text-base font-medium">LOADING</span>
                                     </div>
                                 </div>
                             </div>
@@ -444,9 +444,9 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                          style={{ boxShadow: '0 0 0 2px rgba(255,255,255,0.1), inset 0 2px 8px rgba(0,0,0,0.6)' }}
                                     />
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] rounded-full flex items-center justify-center flex-col animate-scaleIn">
-                                        <span className="text-white/90 text-base font-medium mb-[-2px]">TOTAL</span>
-                                        <span className="text-white text-4xl font-bold mt-1">{formatHours(totalHoursYear)}</span>
-                                        <span className="text-white/90 text-base font-medium mt-1">HOURS</span>
+                                        <span className="text-foreground text-base font-medium mb-[-2px]">TOTAL</span>
+                                        <span className="text-foreground text-4xl font-bold mt-1">{formatHours(totalHoursYear)}</span>
+                                        <span className="text-foreground text-base font-medium mt-1">HOURS</span>
                                     </div>
                                 </div>
                             </div>
@@ -470,7 +470,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                                     }}
                                                 ></div>
                                                 <span
-                                                    className="text-white/80 text-sm md:text-base"
+                                                    className="text-foreground text-sm md:text-base"
                                                     style={{
                                                         animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
                                                         opacity: 0
@@ -481,7 +481,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                             </div>
                                             <div className="flex flex-col items-end flex-shrink-0">
                                                 <span
-                                                    className="text-white/80 text-sm md:text-base"
+                                                    className="text-foreground text-sm md:text-base"
                                                     style={{
                                                         animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
                                                         opacity: 0
@@ -490,7 +490,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                                     {formatHours(hours)}h
                                                 </span>
                                                 <span
-                                                    className="text-white/50 text-xs"
+                                                    className="text-muted-foreground text-xs"
                                                     style={{
                                                         animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
                                                         opacity: 0
@@ -518,7 +518,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                     }}
                 >
                     <div className="bg-black/95 backdrop-blur-sm border-2 border-purple-400 rounded-lg p-3 shadow-2xl min-w-[200px]">
-                        <div className="text-white text-sm font-semibold mb-2">
+                        <div className="text-foreground text-sm font-semibold mb-2">
                             {hoveredBar.month} - {hoveredBar.sport}
                         </div>
                         <div className="border-t border-purple-400/30 pt-2 space-y-1">

@@ -76,14 +76,14 @@ export default async function LiveDataPage() {
                 <div className="max-w-5xl mx-auto">
                     {/* Hero Section */}
                     <div className="text-center mb-16">
-                        <p className="hero-stagger hero-stagger-1 text-sm font-medium tracking-[0.25em] uppercase text-white/40 mb-4">
+                        <p className="hero-stagger hero-stagger-1 text-sm font-medium tracking-[0.25em] uppercase text-muted-foreground mb-4">
                             Live Analytics
                         </p>
                         <h1 className="hero-stagger hero-stagger-2 text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
                             Health Data
                         </h1>
                         <div className="hero-stagger hero-stagger-3 w-24 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent mx-auto mb-8"></div>
-                        <p className="hero-stagger hero-stagger-4 text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto">
+                        <p className="hero-stagger hero-stagger-4 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
                             Real-time recovery analytics from WHOOP — connect your account to see live HRV, recovery scores, and resting heart rate.
                         </p>
                     </div>
@@ -99,8 +99,8 @@ export default async function LiveDataPage() {
                             <svg className="w-16 h-16 text-cyan-400/50 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
-                            <h3 className="text-xl font-semibold text-white mb-2">Connect Your WHOOP Account</h3>
-                            <p className="text-white/60 leading-relaxed">
+                            <h3 className="text-xl font-semibold text-foreground mb-2">Connect Your WHOOP Account</h3>
+                            <p className="text-muted-foreground leading-relaxed">
                                 Sign in with WHOOP to see your live recovery data visualized with interactive charts.
                             </p>
                         </div>
@@ -131,10 +131,10 @@ export default async function LiveDataPage() {
                                         <div className="w-3 h-3 bg-green-400 rounded-full shadow-lg" style={{ boxShadow: '0 0 8px rgba(34,197,94,0.4)' }}></div>
                                         <span className="text-green-300 font-medium text-sm">Latest Recovery</span>
                                     </div>
-                                    <div className="text-3xl font-bold text-white mb-1">
+                                    <div className="text-3xl font-bold text-foreground mb-1">
                                         {whoopData.records[0]?.score?.recovery_score || 'N/A'}%
                                     </div>
-                                    <div className="text-white/50 text-sm">
+                                    <div className="text-muted-foreground text-sm">
                                         {new Date(whoopData.records[0]?.created_at).toLocaleDateString()}
                                     </div>
                                 </div>
@@ -144,10 +144,10 @@ export default async function LiveDataPage() {
                                         <div className="w-3 h-3 bg-cyan-400 rounded-full shadow-lg" style={{ boxShadow: '0 0 8px rgba(34,211,238,0.4)' }}></div>
                                         <span className="text-cyan-300 font-medium text-sm">Avg HRV</span>
                                     </div>
-                                    <div className="text-3xl font-bold text-white mb-1">
+                                    <div className="text-3xl font-bold text-foreground mb-1">
                                         {Math.round(whoopData.records.reduce((sum: number, record: any) => sum + (record.score.hrv_rmssd_ms || 0), 0) / whoopData.records.length) || 'N/A'} ms
                                     </div>
-                                    <div className="text-white/50 text-sm">7-day average</div>
+                                    <div className="text-muted-foreground text-sm">7-day average</div>
                                 </div>
 
                                 <div className="liquid-glass-card backdrop-blur-lg bg-purple-500/10 border border-purple-400/20 rounded-2xl p-6 stat-card-hover">
@@ -155,19 +155,19 @@ export default async function LiveDataPage() {
                                         <div className="w-3 h-3 bg-purple-400 rounded-full shadow-lg" style={{ boxShadow: '0 0 8px rgba(192,132,252,0.4)' }}></div>
                                         <span className="text-purple-300 font-medium text-sm">Avg RHR</span>
                                     </div>
-                                    <div className="text-3xl font-bold text-white mb-1">
+                                    <div className="text-3xl font-bold text-foreground mb-1">
                                         {Math.round(whoopData.records.reduce((sum: number, record: any) => sum + (record.score.resting_heart_rate || 0), 0) / whoopData.records.length) || 'N/A'} bpm
                                     </div>
-                                    <div className="text-white/50 text-sm">7-day average</div>
+                                    <div className="text-muted-foreground text-sm">7-day average</div>
                                 </div>
                             </div>
 
                             {/* Dashboard CTA */}
                             <div className="liquid-glass-card backdrop-blur-lg bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/15 rounded-2xl p-8 text-center">
-                                <h2 className="text-xl font-semibold text-white mb-3">
+                                <h2 className="text-xl font-semibold text-foreground mb-3">
                                     Track Your Performance Over Time
                                 </h2>
-                                <p className="text-white/60 mb-6 max-w-lg mx-auto">
+                                <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
                                     Explore the full fitness dashboard with historical trends, strain analysis, and sleep insights.
                                 </p>
                                 <a
@@ -184,11 +184,11 @@ export default async function LiveDataPage() {
                             {/* Raw Data Toggle */}
                             <details className="liquid-glass-card backdrop-blur-lg bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden">
                                 <summary className="p-6 cursor-pointer hover:bg-white/[0.03] transition-colors">
-                                    <span className="text-white font-medium">View Raw API Data</span>
-                                    <span className="text-white/40 text-sm ml-2">(for developers)</span>
+                                    <span className="text-foreground font-medium">View Raw API Data</span>
+                                    <span className="text-muted-foreground text-sm ml-2">(for developers)</span>
                                 </summary>
                                 <div className="border-t border-white/[0.08] p-6 bg-black/20">
-                                    <pre className="text-xs text-white/70 whitespace-pre-wrap overflow-x-auto font-mono">
+                                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap overflow-x-auto font-mono">
                                         {JSON.stringify(whoopData, null, 2)}
                                     </pre>
                                 </div>
@@ -202,8 +202,8 @@ export default async function LiveDataPage() {
                             <svg className="w-16 h-16 text-cyan-400/50 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
-                            <h3 className="text-xl font-semibold text-white mb-2">No Recovery Data Available</h3>
-                            <p className="text-white/60 leading-relaxed">
+                            <h3 className="text-xl font-semibold text-foreground mb-2">No Recovery Data Available</h3>
+                            <p className="text-muted-foreground leading-relaxed">
                                 Your WHOOP account is connected, but no recovery data was found. Make sure you have recovery data in your WHOOP app.
                             </p>
                         </div>

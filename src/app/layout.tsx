@@ -141,7 +141,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-        'text-black bg-white dark:text-white dark:bg-black',
+        'text-foreground bg-background',
         GeistSans.variable
       )}
     >
@@ -180,7 +180,7 @@ export default function RootLayout({
         {/* Skip to content link for keyboard/screen reader users */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-cyan-500 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg focus:outline-none"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-cyan-500 focus:text-foreground focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg focus:outline-none"
         >
           Skip to main content
         </a>

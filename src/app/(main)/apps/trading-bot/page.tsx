@@ -24,10 +24,10 @@ export default function TradingBotAppPage() {
             <span>Read how I built this</span>
             <span aria-hidden className="text-lg">→</span>
           </Link>
-          <h1 className="text-4xl md:text-6xl font-bold text-white">
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground">
             Trading Bot
           </h1>
-          <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             A systematic trading platform that connects real-time market data with agentic strategy orchestration, execution monitoring, and risk controls.
           </p>
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/20 px-4 py-1 text-amber-200 text-sm font-medium">
@@ -37,14 +37,14 @@ export default function TradingBotAppPage() {
         </header>
 
         <Card className="border-white/10 bg-white/[0.04] backdrop-blur-2xl p-8 space-y-6">
-          <h2 className="text-white text-2xl font-semibold">What&apos;s Coming</h2>
-          <ul className="list-disc list-inside space-y-3 text-white/70 text-sm leading-relaxed">
+          <h2 className="text-foreground text-2xl font-semibold">What&apos;s Coming</h2>
+          <ul className="list-disc list-inside space-y-3 text-muted-foreground text-sm leading-relaxed">
             <li>Multi-exchange execution with latency-aware order routing.</li>
             <li>LLM-assisted strategy design with historical simulation harness.</li>
             <li>FastAPI + Redis control plane coordinating agent workflows.</li>
             <li>Interactive monitoring dashboard built with Next.js and websockets.</li>
           </ul>
-          <p className="text-white/60 text-sm">
+          <p className="text-muted-foreground text-sm">
             Want early access or to collaborate? Reach out via{' '}
             <a href="mailto:hello@camilomartinez.co" className="text-emerald-300 hover:text-emerald-200 underline underline-offset-4 transition-colors">
               hello@camilomartinez.co

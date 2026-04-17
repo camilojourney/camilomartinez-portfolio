@@ -40,8 +40,8 @@ export default function SignInPage() {
         <LiquidPage currentPage="apps" backgroundVariant="cool">
             <div className="text-center space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>
-                    <p className="text-white/70">
+                    <h1 className="text-3xl font-bold text-foreground mb-2">Sign In</h1>
+                    <p className="text-muted-foreground">
                         Connect your WHOOP account to access personalized data dashboards.
                     </p>
                 </div>
@@ -51,13 +51,13 @@ export default function SignInPage() {
                         const { signIn } = await import('next-auth/react');
                         signIn('whoop', { callbackUrl: '/whoop-dashboard' });
                     }}
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold py-3 px-6 rounded-full transition duration-200 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-foreground font-semibold py-3 px-6 rounded-full transition duration-200 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
                     disabled={apiStatus === 'checking'}
                 >
                     Sign in with WHOOP
                 </button>
 
-                <p className="text-sm text-white/60">
+                <p className="text-sm text-muted-foreground">
                     API status:{' '}
                     <span className={
                         apiStatus === 'online'

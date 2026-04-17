@@ -44,13 +44,13 @@ export default function Page() {
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">
-            <p className="hero-stagger hero-stagger-1 text-sm font-medium tracking-[0.25em] uppercase text-white/40 mb-4">
+            <p className="hero-stagger hero-stagger-1 text-sm font-medium tracking-[0.25em] uppercase text-muted-foreground mb-4">
               Technical writing
             </p>
             <h1 className="hero-stagger hero-stagger-2 text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
               Blog
             </h1>
-            <p className="hero-stagger hero-stagger-3 text-lg md:text-xl text-white/60 leading-relaxed max-w-xl mx-auto">
+            <p className="hero-stagger hero-stagger-3 text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto">
               Thinking through <span className="text-cyan-400 font-medium">AI systems</span>, <span className="text-blue-400 font-medium">engineering practice</span>, and the mental models behind them.
             </p>
           </div>

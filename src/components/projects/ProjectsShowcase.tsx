@@ -57,7 +57,7 @@ function getBadgeClass(tag: string): string {
 function getPreviewClasses(slug: string) {
   if (slug === 'astoria-conquest') {
     return {
-      container: 'bg-slate-950',
+      container: 'bg-background',
       image: 'object-contain object-center scale-90 md:scale-95',
     };
   }
@@ -201,7 +201,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-white/[0.03]">
-                    <span className="text-xs uppercase tracking-[0.2em] text-white/30">
+                    <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                       Preview coming soon
                     </span>
                   </div>
@@ -221,12 +221,12 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
             {/* Content */}
             <div className="p-5 md:p-6 flex flex-col gap-3 flex-1">
               <Link href={project.caseStudyHref} className="group/title inline-flex flex-col gap-1">
-                <h3 className={`${featured ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'} font-semibold text-white group-hover/title:text-cyan-300 transition-colors duration-300 leading-snug`}>
+                <h3 className={`${featured ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'} font-semibold text-foreground group-hover/title:text-cyan-300 transition-colors duration-300 leading-snug`}>
                   {project.title}
                 </h3>
               </Link>
 
-              <p className="text-white/50 text-[14px] leading-[1.7] line-clamp-3">{project.description}</p>
+              <p className="text-muted-foreground text-[14px] leading-[1.7] line-clamp-3">{project.description}</p>
 
               {/* Tech badges -- color-coded */}
               <div className="flex flex-wrap gap-1.5 mt-1">
@@ -244,7 +244,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
               <div className="mt-auto pt-4 flex flex-wrap items-center gap-3">
                 <Link
                   href={project.caseStudyHref}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 group/link"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 group/link"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Case study</span>
@@ -272,7 +272,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
                       href={apiHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-white/40 hover:text-violet-300 transition-colors duration-200"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-violet-300 transition-colors duration-200"
                     >
                       <span>{apiLabel}</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -290,14 +290,14 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
 export default function ProjectsShowcase({ currentPage = 'projects' }: { currentPage?: NavKey }) {
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-background">
       <LiquidNav currentPage={currentPage} />
 
       {/* Background -- layered depth with subtle grain */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[#050810]"></div>
+        <div className="absolute inset-0 bg-background"></div>
         {/* Primary gradient layer */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-[#080d1c] to-[#050810]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background to-background"></div>
         {/* Ambient orbs -- slower, more diffuse, desaturated */}
         <div className="absolute top-0 left-0 w-full h-full opacity-40">
           <div className="absolute top-[12%] left-[8%] w-[700px] h-[700px] bg-blue-600/[0.04] rounded-full blur-[160px] animate-liquid-float"></div>
@@ -314,7 +314,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           {/* Overline -- role signal with subtle gradient line */}
           <div className="hero-stagger hero-stagger-1 flex items-center justify-center gap-4 mb-8 md:mb-10">
             <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-cyan-400/40"></div>
-            <p className="text-[13px] md:text-sm font-semibold tracking-[0.25em] uppercase text-white/40">
+            <p className="text-[13px] md:text-sm font-semibold tracking-[0.25em] uppercase text-muted-foreground">
               AI Engineer
             </p>
             <div className="h-px w-8 md:w-12 bg-gradient-to-l from-transparent to-cyan-400/40"></div>
@@ -322,13 +322,13 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
 
           {/* Title -- name as the brand, massive and confident */}
           <h1 className="hero-stagger hero-stagger-2 text-[2.5rem] sm:text-[3.25rem] md:text-[4.25rem] lg:text-[5rem] font-extrabold mb-6 md:mb-8 leading-[1.02] tracking-[-0.045em]">
-            <span className="text-white">Camilo</span>
+            <span className="text-foreground">Camilo</span>
             <br />
             <span className="hero-gradient-text">Martinez</span>
           </h1>
 
           {/* Subtitle -- proof statement, one clear sentence */}
-          <p className="hero-stagger hero-stagger-3 text-[16px] md:text-[18px] lg:text-[20px] text-white/50 leading-[1.7] max-w-xl mx-auto mb-10 md:mb-12">
+          <p className="hero-stagger hero-stagger-3 text-[16px] md:text-[18px] lg:text-[20px] text-muted-foreground leading-[1.7] max-w-xl mx-auto mb-10 md:mb-12">
             I ship <span className="text-cyan-400 font-semibold">audio/speech ML</span> pipelines
             and <span className="text-blue-400 font-semibold">multi-agent systems</span> to production
             — from research papers to real users.
@@ -336,17 +336,17 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
 
           {/* Credibility markers -- concrete, active, scannable */}
           <div className="hero-stagger hero-stagger-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-12 md:mb-14">
-            <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-white/50 font-medium">
+            <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-muted-foreground font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70 shadow-[0_0_6px_rgba(52,211,153,0.4)]"></span>
               11-dimension speech scorer from 46 papers
             </span>
             <span className="hidden sm:block w-px h-3.5 bg-white/10"></span>
-            <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-white/50 font-medium">
+            <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-muted-foreground font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/70 shadow-[0_0_6px_rgba(6,182,212,0.4)]"></span>
               32-agent orchestration system
             </span>
             <span className="hidden sm:block w-px h-3.5 bg-white/10"></span>
-            <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-white/50 font-medium">
+            <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-muted-foreground font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400/70 shadow-[0_0_6px_rgba(59,130,246,0.4)]"></span>
               NYC &middot; Open to roles
             </span>
@@ -356,7 +356,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           <div className="hero-stagger hero-stagger-5 flex flex-col sm:flex-row gap-3.5 justify-center">
             <a
               href="/contact"
-              className="group/cta inline-flex items-center justify-center gap-2.5 bg-white text-black text-[15px] font-semibold px-8 py-3.5 rounded-full hover:bg-white/95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.08)] hover:shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-[1.02] active:scale-[0.98]"
+              className="group/cta inline-flex items-center justify-center gap-2.5 bg-foreground text-background text-[15px] font-semibold px-8 py-3.5 rounded-full hover:bg-foreground/95 transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.08)] hover:shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-[1.02] active:scale-[0.98]"
             >
               <span>Get in touch</span>
               <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/cta:translate-x-0.5" />
@@ -388,8 +388,8 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           <ScrollReveal>
             <section className="space-y-10" aria-labelledby="featured-heading">
               <div className="max-w-3xl mx-auto space-y-2.5">
-                <h2 id="featured-heading" className="text-[1.5rem] md:text-[1.875rem] font-bold text-white tracking-[-0.03em] leading-tight">Featured Work</h2>
-                <p className="text-[14px] md:text-[15px] text-white/40 leading-relaxed">
+                <h2 id="featured-heading" className="text-[1.5rem] md:text-[1.875rem] font-bold text-foreground tracking-[-0.03em] leading-tight">Featured Work</h2>
+                <p className="text-[14px] md:text-[15px] text-muted-foreground leading-relaxed">
                   Production systems — research to deployment.
                 </p>
               </div>
@@ -406,8 +406,8 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           <ScrollReveal>
             <section className="space-y-10" aria-labelledby="more-heading">
               <div className="max-w-3xl mx-auto space-y-2.5">
-                <h2 id="more-heading" className="text-[1.5rem] md:text-[1.875rem] font-bold text-white tracking-[-0.03em] leading-tight">More Projects</h2>
-                <p className="text-[14px] md:text-[15px] text-white/40 leading-relaxed">
+                <h2 id="more-heading" className="text-[1.5rem] md:text-[1.875rem] font-bold text-foreground tracking-[-0.03em] leading-tight">More Projects</h2>
+                <p className="text-[14px] md:text-[15px] text-muted-foreground leading-relaxed">
                   Full-stack, AI tooling, and data systems.
                 </p>
               </div>
@@ -426,7 +426,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
               <section className="space-y-8" aria-labelledby="personal-heading">
                 <div className="flex items-center gap-4 max-w-3xl mx-auto">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/[0.06]"></div>
-                  <h2 id="personal-heading" className="text-xs font-medium uppercase tracking-[0.2em] text-white/30 whitespace-nowrap">
+                  <h2 id="personal-heading" className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground whitespace-nowrap">
                     Personal & Research
                   </h2>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/[0.06]"></div>

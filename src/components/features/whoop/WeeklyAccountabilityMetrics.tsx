@@ -182,11 +182,11 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
                 <>
                     {/* Header with "Past Week" title and date range */}
                     <div className="text-center mb-6">
-                        <h3 className="text-2xl font-bold text-white mb-2">
+                        <h3 className="text-2xl font-bold text-foreground mb-2">
                             {isCompletedYear ? `${selectedYear} Summary` : 'Past Week Summary'}
                         </h3>
                         {!isCompletedYear && lastWeekDateRange && (
-                            <p className="text-white/60 text-lg">
+                            <p className="text-muted-foreground text-lg">
                                 {lastWeekDateRange}
                             </p>
                         )}
@@ -198,65 +198,65 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
                         <Card className="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-400/30">
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="text-2xl">💪</span>
-                                <h3 className="text-sm font-semibold text-white">Training</h3>
+                                <h3 className="text-sm font-semibold text-foreground">Training</h3>
                             </div>
-                            <p className="text-white/50 text-xs mb-2">Building strength</p>
+                            <p className="text-muted-foreground text-xs mb-2">Building strength</p>
                             <div className="text-2xl font-bold text-amber-400">
                                 {displayData.trainingDays} {displayData.trainingDays === 1 ? 'day' : 'days'}
                             </div>
-                            <p className="text-white/40 text-xs mt-1">{periodLabel}</p>
+                            <p className="text-muted-foreground text-xs mt-1">{periodLabel}</p>
                         </Card>
 
                         {/* Meditation Sessions */}
                         <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-400/30">
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="text-2xl">🧘</span>
-                                <h3 className="text-sm font-semibold text-white">Meditation</h3>
+                                <h3 className="text-sm font-semibold text-foreground">Meditation</h3>
                             </div>
-                            <p className="text-white/50 text-xs mb-2">Mental clarity</p>
+                            <p className="text-muted-foreground text-xs mb-2">Mental clarity</p>
                             <div className="text-2xl font-bold text-purple-400">
                                 {displayData.meditationSessions} sessions
                             </div>
-                            <p className="text-white/40 text-xs mt-1">{periodLabel}</p>
+                            <p className="text-muted-foreground text-xs mt-1">{periodLabel}</p>
                         </Card>
 
                         {/* Wake Stability */}
                         <Card className="p-4 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-400/30">
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="text-2xl">☀️</span>
-                                <h3 className="text-sm font-semibold text-white">Wake</h3>
+                                <h3 className="text-sm font-semibold text-foreground">Wake</h3>
                             </div>
-                            <p className="text-white/50 text-xs mb-2">Morning routine</p>
+                            <p className="text-muted-foreground text-xs mb-2">Morning routine</p>
                             <div className="text-2xl font-bold text-cyan-400">
                                 {displayData.wakeTimeStdDev === 0 ? 'N/A' : `±${Math.round(displayData.wakeTimeStdDev)} min`}
                             </div>
-                            <p className="text-white/40 text-xs mt-1">{displayData.wakeTimeStdDev === 0 ? '≤1 data point' : periodLabel}</p>
+                            <p className="text-muted-foreground text-xs mt-1">{displayData.wakeTimeStdDev === 0 ? '≤1 data point' : periodLabel}</p>
                         </Card>
 
                         {/* Workout Consistency */}
                         <Card className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-400/30">
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="text-2xl">🏃</span>
-                                <h3 className="text-sm font-semibold text-white">Workout</h3>
+                                <h3 className="text-sm font-semibold text-foreground">Workout</h3>
                             </div>
-                            <p className="text-white/50 text-xs mb-2">Time consistency</p>
+                            <p className="text-muted-foreground text-xs mb-2">Time consistency</p>
                             <div className="text-2xl font-bold text-green-400">
                                 {displayData.workoutStartStdDev === 0 ? 'N/A' : `±${Math.round(displayData.workoutStartStdDev)} min`}
                             </div>
-                            <p className="text-white/40 text-xs mt-1">{displayData.workoutStartStdDev === 0 ? '≤1 workout' : periodLabel}</p>
+                            <p className="text-muted-foreground text-xs mt-1">{displayData.workoutStartStdDev === 0 ? '≤1 workout' : periodLabel}</p>
                         </Card>
 
                         {/* Sleep Consistency */}
                         <Card className="p-4 bg-gradient-to-br from-indigo-500/10 to-violet-500/10 border-indigo-400/30">
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="text-2xl">🌙</span>
-                                <h3 className="text-sm font-semibold text-white">Sleep</h3>
+                                <h3 className="text-sm font-semibold text-foreground">Sleep</h3>
                             </div>
-                            <p className="text-white/50 text-xs mb-2">Recovery routine</p>
+                            <p className="text-muted-foreground text-xs mb-2">Recovery routine</p>
                             <div className="text-2xl font-bold text-indigo-400">
                                 {displayData.sleepStartStdDev === 0 ? 'N/A' : `±${Math.round(displayData.sleepStartStdDev)} min`}
                             </div>
-                            <p className="text-white/40 text-xs mt-1">{displayData.sleepStartStdDev === 0 ? '≤1 data point' : periodLabel}</p>
+                            <p className="text-muted-foreground text-xs mt-1">{displayData.sleepStartStdDev === 0 ? '≤1 data point' : periodLabel}</p>
                         </Card>
                     </div>
                 </>
@@ -265,7 +265,7 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
             {/* Weekly Progress Table */}
             {showTable && (
                 <Card className="p-6 bg-black/20 border-white/10 mx-auto max-w-5xl">
-                    <h3 className="text-xl font-semibold text-white mb-6 text-center">
+                    <h3 className="text-xl font-semibold text-foreground mb-6 text-center">
                         {isCompletedYear ? `${selectedYear} Year Summary` : `Weekly Progress Tracker - ${selectedYear}`}
                     </h3>
 
@@ -276,27 +276,27 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
                                 <table className="text-sm">
                                     <thead>
                                         <tr className="border-b border-white/20">
-                                            <th className="text-left py-3 px-4 text-white/80 font-medium w-32">Period</th>
-                                            <th className="text-center py-3 px-4 text-white/80 font-medium w-24">Training<br />Days</th>
-                                            <th className="text-center py-3 px-4 text-white/80 font-medium w-24">Meditation<br />Sessions</th>
-                                            <th className="text-center py-3 px-4 text-white/80 font-medium w-28">Wake<br />Stability</th>
-                                            <th className="text-center py-3 px-4 text-white/80 font-medium w-28">Workout<br />Consistency</th>
-                                            <th className="text-center py-3 px-4 text-white/80 font-medium w-28">Sleep<br />Consistency</th>
+                                            <th className="text-left py-3 px-4 text-foreground font-medium w-32">Period</th>
+                                            <th className="text-center py-3 px-4 text-foreground font-medium w-24">Training<br />Days</th>
+                                            <th className="text-center py-3 px-4 text-foreground font-medium w-24">Meditation<br />Sessions</th>
+                                            <th className="text-center py-3 px-4 text-foreground font-medium w-28">Wake<br />Stability</th>
+                                            <th className="text-center py-3 px-4 text-foreground font-medium w-28">Workout<br />Consistency</th>
+                                            <th className="text-center py-3 px-4 text-foreground font-medium w-28">Sleep<br />Consistency</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr className="border-b border-white/10 bg-amber-500/10">
-                                            <td className="py-3 px-4 text-white/90 font-semibold">
+                                            <td className="py-3 px-4 text-foreground font-semibold">
                                                 {isCompletedYear ? 'Year Average' : 'Year to Date'}
                                                 <span className="ml-2 text-amber-400 text-xs">({yearlyAverages.totalWeeks} weeks)</span>
                                             </td>
                                             <td className="py-3 px-4 text-center">
-                                                <span className="font-semibold text-white/80">
+                                                <span className="font-semibold text-foreground">
                                                     {yearlyAverages.avgTrainingDays} {yearlyAverages.avgTrainingDays === 1 ? 'day' : 'days'}
                                                 </span>
                                             </td>
                                             <td className="py-3 px-4 text-center">
-                                                <span className="font-semibold text-white/80">
+                                                <span className="font-semibold text-foreground">
                                                     {yearlyAverages.avgMeditations}
                                                 </span>
                                             </td>
@@ -323,35 +323,35 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
                             {/* Monthly Breakdown */}
                             {(monthlyAverages?.length ?? 0) > 0 && (
                                 <details className="mt-6">
-                                    <summary className="cursor-pointer text-center text-white/70 hover:text-white/90 transition-colors py-2">
+                                    <summary className="cursor-pointer text-center text-muted-foreground hover:text-white/90 transition-colors py-2">
                                         Show monthly breakdown ▼
                                     </summary>
                                     <div className="mt-4 overflow-x-auto flex justify-center">
                                         <table className="text-sm">
                                             <thead>
                                                 <tr className="border-b border-white/10">
-                                                    <th className="text-left py-2 px-4 text-white/60 font-medium text-xs">Month</th>
-                                                    <th className="text-center py-2 px-4 text-white/60 font-medium text-xs">Training<br />(avg)</th>
-                                                    <th className="text-center py-2 px-4 text-white/60 font-medium text-xs">Meditation<br />(avg)</th>
-                                                    <th className="text-center py-2 px-4 text-white/60 font-medium text-xs">Wake<br />(avg)</th>
-                                                    <th className="text-center py-2 px-4 text-white/60 font-medium text-xs">Workout<br />(avg)</th>
-                                                    <th className="text-center py-2 px-4 text-white/60 font-medium text-xs">Sleep<br />(avg)</th>
+                                                    <th className="text-left py-2 px-4 text-muted-foreground font-medium text-xs">Month</th>
+                                                    <th className="text-center py-2 px-4 text-muted-foreground font-medium text-xs">Training<br />(avg)</th>
+                                                    <th className="text-center py-2 px-4 text-muted-foreground font-medium text-xs">Meditation<br />(avg)</th>
+                                                    <th className="text-center py-2 px-4 text-muted-foreground font-medium text-xs">Wake<br />(avg)</th>
+                                                    <th className="text-center py-2 px-4 text-muted-foreground font-medium text-xs">Workout<br />(avg)</th>
+                                                    <th className="text-center py-2 px-4 text-muted-foreground font-medium text-xs">Sleep<br />(avg)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {monthlyAverages!.map((month) => (
                                                     <tr key={month.month} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                        <td className="py-2 px-4 text-white/70 font-medium text-sm">
+                                                        <td className="py-2 px-4 text-muted-foreground font-medium text-sm">
                                                             {month.month}
-                                                            <span className="ml-2 text-white/40 text-xs">({month.weekCount}w)</span>
+                                                            <span className="ml-2 text-muted-foreground text-xs">({month.weekCount}w)</span>
                                                         </td>
                                                         <td className="py-2 px-4 text-center">
-                                                            <span className="text-white/70 text-sm">
+                                                            <span className="text-muted-foreground text-sm">
                                                                 {month.avgTrainingDays} {month.avgTrainingDays === 1 ? 'day' : 'days'}
                                                             </span>
                                                         </td>
                                                         <td className="py-2 px-4 text-center">
-                                                            <span className="text-white/70 text-sm">{month.avgMeditations}</span>
+                                                            <span className="text-muted-foreground text-sm">{month.avgMeditations}</span>
                                                         </td>
                                                         <td className="py-2 px-4 text-center">
                                                             <span className="text-cyan-400/80 text-sm">
@@ -371,27 +371,27 @@ export function WeeklyAccountabilityMetrics({ data, selectedYear = 2026, showCar
                                                     </tr>
                                                 ))}
                                                 <tr className="border-t-2 border-white/20 bg-amber-500/5">
-                                                    <td className="py-2 px-4 text-white/90 font-semibold text-sm">
+                                                    <td className="py-2 px-4 text-foreground font-semibold text-sm">
                                                         Year Total
                                                     </td>
                                                     <td className="py-2 px-4 text-center">
-                                                        <span className="text-white/90 font-semibold text-sm">
+                                                        <span className="text-foreground font-semibold text-sm">
                                                             {yearData.reduce((sum, w) => sum + w.trainingDays, 0)} days
                                                         </span>
                                                     </td>
                                                     <td className="py-2 px-4 text-center">
-                                                        <span className="text-white/90 font-semibold text-sm">
+                                                        <span className="text-foreground font-semibold text-sm">
                                                             {yearData.reduce((sum, w) => sum + w.meditationSessions, 0)} sessions
                                                         </span>
                                                     </td>
                                                     <td className="py-2 px-4 text-center">
-                                                        <span className="text-white/50 text-xs">—</span>
+                                                        <span className="text-muted-foreground text-xs">—</span>
                                                     </td>
                                                     <td className="py-2 px-4 text-center">
-                                                        <span className="text-white/50 text-xs">—</span>
+                                                        <span className="text-muted-foreground text-xs">—</span>
                                                     </td>
                                                     <td className="py-2 px-4 text-center">
-                                                        <span className="text-white/50 text-xs">—</span>
+                                                        <span className="text-muted-foreground text-xs">—</span>
                                                     </td>
                                                 </tr>
                                             </tbody>

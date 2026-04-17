@@ -29,7 +29,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle theme"
       aria-pressed={theme === 'light'}
-      className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 text-white/70 hover:text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+      className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 text-white/70 hover:text-foreground hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
     >
       {theme === 'dark' ? <Sun size={20} className="transition-all" /> : <Moon size={20} className="transition-all" />}
     </button>
