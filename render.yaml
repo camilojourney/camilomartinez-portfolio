@@ -1,4 +1,18 @@
 services:
+  # Uber NYC Dashboard — Plotly Dash app
+  # Deployed at uber.camilomartinez.co
+  - type: web
+    name: uber-nyc-dashboard
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: dashboards/uber-nyc
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:server --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+
   # Astoria Conquest Weekly Update (Cron Job)
   # Runs every Monday at 1:30 PM to:
   # 1. Update progress map with new Strava runs (GPS matching)
