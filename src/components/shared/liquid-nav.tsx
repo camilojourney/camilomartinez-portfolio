@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { systemService } from '@/lib/api/config'
+import { ThemeToggle } from './theme-toggle'
 
 interface LiquidNavProps {
     currentPage?: 'home' | 'apps' | 'projects' | 'blog' | 'about' | 'contact' | 'bookshelf' | 'tools' | 'my-data'
@@ -60,7 +61,7 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
         <>
             {/* Desktop Navigation */}
             <div className="fixed top-0 left-0 w-full z-50 p-4 pt-safe-area-inset-top md:p-5 hidden md:block">
-                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 max-w-4xl mx-auto shadow-2xl shadow-black/10">
+                <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 max-w-4xl mx-auto shadow-2xl shadow-black/10 relative">
                     <div className="flex justify-center space-x-8 text-base font-medium">
                         {navItems.map((item) => (
                             <a
@@ -79,6 +80,9 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                             </a>
                         ))}
                     </div>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                        <ThemeToggle />
+                    </div>
                 </nav>
             </div>
 
@@ -87,12 +91,15 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                 <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl shadow-black/10">
                     <div className="flex justify-between items-center">
                         <a href="/" className="text-white font-semibold text-lg tracking-tight">CM</a>
-                        <button
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="text-white/70 hover:text-white transition-colors p-2"
-                        >
-                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
+                        <div className="flex items-center space-x-2">
+                            <ThemeToggle />
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="text-white/70 hover:text-white transition-colors p-2"
+                            >
+                                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                            </button>
+                        </div>
                     </div>
                     
                     {/* Mobile Menu Dropdown */}

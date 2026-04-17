@@ -68,6 +68,26 @@ html {
   color-scheme: dark;
 }
 
+[data-theme="light"] {
+  --background: 0 0% 100%;            /* pure white */
+  --foreground: 240 10% 3.9%;         /* dark slate */
+  --muted-foreground: 240 3.8% 46.1%; /* medium gray (works both) */
+  --accent: 240 4.8% 95.9%;
+  --card: 0 0% 100%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+
+  /* Liquid Glass — light mode */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
 /* Base styles */
 body {
   background-color: hsl(var(--background));
