@@ -24,10 +24,10 @@ export default function ThinkClearAppPage() {
             <span>Read how I built this</span>
             <span aria-hidden className="text-lg">→</span>
           </Link>
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground">
+          <h1 className="text-4xl md:text-6xl font-bold text-white">
             Think Clear
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
             A cognitive bias detector that surfaces hidden framing, emotional triggers, and blind spots in your writing so you can reason through decisions with clarity.
           </p>
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/20 px-4 py-1 text-amber-200 text-sm font-medium">
@@ -37,14 +37,14 @@ export default function ThinkClearAppPage() {
         </header>
 
         <Card className="border-white/10 bg-white/[0.04] backdrop-blur-2xl p-8 space-y-6">
-          <h2 className="text-foreground text-2xl font-semibold">Planned Features</h2>
-          <ul className="list-disc list-inside space-y-3 text-muted-foreground text-sm leading-relaxed">
+          <h2 className="text-white text-2xl font-semibold">Planned Features</h2>
+          <ul className="list-disc list-inside space-y-3 text-white/70 text-sm leading-relaxed">
             <li>Bias taxonomy grounded in cognitive science literature.</li>
             <li>Multi-agent critique pipeline with targeted interventions.</li>
             <li>Guided reframing recommendations and reflection prompts.</li>
             <li>Team workspace for collaborative decision memos.</li>
           </ul>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-white/60 text-sm">
             If you&apos;d like to beta test, send a note to{' '}
             <a href="mailto:hello@camilomartinez.co" className="text-purple-300 hover:text-purple-200 underline underline-offset-4 transition-colors">
               hello@camilomartinez.co

@@ -126,7 +126,7 @@ export default function ChatWidget() {
                 className="rounded-full"
               />
               <div>
-                <p className="text-foreground text-sm font-semibold leading-none">AI Assistant</p>
+                <p className="text-white text-sm font-semibold leading-none">AI Assistant</p>
                 <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
                   Applied AI Engineer
                 </p>
@@ -150,7 +150,7 @@ export default function ChatWidget() {
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
                   className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    m.role === 'user' ? 'text-foreground rounded-br-sm' : 'rounded-bl-sm'
+                    m.role === 'user' ? 'text-white rounded-br-sm' : 'rounded-bl-sm'
                   }`}
                   style={
                     m.role === 'user'
@@ -208,7 +208,7 @@ export default function ChatWidget() {
                 }}
                 disabled={loading}
                 placeholder="Ask anything..."
-                className="flex-1 bg-transparent text-sm text-foreground placeholder-white/25 outline-none disabled:opacity-50"
+                className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
               />
               <button
                 onClick={() => send()}
@@ -217,9 +217,9 @@ export default function ChatWidget() {
                 style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}
               >
                 {loading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-foreground" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                 ) : (
-                  <Send className="w-3.5 h-3.5 text-foreground" />
+                  <Send className="w-3.5 h-3.5 text-white" />
                 )}
               </button>
             </div>
@@ -301,7 +301,7 @@ export default function ChatWidget() {
           setOpen((v) => !v);
           setShowTeaser(false);
         }}
-        className="flex items-center justify-center text-foreground shadow-xl transition-all duration-300 hover:scale-105"
+        className="flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-105"
         style={{
           width: 60,
           height: 60,
@@ -316,7 +316,7 @@ export default function ChatWidget() {
         aria-label="Chat with AI assistant"
       >
         {open ? (
-          <X className="w-5 h-5 text-muted-foreground" />
+          <X className="w-5 h-5 text-white/70" />
         ) : (
           <Image src="/bot.png" alt="Chat" width={60} height={60} className="rounded-full object-cover" />
         )}

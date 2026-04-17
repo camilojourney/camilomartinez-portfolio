@@ -348,7 +348,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                 <div className="mb-8">
                     <Link
                         href="/projects"
-                        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm font-medium"
+                        className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors duration-300 text-sm font-medium"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
@@ -385,7 +385,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                                 {project.githubUrl && (
                                     <Link
                                         href={project.githubUrl}
-                                        className="liquid-glass-btn backdrop-blur-lg bg-white/[0.05] border border-white/[0.12] text-white/80 px-6 py-3 rounded-xl hover:bg-white/[0.08] hover:border-white/[0.16] hover:text-foreground transition-all duration-300 transform hover:scale-[1.02] shadow-lg inline-flex items-center gap-2 text-sm font-medium"
+                                        className="liquid-glass-btn backdrop-blur-lg bg-white/[0.05] border border-white/[0.12] text-white/80 px-6 py-3 rounded-xl hover:bg-white/[0.08] hover:border-white/[0.16] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg inline-flex items-center gap-2 text-sm font-medium"
                                     >
                                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
@@ -396,10 +396,10 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 tracking-[-0.03em]">
+                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-[-0.03em]">
                             {project.title}
                         </h1>
-                        <p className="text-lg md:text-xl text-foreground leading-relaxed font-light">
+                        <p className="text-lg md:text-xl text-white/80 leading-relaxed font-light">
                             {project.fullDescription}
                         </p>
                     </div>
@@ -427,50 +427,50 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                     <div className="grid md:grid-cols-2 gap-8 mb-12">
                         {/* Problem */}
                         <div className="liquid-glass-section backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
-                            <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                            <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                 </svg>
                                 The Problem
                             </h3>
-                            <p className="text-muted-foreground leading-relaxed">{project.problem}</p>
+                            <p className="text-white/70 leading-relaxed">{project.problem}</p>
                         </div>
 
                         {/* Solution */}
                         <div className="liquid-glass-section backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
-                            <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                            <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                                 </svg>
                                 The Solution
                             </h3>
-                            <p className="text-muted-foreground leading-relaxed">{project.solution}</p>
+                            <p className="text-white/70 leading-relaxed">{project.solution}</p>
                         </div>
                     </div>
 
                     {/* Outcome */}
                     <div className="liquid-glass-section backdrop-blur-lg bg-gradient-to-r from-green-500/10 to-cyan-500/10 border border-green-400/20 rounded-2xl p-6 mb-12">
-                        <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                             <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             The Outcome
                         </h3>
-                        <p className="text-foreground leading-relaxed text-lg">{project.outcome}</p>
+                        <p className="text-white/80 leading-relaxed text-lg">{project.outcome}</p>
                     </div>
 
                     {/* Features & Tech Stack */}
                     <div className="grid md:grid-cols-2 gap-8 mb-12">
                         {/* Features */}
                         <div>
-                            <h3 className="text-xl font-semibold text-foreground mb-6">Key Features</h3>
+                            <h3 className="text-xl font-semibold text-white mb-6">Key Features</h3>
                             <ul className="space-y-3">
                                 {project.features.map((feature, index) => (
                                     <li key={index} className="flex items-start gap-3">
                                         <svg className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
                                         </svg>
-                                        <span className="text-foreground leading-relaxed">{feature}</span>
+                                        <span className="text-white/80 leading-relaxed">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -478,7 +478,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
                         {/* Tech Stack */}
                         <div>
-                            <h3 className="text-xl font-semibold text-foreground mb-6">Technology Stack</h3>
+                            <h3 className="text-xl font-semibold text-white mb-6">Technology Stack</h3>
                             <div className="flex flex-wrap gap-3">
                                 {project.techStack.map(tech => (
                                     <span key={tech} className="bg-cyan-500/10 text-cyan-300 border border-cyan-400/20 px-4 py-2 rounded-xl text-sm font-medium backdrop-blur-lg">
@@ -491,8 +491,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
                     {/* Call to Action */}
                     <div className="text-center pt-8 border-t border-white/[0.08]">
-                        <h3 className="text-xl font-semibold text-foreground mb-4">Interested in this project?</h3>
-                        <p className="text-muted-foreground mb-6 leading-relaxed">
+                        <h3 className="text-xl font-semibold text-white mb-4">Interested in this project?</h3>
+                        <p className="text-white/70 mb-6 leading-relaxed">
                             I'd love to discuss the technical details, challenges overcome, or similar projects I could build for you.
                         </p>
                         {appHref && (
@@ -508,7 +508,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
                         <Link
                             href="/contact"
-                            className="liquid-glass-cta-btn backdrop-blur-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-foreground text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20 inline-flex items-center gap-3"
+                            className="liquid-glass-cta-btn backdrop-blur-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white text-lg font-medium px-8 py-4 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl hover:shadow-cyan-500/20 inline-flex items-center gap-3"
                         >
                             <span>Let's discuss this project</span>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

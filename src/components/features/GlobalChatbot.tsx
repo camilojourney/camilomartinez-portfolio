@@ -79,7 +79,7 @@ export function GlobalChatbot() {
 
             {/* AI Icon */}
             <div className="relative z-10 flex items-center justify-center w-full h-full">
-              <svg className="w-8 h-8 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
@@ -93,7 +93,7 @@ export function GlobalChatbot() {
             animate={{ scale: 1 }}
             className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg"
           >
-            <span className="text-xs font-bold text-foreground">AI</span>
+            <span className="text-xs font-bold text-white">AI</span>
           </motion.div>
         </motion.div>
       )}
@@ -131,12 +131,12 @@ export function GlobalChatbot() {
                   <div className="flex items-center justify-between p-4 border-b border-white/10">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground">AI Assistant</h3>
+                        <h3 className="font-semibold text-white">AI Assistant</h3>
                         <p className="text-xs text-gray-400">Powered by RAG · Strava & WHOOP</p>
                       </div>
                     </div>
@@ -151,7 +151,7 @@ export function GlobalChatbot() {
                       </a>
                       <button
                         onClick={() => setIsMinimized(true)}
-                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-gray-400 hover:text-foreground transition-colors"
+                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-gray-400 hover:text-white transition-colors"
                         style={{
                           background: 'rgba(255,255,255,0.05)',
                           backdropFilter: 'blur(10px)',
@@ -164,7 +164,7 @@ export function GlobalChatbot() {
                       </button>
                       <button
                         onClick={closeChatbot}
-                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-gray-400 hover:text-foreground transition-colors"
+                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-gray-400 hover:text-white transition-colors"
                         style={{
                           background: 'rgba(255,255,255,0.05)',
                           backdropFilter: 'blur(10px)',
@@ -192,11 +192,11 @@ export function GlobalChatbot() {
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center mb-1">
-                      <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <span className="text-xs text-foreground font-medium">AI Chat</span>
+                    <span className="text-xs text-white font-medium">AI Chat</span>
                   </div>
                 </div>
               )}

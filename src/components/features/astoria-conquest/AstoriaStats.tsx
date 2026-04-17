@@ -96,7 +96,7 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
         {/* Weekly Miles Chart */}
         {weeklyData.length > 0 && (
           <div className="bg-black/20 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">Weekly Miles Progress</h3>
+            <h3 className="text-lg font-medium text-white mb-4">Weekly Miles Progress</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={weeklyData}>
@@ -138,7 +138,7 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
         {/* Pace History Chart */}
         {paceData.length > 0 && (
           <div className="bg-black/20 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-foreground mb-4">Pace History</h3>
+            <h3 className="text-lg font-medium text-white mb-4">Pace History</h3>
             <p className="text-sm text-gray-400 mb-4">Lower is faster!</p>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -253,13 +253,13 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
                   <span className={`inline-flex w-1.5 rounded-full ${zone.barClass}`} aria-hidden />
                   <div className="space-y-1">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-foreground font-semibold">{zone.label}</span>
-                      <span className="text-muted-foreground text-sm">{zone.name}</span>
+                      <span className="text-white font-semibold">{zone.label}</span>
+                      <span className="text-white/70 text-sm">{zone.name}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{zone.subtitle}</p>
-                    <p className="text-xs text-muted-foreground">{zone.intensity} · {zone.heartRate}</p>
-                    <p className="text-xs text-muted-foreground">{zone.description}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-white/60">{zone.subtitle}</p>
+                    <p className="text-xs text-white/50">{zone.intensity} · {zone.heartRate}</p>
+                    <p className="text-xs text-white/60">{zone.description}</p>
+                    <p className="text-xs text-white/50">
                       {minutes.toFixed(1)} minutes ({percentage.toFixed(1)}%)
                     </p>
                   </div>

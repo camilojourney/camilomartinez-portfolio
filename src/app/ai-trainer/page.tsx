@@ -212,7 +212,7 @@ export default function AITrainerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-foreground">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
       <div className="container mx-auto px-6 py-12">
         {/* Header */}
         <motion.div
@@ -263,8 +263,8 @@ export default function AITrainerPage() {
                 onClick={() => setActiveTab(tab as typeof activeTab)}
                 className={`px-6 py-3 rounded-lg capitalize transition-all duration-300 ${
                   activeTab === tab
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-foreground shadow-lg'
-                    : 'text-gray-300 hover:text-foreground hover:bg-white/5'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                    : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
                 {tab}
@@ -300,7 +300,7 @@ export default function AITrainerPage() {
                     <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4`}>
                       <div className="w-6 h-6 bg-white rounded opacity-80" />
                     </div>
-                    <h3 className="text-2xl font-bold text-foreground mb-1">{stat.value}</h3>
+                    <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
                     <p className="text-gray-400">{stat.label}</p>
                   </motion.div>
                 ))}
@@ -311,7 +311,7 @@ export default function AITrainerPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Accuracy Trend */}
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold mb-6 text-foreground">Accuracy Trend</h3>
+                    <h3 className="text-xl font-semibold mb-6 text-white">Accuracy Trend</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -331,7 +331,7 @@ export default function AITrainerPage() {
 
                   {/* Status Distribution */}
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold mb-6 text-foreground">Cycle Status Distribution</h3>
+                    <h3 className="text-xl font-semibold mb-6 text-white">Cycle Status Distribution</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
@@ -419,7 +419,7 @@ export default function AITrainerPage() {
                 if (!latestCycle || !errorPatterns || errorPatterns.length === 0 || !firstPattern) return null;
                 return (
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold mb-6 text-foreground">Latest Analysis Report</h3>
+                    <h3 className="text-xl font-semibold mb-6 text-white">Latest Analysis Report</h3>
                     <div className="prose prose-invert max-w-none">
                       <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
                         {firstPattern}
@@ -431,7 +431,7 @@ export default function AITrainerPage() {
 
               {/* Quick Insights Summary */}
               <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">Performance Insights</h3>
+                <h3 className="text-xl font-semibold mb-4 text-white">Performance Insights</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-medium text-gray-300 mb-3">Common Error Patterns</h4>
@@ -472,7 +472,7 @@ export default function AITrainerPage() {
 
               {chartData.length > 1 && (
                 <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold mb-6 text-foreground">Response Time vs Success Rate</h3>
+                  <h3 className="text-xl font-semibold mb-6 text-white">Response Time vs Success Rate</h3>
                   <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />

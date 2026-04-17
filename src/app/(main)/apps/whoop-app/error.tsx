@@ -46,10 +46,10 @@ export default function Error({
 
                     {/* Error Message */}
                     <div className="space-y-6">
-                        <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                        <h1 className="text-3xl md:text-4xl font-bold text-white">
                             Something went wrong!
                         </h1>
-                        <p className="text-lg text-muted-foreground">
+                        <p className="text-lg text-white/70">
                             {error.message || 'There was an error loading your dashboard data.'}
                         </p>
                     </div>
@@ -72,7 +72,7 @@ export default function Error({
 
                     {/* Technical Details (only if we have them) */}
                     {error.digest && (
-                        <div className="mt-8 text-sm text-muted-foreground">
+                        <div className="mt-8 text-sm text-white/40">
                             <p>Error ID: {error.digest}</p>
                         </div>
                     )}

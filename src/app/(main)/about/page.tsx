@@ -106,16 +106,16 @@ export default function AboutPage() {
                     <div className="text-center mb-24">
                         <div className="hero-stagger hero-stagger-1 flex items-center justify-center gap-4 mb-6">
                             <div className="h-px w-8 bg-gradient-to-r from-transparent to-white/20"></div>
-                            <p className="text-[13px] font-medium tracking-[0.3em] uppercase text-muted-foreground">
+                            <p className="text-[13px] font-medium tracking-[0.3em] uppercase text-white/30">
                                 The person behind the systems
                             </p>
                             <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/20"></div>
                         </div>
                         <h1 className="hero-stagger hero-stagger-2 text-[2.75rem] md:text-[4rem] lg:text-[5rem] font-bold mb-7 leading-[1.02] tracking-[-0.04em]">
-                            <span className="text-foreground">About</span>{' '}
+                            <span className="text-white">About</span>{' '}
                             <span className="hero-gradient-text">Camilo</span>
                         </h1>
-                        <p className="hero-stagger hero-stagger-3 text-[17px] md:text-[19px] text-muted-foreground max-w-xl mx-auto leading-[1.75]">
+                        <p className="hero-stagger hero-stagger-3 text-[17px] md:text-[19px] text-white/45 max-w-xl mx-auto leading-[1.75]">
                             Applied AI Engineer. Immigrant. Runner. I build things that work and I do not stop until they ship.
                         </p>
                     </div>
@@ -124,21 +124,21 @@ export default function AboutPage() {
                     <ScrollReveal>
                     <Card className="border-white/[0.08] bg-white/[0.02] mb-16 rounded-2xl">
                         <div className="p-8 md:p-12">
-                            <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-foreground mb-8 tracking-[-0.02em]">The Real Version</h2>
-                            <div className="space-y-5 text-muted-foreground leading-[1.8] text-[16px]">
+                            <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-8 tracking-[-0.02em]">The Real Version</h2>
+                            <div className="space-y-5 text-white/60 leading-[1.8] text-[16px]">
                                 <p>
                                     I studied petroleum engineering in Colombia. Good at it, but knew I wanted something different. Moved to New York with a plan: get a master&apos;s degree, learn to build software, figure out the rest later.
                                 </p>
                                 <p>
-                                    &ldquo;Figure out the rest later&rdquo; turned out to mean bartending four nights a week at a cocktail bar in Manhattan while taking a full course load at Baruch. The other hours went to building things. Not tutorials. Not demos. <span className="text-foreground font-medium">Actual applications that real people use.</span>
+                                    &ldquo;Figure out the rest later&rdquo; turned out to mean bartending four nights a week at a cocktail bar in Manhattan while taking a full course load at Baruch. The other hours went to building things. Not tutorials. Not demos. <span className="text-white/90 font-medium">Actual applications that real people use.</span>
                                 </p>
                                 <p>
                                     The project that changed everything was <span className="text-cyan-400 font-medium">Invoz</span>. I wanted to build a speech scoring system, so I read 46 research papers on audio processing and taught myself signal processing from scratch. That project became an 11-dimension pronunciation scorer running Whisper, wav2vec2, Parselmouth, and Silero VAD in production. It taught me that going genuinely deep on a hard problem is more valuable than being broadly familiar with easy ones.
                                 </p>
                                 <p>
-                                    Then I built <span className="text-blue-400 font-medium">Holus</span> -- a 32-agent autonomous system with Redis pub/sub, silo isolation, guardrails, and self-improvement loops. That project confirmed what I suspected: <span className="text-foreground font-medium">the hard problems in AI are not the models. They are the systems around them.</span> Orchestration, reliability, observability, failure recovery -- the stuff that does not make good Twitter threads but determines whether your system works at 3 AM.
+                                    Then I built <span className="text-blue-400 font-medium">Holus</span> -- a 32-agent autonomous system with Redis pub/sub, silo isolation, guardrails, and self-improvement loops. That project confirmed what I suspected: <span className="text-white/80 font-medium">the hard problems in AI are not the models. They are the systems around them.</span> Orchestration, reliability, observability, failure recovery -- the stuff that does not make good Twitter threads but determines whether your system works at 3 AM.
                                 </p>
-                                <p className="text-muted-foreground">
+                                <p className="text-white/50">
                                     I have shipped 10+ production systems and counting. I run 5 days a week, I am trying to hit every street in Astoria, and I am looking for a team where the bar is high and the problems are real.
                                 </p>
                             </div>
@@ -154,7 +154,7 @@ export default function AboutPage() {
                     {/* Visual Timeline */}
                     <ScrollReveal>
                     <div className="mb-16">
-                        <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-foreground mb-10 tracking-[-0.02em]">Timeline</h2>
+                        <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-10 tracking-[-0.02em]">Timeline</h2>
                         <div className="relative">
                             <div className="absolute left-[19px] md:left-[23px] top-2 bottom-2 w-px bg-gradient-to-b from-white/20 via-white/10 to-transparent" />
 
@@ -169,9 +169,9 @@ export default function AboutPage() {
                                                 <span className={`text-sm font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent`}>
                                                     {item.year}
                                                 </span>
-                                                <h3 className="text-foreground font-semibold text-[15px]">{item.title}</h3>
+                                                <h3 className="text-white font-semibold text-[15px]">{item.title}</h3>
                                             </div>
-                                            <p className="text-muted-foreground text-sm leading-relaxed">{item.description}</p>
+                                            <p className="text-white/45 text-sm leading-relaxed">{item.description}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -188,7 +188,7 @@ export default function AboutPage() {
                     {/* Skills Grid */}
                     <ScrollReveal>
                     <div className="mb-16">
-                        <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-foreground mb-10 tracking-[-0.02em]">What I Build With</h2>
+                        <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-10 tracking-[-0.02em]">What I Build With</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             {skills.map((skill) => (
                                 <Card key={skill.title} className="border-white/[0.08] bg-white/[0.02] rounded-2xl group hover:border-white/[0.16] hover:bg-white/[0.04] transition-all duration-500 hover:-translate-y-0.5">
@@ -196,8 +196,8 @@ export default function AboutPage() {
                                         <div className={`w-10 h-10 bg-gradient-to-br ${skill.gradient} border ${skill.border} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
                                             {skill.icon}
                                         </div>
-                                        <h3 className="text-lg font-semibold text-foreground mb-3">{skill.title}</h3>
-                                        <p className="text-muted-foreground text-sm leading-relaxed">
+                                        <h3 className="text-lg font-semibold text-white mb-3">{skill.title}</h3>
+                                        <p className="text-white/50 text-sm leading-relaxed">
                                             {skill.description}
                                         </p>
                                     </div>
@@ -216,7 +216,7 @@ export default function AboutPage() {
                     <ScrollReveal>
                     <Card className="border-white/[0.08] bg-white/[0.02] mb-16 rounded-2xl">
                         <div className="p-8 md:p-12">
-                            <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-foreground mb-10 tracking-[-0.02em]">How I Work</h2>
+                            <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-10 tracking-[-0.02em]">How I Work</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 {[
                                     { n: '01', title: 'Systems over motivation', desc: 'I do not rely on feeling motivated. I build structures that produce output regardless -- automated pipelines, daily commits, public accountability.' },
@@ -227,8 +227,8 @@ export default function AboutPage() {
                                     <div key={v.n} className="flex gap-4 group">
                                         <span className="text-cyan-400/40 font-mono text-sm mt-1 group-hover:text-cyan-400/70 transition-colors">{v.n}</span>
                                         <div>
-                                            <p className="text-foreground font-semibold mb-1.5">{v.title}</p>
-                                            <p className="text-muted-foreground text-sm leading-relaxed">{v.desc}</p>
+                                            <p className="text-white font-semibold mb-1.5">{v.title}</p>
+                                            <p className="text-white/40 text-sm leading-relaxed">{v.desc}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -246,8 +246,8 @@ export default function AboutPage() {
                     <ScrollReveal>
                     <div className="mb-16">
                         <div className="text-center mb-8">
-                            <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-foreground mb-3 tracking-[-0.02em]">Ask Me Anything</h2>
-                            <p className="text-muted-foreground text-[15px]">An AI that knows my background. Try it.</p>
+                            <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-white mb-3 tracking-[-0.02em]">Ask Me Anything</h2>
+                            <p className="text-white/40 text-[15px]">An AI that knows my background. Try it.</p>
                         </div>
                         <Card className="border-white/[0.08] bg-white/[0.02] rounded-2xl overflow-hidden">
                             <Chat />
@@ -258,13 +258,14 @@ export default function AboutPage() {
                     {/* CTA */}
                     <ScrollReveal>
                     <div className="text-center">
-                        <p className="text-muted-foreground text-[17px] mb-8 leading-relaxed max-w-md mx-auto">
+                        <p className="text-white/40 text-[17px] mb-8 leading-relaxed max-w-md mx-auto">
                             Looking for Applied AI Engineer roles. Available now. Based in NYC.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3.5 justify-center">
                             <a
                                 href="mailto:juancamilomabe@gmail.com?subject=AI%20Engineer%20Opportunity"
-                                className="group/cta inline-flex items-center justify-center gap-2.5 bg-foreground text-background text-[15px] font-semibold px-8 py-3.5 rounded-full hover:bg-foreground/95 transition-all duration-300 shadow-[0_0_24px_rgba(255,255,255,0.06)] hover:shadow-[0_0_48px_rgba(255,255,255,0.12)] hover:scale-[1.02]"                            >
+                                className="group/cta inline-flex items-center justify-center gap-2.5 bg-white text-black text-[15px] font-semibold px-8 py-3.5 rounded-full hover:bg-white/95 transition-all duration-300 shadow-[0_0_24px_rgba(255,255,255,0.06)] hover:shadow-[0_0_48px_rgba(255,255,255,0.12)] hover:scale-[1.02]"
+                            >
                                 <span>Send Email</span>
                                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/cta:translate-x-0.5" />
                             </a>

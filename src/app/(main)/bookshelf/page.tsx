@@ -152,14 +152,14 @@ export default function BookshelfPage() {
           <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
             My Bookshelf
           </h1>
-          <p className="text-xl md:text-2xl text-foreground max-w-3xl mx-auto leading-relaxed mb-8">
+          <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-8">
             Books that shaped my thinking on{' '}
             <span className="text-purple-400 font-semibold">AI</span>,{' '}
             <span className="text-cyan-400 font-semibold">data science</span>,{' '}
             <span className="text-pink-400 font-semibold">systems thinking</span>, and{' '}
             <span className="text-emerald-400 font-semibold">personal growth</span>.
           </p>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-white/60 max-w-2xl mx-auto">
             {books.length} carefully curated recommendations across multiple disciplines
           </p>
         </div>
@@ -179,7 +179,7 @@ export default function BookshelfPage() {
                     <div
                       className={`w-full h-48 bg-gradient-to-br ${book.coverColor} rounded-lg mb-6 flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-lg`}
                     >
-                      <BookOpen className="w-16 h-16 text-foreground" />
+                      <BookOpen className="w-16 h-16 text-white/90" />
                     </div>
 
                     <div className="mb-3">
@@ -188,12 +188,12 @@ export default function BookshelfPage() {
                       </span>
                     </div>
 
-                    <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-purple-300 transition-colors">
+                    <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-purple-300 transition-colors">
                       {book.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-4">{book.author}</p>
+                    <p className="text-sm text-white/60 mb-4">{book.author}</p>
 
-                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 flex-1">{book.description}</p>
+                    <p className="text-white/70 text-sm leading-relaxed mb-4 flex-1">{book.description}</p>
 
                     <div className="flex items-center gap-1 text-amber-300 mb-4">
                       {Array.from({ length: 5 }).map((_, starIndex) => (
@@ -204,8 +204,8 @@ export default function BookshelfPage() {
                       ))}
                     </div>
 
-                    <div className="text-sm text-muted-foreground">
-                      <p className="font-medium text-foreground mb-1">Why it matters:</p>
+                    <div className="text-sm text-white/60">
+                      <p className="font-medium text-white/80 mb-1">Why it matters:</p>
                       <p className="leading-relaxed">{book.why}</p>
                     </div>
                   </div>

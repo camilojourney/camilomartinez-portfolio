@@ -69,8 +69,8 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                                 href={item.href}
                                 className={`nav-item transition-all duration-300 relative px-4 py-2 rounded-lg ${
                                     normalizedCurrentPage === item.key 
-                                        ? 'text-foreground bg-white/10' 
-                                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                        ? 'text-white bg-white/10' 
+                                        : 'text-white/70 hover:text-white hover:bg-white/5'
                                 }`}
                             >
                                 {item.label}
@@ -90,12 +90,12 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
             <div className="fixed top-0 left-0 w-full z-50 p-4 md:hidden">
                 <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl shadow-black/10">
                     <div className="flex justify-between items-center">
-                        <a href="/" className="text-foreground font-semibold text-lg tracking-tight">CM</a>
+                        <a href="/" className="text-white font-semibold text-lg tracking-tight">CM</a>
                         <div className="flex items-center space-x-2">
                             <ThemeToggle />
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="text-muted-foreground hover:text-foreground transition-colors p-2"
+                                className="text-white/70 hover:text-white transition-colors p-2"
                             >
                                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
@@ -113,8 +113,8 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                                         onClick={() => setIsMenuOpen(false)}
                                         className={`nav-item transition-all duration-300 px-4 py-3 rounded-lg text-center capitalize ${
                                             normalizedCurrentPage === item.key 
-                                                ? 'text-foreground bg-white/10 border border-white/20' 
-                                                : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                                ? 'text-white bg-white/10 border border-white/20' 
+                                                : 'text-white/70 hover:text-white hover:bg-white/5'
                                         }`}
                                     >
                                         {item.label}

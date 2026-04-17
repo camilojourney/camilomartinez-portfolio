@@ -342,12 +342,12 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="text-center"><div className="text-3xl font-light text-green-400">{totalActiveDays}</div><div className="text-muted-foreground text-sm">Active Days</div></div>
-                <div className="text-center"><div className="text-3xl font-light text-green-400">{(averageStrain || 0).toFixed(1)}</div><div className="text-muted-foreground text-sm">Avg Strain</div></div>
+                <div className="text-center"><div className="text-3xl font-light text-green-400">{totalActiveDays}</div><div className="text-white/60 text-sm">Active Days</div></div>
+                <div className="text-center"><div className="text-3xl font-light text-green-400">{(averageStrain || 0).toFixed(1)}</div><div className="text-white/60 text-sm">Avg Strain</div></div>
                 <div className="text-center">
                     <div className="text-3xl font-light text-green-400">{weeklySuccessRate.toFixed(0)}%</div>
-                    <div className="text-muted-foreground text-sm">Weeks at Goal</div>
-                    <div className="text-muted-foreground text-xs mt-1">{weeksAtGoal}/{totalWeeks} weeks ≥10</div>
+                    <div className="text-white/60 text-sm">Weeks at Goal</div>
+                    <div className="text-white/40 text-xs mt-1">{weeksAtGoal}/{totalWeeks} weeks ≥10</div>
                 </div>
             </div>
             
@@ -358,7 +358,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                         {/* Heatmap Month labels - NOW perfectly aligned */}
                         <div className="flex gap-1 mb-2 ml-[3.25rem] min-w-max">
                             {weeks.map((_, weekIndex) => (
-                                <div key={weekIndex} className="w-3 text-xs text-muted-foreground text-left">
+                                <div key={weekIndex} className="w-3 text-xs text-white/50 text-left">
                                     {monthLabels.get(weekIndex) || ''}
                                 </div>
                             ))}
@@ -368,7 +368,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                             {/* Weekday labels */}
                             <div className="flex flex-col gap-1 mr-3 sticky left-0 z-10 bg-slate-900/80 backdrop-blur-sm px-1.5 py-0.5 rounded-r-md shadow-lg">
                                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                                    <div key={index} className="w-6 h-3 flex items-center text-xs text-foreground font-medium">
+                                    <div key={index} className="w-6 h-3 flex items-center text-xs text-white/90 font-medium">
                                         {(index === 1 && 'Mon') || (index === 3 && 'Wed') || (index === 5 && 'Fri')}
                                     </div>
                                 ))}
@@ -395,41 +395,41 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                 </div>
                 
                 {/* Legend */}
-                <div className="flex items-center gap-3 mt-6 text-xs text-muted-foreground">
+                <div className="flex items-center gap-3 mt-6 text-xs text-white/60">
                     <span className="font-light">Less</span>
                     <div className="flex gap-0.5 relative">
                         <div className="w-2.5 h-2.5 bg-gray-900 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">0: No Activity</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">0: No Activity</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-900/30 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">1-2: Recovery Day</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">1-2: Recovery Day</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-800/50 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">3-5: Rest Day</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">3-5: Rest Day</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-700/60 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">6-7: Light Activity</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">6-7: Light Activity</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-600/70 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">8-9: Moderate Activity</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">8-9: Moderate Activity</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-500/80 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">10-11: Good Training</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">10-11: Good Training</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-400/90 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">12-13: Solid Training</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">12-13: Solid Training</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-400 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">14-15: High Training</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">14-15: High Training</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-300 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">16-17: Very High Training</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">16-17: Very High Training</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-200 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">18-19: Elite Performance</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">18-19: Elite Performance</div>
                         </div>
                         <div className="w-2.5 h-2.5 bg-green-100 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-foreground px-2 py-1 rounded text-xs whitespace-nowrap">20-21: Exceptional Performance</div>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">20-21: Exceptional Performance</div>
                         </div>
                     </div>
                     <span className="font-light">More</span>
@@ -440,7 +440,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                     <div className="mt-8">
                         <div className="text-center mb-4">
                             <h3 className="text-lg text-cyan-400">Weekly Average Strain: Chasing the 10 Goal ⚡</h3>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-white/60">
                                 Each dot represents my weekly average strain. Consistency above 10 means optimal fitness growth.
                             </p>
                         </div>
@@ -503,7 +503,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                 {/* Chart Month labels - Aligned with heatmap */}
                                 <div className="flex gap-1 mt-2 ml-[3.25rem] min-w-max">
                                    {weeks.map((_, weekIndex) => (
-                                        <div key={weekIndex} className="w-3 text-xs text-muted-foreground text-left">
+                                        <div key={weekIndex} className="w-3 text-xs text-white/50 text-left">
                                             {monthLabels.get(weekIndex) || ''}
                                         </div>
                                     ))}
@@ -517,15 +517,15 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                             <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-[#22c55e]"></div>
-                                    <span className="text-muted-foreground text-sm">Above Goal (10+)</span>
+                                    <span className="text-white/70 text-sm">Above Goal (10+)</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-full bg-[#ef4444]"></div>
-                                    <span className="text-muted-foreground text-sm">Below Goal</span>
+                                    <span className="text-white/70 text-sm">Below Goal</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
-                                    <span className="text-muted-foreground text-sm">Target (10)</span>
+                                    <span className="text-white/70 text-sm">Target (10)</span>
                                 </div>
                             </div>
 
@@ -542,17 +542,17 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                 return (
                                     <div className="flex justify-center items-center gap-8 p-4 bg-black/20 rounded-xl">
                                         <div className="text-center">
-                                            <div className="text-muted-foreground text-sm mb-1">Last 3 Months</div>
+                                            <div className="text-white/60 text-sm mb-1">Last 3 Months</div>
                                             <div className="text-xl font-semibold text-cyan-400">{successRate.toFixed(1)}%</div>
-                                            <div className="text-muted-foreground text-xs">Success Rate</div>
+                                            <div className="text-white/60 text-xs">Success Rate</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-muted-foreground text-sm mb-1">Weeks at Goal</div>
+                                            <div className="text-white/60 text-sm mb-1">Weeks at Goal</div>
                                             <div className="text-xl font-semibold text-cyan-400">{successfulWeeks} of {totalWeeks}</div>
-                                            <div className="text-muted-foreground text-xs">Last 12 Weeks</div>
+                                            <div className="text-white/60 text-xs">Last 12 Weeks</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-muted-foreground text-sm mb-1">Average Strain</div>
+                                            <div className="text-white/60 text-sm mb-1">Average Strain</div>
                                             <div className="text-xl font-semibold text-cyan-400">
                                                 {averageStrain.toFixed(1)}
                                             </div>
@@ -581,7 +581,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                     }}
                 >
                     <div className="bg-black/95 backdrop-blur-sm border-2 border-green-400 rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
-                        <div className="text-foreground text-sm font-medium mb-2">
+                        <div className="text-white text-sm font-medium mb-2">
                             {new Date(hoveredDay.date + 'T00:00:00').toLocaleDateString('en-US', {
                                 weekday: 'short',
                                 month: 'short',
@@ -617,7 +617,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                     }}
                 >
                     <div className="bg-black/95 backdrop-blur-sm border-2 border-yellow-400 rounded-lg p-3 shadow-2xl min-w-[160px]">
-                        <div className="text-foreground text-sm font-medium mb-1">
+                        <div className="text-white text-sm font-medium mb-1">
                             {hoveredMonth.label}
                         </div>
                         <div className="text-xs text-gray-400 mb-2">

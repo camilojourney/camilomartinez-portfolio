@@ -123,12 +123,12 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
     if (!data || data.length === 0) {
         return (
             <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-4 sm:p-8 text-center">
-                <div className="text-muted-foreground mb-4">
+                <div className="text-white/60 mb-4">
                     <svg className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    <h3 className="text-xl font-light text-foreground mb-2">Insufficient Data</h3>
-                    <p className="text-muted-foreground font-light">
+                    <h3 className="text-xl font-light text-white mb-2">Insufficient Data</h3>
+                    <p className="text-white/60 font-light">
                         Need both strain and recovery data to show correlation analysis.
                     </p>
                 </div>
@@ -142,21 +142,21 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
                 <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">{stats.totalPoints}</div>
-                    <div className="text-muted-foreground text-xs sm:text-sm font-light">Data Points</div>
+                    <div className="text-white/60 text-xs sm:text-sm font-light">Data Points</div>
                 </div>
                 <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">{stats.avgStrain}</div>
-                    <div className="text-muted-foreground text-xs sm:text-sm font-light">Avg Strain</div>
+                    <div className="text-white/60 text-xs sm:text-sm font-light">Avg Strain</div>
                 </div>
                 <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">{stats.avgRecovery}%</div>
-                    <div className="text-muted-foreground text-xs sm:text-sm font-light">Avg Recovery</div>
+                    <div className="text-white/60 text-xs sm:text-sm font-light">Avg Recovery</div>
                 </div>
                 <div className="text-center p-2 sm:p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] stat-card-hover">
                     <div className="text-xl sm:text-2xl font-light text-cyan-400 mb-1">
                         {correlation >= 0 ? '+' : ''}{(correlation * 100).toFixed(0)}%
                     </div>
-                    <div className="text-muted-foreground text-xs sm:text-sm font-light">Correlation</div>
+                    <div className="text-white/60 text-xs sm:text-sm font-light">Correlation</div>
                 </div>
             </div>
 
@@ -299,23 +299,23 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 {/* Legend */}
                 <div>
-                    <h3 className="text-base sm:text-lg font-medium text-foreground mb-2 sm:mb-4">Recovery Zones</h3>
+                    <h3 className="text-base sm:text-lg font-medium text-white mb-2 sm:mb-4">Recovery Zones</h3>
                     <div className="space-y-2 sm:space-y-3">
                         <div className="flex items-center gap-3">
                             <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                            <span className="text-foreground text-sm">
+                            <span className="text-white/80 text-sm">
                                 Optimal Recovery (67%+): {stats.goodRecoveryDays} days
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
-                            <span className="text-foreground text-sm">
+                            <span className="text-white/80 text-sm">
                                 Moderate Recovery (34-66%): {stats.moderateRecoveryDays} days
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                            <span className="text-foreground text-sm">
+                            <span className="text-white/80 text-sm">
                                 Poor Recovery (&lt;34%): {stats.poorRecoveryDays} days
                             </span>
                         </div>
@@ -324,8 +324,8 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
 
                 {/* Analysis */}
                 <div>
-                    <h3 className="text-base sm:text-lg font-medium text-foreground mb-2 sm:mb-4">Correlation Analysis</h3>
-                    <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-foreground">
+                    <h3 className="text-base sm:text-lg font-medium text-white mb-2 sm:mb-4">Correlation Analysis</h3>
+                    <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-white/80">
                         <p>
                             <span className="text-cyan-400 font-medium">Trend:</span> {stats.correlationDirection}
                             {correlation !== 0 && (
@@ -334,7 +334,7 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                                 </span>
                             )}
                         </p>
-                        <p className="text-muted-foreground font-light">
+                        <p className="text-white/60 font-light">
                             {Math.abs(correlation) > 0.3
                                 ? correlation > 0
                                     ? "Higher strain days tend to result in better recovery scores—indicating effective training adaptation."
@@ -347,7 +347,7 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
 
                 {/* Strain Prediction for 60% Recovery - Small, Right-aligned */}
                 <div>
-                    <h3 className="text-base sm:text-lg font-medium text-foreground mb-2 sm:mb-4 flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-medium text-white mb-2 sm:mb-4 flex items-center gap-2">
                         <span>🎯</span>
                         60% Recovery Target
                     </h3>
@@ -356,10 +356,10 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                             <div className="text-xl font-bold text-cyan-400">
                                 {strainFor60Recovery.toFixed(1)} strain
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-xs text-white/50">
                                 R² = {(correlation * correlation).toFixed(3)}
                             </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-xs text-white/40">
                                 Based on your personal pattern
                             </div>
                         </div>

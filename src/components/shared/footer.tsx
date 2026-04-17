@@ -39,10 +39,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8 mb-12">
           {/* Brand column */}
           <div className="md:col-span-5">
-            <p className="text-base font-semibold text-foreground tracking-tight mb-2">
+            <p className="text-base font-semibold text-white tracking-tight mb-2">
               Camilo Martinez
             </p>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+            <p className="text-sm text-white/50 leading-relaxed max-w-xs">
               Applied AI Engineer in NYC. Building audio/speech ML pipelines and multi-agent systems.
             </p>
             <div className="flex items-center gap-3 mt-4">
@@ -50,12 +50,12 @@ export default function Footer() {
                 href="https://github.com/camilojourney"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-muted-foreground transition-colors duration-200 border border-white/[0.08] rounded-full px-3 py-1.5"
+                className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors duration-200 border border-white/[0.08] rounded-full px-3 py-1.5"
               >
                 <GitHubIcon />
                 <span>15+ repos</span>
               </a>
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border border-white/[0.08] rounded-full px-3 py-1.5">
+              <span className="inline-flex items-center gap-1.5 text-xs text-white/40 border border-white/[0.08] rounded-full px-3 py-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70"></span>
                 10+ production systems
               </span>
@@ -64,21 +64,21 @@ export default function Footer() {
 
           {/* Navigation column */}
           <div className="md:col-span-3">
-            <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground mb-4">
+            <p className="text-xs font-medium uppercase tracking-[0.15em] text-white/30 mb-4">
               Pages
             </p>
             <nav className="flex flex-col gap-2.5" aria-label="Footer navigation">
-              <a href="/projects" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 w-fit">Work</a>
-              <a href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 w-fit">About</a>
-              <a href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 w-fit">Blog</a>
-              <a href="/bookshelf" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 w-fit">Bookshelf</a>
-              <a href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 w-fit">Contact</a>
+              <a href="/projects" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Work</a>
+              <a href="/about" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">About</a>
+              <a href="/blog" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Blog</a>
+              <a href="/bookshelf" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Bookshelf</a>
+              <a href="/contact" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Contact</a>
             </nav>
           </div>
 
           {/* Connect column */}
           <div className="md:col-span-4">
-            <p className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground mb-4">
+            <p className="text-xs font-medium uppercase tracking-[0.15em] text-white/30 mb-4">
               Connect
             </p>
             <div className="flex flex-col gap-2.5">
@@ -86,7 +86,7 @@ export default function Footer() {
                 href="https://github.com/camilojourney"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 w-fit"
+                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit"
                 aria-label="GitHub"
               >
                 <GitHubIcon />
@@ -96,7 +96,7 @@ export default function Footer() {
                 href="https://www.linkedin.com/in/camilomartinez-ai/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 text-sm text-muted-foreground hover:text-blue-400 transition-colors duration-200 w-fit"
+                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-blue-400 transition-colors duration-200 w-fit"
                 aria-label="LinkedIn"
               >
                 <LinkedInIcon />
@@ -106,7 +106,7 @@ export default function Footer() {
                 href="https://x.com/camilojourney"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 w-fit"
+                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit"
                 aria-label="X (Twitter)"
               >
                 <XIcon />
@@ -114,7 +114,7 @@ export default function Footer() {
               </a>
               <a
                 href="mailto:juancamilomabe@gmail.com"
-                className="group inline-flex items-center gap-2.5 text-sm text-muted-foreground hover:text-cyan-400 transition-colors duration-200 w-fit"
+                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-cyan-400 transition-colors duration-200 w-fit"
                 aria-label="Email"
               >
                 <EmailIcon />
@@ -128,12 +128,12 @@ export default function Footer() {
         <div className="w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent mb-6"></div>
 
         {/* Bottom row */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
           <span>&copy; {new Date().getFullYear()} Juan Camilo Martinez. All rights reserved.</span>
           <div className="flex items-center gap-4">
-            <a href="/privacy-policy" className="hover:text-muted-foreground transition-colors duration-200">Privacy</a>
-            <a href="/terms-of-service" className="hover:text-muted-foreground transition-colors duration-200">Terms</a>
-            <a href="/sitemap.xml" className="hover:text-muted-foreground transition-colors duration-200">Sitemap</a>
+            <a href="/privacy-policy" className="hover:text-white/60 transition-colors duration-200">Privacy</a>
+            <a href="/terms-of-service" className="hover:text-white/60 transition-colors duration-200">Terms</a>
+            <a href="/sitemap.xml" className="hover:text-white/60 transition-colors duration-200">Sitemap</a>
           </div>
         </div>
       </div>

@@ -59,8 +59,8 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
 
     return (
         <div className="w-full bg-black/20 rounded-2xl p-6 mt-6">
-            <h3 className="text-lg font-light text-foreground mb-2 text-center">Monthly Training Days</h3>
-            <p className="text-muted-foreground text-sm mb-4 text-center">
+            <h3 className="text-lg font-light text-white mb-2 text-center">Monthly Training Days</h3>
+            <p className="text-white/60 text-sm mb-4 text-center">
                 How many days per month did I train?
             </p>
 
@@ -192,9 +192,9 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
             <div className="flex justify-center items-center gap-6 mt-4 p-4 bg-black/20 rounded-xl">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm bg-purple-400"></div>
-                    <span className="text-muted-foreground text-sm">Training Days per Month</span>
+                    <span className="text-white/70 text-sm">Training Days per Month</span>
                 </div>
-                <div className="text-muted-foreground text-sm">
+                <div className="text-white/60 text-sm">
                     Max: 31 days
                 </div>
             </div>

@@ -1,1 +1,0 @@
-/Users/mini/shared-claude-rules/guardrails.md

@@ -52,18 +52,18 @@ export function DataCollectionTools() {
 
     return (
         <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8">
-            <h2 className="text-2xl font-semibold text-foreground mb-6 text-center">
+            <h2 className="text-2xl font-semibold text-white mb-6 text-center">
                 Data Collection Tools
             </h2>
-            <p className="text-muted-foreground text-center mb-8">
+            <p className="text-white/70 text-center mb-8">
                 Use these tools to collect and sync your WHOOP data to the database for analysis.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Historical Data Collection */}
                 <div className="liquid-glass-card backdrop-blur-lg bg-green-500/10 border border-green-400/20 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Historical Data</h3>
-                    <p className="text-muted-foreground text-sm mb-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Historical Data</h3>
+                    <p className="text-white/70 text-sm mb-6">
                         Collect your historical WHOOP data (last 30 days) and store it in the database.
                     </p>
                     <button
@@ -77,8 +77,8 @@ export function DataCollectionTools() {
 
                 {/* Daily Sync */}
                 <div className="liquid-glass-card backdrop-blur-lg bg-blue-500/10 border border-blue-400/20 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Daily Sync</h3>
-                    <p className="text-muted-foreground text-sm mb-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Daily Sync</h3>
+                    <p className="text-white/70 text-sm mb-6">
                         Sync recent data and fill in any missing sleep/recovery information.
                     </p>
                     <button
@@ -94,8 +94,8 @@ export function DataCollectionTools() {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* View Data */}
                 <div className="liquid-glass-card backdrop-blur-lg bg-purple-500/10 border border-purple-400/20 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">View Database</h3>
-                    <p className="text-muted-foreground text-sm mb-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">View Database</h3>
+                    <p className="text-white/70 text-sm mb-6">
                         Check what data is currently stored in the database.
                     </p>
                     <button
@@ -109,8 +109,8 @@ export function DataCollectionTools() {
 
                 {/* Check Schema */}
                 <div className="liquid-glass-card backdrop-blur-lg bg-cyan-500/10 border border-cyan-400/20 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Check Schema</h3>
-                    <p className="text-muted-foreground text-sm mb-6">
+                    <h3 className="text-lg font-semibold text-white mb-4">Check Schema</h3>
+                    <p className="text-white/70 text-sm mb-6">
                         Verify the database schema and data integrity.
                     </p>
                     <button
@@ -136,10 +136,10 @@ export function DataCollectionTools() {
             {lastResult && (
                 <details className="mt-6 liquid-glass-card backdrop-blur-lg bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden">
                     <summary className="p-4 cursor-pointer hover:bg-white/[0.03] transition-colors">
-                        <span className="text-foreground font-medium">View Last Result</span>
+                        <span className="text-white font-medium">View Last Result</span>
                     </summary>
                     <div className="border-t border-white/[0.08] p-4 bg-black/20">
-                        <pre className="text-xs text-foreground whitespace-pre-wrap overflow-x-auto">
+                        <pre className="text-xs text-white/80 whitespace-pre-wrap overflow-x-auto">
                             {JSON.stringify(lastResult, null, 2)}
                         </pre>
                     </div>

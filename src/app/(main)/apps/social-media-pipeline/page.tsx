@@ -110,7 +110,7 @@ export default function SocialMediaPipelinePage() {
         >
           <Link
             href="/apps"
-            className="inline-flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors group"
+            className="inline-flex items-center space-x-2 text-white/60 hover:text-white transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Back to Apps</span>
@@ -136,7 +136,7 @@ export default function SocialMediaPipelinePage() {
           <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight">
             Social Media Pipeline
           </h1>
-          <p className="text-xl md:text-2xl text-foreground max-w-3xl mx-auto leading-relaxed mb-8">
+          <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-8">
             Transform raw thoughts into platform-optimized posts for X, Threads, LinkedIn, Instagram, and Facebook.
           </p>
         </motion.section>
@@ -153,9 +153,9 @@ export default function SocialMediaPipelinePage() {
             <div className="mb-6">
               <div className="flex items-center space-x-2 mb-2">
                 <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                <h2 className="text-2xl font-bold text-foreground">Your Raw Thought</h2>
+                <h2 className="text-2xl font-bold text-white">Your Raw Thought</h2>
               </div>
-              <p className="text-muted-foreground text-sm">Enter your idea. AI will adapt it for each platform.</p>
+              <p className="text-white/60 text-sm">Enter your idea. AI will adapt it for each platform.</p>
             </div>
 
             <div className="space-y-6">
@@ -164,14 +164,14 @@ export default function SocialMediaPipelinePage() {
                   value={thought}
                   onChange={(e) => setThought(e.target.value)}
                   placeholder="What's on your mind..."
-                  className="w-full h-40 p-4 bg-white/[0.05] border border-white/[0.15] rounded-2xl text-foreground placeholder-white/40 resize-none focus:outline-none focus:border-purple-400/50 focus:bg-white/[0.08] transition-all"
+                  className="w-full h-40 p-4 bg-white/[0.05] border border-white/[0.15] rounded-2xl text-white placeholder-white/40 resize-none focus:outline-none focus:border-purple-400/50 focus:bg-white/[0.08] transition-all"
                   rows={5}
                 />
               </div>
 
               {/* Examples */}
               <div>
-                <p className="text-muted-foreground text-sm mb-3 font-medium">Examples:</p>
+                <p className="text-white/60 text-sm mb-3 font-medium">Examples:</p>
                 <div className="flex flex-wrap gap-2">
                   {examples.map((example, idx) => (
                     <motion.button
@@ -180,7 +180,7 @@ export default function SocialMediaPipelinePage() {
                       onClick={() => setThought(example)}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-xs text-foreground rounded-full transition-all cursor-pointer"
+                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-xs text-white rounded-full transition-all cursor-pointer"
                     >
                       {example}
                     </motion.button>
@@ -190,7 +190,7 @@ export default function SocialMediaPipelinePage() {
 
               {/* Platforms */}
               <div>
-                <p className="text-foreground font-medium mb-4">Platforms ({selectedPlatforms.length}/6)</p>
+                <p className="text-white/80 font-medium mb-4">Platforms ({selectedPlatforms.length}/6)</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {platforms.map(({ key, label, icon: Icon }) => (
                     <motion.button
@@ -202,7 +202,7 @@ export default function SocialMediaPipelinePage() {
                       className={`flex items-center space-x-2 p-3 rounded-xl border transition-all group ${
                         selectedPlatforms.includes(key)
                           ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400/40 text-purple-200 shadow-lg shadow-purple-500/20'
-                          : 'bg-white/[0.05] border-white/[0.15] text-white/60 hover:bg-white/[0.1] hover:border-white/30 hover:text-foreground'
+                          : 'bg-white/[0.05] border-white/[0.15] text-white/60 hover:bg-white/[0.1] hover:border-white/30 hover:text-white'
                       }`}
                     >
                       <Icon className="w-5 h-5 flex-shrink-0" />
@@ -217,7 +217,7 @@ export default function SocialMediaPipelinePage() {
                 disabled={!thought.trim() || selectedPlatforms.length === 0 || loading}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-foreground font-medium rounded-xl transition-all shadow-lg hover:shadow-purple-500/50 disabled:shadow-none"
+                className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-purple-500/50 disabled:shadow-none"
               >
                 {loading ? (
                   <>
@@ -239,9 +239,9 @@ export default function SocialMediaPipelinePage() {
             <div className="mb-6">
               <div className="flex items-center space-x-2 mb-2">
                 <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                <h2 className="text-2xl font-bold text-foreground">Generated Content</h2>
+                <h2 className="text-2xl font-bold text-white">Generated Content</h2>
               </div>
-              <p className="text-muted-foreground text-sm">Optimized posts ready to copy & post.</p>
+              <p className="text-white/60 text-sm">Optimized posts ready to copy & post.</p>
             </div>
 
             <AnimatePresence>
@@ -259,12 +259,12 @@ export default function SocialMediaPipelinePage() {
             </AnimatePresence>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center h-64 text-white/40">
                 <Zap className="w-12 h-12 mb-4 text-purple-400/50 animate-pulse" />
                 <p className="text-lg">Generating your posts...</p>
               </div>
             ) : results.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
+              <div className="h-64 flex flex-col items-center justify-center text-white/40">
                 <Sparkles className="w-16 h-16 mb-4 text-purple-400/30" />
                 <p>Generated posts will appear here</p>
                 <p className="text-sm mt-1">Select platforms above and click Generate</p>
@@ -286,7 +286,7 @@ export default function SocialMediaPipelinePage() {
                         <div className="flex items-center space-x-2">
                           <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full" />
                           <Icon className="w-5 h-5 text-purple-400" />
-                          <span className="font-semibold text-foreground">{info?.label || platform}</span>
+                          <span className="font-semibold text-white">{info?.label || platform}</span>
                         </div>
                       </div>
 
@@ -301,17 +301,17 @@ export default function SocialMediaPipelinePage() {
                         {copiedPlatform === platform ? (
                           <span className="text-green-400 text-xs font-bold">✓ Copied!</span>
                         ) : (
-                          <Copy className="w-4 h-4 text-foreground group-hover:text-foreground" />
+                          <Copy className="w-4 h-4 text-white/80 group-hover:text-white" />
                         )}
                       </motion.button>
 
                       {/* Content */}
-                      <pre className="whitespace-pre-wrap text-foreground text-sm leading-relaxed mb-4 max-h-48 overflow-y-auto font-sans">
+                      <pre className="whitespace-pre-wrap text-white/95 text-sm leading-relaxed mb-4 max-h-48 overflow-y-auto font-sans">
                         {content}
                       </pre>
 
                       {/* Footer */}
-                      <div className="flex items-center justify-between pt-4 border-t border-white/10 text-xs text-muted-foreground mt-auto">
+                      <div className="flex items-center justify-between pt-4 border-t border-white/10 text-xs text-white/60 mt-auto">
                         <span>Chars: {content.length}</span>
                       </div>
                     </motion.div>

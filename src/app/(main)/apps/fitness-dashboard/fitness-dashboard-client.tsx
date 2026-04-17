@@ -40,7 +40,7 @@ function DashboardStateCard({
     const toneStyles = {
         neutral: {
             badge: 'from-cyan-500/20 to-blue-500/20 border-cyan-400/30 text-cyan-300',
-            icon: 'text-muted-foreground',
+            icon: 'text-white/60',
         },
         error: {
             badge: 'from-rose-500/20 to-orange-500/20 border-rose-400/30 text-rose-200',
@@ -74,8 +74,8 @@ function DashboardStateCard({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         )}
                     </svg>
-                    <h3 className="text-2xl font-semibold mb-4 text-foreground">{title}</h3>
-                    <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
+                    <h3 className="text-2xl font-semibold mb-4 text-white">{title}</h3>
+                    <p className="text-white/70 text-lg leading-relaxed max-w-2xl mx-auto">
                         {description}
                     </p>
                 </div>
@@ -145,7 +145,7 @@ export default function FitnessDashboardClient({
                             </div>
                         </ScrollReveal>
                         <ScrollReveal delay={0.4}>
-                            <p className="text-xl md:text-2xl text-foreground max-w-4xl mx-auto leading-relaxed">
+                            <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
                                 Real-time insights into my health and performance. This dashboard showcases{' '}
                                 <span className="text-cyan-400 font-semibold">data engineering</span>,{' '}
                                 <span className="text-blue-400 font-semibold">API integration</span>, and{' '}
@@ -182,11 +182,11 @@ export default function FitnessDashboardClient({
                                         <div className="flex flex-col gap-2 text-left md:flex-row md:items-center md:justify-between">
                                             <div>
                                                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-200/90">Partial Dataset</p>
-                                                <p className="mt-2 text-lg text-foreground">
+                                                <p className="mt-2 text-lg text-white">
                                                     Some sections are waiting on more synced records.
                                                 </p>
                                             </div>
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-white/70">
                                                 Missing: {missingSections.join(', ')}.
                                             </p>
                                         </div>
@@ -206,20 +206,20 @@ export default function FitnessDashboardClient({
                                         </ScrollReveal>
                                         <TextReveal
                                             as="h2"
-                                            className="text-3xl md:text-4xl font-bold mb-4 text-foreground"
+                                            className="text-3xl md:text-4xl font-bold mb-4 text-white"
                                             delay={0.2}
                                         >
                                             My Strain Journey
                                         </TextReveal>
                                         <ScrollReveal delay={0.3}>
-                                            <div className="space-y-4 text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed mb-6">
+                                            <div className="space-y-4 text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-6">
                                                 <p>
-                                                    Movement goes beyond counting steps -- it is about <span className="font-bold text-foreground">real effort</span>. WHOOP&apos;s strain score combines <span className="font-bold text-foreground">heart rate and activity</span> to show how hard you actually push.
+                                                    Movement goes beyond counting steps -- it is about <span className="font-bold text-white">real effort</span>. WHOOP&apos;s strain score combines <span className="font-bold text-white">heart rate and activity</span> to show how hard you actually push.
                                                 </p>
                                                 <p>
-                                                    Each month, I aim for an <span className="font-bold text-foreground">average strain of 10</span> -- that sweet spot between progress and burnout. <span className="text-yellow-400 font-semibold">The yellow dotted line</span> marks my North Star for daily movement.
+                                                    Each month, I aim for an <span className="font-bold text-white">average strain of 10</span> -- that sweet spot between progress and burnout. <span className="text-yellow-400 font-semibold">The yellow dotted line</span> marks my North Star for daily movement.
                                                 </p>
-                                                <p className="text-muted-foreground text-base italic">
+                                                <p className="text-white/60 text-base italic">
                                                     Below: Each square = one day. Brighter greens = higher strain (max: 21).
                                                 </p>
                                                 <p className="text-cyan-400 font-semibold text-center">
@@ -248,14 +248,14 @@ export default function FitnessDashboardClient({
                                         </ScrollReveal>
                                         <TextReveal
                                             as="h2"
-                                            className="text-3xl md:text-4xl font-bold mb-4 text-foreground"
+                                            className="text-3xl md:text-4xl font-bold mb-4 text-white"
                                             delay={0.2}
                                         >
                                             Strain vs. Recovery: The Core Performance Loop
                                         </TextReveal>
                                         <ScrollReveal delay={0.3}>
-                                            <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
-                                                Each dot represents <span className="font-bold text-foreground">one day</span>, showing how <span className="font-bold text-cyan-400">training intensity</span> impacts <span className="font-bold text-blue-400">recovery capacity</span>. The trend line reveals the fundamental relationship between <span className="font-bold text-foreground">effort and restoration</span>.
+                                            <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
+                                                Each dot represents <span className="font-bold text-white">one day</span>, showing how <span className="font-bold text-cyan-400">training intensity</span> impacts <span className="font-bold text-blue-400">recovery capacity</span>. The trend line reveals the fundamental relationship between <span className="font-bold text-white">effort and restoration</span>.
                                             </p>
                                         </ScrollReveal>
                                     </div>
@@ -276,14 +276,14 @@ export default function FitnessDashboardClient({
                                     </ScrollReveal>
                                     <TextReveal
                                         as="h2"
-                                        className="text-3xl md:text-4xl font-bold mb-3 text-foreground"
+                                        className="text-3xl md:text-4xl font-bold mb-3 text-white"
                                         delay={0.2}
                                     >
                                         Training Analytics
                                     </TextReveal>
                                     <ScrollReveal delay={0.3}>
-                                        <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed mb-0">
-                                            Time-series analysis showing <span className="font-bold text-purple-400">training distribution</span> across different sports and workout types. Each bar reveals <span className="font-bold text-foreground">session counts</span> and <span className="font-bold text-pink-400">total hours</span> of activity.
+                                        <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed mb-0">
+                                            Time-series analysis showing <span className="font-bold text-purple-400">training distribution</span> across different sports and workout types. Each bar reveals <span className="font-bold text-white">session counts</span> and <span className="font-bold text-pink-400">total hours</span> of activity.
                                         </p>
                                     </ScrollReveal>
                                 </div>
@@ -297,12 +297,12 @@ export default function FitnessDashboardClient({
                             {/* Call to Action */}
                             <ScrollReveal>
                                 <Card className="border-white/10 bg-gradient-to-br from-cyan-500/15 to-blue-500/10 border-cyan-400/30 p-8 md:p-10 text-center space-y-4">
-                                    <h3 className="text-2xl md:text-3xl font-semibold text-foreground">Want to see how this was built?</h3>
-                                    <p className="text-muted-foreground text-lg">Dive into the technical architecture, challenges solved, and the data pipeline powering this dashboard.</p>
+                                    <h3 className="text-2xl md:text-3xl font-semibold text-white">Want to see how this was built?</h3>
+                                    <p className="text-white/70 text-lg">Dive into the technical architecture, challenges solved, and the data pipeline powering this dashboard.</p>
                                     <MagneticButton
                                         as="a"
                                         href="/projects/fitness-dashboard"
-                                        className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/20 px-6 py-3 text-foreground font-medium transition-all duration-300 hover:scale-105 hover:border-cyan-300/60 hover:bg-cyan-500/30 hover:text-cyan-100"
+                                        className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/20 px-6 py-3 text-white font-medium transition-all duration-300 hover:scale-105 hover:border-cyan-300/60 hover:bg-cyan-500/30 hover:text-cyan-100"
                                     >
                                         <span>Read the case study</span>
                                         <span aria-hidden className="text-lg">&#8594;</span>

@@ -22,14 +22,14 @@ export function BlogPosts() {
             href={`/blog/${post.slug}`}
           >
             <div className="flex flex-col gap-2">
-              <p className="text-sm text-muted-foreground font-medium tabular-nums">
+              <p className="text-sm text-white/40 font-medium tabular-nums">
                 {formatDate(post.metadata.publishedAt, false)}
               </p>
-              <h3 className="text-lg font-semibold text-foreground group-hover:text-cyan-300 transition-colors duration-200">
+              <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300 transition-colors duration-200">
                 {post.metadata.title}
               </h3>
               {post.metadata.summary && (
-                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                <p className="text-sm text-white/50 leading-relaxed line-clamp-2">
                   {post.metadata.summary}
                 </p>
               )}

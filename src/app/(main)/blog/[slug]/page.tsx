@@ -130,7 +130,7 @@ export default async function Blog({ params }: PageProps) {
         <div className="max-w-3xl mx-auto">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-cyan-400 transition-colors duration-200 mb-10"
+            className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-cyan-400 transition-colors duration-200 mb-10"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
@@ -141,7 +141,7 @@ export default async function Blog({ params }: PageProps) {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight mb-6">
               {post.metadata.title}
             </h1>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-3 text-sm text-white/40">
               <time dateTime={post.metadata.publishedAt}>
                 {formatDate(post.metadata.publishedAt)}
               </time>
@@ -149,7 +149,7 @@ export default async function Blog({ params }: PageProps) {
               <span>{readingTime} min read</span>
             </div>
           </header>
-          <article className="prose prose-invert prose-lg prose-p:text-muted-foreground prose-headings:text-foreground prose-a:text-cyan-400 prose-strong:text-white/90 prose-code:text-cyan-300 max-w-none">
+          <article className="prose prose-invert prose-lg prose-p:text-white/70 prose-headings:text-white prose-a:text-cyan-400 prose-strong:text-white/90 prose-code:text-cyan-300 max-w-none">
             <CustomMDX source={post.content} />
           </article>
           <div className="my-16 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
@@ -159,8 +159,8 @@ export default async function Blog({ params }: PageProps) {
                 href={`/blog/${prevPost.slug}`}
                 className="group rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.04]"
               >
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Previous</span>
-                <p className="mt-2 text-foreground font-medium group-hover:text-foreground transition-colors">
+                <span className="text-xs text-white/30 uppercase tracking-wider">Previous</span>
+                <p className="mt-2 text-white/80 font-medium group-hover:text-white transition-colors">
                   {prevPost.metadata.title}
                 </p>
               </Link>
@@ -172,8 +172,8 @@ export default async function Blog({ params }: PageProps) {
                 href={`/blog/${nextPost.slug}`}
                 className="group rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 text-right transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.04]"
               >
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Next</span>
-                <p className="mt-2 text-foreground font-medium group-hover:text-foreground transition-colors">
+                <span className="text-xs text-white/30 uppercase tracking-wider">Next</span>
+                <p className="mt-2 text-white/80 font-medium group-hover:text-white transition-colors">
                   {nextPost.metadata.title}
                 </p>
               </Link>

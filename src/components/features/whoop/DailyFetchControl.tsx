@@ -50,10 +50,10 @@ export function DailyFetchControl() {
           <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
           <span className="text-blue-300 font-semibold tracking-wide">Data Pipeline Control</span>
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
           Daily Data Sync
         </h2>
-        <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
+        <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
           Manually trigger the daily WHOOP data collection pipeline. This connects to the same cron job that runs automatically at 3 PM daily.
           <span className="block mt-2 text-blue-400 font-semibold">Real-time Token Refresh • Multi-user Data Processing • Error Handling</span>
           <span className="block mt-1 text-blue-300 text-sm">Skills: API Integration, Cron Jobs, Data Pipeline Engineering, Error Recovery</span>
@@ -83,7 +83,7 @@ export function DailyFetchControl() {
         {/* Loading State */}
         {isLoading && (
           <div className="text-center">
-            <div className="inline-flex items-center gap-3 text-muted-foreground">
+            <div className="inline-flex items-center gap-3 text-white/60">
               <div className="w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
               <span>Processing data pipeline...</span>
             </div>
