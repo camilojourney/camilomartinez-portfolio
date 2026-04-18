@@ -27,6 +27,7 @@ THEMES = {
         "TEXT": "#e2e8f0",
         "MUTED": "#94a3b8",
         "GRID": "#2a2a3e",
+        "UBER": "#ffffff",
     },
     "light": {
         "BG": "#ffffff",
@@ -34,6 +35,7 @@ THEMES = {
         "TEXT": "#0f172a",
         "MUTED": "#64748b",
         "GRID": "#e2e8f0",
+        "UBER": "#000000",
     },
 }
 UBER_GREEN = "#ffffff"
@@ -58,6 +60,22 @@ TICKER_COLORS = {
 
 def get_theme(mode: str | None) -> dict:
     return THEMES.get(mode or "dark", THEMES["dark"])
+
+
+def get_ticker_colors(theme: dict) -> dict:
+    return {
+        "UBER": theme["UBER"],
+        "LYFT": LYFT_PINK,
+        "TAXI": TAXI_YELLOW,
+        "DASH": NEG_RED,
+        "ABNB": "#fb923c",
+        "BKNG": RAIN_BLUE,
+        "EXPE": "#c4b5fd",
+        "XLY":  "#a78bfa",
+        "COMBINED": "#a78bfa",
+    }
+
+
 
 # ── Data load ─────────────────────────────────────────────────────────────────
 trips = pd.read_csv(DATA / "trips_daily.csv", parse_dates=["date"])
@@ -500,7 +518,8 @@ def update_stocks(rng, comparators, mode, theme_mode):
 
     for row in series:
         t = row["t"]
-        color = TICKER_COLORS.get(t, theme["MUTED"])
+        ticker_colors = get_ticker_colors(theme)
+        color = ticker_colors.get(t, theme["MUTED"])
         dash_style = "solid" if t == "UBER" else "dot"
         width = 2.6 if t == "UBER" else 1.7
 
@@ -628,7 +647,7 @@ def update_trips_temp(rng, theme_mode):
     fig = go.Figure()
     fig.add_trace(go.Bar(
         x=merged["date"], y=merged["uber_trips"], name="Uber",
-        marker_color=UBER_GREEN, opacity=0.7,
+        marker_color=theme["UBER"], opacity=0.7,
         hovertemplate="%{x|%b %d}<br>Uber: %{y:,}<extra></extra>",
     ))
     fig.add_trace(go.Bar(
@@ -725,7 +744,7 @@ def update_dow(rng, theme_mode):
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        x=agg["dow_short"], y=agg["uber_trips"], name="Uber", marker_color=UBER_GREEN,
+        x=agg["dow_short"], y=agg["uber_trips"], name="Uber", marker_color=theme["UBER"],
         hovertemplate="%{x}<br>Uber avg: %{y:,.0f}<extra></extra>",
     ))
     fig.add_trace(go.Bar(
@@ -826,7 +845,7 @@ def update_scatter(rng, theme_mode):
 
 # ── Chapter 1: do warmer days bring more trips? ──────────────────────────────
 _TEMP_SERVICE_COLS = {"UBER": "uber_trips", "LYFT": "lyft_trips", "TAXI": "taxi_trips", "COMBINED": "total_trips"}
-_TEMP_SERVICE_COLORS = {"UBER": UBER_GREEN, "LYFT": LYFT_PINK, "TAXI": TAXI_YELLOW, "COMBINED": "#a78bfa"}
+def _temp_service_colors(theme): return {"UBER": theme["UBER"], "LYFT": LYFT_PINK, "TAXI": TAXI_YELLOW, "COMBINED": "#a78bfa"}
 
 
 @app.callback(
@@ -863,7 +882,7 @@ def update_temp_trips(rng, service, theme_mode):
         if col not in m.columns:
             continue
         y_data = m[col].fillna(0)
-        color = _TEMP_SERVICE_COLORS[svc]
+        color = _temp_service_colors(theme)[svc]
         r = float(np.corrcoef(m["tmax_f"], y_data)[0, 1])
         r_vals[svc] = r
         slope, intercept = np.polyfit(m["tmax_f"], y_data, 1)
@@ -1039,7 +1058,8 @@ def update_per_group_rain(rng, pick, theme_mode):
 
     is_all = (pick or "UBER") == "All"
     for col_idx, (tk, r) in enumerate(results, start=1):
-        color = TICKER_COLORS.get(tk, UBER_GREEN)
+        ticker_colors = get_ticker_colors(theme)
+        color = ticker_colors.get(tk, theme["UBER"])
         labels = _rain_bar_labels_trips(r["values"], r["lifts"], r["counts"], theme, minimal=is_all)
         fig.add_trace(
             go.Bar(
