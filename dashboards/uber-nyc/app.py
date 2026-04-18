@@ -36,7 +36,7 @@ THEMES = {
         "GRID": "#e2e8f0",
     },
 }
-UBER_GREEN = "#22c55e"
+UBER_GREEN = "#ffffff"
 LYFT_PINK = "#ec4899"
 TAXI_YELLOW = "#eab308"
 TEMP_ORANGE = "#fb923c"
