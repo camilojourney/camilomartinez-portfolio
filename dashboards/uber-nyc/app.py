@@ -450,7 +450,7 @@ def update_kpis(rng, theme_mode):
     if len(s) >= 2:
         ret = (s["close"].iloc[-1] / s["close"].iloc[0] - 1) * 100
         ret_txt = sign(ret, "%")
-        ret_colour = UBER_GREEN if ret >= 0 else NEG_RED
+        ret_colour = POS_GREEN if ret >= 0 else NEG_RED
     else:
         ret_txt, ret_colour = "—", theme["TEXT"]
 
