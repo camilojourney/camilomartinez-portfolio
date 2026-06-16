@@ -14,8 +14,8 @@ const profileLinks = [
   },
   {
     label: 'Follow on Instagram',
-    handle: 'camilojourney',
-    href: 'https://www.instagram.com/camilojourney/',
+    handle: 'camiloexperience',
+    href: 'https://www.instagram.com/camiloexperience/',
     Icon: Instagram,
     accent: 'bg-white/[0.08] text-white border-white/14 hover:bg-white/[0.12]',
     iconStyle: 'bg-gradient-to-br from-fuchsia-500 via-rose-500 to-amber-400 text-white',
