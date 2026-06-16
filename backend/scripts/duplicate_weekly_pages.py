@@ -13,7 +13,7 @@ The script skips weeks that already have pages unless --force is provided.
 import argparse
 import asyncio
 import os
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 import requests
 from sqlalchemy import text
