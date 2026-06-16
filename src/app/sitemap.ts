@@ -18,6 +18,7 @@ export default async function sitemap() {
     '/about',
     '/blog',
     '/bookshelf',
+    '/connect',
     '/contact',
     '/live-data',
     '/projects',

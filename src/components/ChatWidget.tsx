@@ -102,7 +102,7 @@ export default function ChatWidget() {
   useEffect(() => { if (open) setHint(false); }, [open]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div data-chat-widget className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
         <div
           className="w-[min(360px,calc(100vw-48px))] flex flex-col rounded-3xl shadow-2xl shadow-black/40 overflow-hidden backdrop-blur-2xl"
