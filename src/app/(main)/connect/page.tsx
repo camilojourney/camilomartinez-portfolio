@@ -1,8 +1,18 @@
 import type { Metadata } from 'next'
-import { ArrowUpRight, Instagram, Linkedin } from 'lucide-react'
+import { ArrowDownToLine, ArrowUpRight, ContactRound, Instagram, Linkedin } from 'lucide-react'
 import { baseUrl } from '@/lib/site'
 
 const profileLinks = [
+  {
+    label: 'Add to Contacts',
+    handle: 'iPhone contact card',
+    href: '/juan-camilo-martinez.vcf',
+    Icon: ContactRound,
+    accent: 'bg-cyan-300 text-slate-950 border-cyan-200 hover:bg-cyan-200',
+    iconStyle: 'bg-slate-950 text-cyan-200',
+    arrowStyle: 'text-slate-500 group-hover:text-slate-950',
+    download: true,
+  },
   {
     label: 'Connect on LinkedIn',
     handle: 'camilomartinez-ai',
@@ -11,6 +21,7 @@ const profileLinks = [
     accent: 'bg-white text-slate-950 border-white hover:bg-cyan-50',
     iconStyle: 'bg-[#0a66c2] text-white',
     arrowStyle: 'text-slate-500 group-hover:text-slate-950',
+    download: false,
   },
   {
     label: 'Follow on Instagram',
@@ -20,6 +31,7 @@ const profileLinks = [
     accent: 'bg-white/[0.08] text-white border-white/14 hover:bg-white/[0.12]',
     iconStyle: 'bg-gradient-to-br from-fuchsia-500 via-rose-500 to-amber-400 text-white',
     arrowStyle: 'text-white/55 group-hover:text-white',
+    download: false,
   },
 ]
 
@@ -76,13 +88,17 @@ export default function ConnectPage() {
           </p>
         </div>
 
-        <div className="space-y-3" aria-label="Social links">
-          {profileLinks.map(({ label, handle, href, Icon, accent, iconStyle, arrowStyle }) => (
+        <div className="space-y-3" aria-label="Quick contact links">
+          {profileLinks.map(({ label, handle, href, Icon, accent, iconStyle, arrowStyle, download }) => {
+            const ActionIcon = download ? ArrowDownToLine : ArrowUpRight
+
+            return (
             <a
               key={label}
               href={href}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={download ? undefined : '_blank'}
+              rel={download ? undefined : 'noopener noreferrer'}
+              download={download ? 'juan-camilo-martinez.vcf' : undefined}
               className={`group flex items-center justify-between rounded-[1.35rem] border px-5 py-5 shadow-2xl shadow-black/22 backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 ${accent}`}
             >
               <span className="flex min-w-0 items-center gap-4">
@@ -94,12 +110,13 @@ export default function ConnectPage() {
                   <span className="mt-1 block truncate text-sm opacity-62">@{handle}</span>
                 </span>
               </span>
-              <ArrowUpRight
+              <ActionIcon
                 className={`h-5 w-5 shrink-0 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${arrowStyle}`}
                 aria-hidden="true"
               />
             </a>
-          ))}
+            )
+          })}
         </div>
 
         <p className="mt-6 text-center text-xs font-medium uppercase tracking-[0.18em] text-white/38">
