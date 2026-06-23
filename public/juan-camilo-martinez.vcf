@@ -1,0 +1,13 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Martinez;Juan;Camilo;;
+FN:Juan Camilo Martinez
+EMAIL;TYPE=INTERNET:juancamilomabe@gmail.com
+BDAY:19950306
+TITLE:Applied AI Engineer
+ADR;TYPE=WORK:;;New York City;NY;;;United States
+URL:https://camilomartinez.co
+URL;TYPE=LinkedIn:https://www.linkedin.com/in/camilomartinez-ai/
+URL;TYPE=Instagram:https://www.instagram.com/camiloexperience/
+NOTE:Applied AI engineer building workflow systems, agents, and evaluation-driven products.
+END:VCARD
