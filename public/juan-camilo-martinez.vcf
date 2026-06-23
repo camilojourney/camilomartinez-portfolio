@@ -2,10 +2,12 @@ BEGIN:VCARD
 VERSION:3.0
 N:Martinez;Juan;Camilo;;
 FN:Juan Camilo Martinez
+TEL;TYPE=CELL:+19173599960
 EMAIL;TYPE=INTERNET:juancamilomabe@gmail.com
 BDAY:19950306
 TITLE:Applied AI Engineer
 ADR;TYPE=WORK:;;New York City;NY;;;United States
+PHOTO;VALUE=URI:https://www.camilomartinez.co/apple-touch-icon.png
 URL:https://camilomartinez.co
 URL;TYPE=LinkedIn:https://www.linkedin.com/in/camilomartinez-ai/
 URL;TYPE=Instagram:https://www.instagram.com/camiloexperience/

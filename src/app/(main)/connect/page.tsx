@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { ArrowDownToLine, ArrowUpRight, ContactRound, Instagram, Linkedin } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowDownToLine, ArrowUpRight, ContactRound, Instagram, Linkedin, Phone } from 'lucide-react'
 import { baseUrl } from '@/lib/site'
 
 const profileLinks = [
@@ -14,6 +15,17 @@ const profileLinks = [
     download: true,
   },
   {
+    label: 'Call / Text',
+    handle: '+1 (917) 359-9960',
+    href: 'tel:+19173599960',
+    Icon: Phone,
+    accent: 'bg-white/[0.08] text-white border-white/14 hover:bg-white/[0.12]',
+    iconStyle: 'bg-emerald-400 text-slate-950',
+    arrowStyle: 'text-white/55 group-hover:text-white',
+    download: false,
+    showAtPrefix: false,
+  },
+  {
     label: 'Connect on LinkedIn',
     handle: 'camilomartinez-ai',
     href: 'https://www.linkedin.com/in/camilomartinez-ai/',
@@ -22,6 +34,7 @@ const profileLinks = [
     iconStyle: 'bg-[#0a66c2] text-white',
     arrowStyle: 'text-slate-500 group-hover:text-slate-950',
     download: false,
+    showAtPrefix: true,
   },
   {
     label: 'Follow on Instagram',
@@ -32,6 +45,7 @@ const profileLinks = [
     iconStyle: 'bg-gradient-to-br from-fuchsia-500 via-rose-500 to-amber-400 text-white',
     arrowStyle: 'text-white/55 group-hover:text-white',
     download: false,
+    showAtPrefix: true,
   },
 ]
 
@@ -74,9 +88,14 @@ export default function ConnectPage() {
 
       <section className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-start px-5 pb-8 pt-24 md:px-6">
         <div className="mb-7 text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/12 bg-white/[0.06] text-lg font-semibold text-white shadow-2xl shadow-black/25">
-            CM
-          </div>
+          <Image
+            src="/apple-touch-icon.png"
+            alt="Camilo Martinez"
+            width={80}
+            height={80}
+            priority
+            className="mx-auto mb-5 h-20 w-20 rounded-[1.35rem] border border-white/12 bg-white/[0.06] object-cover shadow-2xl shadow-black/25"
+          />
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200/70">
             Quick connect
           </p>
@@ -89,7 +108,7 @@ export default function ConnectPage() {
         </div>
 
         <div className="space-y-3" aria-label="Quick contact links">
-          {profileLinks.map(({ label, handle, href, Icon, accent, iconStyle, arrowStyle, download }) => {
+          {profileLinks.map(({ label, handle, href, Icon, accent, iconStyle, arrowStyle, download, showAtPrefix }) => {
             const ActionIcon = download ? ArrowDownToLine : ArrowUpRight
 
             return (
@@ -107,7 +126,7 @@ export default function ConnectPage() {
                 </span>
                 <span className="min-w-0 text-left">
                   <span className="block text-lg font-semibold leading-tight">{label}</span>
-                  <span className="mt-1 block truncate text-sm opacity-62">@{handle}</span>
+                  <span className="mt-1 block truncate text-sm opacity-62">{showAtPrefix ? '@' : ''}{handle}</span>
                 </span>
               </span>
               <ActionIcon
