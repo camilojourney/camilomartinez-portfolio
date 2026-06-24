@@ -205,7 +205,7 @@ export default function ConnectPage() {
       <section className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col justify-start px-5 pb-8 pt-24 md:px-6">
         <div className="mb-7 text-center">
           <Image
-            src="/apple-touch-icon.png"
+            src="/vcard/juan-camilo-contact.jpg"
             alt="Camilo Martinez"
             width={80}
             height={80}
