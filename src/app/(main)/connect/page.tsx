@@ -7,7 +7,7 @@ const profileLinks = [
   {
     label: 'Add to Contacts',
     handle: 'iPhone contact card',
-    href: '/juan-camilo-martinez.vcf',
+    href: '/juan-camilo-martinez-contact.vcf',
     Icon: ContactRound,
     accent: 'bg-cyan-300 text-slate-950 border-cyan-200 hover:bg-cyan-200',
     iconStyle: 'bg-slate-950 text-cyan-200',
@@ -233,7 +233,7 @@ export default function ConnectPage() {
               href={href}
               target={download ? undefined : '_blank'}
               rel={download ? undefined : 'noopener noreferrer'}
-              download={download ? 'juan-camilo-martinez.vcf' : undefined}
+              download={download ? 'juan-camilo-martinez-contact.vcf' : undefined}
               className={`group flex items-center justify-between rounded-[1.35rem] border px-5 py-5 shadow-2xl shadow-black/22 backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 ${accent}`}
             >
               <span className="flex min-w-0 items-center gap-4">
