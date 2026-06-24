@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { ArrowDownToLine, ArrowUpRight, ContactRound, Instagram, Linkedin, Phone } from 'lucide-react'
+import { ArrowDownToLine, ArrowUpRight, ContactRound, Instagram, Linkedin } from 'lucide-react'
 import { baseUrl } from '@/lib/site'
 
 const profileLinks = [
@@ -13,17 +13,6 @@ const profileLinks = [
     iconStyle: 'bg-slate-950 text-cyan-200',
     arrowStyle: 'text-slate-500 group-hover:text-slate-950',
     download: true,
-  },
-  {
-    label: 'Call / Text',
-    handle: '+1 (917) 359-9960',
-    href: 'tel:+19173599960',
-    Icon: Phone,
-    accent: 'bg-white/[0.08] text-white border-white/14 hover:bg-white/[0.12]',
-    iconStyle: 'bg-emerald-400 text-slate-950',
-    arrowStyle: 'text-white/55 group-hover:text-white',
-    download: false,
-    showAtPrefix: false,
   },
   {
     label: 'Connect on LinkedIn',
