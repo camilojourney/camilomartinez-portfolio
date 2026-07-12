@@ -1,5 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
+const frontendPort = process.env.PORT ?? '3005';
+const baseURL =
+  process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${frontendPort}`;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -8,12 +12,12 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
   },
   webServer: {
     command: 'pnpm dev',
-    url: 'http://localhost:3000',
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
 });
