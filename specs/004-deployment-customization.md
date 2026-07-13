@@ -5,7 +5,7 @@
 cd /Users/mini/.openclaw/workspace/github/camilomartinez-portfolio/
 pnpm install
 cd backend && uv sync  # or poetry install
-pnpm dev:all  # Starts frontend:3000 + backend:8000
+pnpm dev:all  # Starts frontend:3005 + backend:8005
 ```
 
 **Env Setup**:
