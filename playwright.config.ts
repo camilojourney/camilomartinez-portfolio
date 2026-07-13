@@ -1,6 +1,10 @@
 import { defineConfig } from '@playwright/test';
 
-const frontendPort = process.env.PORT ?? '3005';
+const frontendPort = Number(process.env.PORT ?? 3005);
+if (!Number.isInteger(frontendPort) || frontendPort < 1 || frontendPort > 65535) {
+  throw new Error(`Invalid PORT for Playwright web server: ${process.env.PORT}`);
+}
+
 const baseURL =
   process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${frontendPort}`;
 
@@ -16,7 +20,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'pnpm dev',
+    command: `pnpm exec next dev --port ${frontendPort}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
