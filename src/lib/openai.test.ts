@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { parse } from 'dotenv';
 
 import { resolveChatProvider } from './openai';
 
@@ -49,5 +51,19 @@ describe('resolveChatProvider', () => {
       GROQ_API_KEY: '',
       OPENAI_API_KEY: '   ',
     })).toBeNull();
+  });
+
+  it('keeps the env example from pre-configuring a chat provider', () => {
+    const exampleEnv = parse(readFileSync('.env.example'));
+
+    expect(resolveChatProvider(exampleEnv)).toBeNull();
+    expect(resolveChatProvider({
+      ...exampleEnv,
+      OPENAI_API_KEY: 'openai-key',
+    })).toEqual({
+      provider: 'openai',
+      apiKey: 'openai-key',
+      model: 'gpt-4.1-mini',
+    });
   });
 });
