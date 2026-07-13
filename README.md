@@ -37,3 +37,9 @@ Opus in VS Code plans and launches autonomous CLI agents in the background — t
 ## Environment Variables
 
 This repo ships with safe placeholders in `.env.example`. Secrets should be configured in Vercel env vars (and locally via `.env.local`), never committed.
+
+The portfolio chat route supports OpenAI-compatible providers in this order:
+`AI_PROXY_API_KEY` for the legacy proxy, `GROQ_API_KEY` for Groq using
+`llama-3.3-70b-versatile` by default, then `OPENAI_API_KEY` with
+`gpt-4.1-mini` by default. Optional model overrides are documented in
+`.env.example`.

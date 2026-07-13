@@ -10,7 +10,8 @@ pnpm dev:all  # Starts frontend:3000 + backend:8000
 
 **Env Setup**:
 - Copy `.env.example` → `.env`
-- Add `DATABASE_URL`, `OPENAI_API_KEY`, Strava/WHOOP OAuth creds.
+- Add `DATABASE_URL`, Strava/WHOOP OAuth creds, and one chat provider key:
+  `AI_PROXY_API_KEY`, `GROQ_API_KEY`, or `OPENAI_API_KEY`.
 
 **DB**:
 ```bash
@@ -56,7 +57,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
    - Frontend: Add route group `src/app/(new)/page.tsx` + server action.
    - Backend: New router `backend/app/routers/new.py` → include in `main.py`.
 3. **Data Sources**: Extend `integrations.py` router, add OAuth in `.env`.
-4. **AI Prompts**: Customize in `backend/app/services/ai/` (RAG context from `docs/`).
+4. **AI Prompts**: Customize in `backend/app/services/ai/` for backend RAG or `src/app/api/chat/route.ts` for the portfolio chat prompt.
 5. **Maps**: Update `pnpm map:setup` for custom GeoJSON (Astoria streets example).
 
 **Scripts**:

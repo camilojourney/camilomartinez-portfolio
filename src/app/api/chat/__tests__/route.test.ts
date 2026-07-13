@@ -1,140 +1,110 @@
-/**
- * Tests for the chat API route.
- * These test the route handler logic and validation.
- */
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ChatProviderConfig } from '@/lib/openai';
 
-// Mock OpenAI
-vi.mock('openai', () => {
-  return {
-    default: vi.fn().mockImplementation(() => ({
-      chat: {
-        completions: {
-          create: vi.fn().mockResolvedValue({
-            choices: [
-              {
-                message: {
-                  role: 'assistant',
-                  content: 'Hello! I am Camilo\'s AI assistant.',
-                },
-              },
-            ],
-          }),
-        },
-      },
-    })),
-  };
-});
-
-// Mock fs for knowledge base loading
-vi.mock('fs', () => ({
-  promises: {
-    readFile: vi.fn().mockResolvedValue('# About Camilo\nTest knowledge content'),
-  },
+const mocks = vi.hoisted(() => ({
+  resolveChatProvider: vi.fn(),
+  createChatClient: vi.fn(),
+  completionCreate: vi.fn(),
 }));
 
+vi.mock('@/lib/openai', () => ({
+  resolveChatProvider: mocks.resolveChatProvider,
+  createChatClient: mocks.createChatClient,
+}));
+
+import { POST } from '../route';
+
+async function* streamContent(parts: string[]) {
+  for (const part of parts) {
+    yield { choices: [{ delta: { content: part } }] };
+  }
+}
+
+async function responseText(response: Response): Promise<string> {
+  const reader = response.body?.getReader();
+  expect(reader).toBeDefined();
+
+  const decoder = new TextDecoder();
+  let body = '';
+  while (reader) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    body += decoder.decode(value, { stream: true });
+  }
+  body += decoder.decode();
+  return body;
+}
+
 describe('Chat API Route', () => {
+  const groqProvider: ChatProviderConfig = {
+    provider: 'groq',
+    apiKey: 'test-groq-key',
+    baseURL: 'https://api.groq.com/openai/v1',
+    model: 'llama-3.3-70b-versatile',
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('Request Validation', () => {
-    it('should require messages array', async () => {
-      // Test that empty messages are rejected
-      const invalidPayloads = [
-        { messages: [] },
-        { messages: null },
-        {},
-      ];
-
-      for (const payload of invalidPayloads) {
-        // Simulate validation logic
-        const isValid = Array.isArray(payload.messages) && payload.messages.length > 0;
-        expect(isValid).toBe(false);
-      }
-    });
-
-    it('should accept valid message format', () => {
-      const validPayload = {
-        messages: [
-          { role: 'user', content: 'Tell me about Camilo' },
-        ],
-      };
-
-      const isValid = Array.isArray(validPayload.messages) && validPayload.messages.length > 0;
-      expect(isValid).toBe(true);
-    });
-
-    it('should accept multi-turn conversations', () => {
-      const multiTurnPayload = {
-        messages: [
-          { role: 'user', content: 'What are your skills?' },
-          { role: 'assistant', content: 'I specialize in AI and data engineering.' },
-          { role: 'user', content: 'Tell me more about AI' },
-        ],
-      };
-
-      const isValid = Array.isArray(multiTurnPayload.messages) && multiTurnPayload.messages.length > 0;
-      expect(isValid).toBe(true);
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      Response.json({ ok: true, snapshot: 'HRV 72 ms, recovery 88%' }),
+    ));
+    mocks.resolveChatProvider.mockReturnValue(groqProvider);
+    mocks.completionCreate.mockResolvedValue(streamContent(['Hello ', 'from Groq']));
+    mocks.createChatClient.mockReturnValue({
+      chat: { completions: { create: mocks.completionCreate } },
     });
   });
 
-  describe('Message Structure', () => {
-    it('should validate message role', () => {
-      const validRoles = ['user', 'assistant', 'system'];
-      
-      for (const role of validRoles) {
-        const message = { role, content: 'Test content' };
-        expect(validRoles.includes(message.role)).toBe(true);
-      }
-    });
-
-    it('should require content in messages', () => {
-      const messageWithContent = { role: 'user', content: 'Hello' };
-      const messageWithoutContent = { role: 'user' };
-
-      expect('content' in messageWithContent && messageWithContent.content.length > 0).toBe(true);
-      expect('content' in messageWithoutContent).toBe(false);
-    });
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  describe('Response Format', () => {
-    it('should return assistant message structure', () => {
-      const expectedResponseShape = {
-        role: 'assistant',
-        content: expect.any(String),
-      };
+  it('streams chat responses through the configured OpenAI-compatible provider', async () => {
+    const response = await POST(new Request('http://localhost:3005/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', host: 'localhost:3005' },
+      body: JSON.stringify({
+        message: 'What is Camilo building?',
+        conversationHistory: [{ role: 'assistant', content: 'He builds applied AI systems.' }],
+      }),
+    }));
 
-      const mockResponse = {
-        role: 'assistant',
-        content: 'Hello! I am here to help.',
-      };
+    await expect(responseText(response)).resolves.toBe([
+      'data: {"content":"Hello "}',
+      '',
+      'data: {"content":"from Groq"}',
+      '',
+      'data: [DONE]',
+      '',
+      '',
+    ].join('\n'));
 
-      expect(mockResponse).toMatchObject(expectedResponseShape);
-    });
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/event-stream');
+    expect(mocks.createChatClient).toHaveBeenCalledWith(groqProvider);
+    expect(mocks.completionCreate).toHaveBeenCalledWith(expect.objectContaining({
+      model: 'llama-3.3-70b-versatile',
+      stream: true,
+      messages: expect.arrayContaining([
+        expect.objectContaining({ role: 'assistant', content: 'He builds applied AI systems.' }),
+        expect.objectContaining({ role: 'user', content: 'What is Camilo building?' }),
+      ]),
+    }));
   });
 
-  describe('Error Handling', () => {
-    it('should handle missing API key gracefully', () => {
-      const apiKey = undefined;
-      const hasApiKey = Boolean(apiKey);
-      
-      expect(hasApiKey).toBe(false);
-      // In actual implementation, this should return 503
-    });
+  it('returns a configuration error before creating a client when no chat provider is configured', async () => {
+    mocks.resolveChatProvider.mockReturnValue(null);
 
-    it('should handle malformed JSON', () => {
-      const parseJSON = (input: string) => {
-        try {
-          return JSON.parse(input);
-        } catch {
-          return null;
-        }
-      };
+    const response = await POST(new Request('http://localhost:3005/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ message: 'Hello' }),
+    }));
 
-      expect(parseJSON('invalid json')).toBeNull();
-      expect(parseJSON('{"valid": "json"}')).toEqual({ valid: 'json' });
-    });
+    await expect(response.json()).resolves.toEqual({ error: 'API key not configured' });
+    expect(response.status).toBe(500);
+    expect(mocks.createChatClient).not.toHaveBeenCalled();
+    expect(mocks.completionCreate).not.toHaveBeenCalled();
   });
 });

@@ -4,7 +4,7 @@
 | Feature | Description | Tech |
 |---------|-------------|------|
 | **Fitness Data Ingestion** | Sync WHOOP sleep/recovery + Strava workouts | OAuth2 APIs, Celery tasks |
-| **AI Analytics** | RAG-powered insights (GPT-4 + pgvector embeddings) | OpenAI, vector search on docs/schema |
+| **AI Analytics** | RAG-powered insights (OpenAI-compatible chat + pgvector embeddings) | Provider chain, vector search on docs/schema |
 | **Dashboards** | Interactive charts (sleep trends, workout maps) | Recharts, React Leaflet, Turf.js |
 | **AI Coach** | Streaming chat for personalized advice | Server-Sent Events, Suspense |
 | **Rate-Limited Queries** | 5 AI queries/day (Redis-enforced) | Custom middleware |

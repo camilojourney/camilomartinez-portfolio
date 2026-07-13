@@ -19,7 +19,8 @@
 - Chunk size: optimized for Q&A style retrieval
 
 ### AI Chatbot
-- Streaming responses via OpenAI API
+- Streaming responses via OpenAI-compatible chat completions
+- Provider resolution: legacy proxy first, Groq defaulting to `llama-3.3-70b-versatile`, OpenAI fallback defaulting to `gpt-4.1-mini`
 - Feedback collection per conversation
 - Automated evaluation pipeline (synthetic questions → judgment)
 - 92% precision on automated evaluation benchmark
@@ -122,7 +123,7 @@ Strava API ──→ strava-*-sync (cron) ──→ Vercel Postgres
 | Database | Vercel Postgres (pgvector) | Managed, vector support, Vercel-native |
 | Backend | FastAPI on Render | Python data processing, separate scaling |
 | Auth | NextAuth | Session management, multi-provider |
-| AI | OpenAI (RAG + chat) | Best quality for conversational AI |
+| AI chat | OpenAI-compatible provider chain | Preserves proxy deployments, prefers Groq Llama for chat, keeps OpenAI fallback |
 | Deployment | Vercel + Render | Frontend/backend separation, managed infra |
 
 ## 7. Project History Milestones

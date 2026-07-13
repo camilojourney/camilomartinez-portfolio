@@ -26,7 +26,7 @@
 
 ### 3. AI Insights
 **Routers** (`/api/ai`):
-- GPT-4 integration for analytics.
+- OpenAI-compatible chat integration for analytics.
 - RAG over schema/docs (pgvector embeddings).
 - Rate-limited (Redis, 5/day free).
 
@@ -55,7 +55,7 @@
 |---------|--------|--------------|-------|
 | Data Ingestion | ✅ Live | Strava/WHOOP API | `test:strava` |
 | Dashboards | ✅ Live | Recharts/Leaflet | Manual |
-| AI Insights | ✅ Beta | OpenAI | `test:whoop` |
+| AI Insights | ✅ Beta | OpenAI-compatible chat provider | `test:whoop` |
 | Auth | ✅ Live | NextAuth | - |
 | Maps | ✅ MVP | Turf/OSMnx | `db:setup` |
 | Rate Limiting | ✅ Enforced | Redis | - |

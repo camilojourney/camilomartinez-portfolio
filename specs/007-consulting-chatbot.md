@@ -45,7 +45,7 @@ User Message → Next.js API Route → FastAPI /api/ai/chat
                                         ↓
                                   pgvector similarity search
                                         ↓
-                                  Context + System Prompt → GPT-4
+                                  Context + System Prompt → configured chat provider
                                         ↓
                                   Streaming response → Client
 ```
@@ -111,7 +111,7 @@ Errors:
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
 | Embedding model | text-embedding-3-small | Cost-effective, good for short docs |
-| Chat model | gpt-4o-mini | Fast, cheap, good enough for FAQ-level chat |
+| Chat model | `llama-3.3-70b-versatile` on Groq by default, `gpt-4.1-mini` on OpenAI fallback | Fast OpenAI-compatible chat while preserving existing proxy deployments |
 | Chunk size | 500 tokens | Optimal for consulting Q&A retrieval |
 | Top-k retrieval | 5 | Balance relevance vs context window |
 | Rate limit | 10 msgs/session | Prevent abuse while allowing real conversation |
@@ -138,7 +138,7 @@ Rejected because: Doesn't handle the long tail of prospect questions. RAG gives 
 
 ## Edge Cases & Failure Modes
 
-- **OpenAI API down**: Show fallback message with direct contact links
+- **Configured chat provider down**: Show fallback message with direct contact links
 - **Abusive/off-topic questions**: System prompt guardrails + content filter. Redirect to consulting topics.
 - **Rate limit hit**: Friendly message: "I've shared a lot! Ready to chat live? [Schedule a call]"
 - **Empty knowledge base match**: Honest "I don't have details on that, but Camilo can answer directly — [email him]"
@@ -158,6 +158,6 @@ Rejected because: Doesn't handle the long tail of prospect questions. RAG gives 
 - [ ] Email stored in `leads` table with conversation context
 - [ ] "Schedule a call" link surfaces in appropriate context
 - [ ] Rate limiting works (10/session, 50/day per IP)
-- [ ] Fallback works when OpenAI is unavailable
+- [ ] Fallback works when the configured chat provider is unavailable
 - [ ] Chat widget appears on all pages
 - [ ] Mobile-responsive chat UI

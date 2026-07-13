@@ -20,6 +20,12 @@ function envValue(env: ChatProviderEnv, key: string): string | undefined {
   return value ? value : undefined;
 }
 
+/**
+ * Resolve the portfolio chat provider without creating a client.
+ *
+ * Precedence intentionally preserves existing proxy deployments before Groq
+ * and OpenAI fallback credentials.
+ */
 export function resolveChatProvider(env: ChatProviderEnv = process.env): ChatProviderConfig | null {
   const proxyApiKey = envValue(env, 'AI_PROXY_API_KEY');
   if (proxyApiKey) {
