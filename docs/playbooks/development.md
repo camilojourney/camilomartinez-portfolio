@@ -68,5 +68,8 @@ Copy `.env.example` to `.env.local`. Required:
 - `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`
 - `DATABASE_URL` — Vercel Postgres
 - `CRON_SECRET` — protects cron routes
+- For local chatbot testing, configure one chat provider key:
+  `AI_PROXY_API_KEY` (highest precedence), `GROQ_API_KEY`, or `OPENAI_API_KEY`.
+  Groq defaults to `llama-3.3-70b-versatile`; OpenAI defaults to `gpt-4.1-mini`.
 
 **Critical:** Never put secrets in `NEXT_PUBLIC_*` vars — they end up in the client bundle.

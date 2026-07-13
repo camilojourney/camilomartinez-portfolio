@@ -8,7 +8,7 @@ AI-driven fitness analytics platform with a **Next.js 15 (App Router) frontend**
 |-------|--------------|
 | **Frontend** | Next.js 15, TypeScript, Tailwind CSS, Framer Motion, Recharts, React Leaflet |
 | **Backend** | FastAPI, SQLAlchemy 2.0 (async), PostgreSQL + pgvector, Redis, Celery |
-| **Integrations** | WHOOP, Strava (OAuth), OpenAI GPT-4 + RAG |
+| **Integrations** | WHOOP, Strava (OAuth), OpenAI-compatible chat provider + RAG |
 | **Deployment** | Vercel (frontend), Render/Docker (backend) |
 
 ## Directory Structure
@@ -41,7 +41,7 @@ Frontend (Server Components) → Server Actions → Backend API (/api/ai, /api/a
                           ↓
 PostgreSQL (pgvector) ←→ Redis (cache/rate-limit) ←→ External APIs (WHOOP/Strava)
                           ↓
-AI Services (OpenAI + RAG) → Structured Insights → Streaming UI (Suspense)
+AI Services (provider chain + RAG) → Structured Insights → Streaming UI (Suspense)
 ```
 
 ## Rendering Strategies

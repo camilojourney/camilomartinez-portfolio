@@ -15,7 +15,7 @@
 │   ├── Portfolio pages (static)                                │
 │   ├── WHOOP dashboard (dynamic, auth-gated)                   │
 │   ├── Astoria Conquest map (Strava data)                      │
-│   ├── AI Chatbot (OpenAI streaming)                           │
+│   ├── AI Chatbot (OpenAI-compatible streaming)                │
 │   └── API routes (/api/*) — cron, auth, data proxy            │
 │                      │                                        │
 │              Vercel Postgres                                   │
@@ -122,6 +122,7 @@ lib/
 │   ├── strava-sync.ts           ← Activity ingestion
 │   └── token-refresh-service.ts ← Generic refresh logic
 ├── security/route-auth.ts    ← Cron secret + session guards
+├── openai.ts                 ← Chat provider resolver + client factory
 └── [whoop-client, strava-client].ts ← API client wrappers
 ```
 
@@ -180,7 +181,8 @@ Vercel Cron (weekly) OR manual trigger
 ```
 User message
   → /api/chat (streaming)
-    → OpenAI API (GPT-4)
+    → resolve chat provider (proxy → Groq → OpenAI)
+      → OpenAI-compatible chat completions API
       → /api/chat/log (persist)
         → Vercel Cron: evaluate-chats (score quality)
 ```
@@ -211,7 +213,7 @@ User message
 | Database | Vercel Postgres | env var `DATABASE_URL` |
 | Redis | Render managed | env var `REDIS_URL` |
 
-**Frontend env vars** — see `.env.example`. The `NEXT_PUBLIC_` prefix is intentionally absent from all secrets.
+**Frontend env vars** - see `.env.example`. The `NEXT_PUBLIC_` prefix is intentionally absent from all secrets. The chat route checks `AI_PROXY_API_KEY` first for existing OpenAI-compatible proxy deployments, then `GROQ_API_KEY` with the default `llama-3.3-70b-versatile` model, then `OPENAI_API_KEY` with the default `gpt-4.1-mini` model.
 
 ---
 

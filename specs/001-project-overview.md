@@ -41,13 +41,13 @@ Consulting site and technical showcase. Demonstrates AI engineering capability w
 - **UI**: React 19, Tailwind CSS 3.4, custom glassmorphism design system
 - **Charts/Maps**: Recharts 3, Leaflet + React-Leaflet 5, Turf.js 7
 - **Auth**: NextAuth v5 beta
-- **Other**: MDX for blog/case studies, OpenAI JS SDK
+- **Other**: MDX for blog/case studies, OpenAI JS SDK for OpenAI-compatible chat completions
 
 ### Backend
 - **Framework**: FastAPI (uvicorn)
 - **ORM/DB**: SQLAlchemy 2.0, PostgreSQL + pgvector (RAG embeddings), asyncpg
 - **Task Queue**: Celery 5.3, Redis 5
-- **AI/ML**: OpenAI GPT-4, RAG pipeline for chatbot
+- **AI/ML**: OpenAI-compatible chat provider chain, RAG pipeline for chatbot
 - **Security**: python-jose, passlib, fastapi-limiter
 
 ### Deployment

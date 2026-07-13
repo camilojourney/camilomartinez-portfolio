@@ -1,5 +1,6 @@
 import { KNOWLEDGE_BASE } from '@/data/knowledge';
-import OpenAI from 'openai';
+import { createChatClient, resolveChatProvider } from '@/lib/openai';
+import type OpenAI from 'openai';
 
 const SYSTEM_PROMPT = [
   'You are a sharp assistant on Juan Camilo Martinez\'s portfolio. Answer like a human, not a brochure.',
@@ -49,11 +50,8 @@ export async function POST(request: Request) {
     };
     const { message, conversationHistory = [] } = body;
 
-    const baseURL = (process.env.AI_PROXY_BASE_URL ?? 'https://api.groq.com/openai/v1').trim();
-    const apiKey = (process.env.AI_PROXY_API_KEY ?? '').trim();
-    const model = (process.env.AI_CHAT_MODEL ?? 'llama-3.3-70b-versatile').trim();
-
-    if (!apiKey) {
+    const provider = resolveChatProvider();
+    if (!provider) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), {
         status: 500, headers: { 'Content-Type': 'application/json' },
       });
@@ -63,7 +61,7 @@ export async function POST(request: Request) {
     const proto = host.includes('localhost') ? 'http' : 'https';
     const liveContext = await getLiveContext(`${proto}://${host}`);
 
-    const client = new OpenAI({ baseURL, apiKey });
+    const client = createChatClient(provider);
     const messages: OpenAI.ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_PROMPT + liveContext },
       ...conversationHistory.map((m) => ({
@@ -73,7 +71,7 @@ export async function POST(request: Request) {
       { role: 'user', content: message },
     ];
 
-    const stream = await client.chat.completions.create({ model, messages, stream: true });
+    const stream = await client.chat.completions.create({ model: provider.model, messages, stream: true });
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
