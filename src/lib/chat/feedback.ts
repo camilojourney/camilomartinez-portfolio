@@ -75,7 +75,9 @@ export async function submitFeedback(feedback: FeedbackData): Promise<void> {
  * Generate a unique session ID for tracking conversations
  */
 export function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const entropy = Math.random().toString(36).slice(2, 11).padEnd(9, '0');
+
+  return `session_${Date.now()}_${entropy}`;
 }
 
 /**
