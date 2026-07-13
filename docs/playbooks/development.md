@@ -9,8 +9,8 @@
 
 ```bash
 pnpm dev:all
-# Frontend: http://localhost:3000
-# Backend: http://localhost:8000
+# Frontend: http://localhost:3005
+# Backend: http://localhost:8005
 ```
 
 ## Frontend Only
@@ -31,7 +31,12 @@ cd backend && uv run uvicorn app.main:app --reload --port 8000
 pnpm test:all       # frontend + backend
 pnpm test:run       # frontend only
 pnpm test:backend   # backend only
+just test-e2e       # Playwright, starts frontend on http://localhost:3005
 ```
+
+Playwright uses `http://localhost:3005` by default. Set `PORT` to launch the
+frontend web server on a different local port, or `PLAYWRIGHT_BASE_URL` to point
+the tests at a specific base URL.
 
 ## Lint
 
