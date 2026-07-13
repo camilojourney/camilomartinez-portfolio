@@ -10,7 +10,7 @@ import {
 } from '../feedback';
 
 describe('chat feedback helpers', () => {
-  const fetchMock = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>();
+  const fetchMock = vi.fn<typeof fetch>();
   let consoleErrorSpy: MockInstance<typeof console.error>;
 
   const conversationLog: ConversationLog = {
