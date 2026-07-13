@@ -19,7 +19,9 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
-  webServer: {
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : {
     command: `pnpm exec next dev --port ${frontendPort}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
