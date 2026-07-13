@@ -12,7 +12,9 @@ async function checkRateLimit() {
   
   // Get the secret
   const fs = require('fs');
-  const envContent = fs.readFileSync('.env', 'utf8');
+  const os = require('os');
+  const envPath = process.env.CAMILO_ENV_PATH || `${os.homedir()}/.config/secrets/camilomartinez-portfolio-local.env`;
+  const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
   const secretMatch = envContent.match(/CRON_SECRET=(.+)/);
   const secret = secretMatch ? secretMatch[1].replace(/"/g, '') : '';
 

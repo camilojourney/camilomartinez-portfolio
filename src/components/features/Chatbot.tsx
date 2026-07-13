@@ -181,7 +181,7 @@ const initialAssistantMessage: Message = {
   id: 'assistant-intro',
   role: 'assistant',
   content:
-    "✨ Hi! I'm a **RAG-powered AI assistant** built to demonstrate retrieval-augmented generation on real personal data.\n\n**What I'm connected to:**\n- 🏃 **Strava** — runs, rides, workouts (pace, distance, heart rate)\n- 💤 **WHOOP** — recovery scores, HRV, sleep quality, strain\n\n**What I can answer:**\n- Specific metrics: \"What was my fastest mile last week?\"\n- Trends: \"How is my sleep trending this month?\"\n- Comparisons: \"Recovery vs strain patterns\"\n- Project questions: \"What tech stack does Camilo use?\"\n\nThis assistant retrieves live data from a PostgreSQL database and uses Claude to generate natural-language answers. Ask me anything!",
+    "✨ Hi! I'm a **RAG-powered AI assistant** built to demonstrate retrieval-augmented generation over project knowledge and opt-in fitness context.\n\n**What I'm connected to:**\n- Project knowledge — AI systems, speech ML, data products, and case studies\n- Auth-gated fitness context — WHOOP and Strava summaries when available\n\n**What I can answer:**\n- Project questions: \"What tech stack does Camilo use?\"\n- Architecture questions: \"How does Invoz score intelligibility?\"\n- Privacy-aware fitness summaries when the data is available\n\nI avoid exposing raw health records, private routes, tokens, or private notes in public summaries. Ask me anything!",
 };
 
 export function Chatbot() {
@@ -207,24 +207,24 @@ export function Chatbot() {
     // Rotate through different sets of questions to keep it fresh
     const questionSets = [
       [
-        "What was my fastest mile during my last run?",
-        "Show my WHOOP recovery trend this week",
-        "What are my most recent running activities?",
+        "How does the fitness dashboard protect private data?",
+        "What does the WHOOP and Strava pipeline analyze?",
+        "What are the main fitness dashboard features?",
       ],
       [
-        "How is my sleep quality trending?",
-        "What's my average strain score this month?",
-        "Compare my recovery vs strain patterns",
+        "How does Invoz score intelligibility?",
+        "What is the 7-dimension speech scoring architecture?",
+        "What did Camilo build with audio ML?",
       ],
       [
         "Tell me about Camilo's AI projects",
         "What technologies does Camilo use?",
-        "Show me Camilo's recent workout performance",
+        "Which projects are best for AI engineering roles?",
       ],
       [
-        "What's my best running pace this year?",
-        "How many days did I work out this month?",
-        "What's my average heart rate during runs?",
+        "What makes the multi-agent systems interesting?",
+        "How does the chatbot use retrieval?",
+        "What private data should stay out of public summaries?",
       ],
     ];
 

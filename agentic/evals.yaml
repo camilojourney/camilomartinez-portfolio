@@ -1,0 +1,17 @@
+schema: fleet.repo_evals.v1
+repo: camilomartinez-portfolio
+scorecard_schema: fleet.eval_scorecard.v1
+default_scores:
+  task_completion: required
+  trajectory_quality: required
+  tool_accuracy: required
+  safety: required
+  cost_efficiency: optional
+  domain_score: repo_defined
+gate_decisions:
+  - pass
+  - fail
+  - hold
+export:
+  event_stream: .self-improvement/hub/skill_runs.jsonl
+  trace_dir: .self-improvement/traces/

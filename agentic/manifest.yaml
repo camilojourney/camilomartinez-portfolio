@@ -1,0 +1,16 @@
+schema: fleet.repo_agent_manifest.v1
+repo: camilomartinez-portfolio
+owner: camilomartinez-portfolio
+kind: application domain plane
+fleet_control_plane: /Users/mini/.openclaw/workspace/github/fleet-system
+memory: memory.yaml
+permissions: permissions.yaml
+tools: tools.yaml
+evals: evals.yaml
+skills:
+  []
+agents:
+  - source: AGENTS.md
+    purpose: human-readable agent authority and repo boundary
+  - source: .self-improvement/workers.yaml
+    purpose: repo-local improvement workers when present

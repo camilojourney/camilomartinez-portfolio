@@ -1,18 +1,20 @@
 # Projects
 
+Public summaries should show the strongest recruiter signal without exposing private data, secrets, raw health records, private audio/transcripts, trading account details, or internal operational paths.
+
 ## Invoz — Audio ML Pipeline
 Status: Live
 URL: https://invoz.io
-Description: Audio ML pipeline built from 46 research papers. Scores spoken English across 11 dimensions (7 acoustic + 4 linguistic) using Whisper, wav2vec2, Parselmouth, Silero VAD, and LLM-based coaching. Deployed end to end at invoz.io.
+Description: Speech ML pipeline built from 46 research papers with 7-dimension hybrid scoring: GOPT-style acoustic scoring for accuracy, fluency, prosody, and intelligibility, plus LLM scoring for vocabulary, grammar, and coherence. Public demo at invoz.io; private learner audio and transcripts are not exposed.
 
 ## Holus Observatory — Multi-Agent Monitoring Dashboard
 Status: Live
 URL: https://holus-observatory.vercel.app
-Description: Real-time observability dashboard for the Holus 32-agent system. Agent status grid, quality heatmaps, content pipeline kanban, engagement tracker, follower growth charts, and system health monitoring. Built with Next.js, TypeScript, Tailwind CSS.
+Description: Real-time observability dashboard for a multi-agent system, focused on agent health, quality signals, pipeline state, and system monitoring. Built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Holus Content Engine — Multi-Agent Orchestration Framework
 Status: Live
-Description: Multi-agent orchestration framework that coordinates content, product, and execution workflows across multiple AI projects. 32 specialized agents communicate via Redis event bus with silo isolation, guardrails, health preflight, and self-improvement loops.
+Description: Multi-agent orchestration framework that coordinates content, product, and execution workflows with Redis eventing, domain isolation, guardrails, health preflight, and self-improvement loops.
 
 ## Pilaster — AI Workflow Memory Platform
 Status: Live
@@ -41,11 +43,11 @@ Description: Local-first AI video editing pipeline. Smart cuts, word-by-word cap
 
 ## How I Built This Chatbot
 Status: Live
-Description: The engineering behind the portfolio chatbot. LLM-as-judge evaluation, RLHF feedback collection, live context injection from WHOOP/Strava APIs, and autonomous knowledge expansion.
+Description: The engineering behind the portfolio chatbot: retrieval-augmented generation, LLM-as-judge evaluation, feedback collection, and privacy-aware context injection from project knowledge plus opt-in fitness data.
 
 ## Fitness Dashboard
 Status: Live
-Description: Real-time health analytics integrating WHOOP and Strava APIs with natural language querying via RAG-style contextual retrieval.
+Description: Auth-gated health analytics integrating WHOOP and Strava APIs with natural language querying via RAG-style contextual retrieval. Public summaries avoid exposing raw health metrics, routes, or private notes.
 
 ## Astoria Conquest
 Status: Live

@@ -1,0 +1,47 @@
+schema: fleet.memory_policy.v1
+repo: camilomartinez-portfolio
+default_backend: files_and_sqlite
+working:
+  purpose: current task/session state
+  locations:
+    - .pipeline-state/
+    - tasks/
+  retention: short_lived
+episodic:
+  purpose: chronological record of what happened
+  locations:
+    - .self-improvement/memory/trajectory.jsonl
+    - .self-improvement/reports/
+    - memory/
+    - devlog/
+  retention: append_only_or_compacted
+semantic:
+  purpose: stable domain facts, lessons, and reusable knowledge
+  locations:
+    - .self-improvement/MEMORY.md
+    - .self-improvement/knowledge/
+    - knowledge/
+    - docs/
+  retention: curated
+procedural:
+  purpose: how agents should behave
+  locations:
+    - AGENTS.md
+    - CLAUDE.md
+    - agentic/skills/
+    - agents/
+    - .claude/agents/
+    - .codex/agents/
+    - docs/playbooks/
+  retention: versioned
+fleet_visibility:
+  exported_to_fleet:
+    - agentic/manifest.yaml
+    - agentic/evals.yaml
+    - agentic/events.schema.json
+    - agentic/traces.schema.json
+  not_exported_to_fleet:
+    - secrets
+    - raw credentials
+    - large runtime databases
+    - private user data unless explicitly summarized

@@ -1,0 +1,16 @@
+schema: fleet.agent_permissions.v1
+repo: camilomartinez-portfolio
+allowed:
+  - read repo code, docs, specs, and agentic contracts
+  - write reports under .self-improvement/reports/
+  - update repo-local agentic manifests and memory policy files
+  - run repo-local tests and read-only diagnostics
+ask_first:
+  - publish external content or contact external accounts
+  - change billing, auth, credentials, payments, or production deploy settings
+  - add dependencies or migrations
+  - delete runtime data or long-lived memory
+forbidden:
+  - commit secrets or credentials
+  - bypass repo-local approval gates
+  - mutate another repo's runtime state directly

@@ -4,7 +4,7 @@
  * Debug script to see exact Strava API response structure
  */
 
-require('dotenv').config({ path: '.env' });
+require('dotenv').config({ path: process.env.CAMILO_ENV_PATH || `${require('os').homedir()}/.config/secrets/camilomartinez-portfolio-local.env` });
 const { sql } = require('@vercel/postgres');
 
 async function debugStravaResponse() {

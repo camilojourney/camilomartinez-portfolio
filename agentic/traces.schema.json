@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fleet.agent_trace.v1",
+  "type": "object",
+  "required": ["schema", "repo", "run_id", "trace_id", "actor", "spans", "outputs"],
+  "properties": {
+    "schema": {"const": "fleet.agent_trace.v1"},
+    "repo": {"type": "string"},
+    "task_id": {"type": ["string", "null"]},
+    "run_id": {"type": "string"},
+    "trace_id": {"type": "string"},
+    "actor": {"type": "object"},
+    "policy": {"type": "object"},
+    "spans": {"type": "array"},
+    "outputs": {"type": "object"},
+    "metrics": {"type": "object"},
+    "eval": {"type": "object"}
+  },
+  "additionalProperties": true
+}

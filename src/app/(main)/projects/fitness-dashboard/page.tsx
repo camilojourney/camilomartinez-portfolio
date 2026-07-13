@@ -13,10 +13,10 @@ export default function FitnessDashboardProject() {
               Live System
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-              Fitness Dashboard: Real-Time Health Analytics
+              Fitness Dashboard: Auth-Gated Health Analytics
             </h1>
             <p className="text-lg md:text-xl text-white/70 leading-relaxed">
-              Bringing together WHOOP and Strava data pipelines to power an always-on performance dashboard with real-time analytics, anomaly detection, and historical insight.
+              Bringing together WHOOP and Strava data pipelines to power a private performance dashboard with analytics, anomaly detection, and historical insight.
             </p>
           </header>
 
@@ -35,7 +35,7 @@ export default function FitnessDashboardProject() {
           <Card className="border-white/10 bg-white/[0.05] p-8 md:p-10 space-y-6">
             <h2 className="text-2xl md:text-3xl font-semibold text-white">The Challenge</h2>
             <p className="text-white/70 leading-relaxed text-base md:text-lg">
-              WHOOP exposes rich biometric streams, but turning that raw telemetry into actionable insights requires resilient ingestion, smart caching, and compelling visualization. I wanted a single pane of glass that captured training load, recovery, and workout patterns in one experience.
+              WHOOP exposes rich biometric streams, but turning that private telemetry into actionable insights requires resilient ingestion, smart caching, careful access controls, and compelling visualization.
             </p>
           </Card>
 
@@ -58,7 +58,7 @@ export default function FitnessDashboardProject() {
 
           <Card className="border-white/10 bg-gradient-to-br from-emerald-500/15 to-cyan-500/10 border-emerald-400/30 p-8 md:p-10 text-center space-y-4">
             <h3 className="text-2xl font-semibold text-white">See it in action</h3>
-            <p className="text-white/70">Explore the live dashboard, updated automatically as new WHOOP and Strava data arrives.</p>
+            <p className="text-white/70">Explore the auth-gated dashboard pattern without exposing raw health metrics, routes, or private notes in public summaries.</p>
             <Link
               href="/apps/fitness-dashboard"
               className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-white font-medium transition-all duration-300 hover:scale-105 hover:border-emerald-300/60 hover:text-emerald-100"

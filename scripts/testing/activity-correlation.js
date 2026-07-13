@@ -5,7 +5,7 @@
  */
 
 const { Pool } = require('pg');
-require('dotenv').config({ path: '.env' });
+require('dotenv').config({ path: process.env.CAMILO_ENV_PATH || `${require('os').homedir()}/.config/secrets/camilomartinez-portfolio-local.env` });
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

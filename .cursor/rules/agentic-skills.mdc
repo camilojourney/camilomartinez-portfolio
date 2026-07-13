@@ -6,4 +6,4 @@ alwaysApply: false
 # Agentic Skills
 
 Repo-local skills live in `.agents/skills/` (Cursor auto-discovers).
-Fleet platform skills: see `~fleet-system/CLAUDE.md`.
+Fleet platform skills: see `fleet-system/CLAUDE.md`.

@@ -4,16 +4,16 @@ import { useEffect, useRef, useState } from 'react'
 
 const COMMAND = '$ invoz analyze --audio recording.wav'
 const OUTPUT_LINES = [
-  'Analyzing speech across 11 dimensions...',
+  'Analyzing speech across 7 dimensions...',
   '',
-  'Pronunciation Score    94/100',
+  'Intelligibility       88/100',
+  'Accuracy              94/100',
   'Fluency               87/100',
-  'Pitch Variability     91/100',
-  'Speech Rate           0.83 (optimal)',
-  'Pause Patterns        Natural',
+  'Prosody               91/100',
+  'Vocabulary            On track',
   '',
   'Top suggestion: Insert pauses after key points',
-  'to improve audience retention by ~23%',
+  'to make the main idea easier to follow',
 ]
 
 export default function TerminalDemo() {

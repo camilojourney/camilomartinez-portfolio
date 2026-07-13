@@ -2,6 +2,8 @@
 Configuration management using Pydantic Settings.
 Automatically loads and validates environment variables.
 """
+import os
+from pathlib import Path
 from urllib.parse import urlparse
 
 from pydantic_settings import BaseSettings
@@ -69,7 +71,10 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     class Config:
-        env_file = ".env"
+        env_file = os.getenv(
+            "CAMILO_ENV_PATH",
+            str(Path.home() / ".config" / "secrets" / "camilomartinez-portfolio-local.env"),
+        )
         case_sensitive = True
         extra = "ignore"  # Ignore extra fields in .env file
 

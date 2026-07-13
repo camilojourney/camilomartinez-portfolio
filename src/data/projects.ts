@@ -27,8 +27,8 @@ export const projects: ProjectMeta[] = [
     slug: 'invoz-ai',
     title: 'Invoz',
     description:
-      'Production audio ML pipeline synthesized from 46 research papers. Scores spoken English across 11 dimensions (7 acoustic + 4 linguistic) with sub-2s latency per utterance. Whisper, wav2vec2, Parselmouth, Silero VAD orchestrated through a FastAPI service processing 500+ sessions/day.',
-    tags: ['Audio/Speech ML', 'Signal Processing', 'Production ML'],
+      'Speech ML pipeline synthesized from 46 research papers with 7-dimension hybrid scoring: GOPT-style acoustic scoring for accuracy, fluency, prosody, and intelligibility, plus LLM scoring for vocabulary, grammar, and coherence. Public demo at invoz.io; private learner audio and transcripts are not exposed.',
+    tags: ['Audio/Speech ML', 'Intelligibility Scoring', 'Signal Processing'],
     status: 'live',
     category: 'Live App',
     tier: 1,
@@ -42,7 +42,7 @@ export const projects: ProjectMeta[] = [
     slug: 'holus-observatory',
     title: 'Holus Observatory',
     description:
-      'Real-time observability dashboard monitoring 32 autonomous agents across reasoning, generation, review, and publishing stages. WebSocket-driven event stream with <200ms display latency, agent health scoring, and cross-platform content lifecycle tracking.',
+      'Observability dashboard for a multi-agent system, focused on agent health, quality signals, pipeline state, and content lifecycle monitoring.',
     tags: ['Observability', 'Multi-Agent', 'Next.js'],
     status: 'live',
     category: 'Live App',
@@ -105,7 +105,7 @@ export const projects: ProjectMeta[] = [
     slug: 'holusight',
     title: 'Holusight',
     description:
-      'Hybrid retrieval system combining BM25 lexical search, vector embeddings, and reciprocal rank fusion (RRF) reranking. Claude-powered answer synthesis with citation grounding. Achieves 89% relevance on internal benchmarks vs. 62% for vector-only baseline.',
+      'Hybrid retrieval system combining BM25 lexical search, vector embeddings, and reciprocal rank fusion reranking with Claude-powered answer synthesis and citation grounding.',
     tags: ['RAG', 'Search', 'AI Engineering'],
     status: 'live',
     category: 'Live App',
@@ -120,7 +120,7 @@ export const projects: ProjectMeta[] = [
     slug: 'job-tracker',
     title: 'Job Tracker CRM',
     description:
-      'Full-stack job search CRM with Kanban pipeline, AI-generated cover letters via LLM, and resume tailoring engine. FastAPI backend with PostgreSQL, React frontend. Dogfooded daily to manage 200+ applications with automated status tracking.',
+      'Full-stack job search CRM with a Kanban pipeline, LLM-assisted cover letters, resume tailoring, and automated status tracking. Public summaries avoid exposing private application records.',
     tags: ['Full-Stack', 'FastAPI', 'React'],
     status: 'live',
     category: 'Live App',
@@ -135,7 +135,7 @@ export const projects: ProjectMeta[] = [
     slug: 'genpeli',
     title: 'Genpeli',
     description:
-      'Local-first video editing pipeline automating smart cuts, word-level caption generation (Whisper), audio normalization, and multi-platform delivery. Processes a 10-min raw clip to publish-ready short-form in under 3 minutes on consumer hardware.',
+      'Local-first video editing pipeline automating smart cuts, word-level caption generation with Whisper, audio normalization, and multi-platform delivery.',
     tags: ['Video AI', 'FFmpeg', 'Whisper'],
     status: 'live',
     category: 'Live App',
@@ -151,7 +151,7 @@ export const projects: ProjectMeta[] = [
     slug: 'interactive-chatbot',
     title: 'How I Built This Chatbot',
     description:
-      'Self-improving chatbot with LLM-as-judge evaluation (PoLL consensus across 3 model families), RLHF feedback loop, live biometric context injection from WHOOP/Strava APIs, and autonomous knowledge graph expansion.',
+      'RAG chatbot with LLM-as-judge evaluation, feedback collection, privacy-aware project context, and opt-in fitness summaries where authorized.',
     tags: ['LLM Evaluation', 'RAG', 'Self-Improvement'],
     status: 'live',
     category: 'Live App',
@@ -165,7 +165,7 @@ export const projects: ProjectMeta[] = [
     slug: 'fitness-dashboard',
     title: 'Fitness Dashboard',
     description:
-      'Real-time health analytics dashboard pulling HRV, sleep, strain, and activity data from WHOOP and Strava APIs. Natural language querying via RAG-style contextual retrieval with daily automated ingestion pipeline.',
+      'Auth-gated health analytics dashboard integrating WHOOP and Strava APIs with RAG-style contextual retrieval. Public summaries avoid raw health metrics, routes, and private notes.',
     tags: ['Data Engineering', 'APIs', 'Real-time'],
     status: 'live',
     category: 'Live App',
@@ -205,7 +205,7 @@ export const projects: ProjectMeta[] = [
     slug: 'accountability-partner',
     title: 'Accountability Partner',
     description:
-      'Public accountability system pulling WHOOP workout data via API to surface daily training compliance. Streak tracking, missed-day alerts, and public visibility as a forcing function for consistency.',
+      'Accountability system that turns authenticated workout signals into high-level consistency tracking without exposing raw health records.',
     tags: ['Accountability', 'Data Visualization', 'WHOOP API'],
     status: 'live',
     category: 'Live App',
@@ -230,7 +230,7 @@ export const projects: ProjectMeta[] = [
     slug: 'hrv-research',
     title: 'HRV Research',
     description:
-      'ML analysis on 18 months of personal WHOOP data identifying key HRV drivers. Feature importance via gradient boosting, Shapley values for interpretability, and actionable recovery protocol recommendations backed by statistical significance testing.',
+      'ML analysis of personal wearable data for HRV drivers, using gradient boosting and Shapley values while keeping raw health records out of public summaries.',
     tags: ['Machine Learning', 'Data Science', 'Health Analytics'],
     status: 'live',
     category: 'Data Science',

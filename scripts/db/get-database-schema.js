@@ -5,7 +5,10 @@
 
 // Set up environment for Vercel Postgres
 import fs from 'fs';
-const envFile = fs.readFileSync('.env', 'utf8');
+import os from 'node:os';
+import path from 'node:path';
+const envPath = process.env.CAMILO_ENV_PATH || path.join(os.homedir(), '.config', 'secrets', 'camilomartinez-portfolio-local.env');
+const envFile = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
 const databaseUrl = envFile.match(/DATABASE_URL="([^"]+)"/)?.[1];
 if (databaseUrl && !process.env.POSTGRES_URL) {
   process.env.POSTGRES_URL = databaseUrl;

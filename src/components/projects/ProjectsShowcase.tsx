@@ -330,15 +330,15 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           {/* Subtitle -- proof statement, one clear sentence */}
           <p className="hero-stagger hero-stagger-3 text-[16px] md:text-[18px] lg:text-[20px] text-white/50 leading-[1.7] max-w-xl mx-auto mb-10 md:mb-12">
             I ship <span className="text-cyan-400 font-semibold">audio/speech ML</span> pipelines
-            and <span className="text-blue-400 font-semibold">multi-agent systems</span> to production
-            — from research papers to real users.
+            and <span className="text-blue-400 font-semibold">multi-agent systems</span>
+            — from research papers to working products.
           </p>
 
           {/* Credibility markers -- concrete, active, scannable */}
           <div className="hero-stagger hero-stagger-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-12 md:mb-14">
             <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-white/50 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70 shadow-[0_0_6px_rgba(52,211,153,0.4)]"></span>
-              11-dimension speech scorer from 46 papers
+              7-dimension intelligibility scorer from 46 papers
             </span>
             <span className="hidden sm:block w-px h-3.5 bg-white/10"></span>
             <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-white/50 font-medium">

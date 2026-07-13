@@ -131,11 +131,11 @@ export default function AppsPage() {
               </div>
 
               <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-emerald-400 transition-colors duration-300">
-                Trading Bot
+                Trading Research
               </h3>
 
               <p className="text-white/70 mb-6 flex-grow leading-relaxed text-lg">
-                Algorithmic trading platform with real-time market analysis, strategy backtesting, and risk management.
+                Paper-trading research system with market-data analysis, strategy backtesting, and risk controls.
               </p>
 
               <div className="space-y-3 mb-6">

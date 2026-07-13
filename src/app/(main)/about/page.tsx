@@ -24,7 +24,7 @@ const timeline = [
     {
         year: '2023',
         title: 'Invoz.ai -- From Papers to Production',
-        description: 'Read 46 research papers. Built a speech ML pipeline that scores pronunciation across 11 dimensions. First time I felt like a real engineer.',
+        description: 'Read 46 research papers. Built a speech ML pipeline with 7-dimension intelligibility-focused scoring. First time I felt like a real engineer.',
         color: 'from-cyan-400 to-blue-500',
         dot: 'bg-cyan-400',
     },
@@ -47,7 +47,7 @@ const timeline = [
 const skills = [
     {
         title: 'Audio/Speech ML',
-        description: 'Whisper, wav2vec2, Parselmouth, Silero VAD. I built a production pronunciation scoring system -- not a wrapper around an API.',
+        description: 'Whisper, wav2vec2, GOPT-style acoustic scoring, Parselmouth, Silero VAD. I built a speech scoring system -- not a wrapper around an API.',
         gradient: 'from-cyan-500/20 to-blue-500/20',
         border: 'border-cyan-400/20',
         icon: (
@@ -133,7 +133,7 @@ export default function AboutPage() {
                                     &ldquo;Figure out the rest later&rdquo; turned out to mean bartending four nights a week at a cocktail bar in Manhattan while taking a full course load at Baruch. The other hours went to building things. Not tutorials. Not demos. <span className="text-white/90 font-medium">Actual applications that real people use.</span>
                                 </p>
                                 <p>
-                                    The project that changed everything was <span className="text-cyan-400 font-medium">Invoz</span>. I wanted to build a speech scoring system, so I read 46 research papers on audio processing and taught myself signal processing from scratch. That project became an 11-dimension pronunciation scorer running Whisper, wav2vec2, Parselmouth, and Silero VAD in production. It taught me that going genuinely deep on a hard problem is more valuable than being broadly familiar with easy ones.
+                                    The project that changed everything was <span className="text-cyan-400 font-medium">Invoz</span>. I wanted to build a speech scoring system, so I read 46 research papers on audio processing and taught myself signal processing from scratch. That project became a 7-dimension intelligibility scoring pipeline using GOPT-style acoustic scoring, Whisper, wav2vec2, Parselmouth, Silero VAD, and LLM coaching. It taught me that going genuinely deep on a hard problem is more valuable than being broadly familiar with easy ones.
                                 </p>
                                 <p>
                                     Then I built <span className="text-blue-400 font-medium">Holus</span> -- a 32-agent autonomous system with Redis pub/sub, silo isolation, guardrails, and self-improvement loops. That project confirmed what I suspected: <span className="text-white/80 font-medium">the hard problems in AI are not the models. They are the systems around them.</span> Orchestration, reliability, observability, failure recovery -- the stuff that does not make good Twitter threads but determines whether your system works at 3 AM.

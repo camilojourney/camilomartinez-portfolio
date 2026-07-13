@@ -1,7 +1,9 @@
 // Check database schema and test data insertion
 // Load environment variables manually
 const fs = require('fs');
-const envContent = fs.readFileSync('.env.local', 'utf8');
+const os = require('os');
+const envPath = process.env.CAMILO_ENV_PATH || `${os.homedir()}/.config/secrets/camilomartinez-portfolio-local.env`;
+const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
 envContent.split('\n').forEach(line => {
     const [key, value] = line.split('=');
     if (key && value) {

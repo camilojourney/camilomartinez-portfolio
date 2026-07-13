@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fleet.agent_event.v1",
+  "type": "object",
+  "required": ["schema", "repo", "event_id", "occurred_at", "kind", "summary"],
+  "properties": {
+    "schema": {"const": "fleet.agent_event.v1"},
+    "repo": {"type": "string"},
+    "event_id": {"type": "string"},
+    "occurred_at": {"type": "string"},
+    "kind": {"type": "string"},
+    "skill": {"type": ["string", "null"]},
+    "agent": {"type": ["string", "null"]},
+    "summary": {"type": "string"},
+    "trace_id": {"type": ["string", "null"]},
+    "eval_id": {"type": ["string", "null"]},
+    "next": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

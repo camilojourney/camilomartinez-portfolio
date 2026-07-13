@@ -1,0 +1,11 @@
+schema: fleet.repo_tools.v1
+repo: camilomartinez-portfolio
+contracts:
+  cli:
+    policy: prefer just recipes or documented repo commands
+  mcp:
+    policy: expose tools through repo-owned MCP servers when available
+  api:
+    policy: Fleet may call stable APIs; Fleet must not import app internals
+  sqlite:
+    policy: read only unless the repo-local skill explicitly owns the write path
