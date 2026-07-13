@@ -53,6 +53,7 @@ describe('chat feedback helpers', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('POSTs full conversation logs to the chat log endpoint', async () => {
@@ -143,12 +144,35 @@ describe('chat feedback helpers', () => {
   });
 
   it('generates session IDs with the stable prefix, timestamp, and entropy segment', () => {
-    vi.spyOn(Date, 'now').mockReturnValue(1783872000000);
+    vi.useFakeTimers();
+    vi.setSystemTime(1783872000000);
     vi.spyOn(Math, 'random').mockReturnValue(0.123456789);
 
     const sessionId = generateSessionId();
 
     expect(sessionId).toBe('session_1783872000000_4fzzzxjyl');
+    expect(sessionId).toMatch(/^session_\d{13}_[a-z0-9]{9}$/);
+  });
+
+  it('pads short entropy fragments for zero entropy', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1783872000000);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    const sessionId = generateSessionId();
+
+    expect(sessionId).toBe('session_1783872000000_000000000');
+    expect(sessionId).toMatch(/^session_\d{13}_[a-z0-9]{9}$/);
+  });
+
+  it('pads short entropy fragments for single-character entropy', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1783872000000);
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    const sessionId = generateSessionId();
+
+    expect(sessionId).toBe('session_1783872000000_i00000000');
     expect(sessionId).toMatch(/^session_\d{13}_[a-z0-9]{9}$/);
   });
 });
