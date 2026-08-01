@@ -2,8 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { KNOWLEDGE_BASE } from '@/data/knowledge';
 import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations';
-import { RECRUITER_FACTS } from '@/data/recruiter';
-import { CHAT_FALLBACK_MESSAGE } from '@/lib/chat/format';
+import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK, RECRUITER_FACTS } from '@/data/recruiter';
 import type { ChatProviderConfig } from '@/lib/openai';
 
 const mocks = vi.hoisted(() => ({
@@ -201,7 +200,7 @@ describe('Chat API Route', () => {
       body: JSON.stringify({ message: 'Hello' }),
     }));
 
-    await expect(responseText(response)).resolves.toContain(CHAT_FALLBACK_MESSAGE);
+    await expect(responseText(response)).resolves.toContain(CHAT_UNAVAILABLE_RECRUITER_FALLBACK);
     expect(response.status).toBe(503);
     expect(response.headers.get('content-type')).toBe('text/event-stream');
     expect(mocks.createChatClient).not.toHaveBeenCalled();
@@ -220,7 +219,7 @@ describe('Chat API Route', () => {
     const body = await responseText(response);
 
     expect(response.status).toBe(503);
-    expect(body).toContain(CHAT_FALLBACK_MESSAGE);
+    expect(body).toContain(CHAT_UNAVAILABLE_RECRUITER_FALLBACK);
     expect(body).not.toContain('Invalid API Key');
   });
 
@@ -245,12 +244,55 @@ describe('Chat API Route', () => {
     const body = await bodyPromise;
 
     expect(response.status).toBe(200);
-    expect(body).toContain(CHAT_FALLBACK_MESSAGE);
+    expect(body).toContain(CHAT_UNAVAILABLE_RECRUITER_FALLBACK);
     expect(body).toContain('assistant_unavailable');
     expect(body).not.toContain('ABORT_ERR');
   });
 
-  it('rejects invalid JSON before request processing', async () => {
+  it('bounds live context fetching with the chat timeout', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((_url: string, options: { signal?: AbortSignal }) => (
+      new Promise<Response>((_resolve, reject) => {
+        options.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+      })
+    )));
+
+    const responsePromise = POST(new Request('http://localhost:3005/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.36' },
+      body: JSON.stringify({ message: 'Hello' }),
+    }));
+
+    await vi.advanceTimersByTimeAsync(20_000);
+    const response = await responsePromise;
+    const body = await responseText(response);
+
+    expect(response.status).toBe(503);
+    expect(body).toContain(CHAT_UNAVAILABLE_RECRUITER_FALLBACK);
+    expect(mocks.completionCreate).not.toHaveBeenCalled();
+  });
+
+  it('includes retry timing when rate limiting a client', async () => {
+    const request = () => POST(new Request('http://localhost:3005/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.37' },
+      body: JSON.stringify({ message: 'Hello' }),
+    }));
+
+    for (let index = 0; index < 12; index += 1) {
+      expect((await request()).status).toBe(200);
+    }
+    const response = await request();
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get('retry-after')).toBe('60');
+    await expect(response.json()).resolves.toEqual({
+      error: 'rate_limited',
+      message: 'Too many chat requests. Please try again in a minute.',
+    });
+  });
+
+  it('rejects invalid requests before provider lookup', async () => {
     const response = await POST(new Request('http://localhost:3005/api/chat', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.40' },

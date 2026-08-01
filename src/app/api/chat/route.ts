@@ -1,8 +1,7 @@
 import { KNOWLEDGE_BASE } from '@/data/knowledge';
 import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations';
-import { RECRUITER_FACTS } from '@/data/recruiter';
+import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK, RECRUITER_FACTS } from '@/data/recruiter';
 import { createChatClient, resolveChatProvider } from '@/lib/openai';
-import { CHAT_FALLBACK_MESSAGE } from '@/lib/chat/format';
 import type OpenAI from 'openai';
 
 type AllowedRole = 'user' | 'assistant';
@@ -24,6 +23,7 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 12;
 const RATE_LIMIT_MAX_KEYS = 500;
 const TRANSIENT_ERROR_CODES = new Set(['ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED', 'UND_ERR_CONNECT_TIMEOUT']);
+const CHAT_FALLBACK_MESSAGE = CHAT_UNAVAILABLE_RECRUITER_FALLBACK;
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
