@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, X } from 'lucide-react';
 import Image from 'next/image';
+import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK } from '@/data/recruiter';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -32,9 +33,6 @@ const INITIAL_MESSAGE: Message = {
   role: 'assistant',
   content: "I can answer questions about my speech ML pipeline, multi-agent architecture, or availability.",
 };
-
-const CHAT_UNAVAILABLE_RECRUITER_FALLBACK =
-  'AI service is temporarily unavailable, but here is the direct answer: Camilo is open to Applied AI Engineer roles in NYC, including remote/hybrid teams. Reach him at [juancamilomabe@gmail.com](mailto:juancamilomabe@gmail.com).';
 
 const SUGGESTED = [
   "What's your speech ML pipeline?",
