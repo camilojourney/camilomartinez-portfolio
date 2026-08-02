@@ -5,7 +5,7 @@ test.describe('About & Chatbot', () => {
     await page.goto('/about');
     await page.waitForLoadState('networkidle');
     await expect(page).toHaveTitle(/Juan Camilo Martinez/);
-    await expect(page.getByRole('heading', { name: 'About Me' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'About Camilo' })).toBeVisible();
   });
 
   test('AC-026: Chatbot renders on about page', async ({ page }) => {

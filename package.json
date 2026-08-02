@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:backend": "cd backend && uv run pytest",
+    "test:backend": "cd backend && uv run --extra dev pytest",
     "test:all": "pnpm test:run && pnpm test:backend",
     "lint": "eslint .",
     "env:pull": "./scripts/sync-env.sh pull",
