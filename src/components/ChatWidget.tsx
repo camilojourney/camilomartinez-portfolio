@@ -14,6 +14,8 @@ function renderContent(text: string): string {
   return text
     // [text](https://...) → external link
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, `<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$1</a>`)
+    // [text](mailto:...) → email link
+    .replace(/\[([^\]]+)\]\((mailto:[^\)]+)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
     // [text](/relative/path) → internal link (same tab)
     .replace(/\[([^\]]+)\]\((\/[^\)]*)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
     // bare https:// URLs
@@ -30,6 +32,9 @@ const INITIAL_MESSAGE: Message = {
   role: 'assistant',
   content: "I can answer questions about my speech ML pipeline, multi-agent architecture, or availability.",
 };
+
+const CHAT_UNAVAILABLE_RECRUITER_FALLBACK =
+  'AI service is temporarily unavailable, but here is the direct answer: Camilo is open to Applied AI Engineer roles in NYC, including remote/hybrid teams. Reach him at [juancamilomabe@gmail.com](mailto:juancamilomabe@gmail.com).';
 
 const SUGGESTED = [
   "What's your speech ML pipeline?",
@@ -90,7 +95,7 @@ export default function ChatWidget() {
         }
       }
     } catch {
-      setMessages((p) => { const u = [...p]; u[u.length - 1] = { role: 'assistant', content: 'Something went wrong. Try again.' }; return u; });
+      setMessages((p) => { const u = [...p]; u[u.length - 1] = { role: 'assistant', content: CHAT_UNAVAILABLE_RECRUITER_FALLBACK }; return u; });
     } finally {
       setLoading(false);
     }
