@@ -34,6 +34,10 @@ pnpm test:backend   # backend only
 just test-e2e       # Playwright, starts frontend on http://localhost:3005
 ```
 
+`pnpm test:backend` activates the backend's `dev` dependency extra, including
+pytest and its plugins, so it also works in an environment synced without dev
+dependencies.
+
 Playwright uses `http://localhost:3005` by default. Set `PORT` to launch the
 frontend web server on a different local port, or `PLAYWRIGHT_BASE_URL` to point
 the tests at a specific base URL.
