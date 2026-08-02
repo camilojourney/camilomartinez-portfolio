@@ -37,6 +37,7 @@ test.describe('About & Chatbot', () => {
 
     const chatWidget = page.locator('[data-chat-widget]');
     await page.getByRole('button', { name: /Chat with AI assistant/i }).click();
+    await expect(page.getByRole('button', { name: 'Send message' })).toBeVisible();
 
     const input = page.getByPlaceholder(/Ask anything/i);
     await input.fill('Are you available for an AI Engineer interview?');
