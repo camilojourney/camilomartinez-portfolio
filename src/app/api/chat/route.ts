@@ -1,10 +1,15 @@
 import { KNOWLEDGE_BASE } from '@/data/knowledge';
+import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations';
 import { RECRUITER_FACTS } from '@/data/recruiter';
 import { createChatClient, resolveChatProvider } from '@/lib/openai';
 import type OpenAI from 'openai';
 
 const RECRUITER_EMAIL_LINK =
   `[${RECRUITER_FACTS.email}](mailto:${RECRUITER_FACTS.email})`;
+
+const HOLUS_OBSERVATORY_LINK_GUIDANCE = HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref
+  ? `Holus Observatory → [live app](${HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref})`
+  : `Holus Observatory has no confirmed canonical destination; do not provide a live app link. ${HOLUS_OBSERVATORY_DESTINATION_DECISION.recommendation}`;
 
 const SYSTEM_PROMPT = [
   'You are a sharp assistant on Juan Camilo Martinez\'s portfolio. Answer like a human, not a brochure.',
@@ -20,7 +25,7 @@ const SYSTEM_PROMPT = [
   '4. No filler: no "Want to learn more?", no "Feel free to ask", no "Visit the contact page" unless it is the ONLY relevant answer.',
   '5. Never mention age. Never say "I am not familiar."',
   '6. Include links inline when relevant:',
-  '   - Holus Observatory → [holus-observatory.vercel.app](https://holus-observatory.vercel.app)',
+  `   - ${HOLUS_OBSERVATORY_LINK_GUIDANCE}`,
   '   - Holus content engine → [social media app](https://public-phi-rouge-11.vercel.app)',
   '   - Pilaster → [pilaster.ai](https://pilaster.ai)',
   '   - Genpeli → [editai.ai](https://www.editai.ai)',

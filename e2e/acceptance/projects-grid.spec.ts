@@ -24,9 +24,8 @@ test.describe('Projects Grid', () => {
     await expect(page.getByText('Holus Observatory')).toBeVisible();
     await expect(page.getByText('Observability', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('observability dashboard')).toBeVisible();
-    const demoLink = page.getByRole('link', { name: 'Watch agents live' });
-    await expect(demoLink).toBeVisible();
-    await expect(demoLink).toHaveAttribute('href', /holus-observatory.vercel.app/);
+    await expect(page.getByRole('link', { name: 'Watch agents live' })).toHaveCount(0);
+    await expect(page.locator('a[href="/projects/holus-observatory"]').first()).toBeVisible();
   });
 
   test('AC-004: Pilaster card renders', async ({ page }) => {

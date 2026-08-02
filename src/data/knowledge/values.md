@@ -17,13 +17,13 @@
 - Weekly review: what was the bottleneck problem? Was I working on it?
 
 ## What He Is Not
-- Not someone who ships demos - everything goes to production
+- Not someone who misrepresents prototypes as production deployments
 - Not looking for exposure - looking for impact
 - Does not spread across 10 things - picks one and goes deep
 
 ## Background
 - Colombian origin, NYC-based
 - Petroleum engineer turned AI engineer - pivoted through systems thinking
-- Baruch College CUNY, MSA candidate (May 2026)
+- Earned a Master of Science in Business Analytics from Baruch College CUNY
 - Bartends 4 nights/week while building AI products
 - Believes the best AI engineers understand both the business and the architecture

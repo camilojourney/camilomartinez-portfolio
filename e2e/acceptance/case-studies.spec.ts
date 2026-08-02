@@ -14,11 +14,7 @@ test.describe('Case Study Pages', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { name: /Holus Observatory/ })).toBeVisible();
     await expect(page.getByText('Multi-Agent Monitoring Dashboard').first()).toBeVisible();
-    // The canonical Observatory destination is parked for captain decision.
-    await expect(page.getByRole('link', { name: 'View Live App' })).toHaveAttribute(
-      'href',
-      /holus-observatory\.vercel\.app|frontend-six-rho-96\.vercel\.app/,
-    );
+    await expect(page.getByRole('link', { name: 'View Live App' })).toHaveCount(0);
   });
 
   test('AC-013: Genpeli case study loads', async ({ page }) => {

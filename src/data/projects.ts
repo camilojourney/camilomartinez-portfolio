@@ -1,3 +1,5 @@
+import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations';
+
 // Project metadata and types for portfolio showcase
 export type ProjectStatus = 'live' | 'prototype' | 'in-progress' | 'concept';
 export type ProjectCategory = 'Live App' | 'Data Science';
@@ -48,7 +50,7 @@ export const projects: ProjectMeta[] = [
     category: 'Live App',
     tier: 1,
     caseStudyHref: '/projects/holus-observatory',
-    appHref: 'https://holus-observatory.vercel.app',
+    appHref: HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref ?? undefined,
     appLabel: 'Watch agents live',
     isExternalApp: true,
     previewImage: '/images/previews_main/holus_observatory.png',

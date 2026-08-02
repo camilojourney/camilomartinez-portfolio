@@ -22,4 +22,4 @@ Master of Science in Business Analytics from Baruch College (CUNY), plus a backg
 Reach out via the contact page at the portfolio website.
 
 ## What makes him different from other AI engineers?
-He builds full systems, not demos. Every project ships to production. He has a unique phase-gated verification approach that makes AI pipeline outputs measurable and deterministic.
+He builds complete systems and labels prototypes honestly instead of presenting every project as production. His phase-gated verification approach makes AI pipeline outputs measurable and deterministic.

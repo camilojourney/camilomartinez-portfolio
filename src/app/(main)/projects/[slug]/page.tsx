@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import StandardPage from '@/components/shared/standard-page'
 import { Card } from '@/components/ui/Card'
+import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations'
 
 // Project data structure
 interface ProjectData {
@@ -190,9 +191,9 @@ const projects: ProjectData[] = [
             'System health monitoring with service latency',
         ],
         status: 'live',
-        demoUrl: 'https://frontend-six-rho-96.vercel.app',
+        demoUrl: HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref ?? undefined,
         imageUrl: '/images/previews_main/holus_observatory.png',
-        appLink: 'https://frontend-six-rho-96.vercel.app',
+        appLink: HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref ?? undefined,
     },
     {
         slug: 'pilaster',

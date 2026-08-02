@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('External Links', () => {
-  test('AC-019: Holus Observatory demo link works', async ({ request }) => {
+  test('AC-019: Holus Observatory candidate rejects 404', async ({ request }) => {
     const response = await request.get('https://holus-observatory.vercel.app');
-    // Vercel Auth may return 401 for API requests - accept any non-server-error
-    expect(response.status()).toBeLessThan(500);
+    const status = response.status();
+    expect((status >= 200 && status < 400) || status === 401).toBe(true);
   });
 
   test('AC-020: Invoz link works', async ({ request }) => {

@@ -74,7 +74,7 @@ Description: Audio ML pipeline built from 46 research papers. Scores spoken Engl
 
 ## Holus Observatory - Multi-Agent Monitoring Dashboard
 Status: Live
-URL: https://holus-observatory.vercel.app
+Live destination: Pending Camilo's confirmation; do not provide a live app link yet.
 Description: Real-time observability dashboard for the Holus multi-agent system. Agent status grid, quality heatmaps, content pipeline kanban, engagement tracker, follower growth charts, and system health monitoring. Built with Next.js, TypeScript, Tailwind CSS.
 
 ## Holus Content Engine - Multi-Agent Orchestration Framework
@@ -138,14 +138,14 @@ Description: Geospatial routing app to run every street in Astoria, Queens. Grap
 - Weekly review: what was the bottleneck problem? Was I working on it?
 
 ## What He Is Not
-- Not someone who ships demos - everything goes to production
+- Not someone who misrepresents prototypes as production deployments
 - Not looking for exposure - looking for impact
 - Does not spread across 10 things - picks one and goes deep
 
 ## Background
 - Colombian origin, NYC-based
 - Petroleum engineer turned AI engineer - pivoted through systems thinking
-- Baruch College CUNY, MSA candidate (May 2026)
+- Earned a Master of Science in Business Analytics from Baruch College CUNY
 - Bartends 4 nights/week while building AI products
 - Believes the best AI engineers understand both the business and the architecture
 
@@ -175,7 +175,7 @@ Master of Science in Business Analytics from Baruch College (CUNY), plus a backg
 Reach out via the contact page at the portfolio website.
 
 ## What makes him different from other AI engineers?
-He builds full systems, not demos. Every project ships to production. He has a unique phase-gated verification approach that makes AI pipeline outputs measurable and deterministic.
+He builds complete systems and labels prototypes honestly instead of presenting every project as production. His phase-gated verification approach makes AI pipeline outputs measurable and deterministic.
 
 ---
 

@@ -7,7 +7,7 @@ Description: Audio ML pipeline built from 46 research papers. Scores spoken Engl
 
 ## Holus Observatory - Multi-Agent Monitoring Dashboard
 Status: Live
-URL: https://holus-observatory.vercel.app
+Live destination: Pending Camilo's confirmation; do not provide a live app link yet.
 Description: Real-time observability dashboard for the Holus multi-agent system. Agent status grid, quality heatmaps, content pipeline kanban, engagement tracker, follower growth charts, and system health monitoring. Built with Next.js, TypeScript, Tailwind CSS.
 
 ## Holus Content Engine - Multi-Agent Orchestration Framework

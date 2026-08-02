@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations';
 import { RECRUITER_FACTS } from '@/data/recruiter';
 import type { ChatProviderConfig } from '@/lib/openai';
 
@@ -117,6 +118,20 @@ describe('Chat API Route', () => {
     }
     expect(systemContent).not.toContain('https://holusight.com');
     expect(systemContent).toContain('Holusight has no working live app URL right now');
+    expect(systemContent).toContain('Holus Observatory has no confirmed canonical destination');
+    expect(systemContent).not.toContain('https://holus-observatory.vercel.app');
+    expect(systemContent).not.toContain('https://frontend-six-rho-96.vercel.app');
+  });
+
+  it('keeps the Holus Observatory destination unresolved with both candidates recorded', () => {
+    expect(HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref).toBeNull();
+    expect(HOLUS_OBSERVATORY_DESTINATION_DECISION.candidates.map(({ href }) => href)).toEqual([
+      'https://holus-observatory.vercel.app',
+      'https://frontend-six-rho-96.vercel.app',
+    ]);
+    expect(HOLUS_OBSERVATORY_DESTINATION_DECISION.recommendation).toContain(
+      'verify which deployment serves Holus Observatory rather than Genpeli',
+    );
   });
 
   it('strips unsupported history roles before calling the provider', async () => {

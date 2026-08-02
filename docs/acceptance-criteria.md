@@ -41,7 +41,8 @@ When the page loads
 Then "Holus Observatory" title is visible
 And "Observability" tag is visible
 And "observability dashboard" text is in the description
-And a "Watch agents live" link pointing to holus-observatory.vercel.app exists
+And no live-app link is rendered until Camilo confirms the canonical destination
+And the internal case study remains available
 
 ---
 
@@ -123,8 +124,7 @@ Given the user navigates to /projects/holus-observatory
 When the page loads
 Then "Holus Observatory" title is visible
 And "Multi-Agent Monitoring Dashboard" text is visible
-And a "View Live App" link exists
-And its destination is parked for the captain's Holus Observatory canonical URL decision
+And no "View Live App" link is rendered until the canonical URL decision is resolved
 
 ### AC-013: Genpeli case study loads
 **Priority:** P1
@@ -184,7 +184,8 @@ Then "Juan Camilo Martinez" text is visible
 **Priority:** P0
 
 Given the user opens https://holus-observatory.vercel.app
-Then the page loads successfully (HTTP 200)
+Then the response is successful, a redirect, or the specific HTTP 401 protected-preview status
+And the response is never HTTP 404
 
 ### AC-020: Invoz link works
 **Priority:** P1
