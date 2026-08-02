@@ -262,3 +262,11 @@ Then project cards are visible and do not overflow horizontally
 Given the viewport is 375x667
 When the user navigates to /about
 Then content is visible and does not overflow horizontally
+
+### AC-029: Ordinary mobile links meet the minimum touch target
+**Priority:** P0
+
+Given the viewport is 390x844
+When the user visits the portfolio, projects, about, contact, Holus, Holus Observatory, or Holusight routes
+Then every visible ordinary link marked as a mobile link target is at least 44x44 pixels
+And no route overflows horizontally or reflows beyond the 390-pixel viewport

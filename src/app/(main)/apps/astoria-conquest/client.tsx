@@ -7,7 +7,7 @@ import { AstoriaStats } from '@/components/features/astoria-conquest/AstoriaStat
 import { MapContainer } from '@/components/features/astoria-conquest/MapContainer';
 import { RunCard } from '@/components/features/astoria-conquest/RunCard';
 import { RunSelector } from '@/components/features/astoria-conquest/RunSelector';
-import Link from 'next/link'; // eslint-disable-line @typescript-eslint/no-unused-vars
+import Link from 'next/link';
 import { extractZoneDurations } from '@/lib/astoria/zones';
 import ScrollReveal from '@/components/shared/scroll-reveal';
 import TextReveal from '@/components/shared/text-reveal';

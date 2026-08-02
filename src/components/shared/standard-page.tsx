@@ -36,7 +36,7 @@ export default function StandardPage({
       <LiquidNav currentPage={currentPage} />
 
       {/* Universal Background - Brand consistent */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-[#050810]"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-[#080d1c] to-[#050810]"></div>
         <div className="absolute top-0 left-0 w-full h-full opacity-30">
