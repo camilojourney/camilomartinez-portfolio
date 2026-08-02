@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { KNOWLEDGE_BASE } from '@/data/knowledge';
 import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations';
 import { RECRUITER_FACTS } from '@/data/recruiter';
 import type { ChatProviderConfig } from '@/lib/openai';
@@ -124,6 +125,7 @@ describe('Chat API Route', () => {
   });
 
   it('keeps the Holus Observatory destination unresolved with both candidates recorded', () => {
+    expect(KNOWLEDGE_BASE).not.toContain('Live destination:');
     expect(HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref).toBeNull();
     expect(HOLUS_OBSERVATORY_DESTINATION_DECISION.candidates.map(({ href }) => href)).toEqual([
       'https://holus-observatory.vercel.app',
