@@ -1,4 +1,4 @@
-# Portfolio — Acceptance Criteria
+# Portfolio - Acceptance Criteria
 
 Target URL: https://camilomartinez.co
 Local preview: http://localhost:3005
@@ -12,26 +12,26 @@ Each scenario follows **Given-When-Then**:
 
 ---
 
-## 1. Project Cards — Featured Work (Tier 1)
+## 1. Project Cards - Featured Work (Tier 1)
 
-### AC-001: Invoz.ai card renders
+### AC-001: Invoz card renders
 **Priority:** P0
 
 Given the user navigates to /projects
 When the page loads
-Then "Invoz.ai" title is visible
+Then "Invoz" title is visible
 And "Audio/Speech ML" tag is visible
 And a "View live app" link exists
 
-### AC-002: Holus card renders (content creation)
+### AC-002: Holus content engine card renders
 **Priority:** P0
 
 Given the user navigates to /projects
 When the page loads
-Then "Holus" title is visible
-And "AI Marketing" tag is visible
-And "autonomous content engine" text is in the description
-And Holus does NOT have a "Try live demo" button (no appHref)
+Then "Social Media Automatization" title is visible
+And "Publishing API" tag is visible
+And "Federated publishing API" text is in the description
+And a "Try content generator" link exists
 
 ### AC-003: Holus Observatory card renders (separate from Holus)
 **Priority:** P0
@@ -40,12 +40,12 @@ Given the user navigates to /projects
 When the page loads
 Then "Holus Observatory" title is visible
 And "Observability" tag is visible
-And "monitoring dashboard" text is in the description
-And a "Try live demo" link pointing to holus-observatory.vercel.app exists
+And "observability dashboard" text is in the description
+And a "Watch agents live" link pointing to holus-observatory.vercel.app exists
 
 ---
 
-## 2. Project Cards — More Projects (Tier 2)
+## 2. Project Cards - More Projects (Tier 2)
 
 ### AC-004: Pilaster card renders
 **Priority:** P1
@@ -76,12 +76,12 @@ Given the user navigates to /projects
 When the page loads
 Then "Holusight" title is visible
 
-### AC-008: AI Advisor Board card renders
+### AC-008: AI Advisory Board card renders
 **Priority:** P1
 
 Given the user navigates to /projects
 When the page loads
-Then "AI Advisor Board" title is visible
+Then "AI Advisory Board" title is visible
 
 ---
 
@@ -112,8 +112,8 @@ And "Self-Improving AI Chatbot" is NOT visible as a project title
 
 Given the user navigates to /projects/holus
 When the page loads
-Then "Holus — AI Marketing Strategist" title is visible
-And "32 specialized agents" text is visible
+Then "Holus Content Engine" title is visible
+And "Specialized agents" text is visible
 And the page does NOT link to holusight.com
 
 ### AC-012: Holus Observatory case study loads
@@ -123,7 +123,8 @@ Given the user navigates to /projects/holus-observatory
 When the page loads
 Then "Holus Observatory" title is visible
 And "Multi-Agent Monitoring Dashboard" text is visible
-And a link to holus-observatory.vercel.app exists
+And a "View Live App" link exists
+And its destination is parked for the captain's Holus Observatory canonical URL decision
 
 ### AC-013: Genpeli case study loads
 **Priority:** P1
@@ -131,7 +132,7 @@ And a link to holus-observatory.vercel.app exists
 Given the user navigates to /projects/genpeli
 When the page loads
 Then "Genpeli" title is visible
-And "AI Video Pipeline" text is visible
+And "AI Video Editing Pipeline" text is visible
 
 ### AC-014: Invoz case study loads
 **Priority:** P1
@@ -146,14 +147,14 @@ Then "Invoz" title is visible
 Given the user navigates to /projects/holusight
 When the page loads
 Then "Holusight" title is visible
-And a link to holusight.com exists
+And no link to holusight.com exists
 
-### AC-016: Social Media Pipeline case study returns 404
+### AC-016: Social Media Pipeline case study loads
 **Priority:** P0
 
 Given the user navigates to /projects/social-media-pipeline
 When the page loads
-Then a 404 or "not found" response is returned
+Then "Social Media Pipeline" title is visible
 
 ---
 
@@ -163,7 +164,7 @@ Then a 404 or "not found" response is returned
 **Priority:** P0
 
 Given the user navigates to /projects
-When the user clicks "Read case study" on the Holus Observatory card
+When the user clicks "Case study" on the Holus Observatory card
 Then the user is on /projects/holus-observatory
 When the user clicks "Back to Projects"
 Then the user is on /projects
@@ -200,14 +201,15 @@ Then the page loads successfully (HTTP 200 or redirect)
 ### AC-022: Genpeli link works
 **Priority:** P1
 
-Given the user opens https://frontend-six-rho-96.vercel.app
-Then the page loads successfully (HTTP 200)
+Given the user opens https://www.editai.ai
+Then the page loads successfully (HTTP 200 or redirect)
 
-### AC-023: Holusight link works
+### AC-023: Holusight 404 is not linked
 **Priority:** P1
 
 Given the user opens https://holusight.com
-Then the page loads successfully (HTTP 200 or redirect)
+Then the page returns 404
+And the portfolio does not link to that URL
 
 ### AC-024: AI Advisor Board link works
 **Priority:** P1

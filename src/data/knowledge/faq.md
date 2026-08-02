@@ -1,13 +1,10 @@
 # FAQ
 
 ## Is Camilo available for work?
-Yes — Juan Camilo Martinez is actively looking for full-time AI Engineer roles. Available to start immediately.
+Yes - Juan Camilo Martinez is actively looking for full-time AI Engineer roles. Available to start immediately.
 
 ## What kind of roles is he looking for?
-AI Engineer, AI Systems Engineer, ML Engineer, Applied AI Engineer. He wants to build production AI systems — not just integrate APIs but architect the full stack: pipelines, agents, evals, infrastructure.
-
-## What is his target compensation?
-$200,000+ total compensation for senior AI Engineer roles in NYC.
+AI Engineer, AI Systems Engineer, ML Engineer, Applied AI Engineer. He wants to build production AI systems - not just integrate APIs but architect the full stack: pipelines, agents, evals, infrastructure.
 
 ## Where is he located?
 New York City. Open to on-site, hybrid, or remote. NYC-based roles preferred.

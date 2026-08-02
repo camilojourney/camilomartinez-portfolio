@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 function GitHubIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -50,14 +52,14 @@ export default function Footer() {
                 href="https://github.com/camilojourney"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors duration-200 border border-white/[0.08] rounded-full px-3 py-1.5"
+                className="mobile-link-target inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors duration-200 border border-white/[0.08] rounded-full px-3 py-1.5"
               >
                 <GitHubIcon />
-                <span>15+ repos</span>
+                <span>GitHub projects</span>
               </a>
               <span className="inline-flex items-center gap-1.5 text-xs text-white/40 border border-white/[0.08] rounded-full px-3 py-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70"></span>
-                10+ production systems
+                Production AI systems
               </span>
             </div>
           </div>
@@ -68,11 +70,11 @@ export default function Footer() {
               Pages
             </p>
             <nav className="flex flex-col gap-2.5" aria-label="Footer navigation">
-              <a href="/projects" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Work</a>
-              <a href="/about" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">About</a>
-              <a href="/blog" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Blog</a>
-              <a href="/bookshelf" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Bookshelf</a>
-              <a href="/contact" className="text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Contact</a>
+              <Link href="/projects" className="mobile-link-target text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Work</Link>
+              <Link href="/about" className="mobile-link-target text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">About</Link>
+              <Link href="/blog" className="mobile-link-target text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Blog</Link>
+              <Link href="/bookshelf" className="mobile-link-target text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Bookshelf</Link>
+              <Link href="/contact" className="mobile-link-target text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit">Contact</Link>
             </nav>
           </div>
 
@@ -86,7 +88,7 @@ export default function Footer() {
                 href="https://github.com/camilojourney"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit"
+                className="mobile-link-target group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit"
                 aria-label="GitHub"
               >
                 <GitHubIcon />
@@ -96,7 +98,7 @@ export default function Footer() {
                 href="https://www.linkedin.com/in/camilomartinez-ai/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-blue-400 transition-colors duration-200 w-fit"
+                className="mobile-link-target group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-blue-400 transition-colors duration-200 w-fit"
                 aria-label="LinkedIn"
               >
                 <LinkedInIcon />
@@ -106,7 +108,7 @@ export default function Footer() {
                 href="https://x.com/camilojourney"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit"
+                className="mobile-link-target group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-white transition-colors duration-200 w-fit"
                 aria-label="X (Twitter)"
               >
                 <XIcon />
@@ -114,7 +116,7 @@ export default function Footer() {
               </a>
               <a
                 href="mailto:juancamilomabe@gmail.com"
-                className="group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-cyan-400 transition-colors duration-200 w-fit"
+                className="mobile-link-target group inline-flex items-center gap-2.5 text-sm text-white/55 hover:text-cyan-400 transition-colors duration-200 w-fit"
                 aria-label="Email"
               >
                 <EmailIcon />
@@ -131,9 +133,9 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
           <span>&copy; {new Date().getFullYear()} Juan Camilo Martinez. All rights reserved.</span>
           <div className="flex items-center gap-4">
-            <a href="/privacy-policy" className="hover:text-white/60 transition-colors duration-200">Privacy</a>
-            <a href="/terms-of-service" className="hover:text-white/60 transition-colors duration-200">Terms</a>
-            <a href="/sitemap.xml" className="hover:text-white/60 transition-colors duration-200">Sitemap</a>
+            <Link href="/privacy-policy" className="mobile-link-target hover:text-white/60 transition-colors duration-200">Privacy</Link>
+            <Link href="/terms-of-service" className="mobile-link-target hover:text-white/60 transition-colors duration-200">Terms</Link>
+            <Link href="/sitemap.xml" className="mobile-link-target hover:text-white/60 transition-colors duration-200">Sitemap</Link>
           </div>
         </div>
       </div>

@@ -99,7 +99,7 @@ const books: Book[] = [
     category: 'Productivity & Self-Improvement',
     description:
       'Simple strategies to design your day around what matters most. Created by former Google designers who built the design sprint process.',
-    amazonLink: 'https://www.amazon.com/Make-Time-Focus-Matters-Every/dp/0385543470',
+    amazonLink: 'https://www.amazon.com/s?k=Make+Time+Jake+Knapp+John+Zeratsky',
     coverColor: 'from-yellow-400 to-amber-500',
     rating: 4,
     why: 'Great playbook for maintaining focus across multiple complex projects.',

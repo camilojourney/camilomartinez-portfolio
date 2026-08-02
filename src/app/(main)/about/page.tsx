@@ -31,13 +31,13 @@ const timeline = [
     {
         year: '2024',
         title: 'Holus -- The Systems Problem',
-        description: '32 autonomous agents. Redis pub/sub. Silo isolation. Proved to myself that the hard part of AI is not the model -- it is everything around it.',
+        description: 'Autonomous agents. Redis pub/sub. Silo isolation. Proved to myself that the hard part of AI is not the model -- it is everything around it.',
         color: 'from-purple-400 to-violet-500',
         dot: 'bg-purple-400',
     },
     {
         year: 'Now',
-        title: '10+ Production Systems, Still Hungry',
+        title: 'Production AI Systems, Still Hungry',
         description: 'Shipping audio ML, agent infrastructure, and full-stack applications from Queens. Looking for a team that builds things that matter.',
         color: 'from-emerald-400 to-teal-500',
         dot: 'bg-emerald-400',
@@ -136,10 +136,10 @@ export default function AboutPage() {
                                     The project that changed everything was <span className="text-cyan-400 font-medium">Invoz</span>. I wanted to build a speech scoring system, so I read 46 research papers on audio processing and taught myself signal processing from scratch. That project became an 11-dimension pronunciation scorer running Whisper, wav2vec2, Parselmouth, and Silero VAD in production. It taught me that going genuinely deep on a hard problem is more valuable than being broadly familiar with easy ones.
                                 </p>
                                 <p>
-                                    Then I built <span className="text-blue-400 font-medium">Holus</span> -- a 32-agent autonomous system with Redis pub/sub, silo isolation, guardrails, and self-improvement loops. That project confirmed what I suspected: <span className="text-white/80 font-medium">the hard problems in AI are not the models. They are the systems around them.</span> Orchestration, reliability, observability, failure recovery -- the stuff that does not make good Twitter threads but determines whether your system works at 3 AM.
+                                    Then I built <span className="text-blue-400 font-medium">Holus</span> -- an autonomous agent system with Redis pub/sub, silo isolation, guardrails, and self-improvement loops. That project confirmed what I suspected: <span className="text-white/80 font-medium">the hard problems in AI are not the models. They are the systems around them.</span> Orchestration, reliability, observability, failure recovery -- the stuff that does not make good Twitter threads but determines whether your system works at 3 AM.
                                 </p>
                                 <p className="text-white/50">
-                                    I have shipped 10+ production systems and counting. I run 5 days a week, I am trying to hit every street in Astoria, and I am looking for a team where the bar is high and the problems are real.
+                                    I ship production systems and keep improving them. I run regularly, I am trying to hit every street in Astoria, and I am looking for a team where the bar is high and the problems are real.
                                 </p>
                             </div>
                         </div>
@@ -220,7 +220,7 @@ export default function AboutPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 {[
                                     { n: '01', title: 'Systems over motivation', desc: 'I do not rely on feeling motivated. I build structures that produce output regardless -- automated pipelines, daily commits, public accountability.' },
-                                    { n: '02', title: 'Depth over breadth', desc: '46 papers for one feature. 32 agents for one system. I would rather master one hard problem than skim ten easy ones.' },
+                                    { n: '02', title: 'Depth over breadth', desc: '46 papers for one feature. Agent orchestration for one system. I would rather master one hard problem than skim ten easy ones.' },
                                     { n: '03', title: 'Ship then measure', desc: 'Working software is the only credible argument. I ship first, measure impact, then iterate based on what actually happened -- not what I imagined would happen.' },
                                     { n: '04', title: 'Honest about gaps', desc: 'I do not perform expertise I do not have. If I do not know something, I say so, then I go learn it. That is faster than pretending.' },
                                 ].map((v) => (

@@ -22,12 +22,12 @@ export interface ProjectMeta {
 }
 
 export const projects: ProjectMeta[] = [
-  // === TIER 1: Spike projects — lead every resume ===
+  // === TIER 1: Spike projects - lead every resume ===
   {
     slug: 'invoz-ai',
     title: 'Invoz',
     description:
-      'Production audio ML pipeline synthesized from 46 research papers. Scores spoken English across 11 dimensions (7 acoustic + 4 linguistic) with sub-2s latency per utterance. Whisper, wav2vec2, Parselmouth, Silero VAD orchestrated through a FastAPI service processing 500+ sessions/day.',
+      'Production audio ML pipeline synthesized from 46 research papers. Scores spoken English across 11 dimensions (7 acoustic + 4 linguistic). Whisper, wav2vec2, Parselmouth, and Silero VAD are orchestrated through a FastAPI service.',
     tags: ['Audio/Speech ML', 'Signal Processing', 'Production ML'],
     status: 'live',
     category: 'Live App',
@@ -42,7 +42,7 @@ export const projects: ProjectMeta[] = [
     slug: 'holus-observatory',
     title: 'Holus Observatory',
     description:
-      'Real-time observability dashboard monitoring 32 autonomous agents across reasoning, generation, review, and publishing stages. WebSocket-driven event stream with <200ms display latency, agent health scoring, and cross-platform content lifecycle tracking.',
+      'Real-time observability dashboard for autonomous agents across reasoning, generation, review, and publishing stages. Tracks agent health, execution state, and cross-platform content lifecycle signals.',
     tags: ['Observability', 'Multi-Agent', 'Next.js'],
     status: 'live',
     category: 'Live App',
@@ -57,7 +57,7 @@ export const projects: ProjectMeta[] = [
     slug: 'holus',
     title: 'Social Media Automatization',
     description:
-      'Federated publishing API that transforms a single input into platform-native content for 5 networks (X, Threads, LinkedIn, Instagram, Facebook). 32-agent orchestration with Redis pub/sub event bus, silo isolation, guardrails, and autonomous self-improvement loops.',
+      'Federated publishing API that transforms a single input into platform-native content for X, Threads, LinkedIn, Instagram, and Facebook. Multi-agent orchestration with Redis pub/sub event bus, silo isolation, guardrails, and autonomous self-improvement loops.',
     tags: ['Publishing API', 'Multi-Agent', 'FastAPI'],
     status: 'live',
     category: 'Live App',
@@ -75,7 +75,7 @@ export const projects: ProjectMeta[] = [
     slug: 'pilaster',
     title: 'Pilaster',
     description:
-      'Version control system purpose-built for AI generation workflows. Tracks iteration history with intent notes, parameter diffs, and failure pattern detection across ComfyUI and multi-backend pipelines. Reduced creative iteration time by ~40% through structured experiment tracking.',
+      'Version control system purpose-built for AI generation workflows. Tracks iteration history with intent notes, parameter diffs, and failure pattern detection across ComfyUI and multi-backend pipelines.',
     tags: ['Creative Tooling', 'Version Control', 'Next.js'],
     status: 'live',
     category: 'Live App',
@@ -90,7 +90,7 @@ export const projects: ProjectMeta[] = [
     slug: 'ai-advisor-board',
     title: 'AI Advisory Board',
     description:
-      'Multi-agent deliberation system with specialized agents debating strategy, sales, and market positioning to reach consensus decisions. 3rd place at Datadog Hackathon. Implements structured argumentation with confidence scoring and dissent tracking.',
+      'Multi-agent deliberation system with specialized agents debating strategy, sales, and market positioning to reach consensus decisions. Implements structured argumentation with confidence scoring and dissent tracking.',
     tags: ['Multi-Agent', 'Hackathon', 'LLM Systems'],
     status: 'live',
     category: 'Live App',
@@ -105,14 +105,12 @@ export const projects: ProjectMeta[] = [
     slug: 'holusight',
     title: 'Holusight',
     description:
-      'Hybrid retrieval system combining BM25 lexical search, vector embeddings, and reciprocal rank fusion (RRF) reranking. Claude-powered answer synthesis with citation grounding. Achieves 89% relevance on internal benchmarks vs. 62% for vector-only baseline.',
+      'Hybrid retrieval system combining BM25 lexical search, vector embeddings, and reciprocal rank fusion (RRF) reranking. Answer synthesis is grounded with source citations.',
     tags: ['RAG', 'Search', 'AI Engineering'],
-    status: 'live',
+    status: 'prototype',
     category: 'Live App',
     tier: 2,
     caseStudyHref: '/projects/holusight',
-    appHref: 'https://holusight.com',
-    appLabel: 'View live app',
     isExternalApp: true,
     previewImage: '/images/previews_main/holusight.png',
   },
@@ -120,7 +118,7 @@ export const projects: ProjectMeta[] = [
     slug: 'job-tracker',
     title: 'Job Tracker CRM',
     description:
-      'Full-stack job search CRM with Kanban pipeline, AI-generated cover letters via LLM, and resume tailoring engine. FastAPI backend with PostgreSQL, React frontend. Dogfooded daily to manage 200+ applications with automated status tracking.',
+      'Full-stack job search CRM with Kanban pipeline, AI-generated cover letters via LLM, and resume tailoring engine. FastAPI backend with PostgreSQL and React frontend, dogfooded for an active job search.',
     tags: ['Full-Stack', 'FastAPI', 'React'],
     status: 'live',
     category: 'Live App',
@@ -135,7 +133,7 @@ export const projects: ProjectMeta[] = [
     slug: 'genpeli',
     title: 'Genpeli',
     description:
-      'Local-first video editing pipeline automating smart cuts, word-level caption generation (Whisper), audio normalization, and multi-platform delivery. Processes a 10-min raw clip to publish-ready short-form in under 3 minutes on consumer hardware.',
+      'Local-first video editing pipeline automating smart cuts, word-level caption generation (Whisper), audio normalization, and multi-platform delivery for short-form video.',
     tags: ['Video AI', 'FFmpeg', 'Whisper'],
     status: 'live',
     category: 'Live App',
@@ -151,7 +149,7 @@ export const projects: ProjectMeta[] = [
     slug: 'interactive-chatbot',
     title: 'How I Built This Chatbot',
     description:
-      'Self-improving chatbot with LLM-as-judge evaluation (PoLL consensus across 3 model families), RLHF feedback loop, live biometric context injection from WHOOP/Strava APIs, and autonomous knowledge graph expansion.',
+      'Portfolio chatbot with LLM-as-judge evaluation, feedback collection, live WHOOP/Strava context, and curated knowledge grounding.',
     tags: ['LLM Evaluation', 'RAG', 'Self-Improvement'],
     status: 'live',
     category: 'Live App',
@@ -178,7 +176,7 @@ export const projects: ProjectMeta[] = [
     slug: 'focus-time',
     title: 'Focus Time',
     description:
-      'Native macOS menu bar app built with Tauri 2 and Rust. Periodic check-ins during deep work sessions with focus pattern analytics and session history. <2MB binary, zero Electron overhead.',
+      'Native macOS menu bar app built with Tauri 2 and Rust. Periodic check-ins during deep work sessions with focus pattern analytics and session history.',
     tags: ['Tauri 2', 'Rust', 'macOS'],
     status: 'live',
     category: 'Live App',
@@ -192,7 +190,7 @@ export const projects: ProjectMeta[] = [
     slug: 'astoria-conquest',
     title: 'Astoria Conquest',
     description:
-      'Graph-theory routing engine solving a Chinese Postman variant to run every street in Astoria, Queens. Geospatial visualization with route optimization and progress tracking across 180+ street segments.',
+      'Graph-theory routing engine solving a Chinese Postman variant to run every street in Astoria, Queens. Geospatial visualization with route optimization and progress tracking across street segments.',
     tags: ['Graph Theory', 'Mapping', 'Visualization'],
     status: 'live',
     category: 'Live App',

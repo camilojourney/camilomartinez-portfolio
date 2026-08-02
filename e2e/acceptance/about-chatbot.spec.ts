@@ -11,7 +11,7 @@ test.describe('About & Chatbot', () => {
   test('AC-026: Chatbot renders on about page', async ({ page }) => {
     await page.goto('/about');
     await page.waitForLoadState('networkidle');
-    // ChatWidget is a floating button — click to open, then check input appears
+    // ChatWidget is a floating button - click to open, then check input appears
     const chatButton = page.getByRole('button', { name: /Chat with AI assistant/i });
     await expect(chatButton).toBeVisible({ timeout: 10000 });
     await chatButton.click();

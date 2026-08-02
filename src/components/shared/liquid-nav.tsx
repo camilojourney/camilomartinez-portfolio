@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { systemService } from '@/lib/api/config'
 
@@ -11,6 +12,7 @@ interface LiquidNavProps {
 export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+    const mobileMenuId = 'mobile-navigation-menu'
 
     useEffect(() => {
         //Skip API calls during build time
@@ -63,7 +65,7 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                 <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 max-w-4xl mx-auto shadow-2xl shadow-black/10 relative">
                     <div className="flex justify-center space-x-8 text-base font-medium">
                         {navItems.map((item) => (
-                            <a
+                            <Link
                                 key={item.key}
                                 href={item.href}
                                 className={`nav-item transition-all duration-300 relative px-4 py-2 rounded-lg ${
@@ -76,7 +78,7 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                                 {normalizedCurrentPage === item.key && (
                                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"></div>
                                 )}
-                            </a>
+                            </Link>
                         ))}
                     </div>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -88,11 +90,14 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
             <div className="fixed top-0 left-0 w-full z-50 p-4 md:hidden">
                 <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl shadow-black/10">
                     <div className="flex justify-between items-center">
-                        <a href="/" className="text-white font-semibold text-lg tracking-tight">CM</a>
+                        <Link href="/" className="mobile-link-target mobile-link-target-center text-white font-semibold text-lg tracking-tight">CM</Link>
                         <div className="flex items-center space-x-2">
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="text-white/70 hover:text-white transition-colors p-2"
+                                className="flex h-11 w-11 items-center justify-center rounded-lg text-white/70 hover:text-white transition-colors"
+                                aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                                aria-expanded={isMenuOpen}
+                                aria-controls={mobileMenuId}
                             >
                                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
@@ -101,21 +106,21 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                     
                     {/* Mobile Menu Dropdown */}
                     {isMenuOpen && (
-                        <div className="mt-4 pt-4 border-t border-white/10">
+                        <div id={mobileMenuId} className="mt-4 pt-4 border-t border-white/10">
                             <div className="grid grid-cols-2 gap-2">
                                 {navItems.map((item) => (
-                                    <a
+                                    <Link
                                         key={item.key}
                                         href={item.href}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className={`nav-item transition-all duration-300 px-4 py-3 rounded-lg text-center capitalize ${
+                                        className={`nav-item mobile-link-target mobile-link-target-center transition-all duration-300 px-4 py-3 rounded-lg text-center capitalize ${
                                             normalizedCurrentPage === item.key 
                                                 ? 'text-white bg-white/10 border border-white/20' 
                                                 : 'text-white/70 hover:text-white hover:bg-white/5'
                                         }`}
                                     >
                                         {item.label}
-                                    </a>
+                                    </Link>
                                 ))}
                             </div>
                         </div>

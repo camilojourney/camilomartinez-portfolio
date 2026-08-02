@@ -6,27 +6,25 @@ test.describe('Projects Grid', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('AC-001: Invoz.ai card renders', async ({ page }) => {
-    await expect(page.getByText('Invoz.ai', { exact: true })).toBeVisible();
-    // Tag appears in card — use exact match to avoid matching description text
+  test('AC-001: Invoz card renders', async ({ page }) => {
+    await expect(page.getByText('Invoz', { exact: true }).first()).toBeVisible();
+    // Tag appears in card, use exact match to avoid matching description text
     await expect(page.getByText('Audio/Speech ML', { exact: true }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: /View live app/i }).first()).toBeVisible();
   });
 
-  test('AC-002: Holus card renders', async ({ page }) => {
-    await expect(page.getByText('Holus', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('AI Marketing', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('autonomous content engine')).toBeVisible();
-    // Holus (content creation) should NOT have a "Try live demo" button
-    const holus = page.locator('[data-project="holus"]').or(page.getByText('Holus', { exact: true }).first().locator('..').locator('..'));
-    await expect(holus.getByRole('link', { name: 'Try live demo' })).not.toBeVisible();
+  test('AC-002: Holus content engine card renders', async ({ page }) => {
+    await expect(page.getByText('Social Media Automatization', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Publishing API', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Federated publishing API')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Try content generator' })).toBeVisible();
   });
 
   test('AC-003: Holus Observatory card renders', async ({ page }) => {
     await expect(page.getByText('Holus Observatory')).toBeVisible();
     await expect(page.getByText('Observability', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText('monitoring dashboard')).toBeVisible();
-    const demoLink = page.getByRole('link', { name: 'Try live demo' });
+    await expect(page.getByText('observability dashboard')).toBeVisible();
+    const demoLink = page.getByRole('link', { name: 'Watch agents live' });
     await expect(demoLink).toBeVisible();
     await expect(demoLink).toHaveAttribute('href', /holus-observatory.vercel.app/);
   });
@@ -48,8 +46,8 @@ test.describe('Projects Grid', () => {
     await expect(page.getByText('Holusight', { exact: true }).first()).toBeVisible();
   });
 
-  test('AC-008: AI Advisor Board card renders', async ({ page }) => {
-    await expect(page.getByText('AI Advisor Board')).toBeVisible();
+  test('AC-008: AI Advisory Board card renders', async ({ page }) => {
+    await expect(page.getByText('AI Advisory Board')).toBeVisible();
   });
 
   test('AC-009: Social Media Pipeline is gone', async ({ page }) => {
@@ -57,10 +55,7 @@ test.describe('Projects Grid', () => {
   });
 
   test('AC-010: Chatbot reframed as engineering story', async ({ page }) => {
-    // Chatbot is tier 3 — inside collapsible "Personal Projects" section
-    // Expand the section first
-    const expandBtn = page.getByRole('button', { name: /Personal Projects/i });
-    await expandBtn.click();
+    // Chatbot is tier 3 inside the personal/research section.
     await expect(page.getByText('How I Built This Chatbot')).toBeVisible();
     await expect(page.getByText('LLM-as-judge evaluation')).toBeVisible();
     await expect(page.getByText('Self-Improving AI Chatbot')).not.toBeVisible();
@@ -73,7 +68,7 @@ test.describe('Projects Page Mobile', () => {
   test('AC-027: Projects page on mobile', async ({ page }) => {
     await page.goto('/projects');
     await page.waitForLoadState('networkidle');
-    await expect(page.getByText('Invoz.ai')).toBeVisible();
+    await expect(page.getByText('Invoz', { exact: true }).first()).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(overflow).toBe(false);
   });

@@ -9,7 +9,7 @@ export default async function sitemap() {
   }))
 
   const projectRoutes = projects.map((p) => ({
-    url: `${baseUrl}${p.caseStudyHref}`,
+    url: p.caseStudyHref.startsWith('http') ? p.caseStudyHref : `${baseUrl}${p.caseStudyHref}`,
     lastModified: new Date().toISOString().split('T')[0],
   }))
 

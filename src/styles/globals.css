@@ -78,7 +78,7 @@ html {
   --primary-foreground: 0 0% 98%;
   --secondary: 240 4.8% 95.9%;
 
-  /* Liquid Glass — light mode */
+  /* Liquid Glass - light mode */
   --glass-bg: rgba(255, 255, 255, 0.6);
   --glass-border: rgba(15, 23, 42, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.08);
@@ -96,7 +96,20 @@ body {
   min-width: 360px;
 }
 
-/* Prose styles — Premium reading experience */
+@media (max-width: 767px) {
+  .mobile-link-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .mobile-link-target-center {
+    justify-content: center;
+  }
+}
+
+/* Prose styles - Premium reading experience */
 .prose {
   max-width: 65ch;
   color: rgba(255, 255, 255, 0.85);
@@ -143,7 +156,7 @@ body {
   color: rgba(103, 232, 249, 0.5);
 }
 
-/* Code block wrapper — styled container */
+/* Code block wrapper - styled container */
 .code-block-wrapper {
   margin: 1.75em 0;
   border-radius: 1rem;
@@ -676,7 +689,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 0.375rem;
 }
 
-/* Enhanced focus for buttons and links — thicker ring */
+/* Enhanced focus for buttons and links - thicker ring */
 a:focus-visible,
 button:focus-visible,
 [role="button"]:focus-visible,

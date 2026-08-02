@@ -1,157 +1,200 @@
-// Auto-generated knowledge base — embedded at build time
+// Auto-generated knowledge base. Run `pnpm generate:knowledge` after editing src/data/knowledge/*.md.
 export const KNOWLEDGE_BASE = `
-# Juan Camilo Martinez — Bio
+# Juan Camilo Martinez - Bio
 
-Juan Camilo Martinez (also called Camilo) is an Applied AI Engineer based in New York City, specializing in audio/speech ML and multi-agent systems.
+Juan Camilo Martinez (also known as Camilo) is an AI Engineer based in New York City.
 
 ## Education
-- Master of Science in Business Analytics (MSA), Baruch College, City University of New York — May 2026
+- Master of Science in Business Analytics (MSA), Baruch College, City University of New York
 - Background in petroleum engineering; pivoted to AI/data engineering
 
 ## Career
-- Applied AI Engineer specializing in audio/speech ML and multi-agent systems
-- Built a production speech ML pipeline from 46 research papers that scores spoken English across 11 dimensions
-- Designed a multi-agent orchestration framework with health checks, guardrails, and self-improvement loops
-- Built and deployed 10+ end-to-end AI projects
+- Full-stack AI engineer with focus on production ML systems, multi-agent architectures, and RAG pipelines
+- Builds and deploys AI-powered applications
 - Based in NYC; open to remote and hybrid roles
-- Target role: Applied AI Engineer / AI Systems Engineer / ML Engineer
-- Target compensation: $200,000+ total comp
-- Available to start: immediately
+- Target role: AI Engineer / AI Systems Engineer / ML Engineer
 
 ## Personal
 - Originally from Colombia
-- Morning workout streak — documents daily workouts publicly
-- Running every street in Astoria, Queens (Astoria Conquest)
-- Bartends 4 nights/week while building AI projects and job searching full-time
+- Morning workout enthusiast (accountability streak documented publicly)
+- Running every street in Astoria, Queens (Astoria Conquest project)
+- Competitive, systems-minded, ships fast
+
+## Job Search
+- Actively looking for AI Engineer roles
+- Preferred: AI Engineer, AI Systems, ML Engineer, Applied AI titles
+- Location: NYC preferred (remote/hybrid OK)
+- Available to start: immediately
 
 ---
 
 # Technical Skills
 
-## Audio/Speech ML (Primary Expertise)
-- Built a production speech pipeline from 46 research papers
-- Whisper (transcription), wav2vec2 (pronunciation scoring), Parselmouth (prosody analysis)
-- Silero VAD (voice activity detection), phoneme alignment
-- 11-dimension scoring: pronunciation, fluency, prosody, grammar, vocabulary, coherence, rhythm, stress patterns, intonation, pacing, overall SQI
-- LLM-based coaching feedback generation
-- Cost-per-inference analysis at the architecture stage to keep the pipeline production-viable
-
-## Multi-Agent Systems
-- LangGraph orchestration with phase-gated verification
-- Redis pub/sub event bus for inter-agent communication
-- Guardrails, health preflight checks, observability dashboards
-- Silo isolation (trading silo, content silo)
-- Self-improving content engine with adaptive thresholds
-- Specialist spawner pattern with 50+ reviewer pool
-
 ## AI / ML Engineering
-- LLMs: Claude, GPT-4, Gemini — prompt engineering, evals, structured output
-- RAG: pgvector, hybrid BM25 + vector + RRF retrieval, chunking strategies
-- Phase-gated verification: AST-based deterministic checks, quality scoring
-- Video AI: smart cuts, word-by-word captions, audio normalization
+- Large Language Models (LLMs): GPT-4, Claude, Gemini - prompt engineering, fine-tuning, evals
+- RAG (Retrieval-Augmented Generation): pgvector, Pinecone, in-memory retrieval, chunking strategies
+- Multi-agent systems: LangGraph, custom orchestration, Claude Agent SDK
+- AI evals and verification: AST-based deterministic checks, phase-gated pipelines
+- Speech AI: Whisper, TTS systems, real-time transcription
 
 ## Data Engineering
-- Python pipelines: Pandas, Polars, NumPy
+- Python data pipelines: Pandas, Polars, NumPy
+- API integrations: REST, webhooks, OAuth flows
 - PostgreSQL, pgvector, Redis
 - GCP (BigQuery, Cloud Run, Cloud Storage)
-- Real-time analytics and streaming
-- 228-test analytics warehouse with platform integrations
+- Real-time analytics and streaming data
 
-## Full-Stack
-- TypeScript / Next.js / React
-- FastAPI (Python)
+## Full-Stack Development
+- TypeScript / Next.js 15+ / React 19
+- FastAPI (Python backend)
 - Tailwind CSS, Framer Motion
-- Vercel, Docker, Render
+- pnpm, uv package managers
+- Vercel deployments
+
+## Infrastructure
+- Redis pub/sub event bus (multi-agent orchestration)
+- Docker, Render, Vercel
+- GitHub Actions CI/CD
+- Langfuse (LLM observability)
+
+## Languages
+- Python (primary)
+- TypeScript (strong)
+- SQL (strong)
+- Rust (learning - Tauri projects)
 
 ---
 
 # Projects
 
-## Invoz.ai — Multimodel Speech Coaching System (Flagship)
-Status: In Progress | URL: invoz.io
-Audio ML pipeline built from 46 research papers. Scores spoken English across 11 dimensions (7 acoustic + 4 linguistic) using Whisper, wav2vec2, Parselmouth, Silero VAD, and LLM-based coaching. Deployed end to end at invoz.io.
-
-## Holus — Multi-Agent AI Orchestration Framework (Flagship)
-Status: Live | URL: holus-observatory.vercel.app
-Multi-agent orchestration framework that coordinates content, product, and execution workflows across multiple AI projects. Agents communicate via Redis event bus with silo isolation, guardrails, health preflight, and an Observatory dashboard. Built with Python, LangGraph, Claude API, Redis.
-
-## Pilaster — AI Workflow Memory Platform
-Status: Live | URL: pilaster.ai
-Version control and memory system for AI generation workflows. Tracks iterations with intent notes, parameter diffs, and failure pattern warnings across ComfyUI and multi-backend pipelines.
-
-## Genpeli — AI Video Editing Pipeline
-Status: Live | URL: editai.ai
-Local-first AI video editing pipeline. Smart cuts, word-by-word captions, audio normalization, and social media delivery for short-form content.
-
-## Holusight — AI Document Search Engine
-Status: Live | URL: holusight.com
-Hybrid BM25 + vector + RRF retrieval with Claude answer synthesis. Local-first, no cloud required.
-
-## AI Advisor Board
-Status: Live | URL: ai-advisor-board.vercel.app
-Multi-agent advisory panel — strategic debate between advisory directors using different LLM personas.
-
-## Social Media Automatization
+## Invoz - Audio ML Pipeline
 Status: Live
-LLM-powered content pipeline with analytics warehouse. 228 tests. Platform integrations for Instagram, Facebook, Threads, Twitter.
+URL: https://invoz.io
+Description: Audio ML pipeline built from 46 research papers. Scores spoken English across 11 dimensions (7 acoustic + 4 linguistic) using Whisper, wav2vec2, Parselmouth, Silero VAD, and LLM-based coaching. Deployed end to end at invoz.io.
+
+## Holus Observatory - Multi-Agent Monitoring Dashboard
+Status: Live
+URL: https://holus-observatory.vercel.app
+Description: Real-time observability dashboard for the Holus multi-agent system. Agent status grid, quality heatmaps, content pipeline kanban, engagement tracker, follower growth charts, and system health monitoring. Built with Next.js, TypeScript, Tailwind CSS.
+
+## Holus Content Engine - Multi-Agent Orchestration Framework
+Status: Live
+Description: Multi-agent orchestration framework that coordinates content, product, and execution workflows across multiple AI projects. Specialized agents communicate via Redis event bus with silo isolation, guardrails, health preflight, and self-improvement loops.
+
+## Pilaster - AI Workflow Memory Platform
+Status: Live
+URL: https://pilaster.ai
+Description: Version control and memory system for AI generation workflows. Tracks iterations with intent notes, parameter diffs, and failure pattern warnings across ComfyUI and multi-backend pipelines.
+
+## AI Advisory Board
+Status: Live
+URL: https://ai-advisor-board.vercel.app
+Description: Multi-agent reasoning system where specialized agents debate strategy, sales, and market trends to reach collective decisions.
+
+## Holusight - Document Search Engine
+Status: Prototype
+Description: Hybrid document retrieval system combining BM25, vector search, and reciprocal rank fusion reranking with Claude-powered answer synthesis.
+
+## Job Tracker CRM
+Status: Live
+URL: https://job-tracker-swart-eta.vercel.app
+Description: End-to-end job search CRM with Kanban workflow, AI-generated cover letters, resume tailoring, and pipeline management.
+
+## Genpeli - AI Video Editing Pipeline
+Status: Live
+URL: https://www.editai.ai
+Description: Local-first AI video editing pipeline. Smart cuts, word-by-word captions, audio normalization, and social media delivery for short-form content.
+
+## How I Built This Chatbot
+Status: Live
+Description: The engineering behind the portfolio chatbot. LLM-as-judge evaluation, feedback collection, live context injection from WHOOP/Strava APIs, and curated knowledge grounding.
 
 ## Fitness Dashboard
 Status: Live
-Real-time health analytics combining WHOOP (HRV, sleep, recovery) + Strava (runs) APIs. Live data available at /apps/fitness-dashboard.
+Description: Real-time health analytics integrating WHOOP and Strava APIs with natural language querying via RAG-style contextual retrieval.
+
+## Astoria Conquest
+Status: Live
+Description: Geospatial routing app to run every street in Astoria, Queens. Graph theory + GPS matching + live map visualization.
 
 ---
 
-# Values & How He Works
+# Values & Principles - Juan Camilo Martinez
 
 ## Core Values
-1. Systems over motivation — structures work, willpower doesn't
-2. Truth over comfort — honest self-assessment, no self-deception
-3. Wealth = freedom — money is a tool for autonomy
-4. Autonomy — don't outsource emotional regulation
-5. Ship then measure then delete — 90% of features die
+1. Systems over motivation - structures work, willpower does not
+2. Truth over comfort - honest self-assessment, no self-deception
+3. Wealth = freedom - money is a tool for autonomy, not status
+4. Autonomy - do not outsource emotional regulation to others
+5. Ship then measure then delete - 90% of features die. Build, test, cut ruthlessly.
 
-## Operating System
-- Morning: meditate, set ONE intention, gym
-- Evening: three wins + three gratitudes + tomorrow's priority
-- One thing at a time. Depth beats breadth.
+## How He Works
+- One thing at a time. Depth beats breadth, always.
 - Nothing scales until one instance works end-to-end.
-- Output is the proof. No performing.
+- Output is the proof. No performing, no posturing. Ship it.
+- Pushback is respect - if an idea is wrong, say so before executing.
+- Morning: meditate → set ONE intention for the day → gym
+- Evening: three wins + three gratitudes + tomorrow's priority
+- Weekly review: what was the bottleneck problem? Was I working on it?
+
+## What He Is Not
+- Not someone who ships demos - everything goes to production
+- Not looking for exposure - looking for impact
+- Does not spread across 10 things - picks one and goes deep
+
+## Background
+- Colombian origin, NYC-based
+- Petroleum engineer turned AI engineer - pivoted through systems thinking
+- Baruch College CUNY, MSA candidate (May 2026)
+- Bartends 4 nights/week while building AI products
+- Believes the best AI engineers understand both the business and the architecture
 
 ---
 
 # FAQ
 
 ## Is Camilo available for work?
-Yes — actively looking for full-time Applied AI Engineer roles. Available immediately.
+Yes - Juan Camilo Martinez is actively looking for full-time AI Engineer roles. Available to start immediately.
 
-## What kind of roles?
-Applied AI Engineer, AI Systems Engineer, ML Engineer. Especially strong fit for audio/speech ML roles and companies building multi-agent systems.
-
-## What is his target compensation?
-$200,000+ total compensation.
+## What kind of roles is he looking for?
+AI Engineer, AI Systems Engineer, ML Engineer, Applied AI Engineer. He wants to build production AI systems - not just integrate APIs but architect the full stack: pipelines, agents, evals, infrastructure.
 
 ## Where is he located?
-New York City. Open to on-site, hybrid, or remote.
+New York City. Open to on-site, hybrid, or remote. NYC-based roles preferred.
 
-## What makes him different?
-Three things: (1) He built an audio ML pipeline from 46 research papers that scores spoken English across 11 dimensions — not a demo, a real scoring system deployed at invoz.io. (2) He designed a multi-agent orchestration framework with Redis event bus, guardrails, and self-improvement loops. (3) His business analytics background means he thinks about cost and feasibility at the architecture stage, not after. Most AI engineers can build; few think about whether it can run in production.
+## What are his strongest technical areas?
+Multi-agent systems (LangGraph, custom orchestration), RAG architectures (pgvector, retrieval design), production Python (FastAPI, data pipelines), TypeScript/Next.js full-stack, and AI evaluation systems.
 
-## What is his strongest technical skill?
-Audio/speech ML. He went deep on Whisper, wav2vec2, Parselmouth, Silero VAD, prosody analysis, and phoneme alignment. This is a scarce skill set — most ML engineers work on text/image, not audio.
+## Has he worked on enterprise AI systems?
+Yes. Holus is a federated multi-agent orchestration system designed for enterprise deployment. Built with proper observability (Langfuse), guardrails, and verification gates.
+
+## What is his educational background?
+Master of Science in Business Analytics from Baruch College (CUNY), plus a background in petroleum engineering before his AI pivot.
 
 ## How can I contact him?
-Visit the contact page at camilomartinez.co/contact or email juancamilomabe@gmail.com.
+Reach out via the contact page at the portfolio website.
+
+## What makes him different from other AI engineers?
+He builds full systems, not demos. Every project ships to production. He has a unique phase-gated verification approach that makes AI pipeline outputs measurable and deterministic.
 
 ---
 
-# Fitness & Health
+# Fitness & Health - Juan Camilo Martinez
 
 ## Routine
-- Works out 4-5 days/week, morning sessions
-- Tracks with WHOOP: sleep, HRV, recovery score daily
-- Runs every street in Astoria, Queens (Astoria Conquest)
-- Public morning workout streak on the portfolio
+- Works out 4-5 days per week, morning sessions before work
+- Tracks everything with WHOOP band: sleep, HRV, recovery score daily
+- Runs regularly, tracking every street in Astoria, Queens (Astoria Conquest project)
+- Public morning workout accountability streak documented on the portfolio
+- Treats fitness like a system - same time, same structure, compound improvements
 
-## Live Metrics
-For specific numbers (sleep hours, HRV, workout count, km run) — direct to the live Fitness Dashboard at /apps/fitness-dashboard. It shows real-time WHOOP + Strava data.
+## Live Data
+- For specific numbers (exact sleep hours, HRV score, workout count, km run) direct people to the live Fitness Dashboard at /apps/fitness-dashboard - it shows real-time WHOOP and Strava data
+- Sleep target: 7-8 hours per night
+- HRV used as daily readiness signal for training intensity
+
+## Philosophy
+- Morning workout is non-negotiable - sets the tone for the day
+- Consistency over intensity
+- Data-driven: tracks metrics to find patterns, not just to feel good
 `;
