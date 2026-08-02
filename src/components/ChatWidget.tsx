@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, X } from 'lucide-react';
 import Image from 'next/image';
+import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK } from '@/data/recruiter';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -14,6 +15,8 @@ function renderContent(text: string): string {
   return text
     // [text](https://...) → external link
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, `<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$1</a>`)
+    // [text](mailto:...) → email link
+    .replace(/\[([^\]]+)\]\((mailto:[^\)]+)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
     // [text](/relative/path) → internal link (same tab)
     .replace(/\[([^\]]+)\]\((\/[^\)]*)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
     // bare https:// URLs
@@ -90,7 +93,7 @@ export default function ChatWidget() {
         }
       }
     } catch {
-      setMessages((p) => { const u = [...p]; u[u.length - 1] = { role: 'assistant', content: 'Something went wrong. Try again.' }; return u; });
+      setMessages((p) => { const u = [...p]; u[u.length - 1] = { role: 'assistant', content: CHAT_UNAVAILABLE_RECRUITER_FALLBACK }; return u; });
     } finally {
       setLoading(false);
     }
@@ -213,6 +216,7 @@ export default function ChatWidget() {
               <button
                 onClick={() => send()}
                 disabled={loading || !input.trim()}
+                aria-label="Send message"
                 className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-30"
                 style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}
               >

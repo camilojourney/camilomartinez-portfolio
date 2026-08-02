@@ -138,7 +138,7 @@ Rejected because: Doesn't handle the long tail of prospect questions. RAG gives 
 
 ## Edge Cases & Failure Modes
 
-- **Configured chat provider down**: Show fallback message with direct contact links
+- **Configured chat provider down**: State that the AI service is temporarily unavailable, show the authoritative recruiter availability from `src/data/recruiter.ts`, and provide a direct `mailto:` link
 - **Abusive/off-topic questions**: System prompt guardrails + content filter. Redirect to consulting topics.
 - **Rate limit hit**: Friendly message: "I've shared a lot! Ready to chat live? [Schedule a call]"
 - **Empty knowledge base match**: Honest "I don't have details on that, but Camilo can answer directly — [email him]"
@@ -158,6 +158,7 @@ Rejected because: Doesn't handle the long tail of prospect questions. RAG gives 
 - [ ] Email stored in `leads` table with conversation context
 - [ ] "Schedule a call" link surfaces in appropriate context
 - [ ] Rate limiting works (10/session, 50/day per IP)
-- [ ] Fallback works when the configured chat provider is unavailable
+- [x] Current portfolio widget shows the grounded recruiter fallback and direct email link when the configured chat provider is unavailable
+- [x] Icon-only send control has the accessible name `Send message`
 - [ ] Chat widget appears on all pages
 - [ ] Mobile-responsive chat UI

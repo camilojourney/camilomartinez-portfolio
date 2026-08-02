@@ -89,12 +89,12 @@ export default function AboutPage() {
             <LiquidNav currentPage="about" />
 
             {/* Background */}
-            <div className="fixed inset-0 -z-10">
+            <div className="fixed inset-0 -z-10 overflow-hidden">
                 <div className="absolute inset-0 bg-[#050810]"></div>
                 <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-[#080d1c] to-[#050810]"></div>
                 <div className="absolute top-0 left-0 w-full h-full opacity-30">
-                    <div className="absolute top-[15%] left-[10%] w-[600px] h-[600px] bg-blue-600/[0.04] rounded-full blur-[160px]"></div>
-                    <div className="absolute top-[50%] right-[5%] w-[500px] h-[500px] bg-purple-500/[0.03] rounded-full blur-[140px]"></div>
+                    <div className="absolute top-[15%] left-[10%] w-[600px] max-w-[90vw] h-[600px] bg-blue-600/[0.04] rounded-full blur-[160px]"></div>
+                    <div className="absolute top-[50%] right-[5%] w-[500px] max-w-[90vw] h-[500px] bg-purple-500/[0.03] rounded-full blur-[140px]"></div>
                 </div>
             </div>
 

@@ -232,6 +232,16 @@ Given the user navigates to /about
 When the page loads
 Then a chat interface or chatbot component is visible
 
+### AC-026A: Chatbot recovers from an unavailable chat API
+**Priority:** P1
+
+Given the user opens the chatbot and the chat API is unavailable
+When the user sends a message
+Then the chatbot states that the AI service is temporarily unavailable
+And it states that Camilo is open to Applied AI Engineer roles in NYC, including remote or hybrid teams
+And it provides a working email link to juancamilomabe@gmail.com
+And the icon-only composer control has the accessible name "Send message"
+
 ---
 
 ## 8. Responsiveness

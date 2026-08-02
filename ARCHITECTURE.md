@@ -180,12 +180,17 @@ Vercel Cron (weekly) OR manual trigger
 
 ```
 User message
-  → /api/chat (streaming)
+  → ChatWidget
+    → /api/chat (streaming)
     → resolve chat provider (proxy → Groq → OpenAI)
+      → authoritative recruiter facts from src/data/recruiter.ts
       → OpenAI-compatible chat completions API
-      → /api/chat/log (persist)
-        → Vercel Cron: evaluate-chats (score quality)
+    → on API failure, render the grounded recruiter fallback and mailto link
 ```
+
+`src/data/recruiter.ts` is the single source of truth for current target roles,
+location, work modes, and recruiter contact details. The chat system prompt
+treats these values as authoritative over older knowledge-base content.
 
 ---
 

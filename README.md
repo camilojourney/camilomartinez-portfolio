@@ -42,4 +42,7 @@ The portfolio chat route supports OpenAI-compatible providers in this order:
 `AI_PROXY_API_KEY` for the legacy proxy, `GROQ_API_KEY` for Groq using
 `llama-3.3-70b-versatile` by default, then `OPENAI_API_KEY` with
 `gpt-4.1-mini` by default. Optional model overrides are documented in
-`.env.example`.
+`.env.example`. Recruiter availability and contact answers use the authoritative
+facts in `src/data/recruiter.ts`. If the chat API is unavailable, the widget
+states that clearly, gives the same grounded availability summary, and provides
+a direct email link.

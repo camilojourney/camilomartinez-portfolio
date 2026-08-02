@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { RECRUITER_FACTS } from '@/data/recruiter';
 import type { ChatProviderConfig } from '@/lib/openai';
 
 const mocks = vi.hoisted(() => ({
@@ -91,6 +92,29 @@ describe('Chat API Route', () => {
         expect.objectContaining({ role: 'user', content: 'What is Camilo building?' }),
       ]),
     }));
+  });
+
+  it('marks the shared recruiter facts as authoritative in the system message', async () => {
+    const response = await POST(new Request('http://localhost:3005/api/chat', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', host: 'localhost:3005' },
+      body: JSON.stringify({ message: 'Is Camilo available?' }),
+    }));
+
+    await responseText(response);
+
+    const request = mocks.completionCreate.mock.calls[0]?.[0] as {
+      messages?: Array<{ role?: string; content?: unknown }>;
+    } | undefined;
+    const systemContent = request?.messages?.find(({ role }) => role === 'system')?.content;
+
+    expect(systemContent).toEqual(expect.any(String));
+    expect(systemContent).toContain(
+      'CURRENT RECRUITER FACTS - these are authoritative over the knowledge base if there is a conflict:',
+    );
+    for (const fact of Object.values(RECRUITER_FACTS)) {
+      expect(systemContent).toContain(fact);
+    }
   });
 
   it('returns a configuration error before creating a client when no chat provider is configured', async () => {
