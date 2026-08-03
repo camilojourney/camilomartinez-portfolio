@@ -1,10 +1,15 @@
 import { KNOWLEDGE_BASE } from '@/data/knowledge';
+import { HOLUS_OBSERVATORY_DESTINATION_DECISION } from '@/data/project-destinations';
 import { RECRUITER_FACTS } from '@/data/recruiter';
 import { createChatClient, resolveChatProvider } from '@/lib/openai';
 import type OpenAI from 'openai';
 
 const RECRUITER_EMAIL_LINK =
   `[${RECRUITER_FACTS.email}](mailto:${RECRUITER_FACTS.email})`;
+
+const HOLUS_OBSERVATORY_LINK_GUIDANCE = HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref
+  ? `Holus Observatory → [live app](${HOLUS_OBSERVATORY_DESTINATION_DECISION.canonicalHref})`
+  : `Holus Observatory has no confirmed canonical destination; do not provide a live app link. ${HOLUS_OBSERVATORY_DESTINATION_DECISION.recommendation}`;
 
 const SYSTEM_PROMPT = [
   'You are a sharp assistant on Juan Camilo Martinez\'s portfolio. Answer like a human, not a brochure.',
@@ -13,19 +18,21 @@ const SYSTEM_PROMPT = [
   `- Availability: Camilo is open to ${RECRUITER_FACTS.targetRoles} in ${RECRUITER_FACTS.location}, including ${RECRUITER_FACTS.workModes}.`,
   `- Contact: ${RECRUITER_EMAIL_LINK}`,
   '',
-  'RULES — follow strictly:',
+  'RULES - follow strictly:',
   '1. MAX 2 sentences for any single-topic answer. No exceptions.',
   '2. Lists (projects, skills, etc.) → bullets only, one line each. No intro sentence before the list.',
   '3. Never explain what something is unless asked. Just state the fact.',
   '4. No filler: no "Want to learn more?", no "Feel free to ask", no "Visit the contact page" unless it is the ONLY relevant answer.',
   '5. Never mention age. Never say "I am not familiar."',
   '6. Include links inline when relevant:',
-  '   - Holus → [holus-observatory.vercel.app](https://holus-observatory.vercel.app)',
+  `   - ${HOLUS_OBSERVATORY_LINK_GUIDANCE}`,
+  '   - Holus content engine → [social media app](https://public-phi-rouge-11.vercel.app)',
   '   - Pilaster → [pilaster.ai](https://pilaster.ai)',
-  '   - Genpeli → [genpeli](https://frontend-six-rho-96.vercel.app)',
+  '   - Genpeli → [editai.ai](https://www.editai.ai)',
   '   - Invoz → [invoz.io](https://invoz.io)',
   '   - Job Tracker → [job-tracker](https://job-tracker-swart-eta.vercel.app)',
   '   - AI Advisor Board → [ai-advisor-board.vercel.app](https://ai-advisor-board.vercel.app)',
+  '   - Holusight has no working live app URL right now; describe it without a link.',
   `   - Contact / email → ${RECRUITER_EMAIL_LINK}`,
   '   - Portfolio → [camilomartinez.co](https://camilomartinez.co)',
   '',
@@ -46,17 +53,44 @@ async function getLiveContext(baseUrl: string): Promise<string> {
     const res = await fetch(`${baseUrl}/api/chatbot/context`, { next: { revalidate: 300 } });
     const data = await res.json() as { ok: boolean; snapshot: string };
     if (data.ok && data.snapshot) return `\n\nLIVE FITNESS DATA (as of now):\n${data.snapshot}`;
-  } catch { /* silently fail — chatbot still works without live data */ }
+  } catch { /* silently fail - chatbot still works without live data */ }
   return '';
 }
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as {
-      message: string;
-      conversationHistory?: Array<{ role: string; content: string }>;
-    };
-    const { message, conversationHistory = [] } = body;
+    const body = await request.json() as unknown;
+    if (!body || typeof body !== 'object' || !('message' in body) || typeof body.message !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid chat request' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const message = body.message.trim().slice(0, 2000);
+    if (!message) {
+      return new Response(JSON.stringify({ error: 'Message is required' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const rawHistory = 'conversationHistory' in body && Array.isArray(body.conversationHistory)
+      ? body.conversationHistory
+      : [];
+    const conversationHistory = rawHistory
+      .filter((m): m is { role: 'user' | 'assistant'; content: string } => (
+        typeof m === 'object' &&
+        m !== null &&
+        'role' in m &&
+        (m.role === 'user' || m.role === 'assistant') &&
+        'content' in m &&
+        typeof m.content === 'string'
+      ))
+      .slice(-10)
+      .map((m) => ({
+        role: m.role,
+        content: m.content.trim().slice(0, 2000),
+      }))
+      .filter((m) => m.content.length > 0);
 
     const provider = resolveChatProvider();
     if (!provider) {
@@ -100,8 +134,8 @@ export async function POST(request: Request) {
       headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' },
     });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: msg }), {
+    console.error('Chat request failed:', error);
+    return new Response(JSON.stringify({ error: 'Chat service temporarily unavailable' }), {
       status: 500, headers: { 'Content-Type': 'application/json' },
     });
   }

@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/Card';
 import LiquidNav from '@/components/shared/liquid-nav';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ArrowUpRight, FileText, Download } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, FileText, Mail } from 'lucide-react';
 import { useEffect, useRef, useCallback } from 'react';
 import { projects } from '../../data/projects';
 import type { ProjectStatus, ProjectMeta } from '../../data/projects';
@@ -220,7 +220,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
 
             {/* Content */}
             <div className="p-5 md:p-6 flex flex-col gap-3 flex-1">
-              <Link href={project.caseStudyHref} className="group/title inline-flex flex-col gap-1">
+              <Link href={project.caseStudyHref} className="mobile-link-target group/title inline-flex flex-col gap-1">
                 <h3 className={`${featured ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'} font-semibold text-white group-hover/title:text-cyan-300 transition-colors duration-300 leading-snug`}>
                   {project.title}
                 </h3>
@@ -244,7 +244,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
               <div className="mt-auto pt-4 flex flex-wrap items-center gap-3">
                 <Link
                   href={project.caseStudyHref}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 group/link"
+                  className="mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 group/link"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Case study</span>
@@ -257,7 +257,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
                     <Link
                       href={appHref}
                       {...(project.isExternalApp ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-cyan-400/80 hover:text-cyan-300 transition-colors duration-200"
+                      className="mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium text-cyan-400/80 hover:text-cyan-300 transition-colors duration-200"
                     >
                       <span>{appLabel}</span>
                       {project.isExternalApp ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
@@ -272,7 +272,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
                       href={apiHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-white/40 hover:text-violet-300 transition-colors duration-200"
+                      className="mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium text-white/40 hover:text-violet-300 transition-colors duration-200"
                     >
                       <span>{apiLabel}</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -294,7 +294,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
       <LiquidNav currentPage={currentPage} />
 
       {/* Background -- layered depth with subtle grain */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-[#050810]"></div>
         {/* Primary gradient layer */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-[#080d1c] to-[#050810]"></div>
@@ -331,7 +331,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           <p className="hero-stagger hero-stagger-3 text-[16px] md:text-[18px] lg:text-[20px] text-white/50 leading-[1.7] max-w-xl mx-auto mb-10 md:mb-12">
             I ship <span className="text-cyan-400 font-semibold">audio/speech ML</span> pipelines
             and <span className="text-blue-400 font-semibold">multi-agent systems</span> to production
-            — from research papers to real users.
+            - from research papers to real users.
           </p>
 
           {/* Credibility markers -- concrete, active, scannable */}
@@ -343,7 +343,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
             <span className="hidden sm:block w-px h-3.5 bg-white/10"></span>
             <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-white/50 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/70 shadow-[0_0_6px_rgba(6,182,212,0.4)]"></span>
-              32-agent orchestration system
+              Multi-agent orchestration system
             </span>
             <span className="hidden sm:block w-px h-3.5 bg-white/10"></span>
             <span className="inline-flex items-center gap-2 text-[13px] md:text-[14px] text-white/50 font-medium">
@@ -362,13 +362,11 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
               <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/cta:translate-x-0.5" />
             </a>
             <a
-              href="/resume.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="mailto:juancamilomabe@gmail.com?subject=AI%20Engineer%20Opportunity"
               className="inline-flex items-center justify-center gap-2.5 bg-white/[0.06] border border-white/[0.12] text-white/65 text-[15px] font-medium px-8 py-3.5 rounded-full hover:bg-white/[0.10] hover:text-white/90 hover:border-white/[0.20] transition-all duration-300 active:scale-[0.98]"
             >
-              <Download className="w-4 h-4" />
-              <span>Resume</span>
+              <Mail className="w-4 h-4" />
+              <span>Email me</span>
             </a>
           </div>
 
@@ -390,7 +388,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
               <div className="max-w-3xl mx-auto space-y-2.5">
                 <h2 id="featured-heading" className="text-[1.5rem] md:text-[1.875rem] font-bold text-white tracking-[-0.03em] leading-tight">Featured Work</h2>
                 <p className="text-[14px] md:text-[15px] text-white/40 leading-relaxed">
-                  Production systems — research to deployment.
+                  Production systems - research to deployment.
                 </p>
               </div>
 

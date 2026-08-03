@@ -23,8 +23,8 @@ Next.js + FastAPI fitness analytics portfolio for Camilo Martinez. Pulls wearabl
 ## Playbooks
 
 See `docs/playbooks/` for human-facing workflow guides:
-- `docs/playbooks/development.md` — local setup and dev workflow
-- `docs/playbooks/performance.md` — performance targets and optimization notes
+- `docs/playbooks/development.md` - local setup and dev workflow
+- `docs/playbooks/performance.md` - performance targets and optimization notes
 
 ## Escalation (All Agents)
 
@@ -37,11 +37,11 @@ Escalate to Camilo if:
 
 ## Domain Concepts
 
-- **HRV** — Heart Rate Variability (WHOOP primary signal)
-- **Recovery score** — WHOOP daily readiness (0-100%)
-- **Strain** — WHOOP cardiovascular load metric
-- **Strava activity** — A logged workout (run, ride, swim, etc.)
-- **Token TTL** — Strava tokens expire in 6h; WHOOP tokens last longer but must still auto-refresh
+- **HRV** - Heart Rate Variability (WHOOP primary signal)
+- **Recovery score** - WHOOP daily readiness (0-100%)
+- **Strain** - WHOOP cardiovascular load metric
+- **Strava activity** - A logged workout (run, ride, swim, etc.)
+- **Token TTL** - Strava tokens expire in 6h; WHOOP tokens last longer but must still auto-refresh
 
 ## Structure
 
@@ -104,8 +104,8 @@ Agent cycle: weekly (Sunday 5 AM ET). See `.self-improvement/workers.yaml`.
 ## Rules
 
 ### Always
-- TypeScript strict mode — no `any` types
-- Python type hints everywhere — Pydantic v2 models for all API contracts
+- TypeScript strict mode - no `any` types
+- Python type hints everywhere - Pydantic v2 models for all API contracts
 - Run `pnpm lint` before committing
 - Keep TypeScript types in `src/types/` aligned with Pydantic models in `backend/app/models/`
 
@@ -124,10 +124,10 @@ Agent cycle: weekly (Sunday 5 AM ET). See `.self-improvement/workers.yaml`.
 
 ## Critical Rules
 
-- **No secrets in client bundle** — `NEXT_PUBLIC_` vars are public; keep `NEXTAUTH_SECRET`, `WHOOP_CLIENT_SECRET`, `STRAVA_CLIENT_SECRET`, `CRON_SECRET` server-side only
-- **OAuth token refresh is critical path** — Strava tokens expire in 6h; WHOOP tokens must also auto-refresh
-- **Never break ingestion pipelines** — downstream analytics depend on continuous data sync
-- **ALLOW_PUBLIC_DASHBOARD_DATA defaults to false** — health data is personal
+- **No secrets in client bundle** - `NEXT_PUBLIC_` vars are public; keep `NEXTAUTH_SECRET`, `WHOOP_CLIENT_SECRET`, `STRAVA_CLIENT_SECRET`, `CRON_SECRET` server-side only
+- **OAuth token refresh is critical path** - Strava tokens expire in 6h; WHOOP tokens must also auto-refresh
+- **Never break ingestion pipelines** - downstream analytics depend on continuous data sync
+- **ALLOW_PUBLIC_DASHBOARD_DATA defaults to false** - health data is personal
 
 ## External Services
 
@@ -138,3 +138,10 @@ Agent cycle: weekly (Sunday 5 AM ET). See `.self-improvement/workers.yaml`.
 - Vercel Postgres (token + data storage)
 
 @import .claude/rules/workflow.md
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.

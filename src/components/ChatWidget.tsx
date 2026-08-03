@@ -12,7 +12,14 @@ interface Message {
 
 function renderContent(text: string): string {
   const linkStyle = 'color:#67e8f9;text-decoration:underline;text-underline-offset:2px';
-  return text
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  return escaped
     // [text](https://...) → external link
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, `<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$1</a>`)
     // [text](mailto:...) → email link

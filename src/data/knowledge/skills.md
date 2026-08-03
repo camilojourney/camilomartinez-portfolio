@@ -1,7 +1,7 @@
 # Technical Skills
 
 ## AI / ML Engineering
-- Large Language Models (LLMs): GPT-4, Claude, Gemini — prompt engineering, fine-tuning, evals
+- Large Language Models (LLMs): GPT-4, Claude, Gemini - prompt engineering, fine-tuning, evals
 - RAG (Retrieval-Augmented Generation): pgvector, Pinecone, in-memory retrieval, chunking strategies
 - Multi-agent systems: LangGraph, custom orchestration, Claude Agent SDK
 - AI evals and verification: AST-based deterministic checks, phase-gated pipelines
@@ -31,4 +31,4 @@
 - Python (primary)
 - TypeScript (strong)
 - SQL (strong)
-- Rust (learning — Tauri projects)
+- Rust (learning - Tauri projects)

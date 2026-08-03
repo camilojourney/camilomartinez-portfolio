@@ -23,7 +23,7 @@ export default function ContactPage() {
     <div className="min-h-screen relative overflow-hidden">
       <LiquidNav currentPage="contact" />
       {/* Animated Background */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
         <div className="absolute top-0 left-0 w-full h-full opacity-20">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
@@ -124,15 +124,15 @@ export default function ContactPage() {
               <p className="text-emerald-400 text-sm font-medium">Open to opportunities</p>
             </div>
 
-            {/* Response time */}
+            {/* Contact path */}
             <div className="backdrop-blur-2xl bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 text-center hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300">
               <div className="w-10 h-10 bg-cyan-500/20 border border-cyan-400/20 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <svg className="w-5 h-5 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-white font-medium mb-1">Response Time</p>
-              <p className="text-white/60 text-sm">Usually within 24 hours</p>
+              <p className="text-white font-medium mb-1">Best Contact</p>
+              <p className="text-white/60 text-sm">Email or LinkedIn</p>
             </div>
           </div>
 
@@ -141,15 +141,15 @@ export default function ContactPage() {
             <h2 className="text-xl font-semibold text-white mb-6">What I bring</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="text-white/60">
-                <p className="text-2xl font-bold text-white mb-1">10+</p>
-                Production AI apps
+                <p className="text-2xl font-bold text-white mb-1">AI</p>
+                Production systems
               </div>
               <div className="text-white/60">
                 <p className="text-2xl font-bold text-white mb-1">46</p>
                 Papers in speech pipeline
               </div>
               <div className="text-white/60">
-                <p className="text-2xl font-bold text-white mb-1">5+</p>
+                <p className="text-2xl font-bold text-white mb-1">Agents</p>
                 Multi-agent systems
               </div>
               <div className="text-white/60">

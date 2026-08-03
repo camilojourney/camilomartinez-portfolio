@@ -13,6 +13,7 @@
     "test:backend": "cd backend && uv run --extra dev pytest",
     "test:all": "pnpm test:run && pnpm test:backend",
     "lint": "eslint .",
+    "generate:knowledge": "node scripts/generate-knowledge.mjs",
     "env:pull": "./scripts/sync-env.sh pull",
     "env:status": "./scripts/sync-env.sh status",
     "env:list": "./scripts/sync-env.sh list",
