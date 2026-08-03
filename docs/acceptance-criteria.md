@@ -235,15 +235,34 @@ Given the user navigates to /about
 When the page loads
 Then a chat interface or chatbot component is visible
 
-### AC-026A: Chatbot recovers from an unavailable chat API
+### AC-026A: Chatbot recovers from an unavailable or incomplete response
 **Priority:** P1
 
-Given the user opens the chatbot and the chat API is unavailable
+Given the user opens the chatbot and the chat API is unavailable or its response stream is incomplete
 When the user sends a message
 Then the chatbot states that the AI service is temporarily unavailable
 And it states that Camilo is open to Applied AI Engineer roles in NYC, including remote or hybrid teams
 And it provides a working email link to juancamilomabe@gmail.com
+And it does not display a partial answer or duplicate the fallback message
+And it offers to retry the last question without including the failed exchange in conversation history
 And the icon-only composer control has the accessible name "Send message"
+
+### AC-026B: Chatbot respects rate-limit cooldowns
+**Priority:** P1
+
+Given the chat API responds with a rate limit and a Retry-After value
+When the user sends a message
+Then the chatbot shows the API's rate-limit guidance
+And it disables message submission until the cooldown expires
+And it does not offer an immediate retry of the rate-limited question
+
+### AC-026C: Chatbot cancels abandoned or duplicate requests
+**Priority:** P1
+
+Given a chat request is in flight
+When the user submits the same prompt again or closes the chatbot
+Then no duplicate request is sent
+And closing the chatbot cancels the in-flight request without leaving an empty assistant message
 
 ---
 
