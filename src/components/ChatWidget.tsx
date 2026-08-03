@@ -8,6 +8,7 @@ import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK } from '@/data/recruiter';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  displayOnly?: boolean;
 }
 
 interface ParsedSseChunk {
@@ -40,8 +41,7 @@ function parseSseChunk(buffer: string, chunk: string): ParsedSseChunk {
       const parsed = JSON.parse(payload) as { content?: string; error?: string };
       if (typeof parsed.error === 'string') {
         events.push({ error: true, content: parsed.content });
-      }
-      if (typeof parsed.content === 'string' && parsed.content) {
+      } else if (typeof parsed.content === 'string' && parsed.content) {
         events.push({ content: parsed.content });
       }
     } catch {
@@ -83,6 +83,26 @@ const SUGGESTED = [
 ];
 
 const DEFAULT_RATE_LIMIT_DELAY_MS = 60_000;
+
+function conversationHistory(messages: Message[]): Message[] {
+  const history: Message[] = [];
+
+  for (let index = 0; index < messages.length - 1; index += 1) {
+    const user = messages[index];
+    const assistant = messages[index + 1];
+    if (
+      user?.role === 'user'
+      && assistant?.role === 'assistant'
+      && !user.displayOnly
+      && !assistant.displayOnly
+    ) {
+      history.push(user, assistant);
+      index += 1;
+    }
+  }
+
+  return history;
+}
 
 function retryDelayMs(response: Response): number {
   const retryAfter = response.headers.get('retry-after');
@@ -147,12 +167,12 @@ export default function ChatWidget() {
     return () => window.clearTimeout(timeout);
   }, [rateLimitUntil]);
 
-  function replaceLastAssistant(content: string) {
+  function replaceLastAssistant(content: string, displayOnly = false) {
     setMessages((p) => {
       const updated = [...p];
       const last = updated[updated.length - 1];
       if (last?.role === 'assistant') {
-        updated[updated.length - 1] = { role: 'assistant', content };
+        updated[updated.length - 1] = { role: 'assistant', content, displayOnly };
       }
       return updated;
     });
@@ -186,7 +206,7 @@ export default function ChatWidget() {
     setLoading(true);
     setLastFailedPrompt(null);
 
-    const history = messages.slice(1); // skip initial
+    const history = conversationHistory(messages);
     setMessages((p) => [...p, { role: 'user', content: msg }, { role: 'assistant', content: '' }]);
     abortRef.current?.abort();
     const abortController = new AbortController();
@@ -203,7 +223,7 @@ export default function ChatWidget() {
       if (res.status === 429) {
         const message = await rateLimitMessage(res);
         setRateLimitUntil(Date.now() + retryDelayMs(res));
-        replaceLastAssistant(message);
+        replaceLastAssistant(message, true);
         return;
       }
 
@@ -222,7 +242,7 @@ export default function ChatWidget() {
             return true;
           }
           if (event.error) {
-            replaceLastAssistant(event.content || CHAT_UNAVAILABLE_RECRUITER_FALLBACK);
+            replaceLastAssistant(event.content || CHAT_UNAVAILABLE_RECRUITER_FALLBACK, true);
             setLastFailedPrompt(msg);
           } else if (event.content) {
             appendAssistantContent(event.content);
@@ -253,7 +273,7 @@ export default function ChatWidget() {
       }
     } catch {
       if (!abortController.signal.aborted) {
-        replaceLastAssistant(CHAT_UNAVAILABLE_RECRUITER_FALLBACK);
+        replaceLastAssistant(CHAT_UNAVAILABLE_RECRUITER_FALLBACK, true);
         setLastFailedPrompt(msg);
       }
     } finally {

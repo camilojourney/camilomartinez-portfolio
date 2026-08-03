@@ -48,9 +48,11 @@ test.describe('public chatbot resilience', () => {
   test('shows safe contact fallback for provider failure and retries successfully', async ({ page }) => {
     await page.addInitScript(() => {
       let attempts = 0;
+      (window as unknown as { chatRequestBodies: string[] }).chatRequestBodies = [];
       const originalFetch = window.fetch.bind(window);
       window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
         if (String(input).includes('/api/chat')) {
+          (window as unknown as { chatRequestBodies: string[] }).chatRequestBodies.push(String(init?.body));
           attempts += 1;
           if (attempts === 1) {
             return Response.json({ error: 'assistant_unavailable' }, { status: 503 });
@@ -69,11 +71,39 @@ test.describe('public chatbot resilience', () => {
     await page.getByPlaceholder(/Ask anything/i).fill('Can I contact Camilo?');
     await page.getByRole('button', { name: 'Send message' }).click();
 
-    await expect(page.getByText(/assistant is temporarily unavailable/i)).toBeVisible();
+    await expect(page.getByText(/AI service is temporarily unavailable/i)).toBeVisible();
     await expect(page.getByRole('link', { name: /juancamilomabe@gmail.com/i })).toHaveAttribute('href', 'mailto:juancamilomabe@gmail.com');
 
     await page.getByRole('button', { name: 'Retry last question' }).click();
     await expect(page.getByText('Back online.')).toBeVisible();
+    const retryBody = await page.evaluate(() => {
+      const bodies = (window as unknown as { chatRequestBodies: string[] }).chatRequestBodies;
+      return JSON.parse(bodies[1]) as { conversationHistory: unknown[] };
+    });
+    expect(retryBody.conversationHistory).toEqual([]);
+  });
+
+  test('renders SSE fallback content exactly once', async ({ page }) => {
+    await page.addInitScript(() => {
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (String(input).includes('/api/chat')) {
+          return new Response(
+            'data: {"error":"assistant_unavailable","content":"The assistant is temporarily unavailable."}\n\ndata: [DONE]\n\n',
+            { status: 200, headers: { 'Content-Type': 'text/event-stream' } },
+          );
+        }
+        return originalFetch(input, init);
+      };
+    });
+
+    await page.goto('/');
+    await openChat(page);
+    await page.getByPlaceholder(/Ask anything/i).fill('Can I contact Camilo?');
+    await page.getByRole('button', { name: 'Send message' }).click();
+
+    const fallback = page.locator('[data-chat-message-role="assistant"]').last();
+    await expect(fallback).toHaveText('The assistant is temporarily unavailable.');
   });
 
   test('rejects a truncated stream and offers a retry', async ({ page }) => {
@@ -95,7 +125,7 @@ test.describe('public chatbot resilience', () => {
     await page.getByPlaceholder(/Ask anything/i).fill('Do not truncate this');
     await page.getByRole('button', { name: 'Send message' }).click();
 
-    await expect(page.getByText(/assistant is temporarily unavailable/i)).toBeVisible();
+    await expect(page.getByText(/AI service is temporarily unavailable/i)).toBeVisible();
     await expect(page.getByText('Partial answer')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Retry last question' })).toBeVisible();
   });
@@ -119,16 +149,26 @@ test.describe('public chatbot resilience', () => {
     await page.getByPlaceholder(/Ask anything/i).fill('Validate the whole stream');
     await page.getByRole('button', { name: 'Send message' }).click();
 
-    await expect(page.getByText(/assistant is temporarily unavailable/i)).toBeVisible();
+    await expect(page.getByText(/AI service is temporarily unavailable/i)).toBeVisible();
     await expect(page.getByText('Looks complete')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Retry last question' })).toBeVisible();
   });
 
   test('shows rate-limit guidance without offering an immediate retry', async ({ page }) => {
     await page.addInitScript(() => {
+      let attempts = 0;
+      (window as unknown as { chatRequestBodies: string[] }).chatRequestBodies = [];
       const originalFetch = window.fetch.bind(window);
       window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
         if (String(input).includes('/api/chat')) {
+          attempts += 1;
+          (window as unknown as { chatRequestBodies: string[] }).chatRequestBodies.push(String(init?.body));
+          if (attempts > 1) {
+            return new Response('data: {"content":"Available again."}\n\ndata: [DONE]\n\n', {
+              status: 200,
+              headers: { 'Content-Type': 'text/event-stream' },
+            });
+          }
           return Response.json(
             { error: 'rate_limited', message: 'Too many chat requests. Please try again in a minute.' },
             { status: 429, headers: { 'Retry-After': '1' } },
@@ -148,6 +188,14 @@ test.describe('public chatbot resilience', () => {
     await expect(page.getByRole('button', { name: 'Retry last question' })).toHaveCount(0);
     await expect(input).toBeDisabled();
     await expect(input).toBeEnabled({ timeout: 2_000 });
+    await input.fill('Try a different question');
+    await page.getByRole('button', { name: 'Send message' }).click();
+    await expect(page.getByText('Available again.')).toBeVisible();
+    const secondBody = await page.evaluate(() => {
+      const bodies = (window as unknown as { chatRequestBodies: string[] }).chatRequestBodies;
+      return JSON.parse(bodies[1]) as { conversationHistory: unknown[] };
+    });
+    expect(secondBody.conversationHistory).toEqual([]);
   });
 
   test('blocks rapid duplicate sends while a request is in flight', async ({ page }) => {
