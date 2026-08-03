@@ -8,6 +8,48 @@ import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK } from '@/data/recruiter';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  displayOnly?: boolean;
+}
+
+interface ParsedSseChunk {
+  events: Array<{
+    content?: string;
+    done?: boolean;
+    error?: boolean;
+  }>;
+  buffer: string;
+}
+
+function parseSseChunk(buffer: string, chunk: string): ParsedSseChunk {
+  const chunks = `${buffer}${chunk}`.split('\n');
+  const maybeIncomplete = chunks.pop() ?? '';
+
+  const events: ParsedSseChunk['events'] = [];
+
+  for (const line of chunks) {
+    if (!line.startsWith('data: ')) {
+      continue;
+    }
+
+    const payload = line.slice(6);
+    if (payload === '[DONE]') {
+      events.push({ done: true });
+      continue;
+    }
+
+    try {
+      const parsed = JSON.parse(payload) as { content?: string; error?: string };
+      if (typeof parsed.error === 'string') {
+        events.push({ error: true, content: parsed.content });
+      } else if (typeof parsed.content === 'string' && parsed.content) {
+        events.push({ content: parsed.content });
+      }
+    } catch {
+      events.push({ error: true, content: CHAT_UNAVAILABLE_RECRUITER_FALLBACK });
+    }
+  }
+
+  return { events, buffer: maybeIncomplete };
 }
 
 function renderContent(text: string): string {
@@ -20,19 +62,12 @@ function renderContent(text: string): string {
     .replace(/'/g, '&#39;');
 
   return escaped
-    // [text](https://...) → external link
     .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, `<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$1</a>`)
-    // [text](mailto:...) → email link
     .replace(/\[([^\]]+)\]\((mailto:[^\)]+)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
-    // [text](/relative/path) → internal link (same tab)
-    .replace(/\[([^\]]+)\]\((\/[^\)]*)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
-    // bare https:// URLs
+    .replace(/\[([^\]]+)\]\((\/[^)]+)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
     .replace(/(^|[\s(])(https?:\/\/[^\s)]+)/g, `$1<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$2</a>`)
-    // **bold**
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    // bullet lines
     .replace(/^[-•]\s(.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0"><span style="opacity:0.4;flex-shrink:0">•</span><span>$1</span></div>')
-    // newlines
     .replace(/\n/g, '<br/>');
 }
 
@@ -47,14 +82,67 @@ const SUGGESTED = [
   'Are you open to AI Engineer roles?',
 ];
 
+const DEFAULT_RATE_LIMIT_DELAY_MS = 60_000;
+
+function conversationHistory(messages: Message[]): Message[] {
+  const history: Message[] = [];
+
+  for (let index = 0; index < messages.length - 1; index += 1) {
+    const user = messages[index];
+    const assistant = messages[index + 1];
+    if (
+      user?.role === 'user'
+      && assistant?.role === 'assistant'
+      && !user.displayOnly
+      && !assistant.displayOnly
+    ) {
+      history.push(user, assistant);
+      index += 1;
+    }
+  }
+
+  return history;
+}
+
+function retryDelayMs(response: Response): number {
+  const retryAfter = response.headers.get('retry-after');
+  if (!retryAfter) {
+    return DEFAULT_RATE_LIMIT_DELAY_MS;
+  }
+
+  const seconds = Number(retryAfter);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return seconds * 1_000;
+  }
+
+  const retryDate = Date.parse(retryAfter);
+  return Number.isNaN(retryDate)
+    ? DEFAULT_RATE_LIMIT_DELAY_MS
+    : Math.max(0, retryDate - Date.now());
+}
+
+async function rateLimitMessage(response: Response): Promise<string> {
+  const body: unknown = await response.json().catch(() => null);
+  if (body && typeof body === 'object' && 'message' in body) {
+    const message = (body as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+  }
+  return 'Too many chat requests. Please try again later.';
+}
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [showTeaser, setShowTeaser] = useState(true);
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lastFailedPrompt, setLastFailedPrompt] = useState<string | null>(null);
+  const [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,52 +152,159 @@ export default function ChatWidget() {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
+  useEffect(() => () => {
+    abortRef.current?.abort();
+  }, []);
+
+  useEffect(() => {
+    if (rateLimitUntil === null) {
+      return;
+    }
+    const timeout = window.setTimeout(
+      () => setRateLimitUntil(null),
+      Math.max(0, rateLimitUntil - Date.now()),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [rateLimitUntil]);
+
+  function replaceLastAssistant(content: string, displayOnly = false) {
+    setMessages((p) => {
+      const updated = [...p];
+      const last = updated[updated.length - 1];
+      if (last?.role === 'assistant') {
+        updated[updated.length - 1] = { role: 'assistant', content, displayOnly };
+      }
+      return updated;
+    });
+  }
+
+  function appendAssistantContent(content: string) {
+    setMessages((p) => {
+      const updated = [...p];
+      const last = updated[updated.length - 1];
+      if (last?.role === 'assistant') {
+        updated[updated.length - 1] = { role: 'assistant', content: last.content + content };
+      }
+      return updated;
+    });
+  }
+
+  function removePendingAssistantMessage() {
+    setMessages((p) => {
+      const last = p[p.length - 1];
+      if (last?.role === 'assistant' && !last.content) {
+        return p.slice(0, -1);
+      }
+      return p;
+    });
+  }
+
   async function send(text?: string) {
     const msg = (text ?? input).trim();
-    if (!msg || loading) return;
+    if (!msg || loading || rateLimitUntil !== null) return;
     setInput('');
     setLoading(true);
+    setLastFailedPrompt(null);
 
-    const history = messages.slice(1); // skip initial
+    const history = conversationHistory(messages);
     setMessages((p) => [...p, { role: 'user', content: msg }, { role: 'assistant', content: '' }]);
+    abortRef.current?.abort();
+    const abortController = new AbortController();
+    abortRef.current = abortController;
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: msg, conversationHistory: history }),
+        signal: abortController.signal,
       });
-      if (!res.ok) throw new Error(`${res.status}`);
+
+      if (res.status === 429) {
+        const message = await rateLimitMessage(res);
+        setRateLimitUntil(Date.now() + retryDelayMs(res));
+        replaceLastAssistant(message, true);
+        return;
+      }
+
+      if (!res.ok && !res.headers.get('content-type')?.includes('text/event-stream')) {
+        throw new Error(`${res.status}`);
+      }
+
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
       if (!reader) throw new Error('no body');
+      let buffer = '';
+      let doneStreaming = false;
+      const consumeEvents = (events: ParsedSseChunk['events']) => {
+        for (const event of events) {
+          if (event.done) {
+            return true;
+          }
+          if (event.error) {
+            replaceLastAssistant(event.content || CHAT_UNAVAILABLE_RECRUITER_FALLBACK, true);
+            setLastFailedPrompt(msg);
+          } else if (event.content) {
+            appendAssistantContent(event.content);
+          }
+        }
+        return false;
+      };
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        for (const line of decoder.decode(value).split('\n')) {
-          if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
-          try {
-            const { content } = JSON.parse(line.slice(6)) as { content: string };
-            if (content) setMessages((p) => {
-              const u = [...p];
-              const last = u[u.length - 1];
-              if (last) u[u.length - 1] = { role: 'assistant', content: last.content + content };
-              return u;
-            });
-          } catch { /* skip */ }
+        const parsed = parseSseChunk(buffer, decoder.decode(value, { stream: true }));
+        buffer = parsed.buffer;
+        doneStreaming = consumeEvents(parsed.events);
+        if (doneStreaming) {
+          break;
         }
       }
+
+      const parsed = parseSseChunk(buffer, decoder.decode());
+      buffer = parsed.buffer;
+      if (!doneStreaming) {
+        doneStreaming = consumeEvents(parsed.events);
+      }
+
+      if (!doneStreaming || buffer.length > 0) {
+        throw new Error('incomplete_stream');
+      }
     } catch {
-      setMessages((p) => { const u = [...p]; u[u.length - 1] = { role: 'assistant', content: CHAT_UNAVAILABLE_RECRUITER_FALLBACK }; return u; });
+      if (!abortController.signal.aborted) {
+        replaceLastAssistant(CHAT_UNAVAILABLE_RECRUITER_FALLBACK, true);
+        setLastFailedPrompt(msg);
+      }
     } finally {
-      setLoading(false);
+      if (abortRef.current === abortController) {
+        abortRef.current = null;
+        setLoading(false);
+      }
     }
   }
 
   const fresh = messages.length === 1;
   const [hint, setHint] = useState(true);
-  useEffect(() => { const t = setTimeout(() => setHint(false), 6000); return () => clearTimeout(t); }, []);
-  useEffect(() => { if (open) setHint(false); }, [open]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setHint(false), 6000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (open) setHint(false);
+  }, [open]);
+
+  function closeChat() {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      removePendingAssistantMessage();
+    }
+    abortRef.current = null;
+    setLoading(false);
+    setOpen(false);
+  }
 
   return (
     <div data-chat-widget className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -122,7 +317,6 @@ export default function ChatWidget() {
             border: '1px solid rgba(255,255,255,0.08)',
           }}
         >
-          {/* Header */}
           <div
             className="flex items-center justify-between px-4 py-3"
             style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
@@ -143,7 +337,7 @@ export default function ChatWidget() {
               </div>
             </div>
             <button
-              onClick={() => setOpen(false)}
+              onClick={closeChat}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-white/30 hover:text-white/70 hover:bg-white/5 transition-colors"
               aria-label="Close chat"
             >
@@ -151,7 +345,6 @@ export default function ChatWidget() {
             </button>
           </div>
 
-          {/* Messages */}
           <div
             className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
             style={{ scrollbarWidth: 'none' }}
@@ -159,6 +352,7 @@ export default function ChatWidget() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
+                  data-chat-message-role={m.role}
                   className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     m.role === 'user' ? 'text-white rounded-br-sm' : 'rounded-bl-sm'
                   }`}
@@ -194,10 +388,20 @@ export default function ChatWidget() {
                 ))}
               </div>
             )}
+
+            {lastFailedPrompt && !loading && (
+              <button
+                type="button"
+                onClick={() => send(lastFailedPrompt)}
+                className="text-left text-xs px-3 py-3 rounded-xl transition-all duration-200 text-cyan-100 border border-cyan-400/30 hover:border-cyan-300/60 hover:bg-cyan-500/10"
+              >
+                Retry last question
+              </button>
+            )}
+
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
           <div className="px-3 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
             <div
               className="flex items-center gap-2 rounded-xl px-3 py-2"
@@ -216,13 +420,13 @@ export default function ChatWidget() {
                     send();
                   }
                 }}
-                disabled={loading}
+                disabled={loading || rateLimitUntil !== null}
                 placeholder="Ask anything..."
                 className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
               />
               <button
                 onClick={() => send()}
-                disabled={loading || !input.trim()}
+                disabled={loading || rateLimitUntil !== null || !input.trim()}
                 aria-label="Send message"
                 className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-30"
                 style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}
@@ -238,7 +442,6 @@ export default function ChatWidget() {
         </div>
       )}
 
-      {/* Speech bubble teaser */}
       {!open && showTeaser && (
         <div
           onClick={() => {
@@ -285,7 +488,6 @@ export default function ChatWidget() {
             <X className="w-3.5 h-3.5" />
           </button>
           Built a speech ML pipeline from 46 papers. Ask me about it.
-          {/* tail */}
           <div
             style={{
               position: 'absolute',
@@ -301,15 +503,17 @@ export default function ChatWidget() {
         </div>
       )}
 
-      {/* Animations */}
       <style>{`
         @keyframes fadeSlideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
-      {/* Trigger button */}
       <button
         onClick={() => {
-          setOpen((v) => !v);
+          if (open) {
+            closeChat();
+          } else {
+            setOpen(true);
+          }
           setShowTeaser(false);
         }}
         className="flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-105"
@@ -324,7 +528,7 @@ export default function ChatWidget() {
           cursor: 'pointer',
           backdropFilter: 'blur(12px)',
         }}
-        aria-label="Chat with AI assistant"
+        aria-label={open ? 'Close chat' : 'Chat with AI assistant'}
       >
         {open ? (
           <X className="w-5 h-5 text-white/70" />
