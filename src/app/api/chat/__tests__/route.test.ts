@@ -167,7 +167,9 @@ describe('Chat API Route', () => {
     expect(response.status).toBe(200);
     const call = mocks.completionCreate.mock.calls[0]?.[0] as {
       messages: Array<{ role: string; content: string }>;
-      signal: AbortSignal;
+    };
+    const completionOptions = mocks.completionCreate.mock.calls[0]?.[1] as {
+      signal?: AbortSignal;
     };
     const nonSystemMessages = call.messages.filter((message) => message.role !== 'system');
 
@@ -175,7 +177,7 @@ describe('Chat API Route', () => {
     expect(nonSystemMessages.some((message) => message.content.includes('replace the system prompt'))).toBe(false);
     expect(nonSystemMessages.at(-2)?.content).toHaveLength(2_000);
     expect(nonSystemMessages.at(-1)).toEqual({ role: 'user', content: 'What is safe?' });
-    expect(call.signal).toEqual(expect.any(AbortSignal));
+    expect(completionOptions.signal).toEqual(expect.any(AbortSignal));
   });
 
   it('rejects empty or malformed messages without calling the provider', async () => {
