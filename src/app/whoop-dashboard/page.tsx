@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import LiquidNav from '@/components/shared/liquid-nav';
 import { ApiClient, analyticsService, integrationService } from '@/lib/api/config';
 
@@ -116,6 +116,9 @@ export default function WhoopDashboard() {
     });
 
     const [sessionStatus, setSessionStatus] = useState<Record<string, any> | null>(null);
+    const checkSessionStatusRef = useRef<() => Promise<void>>(async () => {});
+    const getDebugInfoRef = useRef<() => Promise<void>>(async () => {});
+    const getSyncStatusRef = useRef<() => Promise<void>>(async () => {});
 
     // Check session status (TODO: Migrate to FastAPI in Phase 6-7)
     const checkSessionStatus = async () => {
@@ -131,20 +134,6 @@ export default function WhoopDashboard() {
             console.error('Failed to check session status:', error);
         }
     };
-
-    // Auto-refresh debug info and sync status every 30 seconds when authenticated
-    useEffect(() => {
-        if (!session) return undefined;
-        
-        getDebugInfo();
-        getSyncStatus();
-        checkSessionStatus(); // Add session status check
-        const interval = setInterval(() => {
-            getDebugInfo();
-            getSyncStatus();
-        }, 30000);
-        return () => clearInterval(interval);
-    }, [session]);
 
     const runHistoricalCollection = async () => {
         setLoading(prev => ({ ...prev, historical: true }));
@@ -269,6 +258,34 @@ export default function WhoopDashboard() {
 
         setLoading(prev => ({ ...prev, syncStatus: false }));
     };
+
+    useEffect(() => {
+        checkSessionStatusRef.current = checkSessionStatus;
+        getDebugInfoRef.current = getDebugInfo;
+        getSyncStatusRef.current = getSyncStatus;
+    });
+
+    // Auto-refresh debug info and sync status every 30 seconds when authenticated
+    useEffect(() => {
+        if (!session) return undefined;
+
+        const refreshStatus = () => {
+            getDebugInfoRef.current();
+            getSyncStatusRef.current();
+        };
+
+        const initial = setTimeout(() => {
+            refreshStatus();
+            checkSessionStatusRef.current();
+        }, 0);
+        const interval = setInterval(() => {
+            refreshStatus();
+        }, 30000);
+        return () => {
+            clearTimeout(initial);
+            clearInterval(interval);
+        };
+    }, [session]);
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return 'Never';

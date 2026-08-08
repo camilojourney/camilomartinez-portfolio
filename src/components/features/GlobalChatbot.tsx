@@ -7,18 +7,9 @@ import { Chatbot } from '@/components/features/Chatbot';
 export function GlobalChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   // Auto-open after a delay on first visit
   useEffect(() => {
-    // Set isMounted to true to indicate we're on the client
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    // Only access localStorage after component is mounted on client
-    if (!isMounted || typeof window === 'undefined') return undefined;
-
     try {
       const hasSeenChatbot = localStorage.getItem('hasSeenChatbot');
       if (!hasSeenChatbot) {
@@ -33,7 +24,7 @@ export function GlobalChatbot() {
       console.warn('localStorage is not available:', error);
     }
     return undefined;
-  }, [isMounted]);
+  }, []);
 
   const toggleChatbot = () => {
     if (isOpen && !isMinimized) {

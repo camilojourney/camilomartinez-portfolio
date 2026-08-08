@@ -40,8 +40,16 @@ interface YearlyTotals {
     BoxingSessions: number;
 }
 
+function getInitialWorkoutYear(workoutData: WorkoutData[]): number {
+    const years = workoutData
+        .map((workout) => new Date(workout.start_time).getFullYear())
+        .filter((year) => Number.isFinite(year));
+
+    return years.length > 0 ? Math.max(...years) : 2026;
+}
+
 export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: TrainingAnalyticsProps) {
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedYear, setSelectedYear] = useState(() => getInitialWorkoutYear(workoutData));
     const [isMounted, setIsMounted] = useState(false);
     const [hoveredBar, setHoveredBar] = useState<{
         sport: string;

@@ -86,7 +86,7 @@ const projects: ProjectData[] = [
             'Content calendar integration'
         ],
         status: 'concept',
-        imageUrl: '/images/project-content-creator.png'
+        imageUrl: '/images/previews_main/socia_media_creation.png'
     },
     {
         slug: 'ai-coaching-app',
@@ -106,7 +106,7 @@ const projects: ProjectData[] = [
             'Integration with professional platforms'
         ],
         status: 'concept',
-        imageUrl: '/images/project-coach-app.png'
+        imageUrl: '/images/previews_main/agents_board.png'
     },
     {
         slug: 'astoria-conquest',
@@ -149,7 +149,7 @@ const projects: ProjectData[] = [
             'Real-world dataset examples'
         ],
         status: 'in-progress',
-        imageUrl: '/images/project-analytics.png'
+        imageUrl: '/images/previews_main/fitness.png'
     },
     {
         slug: 'holus',

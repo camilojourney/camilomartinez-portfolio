@@ -19,6 +19,16 @@ interface WeeklyAccountabilityData {
     sleepStartStdDev: number; // in minutes
 }
 
+function isMissingDatabaseConfig(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+        return false;
+    }
+
+    const record = error as { code?: unknown; message?: unknown };
+    return record.code === 'missing_connection_string' ||
+        (typeof record.message === 'string' && record.message.includes('missing_connection_string'));
+}
+
 async function getWeeklyAccountabilityMetrics(): Promise<WeeklyAccountabilityData[]> {
     try {
         // Fetch directly from weekly_habits_summary table
@@ -83,7 +93,9 @@ async function getWeeklyAccountabilityMetrics(): Promise<WeeklyAccountabilityDat
 
         return weeklyData;
     } catch (error) {
-        console.error('Error fetching weekly accountability metrics:', error);
+        if (!isMissingDatabaseConfig(error)) {
+            console.error('Error fetching weekly accountability metrics:', error);
+        }
         return [];
     }
 }
@@ -136,7 +148,9 @@ async function getWeeklyHabitsData() {
 
         return weeklyData;
     } catch (error) {
-        console.error('Error fetching weekly habits data:', error);
+        if (!isMissingDatabaseConfig(error)) {
+            console.error('Error fetching weekly habits data:', error);
+        }
         return [];
     }
 }

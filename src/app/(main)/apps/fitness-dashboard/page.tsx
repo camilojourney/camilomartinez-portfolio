@@ -101,6 +101,16 @@ function emptyDashboardData(errorMessage?: string): FitnessDashboardData {
     };
 }
 
+function isMissingDatabaseConfig(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+        return false;
+    }
+
+    const record = error as { code?: unknown; message?: unknown };
+    return record.code === 'missing_connection_string' ||
+        (typeof record.message === 'string' && record.message.includes('missing_connection_string'));
+}
+
 async function getFitnessDashboardData(): Promise<FitnessDashboardData> {
     try {
         // Use allSettled so a single query failure does not blank the entire dashboard
@@ -239,7 +249,9 @@ async function getFitnessDashboardData(): Promise<FitnessDashboardData> {
             monthlyTrainingDays,
         };
     } catch (error) {
-        console.error('Error loading fitness dashboard data:', error);
+        if (!isMissingDatabaseConfig(error)) {
+            console.error('Error loading fitness dashboard data:', error);
+        }
         return emptyDashboardData('Unable to load dashboard data right now. Please try again later.');
     }
 }

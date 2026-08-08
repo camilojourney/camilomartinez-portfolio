@@ -7,6 +7,7 @@
     "dev:all": "concurrently \"pnpm dev:backend\" \"pnpm dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
     "build": "next build",
     "start": "next start",
+    "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
