@@ -304,7 +304,7 @@ export default function ChatWidget() {
                   }
                 >
                   {m.content ? (
-                    <span>{renderChatContent(m.content)}</span>
+                    <div>{renderChatContent(m.content)}</div>
                   ) : loading && i === messages.length - 1 ? (
                     <span className="flex gap-1 items-center h-4">
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce" style={{ animationDelay: '0ms' }} />

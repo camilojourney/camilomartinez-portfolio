@@ -5,6 +5,8 @@ import type { ComponentPropsWithoutRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
+import ProjectsShowcase from '@/components/projects/ProjectsShowcase';
+
 vi.mock('next/image', () => ({
   default: ({ fill: _fill, priority: _priority, src, alt, ...rest }: ComponentPropsWithoutRef<'img'> & {
     fill?: boolean;
@@ -49,5 +51,13 @@ describe('project case study assets', () => {
       expect(heroImageSrc?.startsWith('/images/previews_main/')).toBe(true);
       expect(existsSync(join(process.cwd(), 'public', heroImageSrc ?? ''))).toBe(true);
     }
+  });
+
+  it('renders the Astoria Conquest preview image', () => {
+    const html = renderToStaticMarkup(<ProjectsShowcase currentPage="projects" />);
+
+    expect(html).toContain('Astoria Conquest preview');
+    expect(html).toContain('/images/previews_main/astoria_conquest.png');
+    expect(existsSync(join(process.cwd(), 'public', 'images/previews_main/astoria_conquest.png'))).toBe(true);
   });
 });
