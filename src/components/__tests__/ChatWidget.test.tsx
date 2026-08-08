@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 let stateCall = 0;
 
+/* eslint-disable @next/next/no-img-element */
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof import('react')>('react');
 

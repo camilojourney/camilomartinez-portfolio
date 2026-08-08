@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import ProjectsShowcase from '@/components/projects/ProjectsShowcase';
 
+/* eslint-disable @next/next/no-img-element */
 vi.mock('next/image', () => ({
   default: ({ fill: _fill, priority: _priority, src, alt, ...rest }: ComponentPropsWithoutRef<'img'> & {
     fill?: boolean;
