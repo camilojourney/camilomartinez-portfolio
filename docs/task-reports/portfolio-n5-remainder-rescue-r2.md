@@ -19,7 +19,7 @@ Rescued unlanded hunks from `59a677d` and `8d8a979` onto `main`, reconciled with
 | `package.json` `typecheck` script | Present in `59a677d`, absent on main |
 | `sitemap.ts` `today` helper + unit test | Regression guard for doubled-origin URLs |
 | Case-study hero `imageUrl` paths in `projects/[slug]/page.tsx` | Three broken `/images/project-*.png` refs on main; `59a677d` pointed to existing `previews_main` assets |
-| Case-study asset existence test | New coverage from `59a677d` |
+| Case-study hero render test | Rendered pages prove public hero images exist |
 
 ## Dropped (already satisfied)
 
