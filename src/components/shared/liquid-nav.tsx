@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
-import { systemService } from '@/lib/api/config'
 
 interface LiquidNavProps {
     currentPage?: 'home' | 'apps' | 'projects' | 'blog' | 'about' | 'contact' | 'bookshelf' | 'tools' | 'my-data'
@@ -11,38 +10,7 @@ interface LiquidNavProps {
 
 export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
-    const [apiStatus, setApiStatus] = useState<'loading' | 'ok' | 'error'>('loading')
     const mobileMenuId = 'mobile-navigation-menu'
-
-    useEffect(() => {
-        //Skip API calls during build time
-        if (typeof window === 'undefined') {
-            return
-        }
-
-        let isMounted = true
-
-        const fetchStatus = async () => {
-            try {
-                const response = await systemService.healthCheck()
-                if (isMounted) {
-                    // Always show as OK if health check succeeds (whether FastAPI or fallback)
-                    setApiStatus('ok')
-                }
-            } catch (error) {
-                console.error('Backend health check failed:', error)
-                if (isMounted) {
-                    setApiStatus('error')
-                }
-            }
-        }
-
-        fetchStatus()
-
-        return () => {
-            isMounted = false
-        }
-    }, [])
 
     const navItems = [
         { href: '/projects', label: 'work', key: 'projects' },

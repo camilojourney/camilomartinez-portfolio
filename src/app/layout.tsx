@@ -86,6 +86,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const shouldRenderVercelTelemetry = Boolean(process.env.VERCEL || process.env.VERCEL_ENV)
+
   const personSchema = {
     '@context': 'https://schema.org',
     '@type': 'Person',
@@ -191,8 +193,12 @@ export default function RootLayout({
           </main>
           <Footer />
           <ChatWidget />
-          <Analytics />
-          <SpeedInsights />
+          {shouldRenderVercelTelemetry && (
+            <>
+              <Analytics />
+              <SpeedInsights />
+            </>
+          )}
         </div>
         {/* </AuthProvider> */}
       </body>

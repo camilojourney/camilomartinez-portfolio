@@ -16,6 +16,14 @@ interface ActivityDistributionProps {
     data: WorkoutData[];
 }
 
+function getInitialWorkoutYear(data: WorkoutData[]): number {
+    const years = data
+        .map((workout) => new Date(workout.start_time).getFullYear())
+        .filter((year) => Number.isFinite(year));
+
+    return years.length > 0 ? Math.max(...years) : 2026;
+}
+
 export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
     const [hoveredBar, setHoveredBar] = React.useState<{
         sport: string;
@@ -29,28 +37,11 @@ export function ActivityDistributionChart({ data }: ActivityDistributionProps) {
 
     // Add client-side only rendering flag to fix hydration issues
     const [isMounted, setIsMounted] = useState(false);
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedYear, setSelectedYear] = useState(() => getInitialWorkoutYear(data));
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
-
-    // Handle empty data case
-    if (!data || data.length === 0) {
-        return (
-            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 text-center">
-                <div className="text-white/60">
-                    <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <h3 className="text-xl font-light mb-3 text-white">No Activity Data Yet</h3>
-                    <p className="text-white/70 font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
-                        Your workout distribution will appear here once you have some weightlifting, running, or boxing activities recorded.
-                    </p>
-                </div>
-            </div>
-        );
-    }
 
     interface MonthlyData {
     name: string;
@@ -305,6 +296,22 @@ interface YearlyTotals {
             container.scrollLeft = maxScrollLeft;
         }
     }, [visibleMonthlyData.length]);
+
+    if (!data || data.length === 0) {
+        return (
+            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 text-center">
+                <div className="text-white/60">
+                    <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <h3 className="text-xl font-light mb-3 text-white">No Activity Data Yet</h3>
+                    <p className="text-white/70 font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
+                        Your workout distribution will appear here once you have some weightlifting, running, or boxing activities recorded.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div ref={containerRef} className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8 relative">

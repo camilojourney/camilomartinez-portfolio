@@ -8,11 +8,13 @@ export default async function sitemap() {
     lastModified: post.metadata.publishedAt,
   }))
 
+  const today = new Date().toISOString().split('T')[0]
+
   const projectRoutes = projects
     .filter((p) => !p.caseStudyHref.startsWith('http'))
     .map((p) => ({
       url: `${baseUrl}${p.caseStudyHref}`,
-      lastModified: new Date().toISOString().split('T')[0],
+      lastModified: today,
     }))
 
   const staticRoutes = [
@@ -28,7 +30,7 @@ export default async function sitemap() {
     '/privacy-policy',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString().split('T')[0],
+    lastModified: today,
   }))
 
   return [...staticRoutes, ...projectRoutes, ...blogs]

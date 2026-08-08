@@ -4,71 +4,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, X } from 'lucide-react';
 import Image from 'next/image';
 import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK } from '@/data/recruiter';
+import { parseSseChunk, renderChatContent, type ParsedSseEvent } from '@/lib/chat/format';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   displayOnly?: boolean;
-}
-
-interface ParsedSseChunk {
-  events: Array<{
-    content?: string;
-    done?: boolean;
-    error?: boolean;
-  }>;
-  buffer: string;
-}
-
-function parseSseChunk(buffer: string, chunk: string): ParsedSseChunk {
-  const chunks = `${buffer}${chunk}`.split('\n');
-  const maybeIncomplete = chunks.pop() ?? '';
-
-  const events: ParsedSseChunk['events'] = [];
-
-  for (const line of chunks) {
-    if (!line.startsWith('data: ')) {
-      continue;
-    }
-
-    const payload = line.slice(6);
-    if (payload === '[DONE]') {
-      events.push({ done: true });
-      continue;
-    }
-
-    try {
-      const parsed = JSON.parse(payload) as { content?: string; error?: string };
-      if (typeof parsed.error === 'string') {
-        events.push({ error: true, content: parsed.content });
-      } else if (typeof parsed.content === 'string' && parsed.content) {
-        events.push({ content: parsed.content });
-      }
-    } catch {
-      events.push({ error: true, content: CHAT_UNAVAILABLE_RECRUITER_FALLBACK });
-    }
-  }
-
-  return { events, buffer: maybeIncomplete };
-}
-
-function renderContent(text: string): string {
-  const linkStyle = 'color:#67e8f9;text-decoration:underline;text-underline-offset:2px';
-  const escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-
-  return escaped
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, `<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$1</a>`)
-    .replace(/\[([^\]]+)\]\((mailto:[^\)]+)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
-    .replace(/\[([^\]]+)\]\((\/[^)]+)\)/g, `<a href="$2" style="${linkStyle}">$1</a>`)
-    .replace(/(^|[\s(])(https?:\/\/[^\s)]+)/g, `$1<a href="$2" target="_blank" rel="noopener noreferrer" style="${linkStyle}">$2</a>`)
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/^[-•]\s(.+)$/gm, '<div style="display:flex;gap:6px;margin:2px 0"><span style="opacity:0.4;flex-shrink:0">•</span><span>$1</span></div>')
-    .replace(/\n/g, '<br/>');
 }
 
 const INITIAL_MESSAGE: Message = {
@@ -236,7 +177,7 @@ export default function ChatWidget() {
       if (!reader) throw new Error('no body');
       let buffer = '';
       let doneStreaming = false;
-      const consumeEvents = (events: ParsedSseChunk['events']) => {
+      const consumeEvents = (events: ParsedSseEvent[]) => {
         for (const event of events) {
           if (event.done) {
             return true;
@@ -323,7 +264,7 @@ export default function ChatWidget() {
           >
             <div className="flex items-center gap-2.5">
               <Image
-                src="/bot.png"
+                src="/bot-avatar.png"
                 alt="AI Assistant"
                 width={28}
                 height={28}
@@ -363,7 +304,7 @@ export default function ChatWidget() {
                   }
                 >
                   {m.content ? (
-                    <span dangerouslySetInnerHTML={{ __html: renderContent(m.content) }} />
+                    <div>{renderChatContent(m.content)}</div>
                   ) : loading && i === messages.length - 1 ? (
                     <span className="flex gap-1 items-center h-4">
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -533,7 +474,7 @@ export default function ChatWidget() {
         {open ? (
           <X className="w-5 h-5 text-white/70" />
         ) : (
-          <Image src="/bot.png" alt="Chat" width={60} height={60} className="rounded-full object-cover" />
+          <Image src="/bot-avatar.png" alt="Chat" width={60} height={60} className="rounded-full object-cover" />
         )}
       </button>
     </div>

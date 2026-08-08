@@ -40,10 +40,18 @@ interface WeeklyStrainData {
 
 const TOOLTIP_OFFSET_PX = 28;
 
+function getInitialStrainYear(data: ActivityHeatmapProps['data']): number {
+    const years = data
+        .map((cycle) => new Date(`${cycle.formatted_date}T00:00:00`).getFullYear())
+        .filter((year) => Number.isFinite(year));
+
+    return years.length > 0 ? Math.max(...years) : 2026;
+}
+
 export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const [hoveredDay, setHoveredDay] = useState<DayData | null>(null);
     const [selectedDay, setSelectedDay] = useState<DayData | null>(null);
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedYear, setSelectedYear] = useState(() => getInitialStrainYear(data));
     const [hoveredMonth, setHoveredMonth] = useState<HoveredMonth | null>(null);
     const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null);
 
@@ -231,9 +239,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     
     const monthLabels = getMonthLabels();
     const weeklyStrainData: WeeklyStrainData[] = getWeeklyStrainData();
-    const weeklyStrainByWeekIndex = React.useMemo(() => {
-        return new Map(weeklyStrainData.map(week => [week.weekIndex, week]));
-    }, [weeklyStrainData]);
+    const weeklyStrainByWeekIndex = new Map(weeklyStrainData.map(week => [week.weekIndex, week]));
 
     // Calculate stats
     const totalActiveDays = calendarData.filter(day => day.count > 0).length;
