@@ -36,7 +36,8 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                             <Link
                                 key={item.key}
                                 href={item.href}
-                                className={`nav-item transition-all duration-300 relative px-4 py-2 rounded-lg ${
+                                aria-current={normalizedCurrentPage === item.key ? 'page' : undefined}
+                                className={`nav-item nav-focus-target transition-all duration-300 relative px-4 py-2 rounded-lg ${
                                     normalizedCurrentPage === item.key 
                                         ? 'text-white bg-white/10' 
                                         : 'text-white/70 hover:text-white hover:bg-white/5'
@@ -58,11 +59,12 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
             <div className="fixed top-0 left-0 w-full z-50 p-4 md:hidden">
                 <nav className="liquid-glass-nav backdrop-blur-xl bg-white/[0.08] border border-white/[0.12] rounded-2xl px-5 py-3 shadow-2xl shadow-black/10">
                     <div className="flex justify-between items-center">
-                        <Link href="/" className="mobile-link-target mobile-link-target-center text-white font-semibold text-lg tracking-tight">CM</Link>
+                        <Link href="/" className="nav-focus-target mobile-link-target mobile-link-target-center text-white font-semibold text-lg tracking-tight">CM</Link>
                         <div className="flex items-center space-x-2">
                             <button
+                                type="button"
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="flex h-11 w-11 items-center justify-center rounded-lg text-white/70 hover:text-white transition-colors"
+                                className="nav-focus-target flex h-11 w-11 items-center justify-center rounded-lg text-white/70 hover:text-white transition-colors"
                                 aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
                                 aria-expanded={isMenuOpen}
                                 aria-controls={mobileMenuId}
@@ -80,8 +82,9 @@ export default function LiquidNav({ currentPage = 'home' }: LiquidNavProps) {
                                     <Link
                                         key={item.key}
                                         href={item.href}
+                                        aria-current={normalizedCurrentPage === item.key ? 'page' : undefined}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className={`nav-item mobile-link-target mobile-link-target-center transition-all duration-300 px-4 py-3 rounded-lg text-center capitalize ${
+                                        className={`nav-item nav-focus-target mobile-link-target mobile-link-target-center transition-all duration-300 px-4 py-3 rounded-lg text-center capitalize ${
                                             normalizedCurrentPage === item.key 
                                                 ? 'text-white bg-white/10 border border-white/20' 
                                                 : 'text-white/70 hover:text-white hover:bg-white/5'
