@@ -182,10 +182,11 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
       <div
         ref={cardRef}
         data-stagger-child
-        className="group h-full project-card-premium opacity-0"
+        data-featured={featured || undefined}
+        className={`group h-full project-card-premium opacity-0${featured ? ' project-card-premium--featured' : ''}`}
         onMouseMove={handleMouseMove}
       >
-        <Card className={`h-full border-white/[0.08] bg-white/[0.02] transition-all duration-500 hover:border-white/[0.20] hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-cyan-500/[0.06] hover:-translate-y-1.5 ${featured ? 'hover:shadow-cyan-500/[0.10]' : ''} rounded-2xl overflow-hidden`}>
+        <Card className="liquid-glass-project-card h-full border-white/[0.10] bg-white/[0.03] rounded-2xl overflow-hidden transition-all duration-500 ease-out hover:border-white/[0.22] hover:bg-white/[0.06] hover:-translate-y-1.5 focus-within:border-cyan-400/30 focus-within:shadow-[0_0_40px_rgba(6,182,212,0.08)]">
           <div className="flex flex-col h-full">
             {/* Preview Image */}
             <Link href={project.caseStudyHref} className="block relative">
@@ -244,7 +245,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
               <div className="mt-auto pt-4 flex flex-wrap items-center gap-3">
                 <Link
                   href={project.caseStudyHref}
-                  className="mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium showcase-link-muted transition-colors duration-200 group/link"
+                  className="project-card-action mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium showcase-link-muted transition-all duration-200 group/link"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Case study</span>
@@ -257,7 +258,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
                     <Link
                       href={appHref}
                       {...(project.isExternalApp ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      className="mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium text-cyan-400/80 hover:text-cyan-300 transition-colors duration-200"
+                      className="project-card-action project-card-action--accent mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium text-cyan-400/85 hover:text-cyan-300 transition-all duration-200"
                     >
                       <span>{appLabel}</span>
                       {project.isExternalApp ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
@@ -272,7 +273,7 @@ function ProjectCard({ project, index = 0, featured = false }: { project: Projec
                       href={apiHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium showcase-link-secondary hover:text-violet-300 transition-colors duration-200"
+                      className="project-card-action mobile-link-target inline-flex items-center gap-1.5 text-sm font-medium showcase-link-secondary transition-all duration-200"
                     >
                       <span>{apiLabel}</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -363,7 +364,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
             </a>
             <a
               href="mailto:juancamilomabe@gmail.com?subject=AI%20Engineer%20Opportunity"
-              className="inline-flex items-center justify-center gap-2.5 bg-white/[0.06] border border-white/[0.12] showcase-cta-secondary-text px-8 py-3.5 rounded-full hover:bg-white/[0.10] hover:border-white/[0.20] transition-all duration-300 active:scale-[0.98]"
+              className="liquid-glass-cta-secondary inline-flex items-center justify-center gap-2.5 showcase-cta-secondary-text px-8 py-3.5 rounded-full transition-all duration-300 active:scale-[0.98]"
             >
               <Mail className="w-4 h-4" />
               <span>Email me</span>
