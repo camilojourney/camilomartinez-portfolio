@@ -32,6 +32,39 @@
   /* Typography */
   --font-sans: var(--font-geist-sans), "Inter", sans-serif;
 
+  /* Showcase type scale — ProjectsShowcase hierarchy */
+  --showcase-text-overline: 0.8125rem;
+  --showcase-text-overline-md: 0.875rem;
+  --showcase-text-subtitle: 1rem;
+  --showcase-text-subtitle-md: 1.125rem;
+  --showcase-text-subtitle-lg: 1.25rem;
+  --showcase-text-dek: 0.875rem;
+  --showcase-text-dek-md: 0.9375rem;
+  --showcase-text-credibility: 0.8125rem;
+  --showcase-text-credibility-md: 0.875rem;
+  --showcase-text-section-heading: 1.5rem;
+  --showcase-text-section-heading-md: 1.875rem;
+  --showcase-text-card-body: 0.875rem;
+  --showcase-text-cta: 0.9375rem;
+
+  /* Showcase text colors — WCAG AA on dark glass (#050810) */
+  --showcase-color-heading: rgba(255, 255, 255, 0.94);
+  --showcase-color-overline: rgba(255, 255, 255, 0.72);
+  --showcase-color-subtitle: rgba(255, 255, 255, 0.78);
+  --showcase-color-dek: rgba(255, 255, 255, 0.72);
+  --showcase-color-credibility: rgba(255, 255, 255, 0.72);
+  --showcase-color-body-muted: rgba(255, 255, 255, 0.72);
+  --showcase-color-link-muted: rgba(255, 255, 255, 0.68);
+  --showcase-color-link-secondary: rgba(255, 255, 255, 0.65);
+  --showcase-color-tier-label: rgba(255, 255, 255, 0.62);
+  --showcase-color-cta-secondary: rgba(255, 255, 255, 0.78);
+
+  /* Showcase letter-spacing */
+  --showcase-tracking-overline: 0.25em;
+  --showcase-tracking-heading: -0.03em;
+  --showcase-tracking-hero: -0.045em;
+  --showcase-tracking-tier: 0.2em;
+
   /* Spacing & Radius */
   --radius: 0.75rem;
 }
@@ -654,6 +687,119 @@ table {
     0 6px 20px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 0 10px rgba(6, 182, 212, 0.1);
+}
+
+/* Showcase Typography — semantic hierarchy for home/projects */
+.showcase-overline {
+  font-size: var(--showcase-text-overline);
+  font-weight: 600;
+  letter-spacing: var(--showcase-tracking-overline);
+  text-transform: uppercase;
+  color: var(--showcase-color-overline);
+}
+
+@media (min-width: 768px) {
+  .showcase-overline {
+    font-size: var(--showcase-text-overline-md);
+  }
+}
+
+.showcase-hero-name {
+  font-weight: 800;
+  letter-spacing: var(--showcase-tracking-hero);
+  line-height: 1.02;
+}
+
+.showcase-subtitle {
+  font-size: var(--showcase-text-subtitle);
+  line-height: 1.7;
+  color: var(--showcase-color-subtitle);
+}
+
+@media (min-width: 768px) {
+  .showcase-subtitle {
+    font-size: var(--showcase-text-subtitle-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .showcase-subtitle {
+    font-size: var(--showcase-text-subtitle-lg);
+  }
+}
+
+.showcase-credibility {
+  font-size: var(--showcase-text-credibility);
+  font-weight: 500;
+  color: var(--showcase-color-credibility);
+}
+
+@media (min-width: 768px) {
+  .showcase-credibility {
+    font-size: var(--showcase-text-credibility-md);
+  }
+}
+
+.showcase-section-heading {
+  font-size: var(--showcase-text-section-heading);
+  font-weight: 700;
+  letter-spacing: var(--showcase-tracking-heading);
+  line-height: 1.2;
+  color: var(--showcase-color-heading);
+}
+
+@media (min-width: 768px) {
+  .showcase-section-heading {
+    font-size: var(--showcase-text-section-heading-md);
+  }
+}
+
+.showcase-dek {
+  font-size: var(--showcase-text-dek);
+  line-height: 1.625;
+  color: var(--showcase-color-dek);
+}
+
+@media (min-width: 768px) {
+  .showcase-dek {
+    font-size: var(--showcase-text-dek-md);
+  }
+}
+
+.showcase-tier-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: var(--showcase-tracking-tier);
+  text-transform: uppercase;
+  color: var(--showcase-color-tier-label);
+}
+
+.showcase-card-body {
+  font-size: var(--showcase-text-card-body);
+  line-height: 1.7;
+  color: var(--showcase-color-body-muted);
+}
+
+.showcase-link-muted {
+  color: var(--showcase-color-link-muted);
+}
+
+.showcase-link-muted:hover {
+  color: var(--showcase-color-heading);
+}
+
+.showcase-link-secondary {
+  color: var(--showcase-color-link-secondary);
+}
+
+.showcase-cta-secondary-text {
+  font-size: var(--showcase-text-cta);
+  font-weight: 500;
+  color: var(--showcase-color-cta-secondary);
+}
+
+.showcase-cta-secondary-text:hover {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Typography Enhancements */
