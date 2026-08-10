@@ -308,7 +308,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
         <div className="absolute inset-0 opacity-[0.018]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }}></div>
       </div>
 
-      <main className="pt-24 sm:pt-28 md:pt-36 lg:pt-40 px-4 sm:px-6 md:px-8 lg:px-10 pb-[max(5rem,env(safe-area-inset-bottom,0px)+4rem)] sm:pb-24 md:pb-28">
+      <main className="pt-24 sm:pt-28 md:pt-36 lg:pt-40 px-4 sm:px-6 md:px-8 lg:px-10 pb-[max(5rem,env(safe-area-inset-bottom,0px)_+_4rem)] sm:pb-24 md:pb-28">
         {/* ═══ Hero ═══ */}
         <header className="max-w-3xl mx-auto text-center mb-16 sm:mb-20 md:mb-28 lg:mb-32">
           {/* Overline -- role signal with subtle gradient line */}
