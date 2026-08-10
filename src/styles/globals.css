@@ -846,6 +846,58 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
+/* Skip link - visually hidden until keyboard focus */
+.skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: #06b6d4;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Desktop nav focus rings on glass backgrounds */
+.liquid-glass-nav .nav-focus-target:focus-visible {
+  outline: 2px solid rgba(6, 182, 212, 0.95);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.35);
+}
+
+/* Primary CTA focus rings */
+.cta-focus-target:focus-visible,
+.liquid-glass-primary:focus-visible,
+.liquid-glass-cta-btn:focus-visible,
+main a.rounded-full:focus-visible {
+  outline: 3px solid rgba(6, 182, 212, 0.95);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(6, 182, 212, 0.25);
+}
+
 /* Touch target minimum 44px on mobile (WCAG 2.5.8) */
 @media (pointer: coarse) {
   a,
@@ -1158,3 +1210,52 @@ html {
 .case-study-problem::before { background: linear-gradient(180deg, rgba(239, 68, 68, 0.6), rgba(239, 68, 68, 0.1)); }
 .case-study-solution::before { background: linear-gradient(180deg, rgba(6, 182, 212, 0.6), rgba(6, 182, 212, 0.1)); }
 .case-study-outcome::before { background: linear-gradient(180deg, rgba(16, 185, 129, 0.6), rgba(16, 185, 129, 0.1)); }
+
+/* ========================================
+   prefers-reduced-motion (hero + liquid)
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-liquid-float,
+  .animate-blob,
+  .animate-concentric,
+  .animate-gradient-xy,
+  .animate-pulse-slow,
+  .animate-fade-in,
+  .animate-fade-in-delay,
+  .animate-fade-in-delay-2,
+  .animate-slide-in,
+  .animate-message-appear,
+  .hero-stagger,
+  .hero-gradient-text,
+  .card-stagger-animate,
+  .page-transition,
+  .route-transition,
+  .loading-skeleton {
+    animation: none !important;
+  }
+
+  .hero-stagger,
+  .scroll-reveal,
+  .scroll-reveal.scroll-revealed {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .scroll-reveal {
+    transition: none !important;
+  }
+
+  .liquid-glass-suggestion-btn:hover,
+  .liquid-glass-primary:hover::before {
+    transform: none !important;
+  }
+
+  .project-card-premium:hover::before {
+    animation: none !important;
+  }
+}

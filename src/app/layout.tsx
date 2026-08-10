@@ -179,11 +179,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}
       >
-        {/* Skip to content link for keyboard/screen reader users */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-6 focus:py-3 focus:bg-cyan-500 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg focus:outline-none"
-        >
+        <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
         {/* <AuthProvider suppressHydrationWarning> */}
