@@ -308,11 +308,11 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
         <div className="absolute inset-0 opacity-[0.018]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }}></div>
       </div>
 
-      <main className="pt-28 md:pt-40 lg:pt-44 px-5 md:px-8 pb-24">
+      <main className="pt-24 sm:pt-28 md:pt-36 lg:pt-40 px-4 sm:px-6 md:px-8 lg:px-10 pb-[max(5rem,env(safe-area-inset-bottom,0px)_+_4rem)] sm:pb-24 md:pb-28">
         {/* ═══ Hero ═══ */}
-        <header className="max-w-3xl mx-auto text-center mb-20 md:mb-32">
+        <header className="max-w-3xl mx-auto text-center mb-16 sm:mb-20 md:mb-28 lg:mb-32">
           {/* Overline -- role signal with subtle gradient line */}
-          <div className="hero-stagger hero-stagger-1 flex items-center justify-center gap-4 mb-8 md:mb-10">
+          <div className="hero-stagger hero-stagger-1 flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8 md:mb-10">
             <div className="h-px w-8 md:w-12 bg-gradient-to-r from-transparent to-cyan-400/40"></div>
             <p className="showcase-overline">
               AI Engineer
@@ -321,21 +321,21 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           </div>
 
           {/* Title -- name as the brand, massive and confident */}
-          <h1 className="hero-stagger hero-stagger-2 showcase-hero-name text-[2.5rem] sm:text-[3.25rem] md:text-[4.25rem] lg:text-[5rem] mb-6 md:mb-8">
+          <h1 className="hero-stagger hero-stagger-2 showcase-hero-name text-[2.5rem] sm:text-[3.25rem] md:text-[4.25rem] lg:text-[5rem] mb-5 sm:mb-6 md:mb-8">
             <span className="text-white">Camilo</span>
             <br />
             <span className="hero-gradient-text">Martinez</span>
           </h1>
 
           {/* Subtitle -- proof statement, one clear sentence */}
-          <p className="hero-stagger hero-stagger-3 showcase-subtitle max-w-xl mx-auto mb-10 md:mb-12">
+          <p className="hero-stagger hero-stagger-3 showcase-subtitle max-w-xl mx-auto mb-8 sm:mb-10 md:mb-12">
             I ship <span className="text-cyan-400 font-semibold">audio/speech ML</span> pipelines
             and <span className="text-blue-400 font-semibold">multi-agent systems</span> to production
             - from research papers to real users.
           </p>
 
           {/* Credibility markers -- concrete, active, scannable */}
-          <div className="hero-stagger hero-stagger-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-12 md:mb-14">
+          <div className="hero-stagger hero-stagger-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 md:gap-6 mb-10 sm:mb-12 md:mb-14">
             <span className="inline-flex items-center gap-2 showcase-credibility">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/70 shadow-[0_0_6px_rgba(52,211,153,0.4)]"></span>
               11-dimension speech scorer from 46 papers
@@ -371,20 +371,20 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           </div>
 
           {/* Terminal Demo -- signature "wow" moment */}
-          <div className="hero-stagger hero-stagger-5 max-w-2xl mx-auto mt-16 md:mt-20">
+          <div className="hero-stagger hero-stagger-5 max-w-2xl mx-auto mt-12 sm:mt-16 md:mt-20">
             <TerminalDemo />
           </div>
         </header>
 
         {/* ═══ Section divider ═══ */}
-        <div className="max-w-6xl mx-auto mb-16 md:mb-24">
-          <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent"></div>
+        <div className="max-w-6xl mx-auto mb-12 sm:mb-16 md:mb-20 lg:mb-24 py-1">
+          <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" aria-hidden="true"></div>
         </div>
 
-        <div className="max-w-6xl mx-auto space-y-24 md:space-y-32">
+        <div className="max-w-6xl mx-auto space-y-20 sm:space-y-24 md:space-y-28 lg:space-y-32">
           {/* Tier 1: Featured Work */}
           <ScrollReveal>
-            <section className="space-y-10" aria-labelledby="featured-heading">
+            <section className="space-y-8 sm:space-y-10 md:space-y-12" aria-labelledby="featured-heading">
               <div className="max-w-3xl mx-auto space-y-2.5">
                 <h2 id="featured-heading" className="showcase-section-heading">Featured Work</h2>
                 <p className="showcase-dek">
@@ -392,7 +392,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
                 </p>
               </div>
 
-              <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-7 lg:gap-8">
                 {tier1.map((project, i) => (
                   <ProjectCard key={project.slug} project={project} index={i} featured />
                 ))}
@@ -402,7 +402,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
 
           {/* Tier 2: More Projects */}
           <ScrollReveal>
-            <section className="space-y-10" aria-labelledby="more-heading">
+            <section className="space-y-8 sm:space-y-10 md:space-y-12" aria-labelledby="more-heading">
               <div className="max-w-3xl mx-auto space-y-2.5">
                 <h2 id="more-heading" className="showcase-section-heading">More Projects</h2>
                 <p className="showcase-dek">
@@ -410,7 +410,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
                 </p>
               </div>
 
-              <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-7 lg:gap-8">
                 {tier2.map((project, i) => (
                   <ProjectCard key={project.slug} project={project} index={i} />
                 ))}
@@ -421,15 +421,15 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
           {/* Tier 3: Personal Projects */}
           {tier3.length > 0 && (
             <ScrollReveal>
-              <section className="space-y-8" aria-labelledby="personal-heading">
-                <div className="flex items-center gap-4 max-w-3xl mx-auto">
+              <section className="space-y-8 sm:space-y-10 md:space-y-12" aria-labelledby="personal-heading">
+                <div className="flex items-center gap-4 max-w-3xl mx-auto py-1">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/[0.06]"></div>
                   <h2 id="personal-heading" className="showcase-tier-label whitespace-nowrap">
                     Personal & Research
                   </h2>
                   <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/[0.06]"></div>
                 </div>
-                <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-7 lg:gap-8">
                   {tier3.map((project, i) => (
                     <ProjectCard key={project.slug} project={project} index={i} />
                   ))}

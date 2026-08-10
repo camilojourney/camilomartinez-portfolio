@@ -7,5 +7,11 @@ export default function MainLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <div className="route-transition">{children}</div>
+  return (
+    <div
+      className="route-transition min-h-dvh pl-[max(0px,env(safe-area-inset-left,0px))] pr-[max(0px,env(safe-area-inset-right,0px))]"
+    >
+      {children}
+    </div>
+  )
 }
