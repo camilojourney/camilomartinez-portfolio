@@ -48,6 +48,7 @@
   --showcase-text-cta: 0.9375rem;
 
   /* Showcase text colors — WCAG AA on dark glass (#050810) */
+  --showcase-color-heading: rgba(255, 255, 255, 0.94);
   --showcase-color-overline: rgba(255, 255, 255, 0.72);
   --showcase-color-subtitle: rgba(255, 255, 255, 0.78);
   --showcase-color-dek: rgba(255, 255, 255, 0.72);
@@ -744,7 +745,7 @@ table {
   font-weight: 700;
   letter-spacing: var(--showcase-tracking-heading);
   line-height: 1.2;
-  color: hsl(var(--foreground));
+  color: var(--showcase-color-heading);
 }
 
 @media (min-width: 768px) {
@@ -784,7 +785,7 @@ table {
 }
 
 .showcase-link-muted:hover {
-  color: hsl(var(--foreground));
+  color: var(--showcase-color-heading);
 }
 
 .showcase-link-secondary {
