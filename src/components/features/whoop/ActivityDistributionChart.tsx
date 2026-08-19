@@ -65,7 +65,7 @@ interface YearlyTotals {
 // Get available years from data
     const getAvailableYears = (): number[] => {
         const years = new Set<number>();
-        data.forEach(workout => {
+        (data || []).forEach(workout => {
             const year = new Date(workout.start_time).getFullYear();
             years.add(year);
         });
@@ -218,7 +218,8 @@ interface YearlyTotals {
             const monthTotal = month.Weightlifting + month.Running + month.Boxing;
             if (monthTotal > max) max = monthTotal;
         });
-        return Math.ceil(max * 1.2); // Add 20% padding
+        // Guard against zero so yScale never divides by zero (empty/unmatched data sets)
+        return Math.max(Math.ceil(max * 1.2), 1); // Add 20% padding
     }, [visibleMonthlyData]);
 
     // Scale functions
@@ -243,10 +244,12 @@ interface YearlyTotals {
 
         // Only include the 3 main sports (exclude session counts)
         const sports = ['Weightlifting', 'Running', 'Boxing'] as const;
+        // Guard against division by zero when no data is present
+        const safeTotal = totalHoursYear || 1;
 
         for (const sport of sports) {
             const hours = processedData.yearlyTotals[sport];
-            const percentage = hours / totalHoursYear;
+            const percentage = hours / safeTotal;
             const endAngle = startAngle + percentage * 2 * Math.PI;
 
             result.push({
