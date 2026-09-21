@@ -132,6 +132,21 @@ export const projects: ProjectMeta[] = [
     previewImage: '/images/previews_main/job_tracker.png',
   },
   {
+    slug: 'claimproof',
+    title: 'ClaimProof',
+    description:
+      'AI-assisted HR interview tool that turns application claims into supportive, structured interviews and recruiter-reviewable evidence, with explicit consent and human review at the center.',
+    tags: ['HR Tech', 'Conversational AI', 'Full-Stack'],
+    status: 'prototype',
+    category: 'Live App',
+    tier: 2,
+    caseStudyHref: '/projects/claimproof',
+    appHref: 'https://github.com/camilojourney/TrustIntheFunnelHackathon-JJCN',
+    appLabel: 'Personal GitHub',
+    isExternalApp: true,
+    previewImage: '/images/previews_main/claimproof.svg',
+  },
+  {
     slug: 'genpeli',
     title: 'Genpeli',
     description:

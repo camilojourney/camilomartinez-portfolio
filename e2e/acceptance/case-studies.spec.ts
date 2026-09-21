@@ -42,4 +42,21 @@ test.describe('Case Study Pages', () => {
     expect(response?.status()).toBeLessThan(400);
     await expect(page.getByRole('heading', { name: 'Social Media Pipeline' })).toBeVisible();
   });
+
+  test('ClaimProof case study explains ownership and the trust boundary', async ({ page }) => {
+    await page.goto('/projects/claimproof');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.getByRole('heading', { name: 'ClaimProof' })).toBeVisible();
+    await expect(page.getByText('Creator and Candidate Experience/Product Lead')).toBeVisible();
+    await expect(page.getByText(/does not score facial expression, gaze, emotion, accent, honesty, or appearance/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Personal GitHub copy' })).toHaveAttribute(
+      'href',
+      'https://github.com/camilojourney/TrustIntheFunnelHackathon-JJCN',
+    );
+    await expect(page.getByRole('link', { name: 'Team repository' })).toHaveAttribute(
+      'href',
+      'https://github.com/kireetijosyula41/TrustIntheFunnelHackathon-JJCN',
+    );
+  });
 });

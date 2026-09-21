@@ -7,6 +7,7 @@ const auditedRoutes = [
   '/contact',
   '/projects/invoz-ai',
   '/projects/interactive-chatbot',
+  '/projects/claimproof',
   '/apps/fitness-dashboard',
 ];
 

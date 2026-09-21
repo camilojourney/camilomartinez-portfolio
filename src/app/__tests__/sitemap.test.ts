@@ -11,5 +11,9 @@ describe('sitemap', () => {
       expect(parsed.origin).toBe('https://camilomartinez.co');
       expect(entry.url).not.toContain('https://camilomartinez.cohttps://');
     }
+
+    expect(entries).toContainEqual(expect.objectContaining({
+      url: 'https://camilomartinez.co/projects/claimproof',
+    }));
   });
 });

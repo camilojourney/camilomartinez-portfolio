@@ -1,0 +1,76 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="paper" x1="180" y1="80" x2="1420" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBFAF6"/>
+      <stop offset="1" stop-color="#E8E4D9"/>
+    </linearGradient>
+    <linearGradient id="sage" x1="250" y1="190" x2="1345" y2="810" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#496858"/>
+      <stop offset="1" stop-color="#29463A"/>
+    </linearGradient>
+    <filter id="shadow" x="90" y="40" width="1420" height="920" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#13251D" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="#111A17"/>
+  <circle cx="1400" cy="110" r="330" fill="#466655" fill-opacity="0.22"/>
+  <circle cx="155" cy="905" r="290" fill="#9F4F34" fill-opacity="0.14"/>
+  <g filter="url(#shadow)">
+    <rect x="140" y="90" width="1320" height="820" rx="38" fill="url(#paper)"/>
+  </g>
+  <rect x="140" y="90" width="1320" height="104" rx="38" fill="#F3EFE4"/>
+  <path d="M140 156H1460" stroke="#D1CCC0"/>
+  <circle cx="205" cy="142" r="25" fill="#1D2924"/>
+  <text x="205" y="149" text-anchor="middle" fill="#FBFAF6" font-family="Georgia, serif" font-size="17" font-weight="700">CP</text>
+  <text x="245" y="149" fill="#1D2924" font-family="Arial, sans-serif" font-size="25" font-weight="700">ClaimProof</text>
+  <rect x="1185" y="120" width="208" height="44" rx="22" fill="#DFE7DE"/>
+  <circle cx="1216" cy="142" r="6" fill="#466655"/>
+  <text x="1234" y="149" fill="#395446" font-family="Arial, sans-serif" font-size="16" font-weight="600">Candidate session</text>
+
+  <text x="205" y="245" fill="#9F4F34" font-family="Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.4">PRODUCT EXPERIENCE MAP</text>
+  <text x="205" y="306" fill="#1D2924" font-family="Georgia, serif" font-size="46">From claim to clear evidence.</text>
+  <text x="205" y="346" fill="#5F6962" font-family="Arial, sans-serif" font-size="20">A supportive interview for candidates. A structured handoff for recruiters.</text>
+
+  <rect x="205" y="400" width="360" height="322" rx="25" fill="#FFFEFB" stroke="#D8D4C9" stroke-width="2"/>
+  <text x="240" y="445" fill="#9F4F34" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1.8">SOURCE CLAIM</text>
+  <text x="240" y="493" fill="#1D2924" font-family="Georgia, serif" font-size="29">“Improved model</text>
+  <text x="240" y="530" fill="#1D2924" font-family="Georgia, serif" font-size="29">throughput by 10x.”</text>
+  <path d="M240 568H525" stroke="#D8D4C9"/>
+  <circle cx="258" cy="608" r="8" fill="#466655"/>
+  <text x="279" y="615" fill="#5F6962" font-family="Arial, sans-serif" font-size="17">Claim linked to interview</text>
+  <circle cx="258" cy="654" r="8" fill="#B98B3C"/>
+  <text x="279" y="661" fill="#5F6962" font-family="Arial, sans-serif" font-size="17">Evidence gap identified</text>
+
+  <path d="M588 560H660" stroke="#9F4F34" stroke-width="3" stroke-linecap="round"/>
+  <path d="M647 547L660 560L647 573" stroke="#9F4F34" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="680" y="382" width="390" height="376" rx="27" fill="url(#sage)"/>
+  <circle cx="730" cy="435" r="24" fill="#FBFAF6" fill-opacity="0.16"/>
+  <text x="730" y="443" text-anchor="middle" fill="#FBFAF6" font-family="Georgia, serif" font-size="17" font-weight="700">S</text>
+  <text x="770" y="443" fill="#FBFAF6" font-family="Arial, sans-serif" font-size="21" font-weight="700">Sage interviewer</text>
+  <text x="720" y="505" fill="#FBFAF6" font-family="Arial, sans-serif" font-size="19">What baseline and test</text>
+  <text x="720" y="535" fill="#FBFAF6" font-family="Arial, sans-serif" font-size="19">conditions produced the 10x result?</text>
+  <rect x="720" y="578" width="310" height="76" rx="16" fill="#FBFAF6" fill-opacity="0.10" stroke="#FBFAF6" stroke-opacity="0.22"/>
+  <circle cx="756" cy="616" r="16" fill="#F4E3DC"/>
+  <path d="M756 607V625M748 616H764" stroke="#9F4F34" stroke-width="2" stroke-linecap="round"/>
+  <text x="786" y="622" fill="#FBFAF6" font-family="Arial, sans-serif" font-size="17">Voice or typed answer</text>
+  <text x="720" y="707" fill="#DCE8E0" font-family="Arial, sans-serif" font-size="14">Question 2 of 3  •  Transcript review</text>
+
+  <path d="M1092 560H1164" stroke="#9F4F34" stroke-width="3" stroke-linecap="round"/>
+  <path d="M1151 547L1164 560L1151 573" stroke="#9F4F34" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="1184" y="400" width="210" height="322" rx="25" fill="#F4E3DC" stroke="#D9C4B9" stroke-width="2"/>
+  <text x="1214" y="445" fill="#9F4F34" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1.8">HANDOFF</text>
+  <text x="1214" y="493" fill="#1D2924" font-family="Georgia, serif" font-size="25">Recruiter</text>
+  <text x="1214" y="526" fill="#1D2924" font-family="Georgia, serif" font-size="25">summary</text>
+  <rect x="1214" y="566" width="150" height="9" rx="4.5" fill="#466655" fill-opacity="0.72"/>
+  <rect x="1214" y="591" width="123" height="9" rx="4.5" fill="#466655" fill-opacity="0.38"/>
+  <rect x="1214" y="616" width="140" height="9" rx="4.5" fill="#466655" fill-opacity="0.38"/>
+  <rect x="1214" y="657" width="116" height="28" rx="14" fill="#FFFEFB"/>
+  <text x="1272" y="676" text-anchor="middle" fill="#9F4F34" font-family="Arial, sans-serif" font-size="12" font-weight="700">HUMAN REVIEW</text>
+
+  <rect x="205" y="782" width="1189" height="70" rx="18" fill="#E4E9E2"/>
+  <circle cx="244" cy="817" r="15" fill="#466655"/>
+  <path d="M237 817L242 822L251 812" stroke="#FBFAF6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="275" y="824" fill="#395446" font-family="Arial, sans-serif" font-size="17" font-weight="600">Assesses answers and explicit evidence - never facial expression, gaze, emotion, accent, honesty, or appearance.</text>
+</svg>
