@@ -59,6 +59,16 @@ test.describe('Projects Grid', () => {
     await expect(page.getByText('LLM-as-judge evaluation')).toBeVisible();
     await expect(page.getByText('Self-Improving AI Chatbot')).not.toBeVisible();
   });
+
+  test('ClaimProof card presents the HR prototype without displacing existing work', async ({ page }) => {
+    const card = page.locator('a[href="/projects/claimproof"]').first().locator('..');
+
+    await expect(page.getByText('ClaimProof', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('AI-assisted HR interview tool')).toBeVisible();
+    await expect(page.getByText('Prototype', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Job Tracker CRM')).toBeVisible();
+    await expect(card).toBeVisible();
+  });
 });
 
 test.describe('Projects Page Mobile', () => {

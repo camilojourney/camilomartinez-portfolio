@@ -11,6 +11,7 @@ test.describe('Mobile link touch targets', () => {
     '/projects/holus',
     '/projects/holus-observatory',
     '/projects/holusight',
+    '/projects/claimproof',
   ]) {
     test(`${route} has 44px ordinary links without horizontal overflow`, async ({ page }) => {
       await page.goto(route);

@@ -32,6 +32,13 @@ Status: Live
 URL: https://job-tracker-swart-eta.vercel.app
 Description: End-to-end job search CRM with Kanban workflow, AI-generated cover letters, resume tailoring, and pipeline management.
 
+## ClaimProof - AI-Assisted HR Interview Tool
+Status: Hackathon Prototype
+Personal GitHub: https://github.com/camilojourney/TrustIntheFunnelHackathon-JJCN
+Team Repository: https://github.com/kireetijosyula41/TrustIntheFunnelHackathon-JJCN
+Role: Creator and Candidate Experience/Product Lead
+Description: Turns candidate application claims into a supportive, structured interview and recruiter-reviewable evidence. Camilo owned the candidate-facing onboarding, consent and privacy UX, Sage interview experience, voice-first workspace, and optional camera-preview behavior. The recruiter workflow and backend evidence systems were team-owned. The assessment uses answer content and explicit evidence, never facial expression, gaze, emotion, accent, honesty, or appearance.
+
 ## Genpeli - AI Video Editing Pipeline
 Status: Live
 URL: https://www.editai.ai

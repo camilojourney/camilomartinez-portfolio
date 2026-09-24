@@ -27,6 +27,7 @@ routes:
     - { path: "/projects/rag-system", name: "project-rag" }
     - { path: "/projects/focus-time", name: "project-focus-time" }
     - { path: "/projects/accountability-partner", name: "project-accountability" }
+    - { path: "/projects/claimproof", name: "project-claimproof" }
     - { path: "/apps", name: "apps" }
     - { path: "/apps/trading-bot", name: "app-trading-bot" }
     - { path: "/apps/fitness-dashboard", name: "app-fitness" }

@@ -16,9 +16,13 @@ interface ProjectData {
     outcome: string
     techStack: string[]
     features: string[]
-    status: 'live' | 'in-progress' | 'concept'
+    status: 'live' | 'prototype' | 'in-progress' | 'concept'
+    statusLabel?: string
     demoUrl?: string
     githubUrl?: string
+    teamGithubUrl?: string
+    role?: string
+    trustBoundary?: string
     imageUrl: string
     galleryImages?: string[]
     appLink?: string
@@ -283,6 +287,31 @@ const projects: ProjectData[] = [
         appLink: 'https://job-tracker-swart-eta.vercel.app',
     },
     {
+        slug: 'claimproof',
+        title: 'ClaimProof',
+        summary: 'AI-assisted HR interview tool that turns candidate application claims into structured, recruiter-reviewable evidence.',
+        fullDescription: 'ClaimProof is a four-person hackathon prototype for a more supportive hiring interview. It turns claims from an application into a guided conversation with Sage, then carries the candidate\'s answers, transcript, and explicit evidence into a recruiter-reviewable handoff.',
+        problem: 'Recruiters need to understand the evidence behind application claims, while candidates deserve a clear process that does not infer trustworthiness from appearance, voice, or behavior. Unstructured interviews make both sides work harder and can obscure what was actually said or supplied.',
+        solution: 'The candidate experience previews the conversation before consent, links each question to a source claim, accepts voice or typed answers, supports transcript review, adapts follow-ups to evidence gaps, shows progress and recovery states, and ends with a clear recruiter handoff summary.',
+        outcome: 'The result is a reusable prototype for job acquisition workflows: candidates can explain their work in context, and recruiters receive a structured record of answer content, candidate-supplied evidence, and remaining uncertainty for human review.',
+        techStack: ['Next.js', 'React', 'TypeScript', 'FastAPI', 'Python', 'SQLite', 'Playwright'],
+        features: [
+            'Candidate onboarding with explicit consent and privacy guidance',
+            'Sage AI interviewer with supportive, claim-linked questions',
+            'Voice-first workspace with typed-answer and transcript-review fallbacks',
+            'Adaptive follow-ups tied to answer content and evidence gaps',
+            'Visible interview progress, recovery, and completion states',
+            'Recruiter handoff summary that preserves evidence and uncertainty',
+        ],
+        status: 'prototype',
+        statusLabel: 'Hackathon Project',
+        githubUrl: 'https://github.com/camilojourney/TrustIntheFunnelHackathon-JJCN',
+        teamGithubUrl: 'https://github.com/kireetijosyula41/TrustIntheFunnelHackathon-JJCN',
+        role: 'Creator and Candidate Experience/Product Lead',
+        trustBoundary: 'ClaimProof assesses answer content and explicit evidence. It does not score facial expression, gaze, emotion, accent, honesty, or appearance. Camera preview is optional, local, and never analyzed; recruiter judgment remains human.',
+        imageUrl: '/images/previews_main/claimproof.svg',
+    },
+    {
         slug: 'holusight',
         title: 'Holusight - Hybrid Document Search',
         summary: 'Hybrid document retrieval system combining BM25, vector search, and reciprocal rank fusion reranking with answer synthesis.',
@@ -324,9 +353,22 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
     const statusColors = {
         live: 'bg-green-500/20 text-green-300 border-green-400/30',
+        prototype: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
         'in-progress': 'bg-amber-500/20 text-amber-300 border-amber-400/30',
         concept: 'bg-blue-500/20 text-blue-300 border-blue-400/30'
     }
+    const statusDots = {
+        live: 'bg-green-400',
+        prototype: 'bg-purple-400',
+        'in-progress': 'bg-amber-400',
+        concept: 'bg-blue-400'
+    }
+    const statusLabel = project.statusLabel ?? {
+        live: 'Live Demo',
+        prototype: 'Prototype',
+        'in-progress': 'In Progress',
+        concept: 'Concept'
+    }[project.status]
 
     const appHref = project.appLink ?? project.demoUrl
     const isExternalAppLink = appHref?.startsWith('http')
@@ -357,12 +399,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                     <div className="mb-12">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border backdrop-blur-lg ${statusColors[project.status]}`}>
-                                <div className={`w-2 h-2 rounded-full ${project.status === 'live' ? 'bg-green-400' : project.status === 'in-progress' ? 'bg-amber-400' : 'bg-blue-400'} animate-pulse`}></div>
-                                {project.status === 'live' ? 'Live Demo' : project.status === 'in-progress' ? 'In Progress' : 'Concept'}
+                                <div className={`w-2 h-2 rounded-full ${statusDots[project.status]}`}></div>
+                                {statusLabel}
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap gap-3">
                                 {project.demoUrl && (
                                     <Link
                                         href={project.demoUrl}
@@ -378,12 +420,27 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                                 {project.githubUrl && (
                                     <Link
                                         href={project.githubUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="mobile-link-target liquid-glass-btn backdrop-blur-lg bg-white/[0.05] border border-white/[0.12] text-white/80 px-6 py-3 rounded-xl hover:bg-white/[0.08] hover:border-white/[0.16] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg inline-flex items-center gap-2 text-sm font-medium"
                                     >
                                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                                         </svg>
-                                        View Code
+                                        Personal GitHub copy
+                                    </Link>
+                                )}
+                                {project.teamGithubUrl && (
+                                    <Link
+                                        href={project.teamGithubUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mobile-link-target liquid-glass-btn backdrop-blur-lg bg-white/[0.05] border border-white/[0.12] text-white/80 px-6 py-3 rounded-xl hover:bg-white/[0.08] hover:border-white/[0.16] hover:text-white transition-all duration-300 transform hover:scale-[1.02] shadow-lg inline-flex items-center gap-2 text-sm font-medium"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h10M7 16h6M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                                        </svg>
+                                        Team repository
                                     </Link>
                                 )}
                             </div>
@@ -415,6 +472,27 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                             </svg>
                         )}
                     </div>
+
+                    {(project.role || project.trustBoundary) && (
+                        <div className="grid md:grid-cols-2 gap-8 mb-12">
+                            {project.role && (
+                                <div className="liquid-glass-section backdrop-blur-lg bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-400/20 rounded-2xl p-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-300/80 mb-3">My contribution</p>
+                                    <h2 className="text-xl font-semibold text-white mb-4">{project.role}</h2>
+                                    <p className="text-white/70 leading-relaxed">
+                                        Built within a four-person hackathon team, I owned the candidate-facing onboarding, consent and privacy UX, Sage interview experience, voice-first workspace, and optional camera-preview behavior. The recruiter workflow and backend evidence systems were team-owned.
+                                    </p>
+                                </div>
+                            )}
+                            {project.trustBoundary && (
+                                <div className="liquid-glass-section backdrop-blur-lg bg-gradient-to-br from-purple-500/10 to-slate-500/5 border border-purple-400/20 rounded-2xl p-6">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-purple-300/80 mb-3">Trust boundary</p>
+                                    <h2 className="text-xl font-semibold text-white mb-4">Evidence, not appearance</h2>
+                                    <p className="text-white/70 leading-relaxed">{project.trustBoundary}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Project Details Grid */}
                     <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -530,6 +608,7 @@ export async function generateStaticParams() {
         { slug: 'genpeli' },
         { slug: 'invoz-ai' },
         { slug: 'job-tracker' },
+        { slug: 'claimproof' },
         { slug: 'holusight' },
     ]
 }

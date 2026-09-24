@@ -45,8 +45,8 @@ const tagCategoryMap: Record<string, string> = {
   'Full-Stack': 'api', 'APIs': 'api', 'Real-time': 'api', 'WHOOP API': 'api',
   'Data Engineering': 'data', 'Data Science': 'data', 'Data Visualization': 'data',
   'Graph Theory': 'data', 'Mapping': 'data', 'Visualization': 'data',
-  'Health Analytics': 'data', 'Python': 'data', 'Hackathon': 'data',
-  'Accountability': 'data',
+  'Health Analytics': 'data', 'Python': 'data', 'Hackathon': 'data', 'HR Tech': 'data',
+  'Accountability': 'data', 'Conversational AI': 'ml',
 };
 
 function getBadgeClass(tag: string): string {
