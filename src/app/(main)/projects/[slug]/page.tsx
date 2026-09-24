@@ -480,7 +480,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-300/80 mb-3">My contribution</p>
                                     <h2 className="text-xl font-semibold text-white mb-4">{project.role}</h2>
                                     <p className="text-white/70 leading-relaxed">
-                                        Built within a four-person hackathon team, I owned candidate onboarding, consent and privacy UX, the Sage AI interviewer, the voice-first interview workspace, adaptive claim-linked questioning, transcript and progress states, and the recruiter handoff summary.
+                                        Built within a four-person hackathon team, I owned the candidate-facing onboarding, consent and privacy UX, Sage interview experience, voice-first workspace, and optional camera-preview behavior. The recruiter workflow and backend evidence systems were team-owned.
                                     </p>
                                 </div>
                             )}
