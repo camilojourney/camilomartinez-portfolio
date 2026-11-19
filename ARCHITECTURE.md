@@ -1,7 +1,7 @@
 # Architecture — camilomartinez-portfolio
 
 > Guided tour of the actual codebase. WHY things are built, not just WHAT.
-> **Last Updated:** 2026-02-24
+> **Last Updated:** 2026-11-19
 
 ---
 
@@ -91,19 +91,19 @@ Next.js App Router. All public pages live under `src/app/(main)/`.
 
 ```
 components/
-├── common/        ← Generic atoms (Button)
-├── ui/            ← Larger UI primitives (Card, TechFlowModal)
+├── ui/            ← UI primitives (button.tsx, Card, TechFlowModal)
 ├── shared/        ← Layout components used across pages
-│   ├── liquid-nav.tsx     — Navigation bar
-│   ├── liquid-background.tsx
-│   └── footer.tsx
+│   ├── site-header.tsx    - Shared navigation
+│   ├── page-shell.tsx     - Header and measured content column
+│   ├── theme-toggle.tsx   - Appearance control
+│   └── footer.tsx         - Rendered once by the root layout
 ├── features/      ← Feature-specific components
 │   ├── whoop/     — WHOOP dashboard charts (Recharts)
 │   ├── astoria-conquest/ — Map components (Leaflet)
 │   ├── blog/      — MDX rendering
 │   ├── auth/      — Auth buttons + provider
 │   └── Chatbot.tsx / GlobalChatbot.tsx
-└── projects/      — Project showcase cards
+└── projects/      - Project index and shared case-study primitives
 ```
 
 ### Library (`src/lib/`)
@@ -188,9 +188,10 @@ User message
     → on API failure, render the grounded recruiter fallback and mailto link
 ```
 
-`src/data/recruiter.ts` is the single source of truth for current target roles,
-location, work modes, and recruiter contact details. The chat system prompt
-treats these values as authoritative over older knowledge-base content.
+`src/data/recruiter.ts` owns current target roles, location, and work modes;
+its email comes from the public contact and profile links in `src/lib/site.ts`.
+The chat system prompt treats recruiter facts as authoritative over older
+knowledge-base content.
 
 ---
 

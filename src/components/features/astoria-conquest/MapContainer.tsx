@@ -7,7 +7,7 @@ const AstoriaMap = dynamic(
   () => import('@/components/features/astoria-conquest/AstoriaMap'),
   { 
     ssr: false,
-    loading: () => <div className="w-full h-full bg-surface-2 animate-pulse" /> 
+    loading: () => <div className="w-full h-full bg-surface-2 animate-pulse" />
   }
 );
 

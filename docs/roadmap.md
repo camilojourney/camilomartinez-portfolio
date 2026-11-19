@@ -1,6 +1,6 @@
 # Roadmap — camilomartinez-portfolio
 
-**Last updated:** 2026-02-24
+**Last updated:** 2026-11-19
 
 ## Now (Active Sprint)
 
@@ -20,7 +20,6 @@
 | Blog/writing section | P2 | Showcases thinking, improves SEO |
 | Analytics for visitor engagement | P2 | Simple, privacy-respecting (no third-party trackers) |
 | WHOOP weekly/monthly trend views | P2 | Rolling averages, best-week highlights |
-| Mobile nav improvement | P2 | Current hamburger menu needs polish |
 
 ## Later (Backlog)
 
@@ -29,7 +28,6 @@
 | Automated weekly fitness summary email | Self-addressed, no third-party |
 | Strava route map visualizations | Leaflet/MapLibre integration |
 | AI-generated insights from HRV + sleep data | Summarize patterns, flag anomalies |
-| Dark mode | Tailwind dark: variant — design spec needed first |
 | Resume PDF download | Auto-generated from structured data |
 
 ## Explicitly Out of Scope

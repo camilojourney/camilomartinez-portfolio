@@ -8,9 +8,9 @@ My personal site and fitness analytics app (WHOOP + Strava), deployed on Vercel.
 ## Docs
 
 - [`docs/README.md`](docs/README.md): Navigation and runbooks
-- [`docs/overview/PORTFOLIO_OVERVIEW.md`](docs/overview/PORTFOLIO_OVERVIEW.md): Product overview
-- [`docs/backend/DEVELOPER_GUIDE.md`](docs/backend/DEVELOPER_GUIDE.md): Backend setup
-- [`docs/frontend/README.md`](docs/frontend/README.md): Frontend architecture
+- [`docs/playbooks/development.md`](docs/playbooks/development.md): Local setup and development
+- [`ARCHITECTURE.md`](ARCHITECTURE.md): Frontend and backend architecture
+- [`docs/ux-system.md`](docs/ux-system.md): Visual design and styling reference
 
 ## Quick Start
 
@@ -29,6 +29,14 @@ uv sync
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
+
+## Appearance and Navigation
+
+Use the sun/moon button in the header to switch between light and dark themes.
+Your choice is saved in this browser. Without a saved choice, the site uses your
+OS color preference; if browser storage is unavailable, it starts in light mode.
+The Work, About, Blog, and Contact links stay visible on mobile, on a separate
+header row rather than behind a hamburger menu.
 
 ## Workflow: Explore → Plan → Execute → Review
 

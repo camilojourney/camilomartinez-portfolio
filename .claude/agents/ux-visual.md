@@ -26,15 +26,15 @@ This is a personal portfolio + fitness analytics dashboard for Camilo Martinez (
 ### 1. Page-level rhythm (most important, evaluate FIRST)
 - **Home:** hero section impact, project showcase layout, first impression within 3 seconds
 - **About:** narrative flow, reading rhythm, photo/text balance
-- **Projects:** card grid consistency, detail page layout quality
+- **Projects:** consistency with the [design system](../../docs/ux-system.md), detail page layout quality
 - **WHOOP Dashboard:** data visualization clarity, chart spacing, metric card layout
 - Section spacing and visual breathing room across all pages
 
 ### 2. Section-level composition
-- Project cards: consistent sizing, image quality, hover states
+- Project previews: consistent sizing, image quality, hover states
 - Data visualizations: chart labels, axis legibility, color coding, responsive sizing
 - Text sections: line length (55-75 chars), heading hierarchy, paragraph spacing
-- Navigation: consistent across all pages, mobile hamburger quality
+- Navigation: consistent across pages and with [documented mobile behavior](../../README.md#appearance-and-navigation)
 
 ### 3. Component-level details
 - Typography choices, font pairings, weight hierarchy

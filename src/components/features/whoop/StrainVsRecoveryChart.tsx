@@ -28,7 +28,7 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
             if (recovery >= 67) {
                 color = 'rgb(var(--live))'; // Green for good recovery (67%+)
             } else if (recovery >= 34) {
-                color = 'rgb(var(--warn))'; // Yellow for moderate recovery (34-66%)
+                color = 'rgb(var(--warn))';
             } else {
                 color = 'rgb(var(--danger))'; // Red for poor recovery (<34%)
             }

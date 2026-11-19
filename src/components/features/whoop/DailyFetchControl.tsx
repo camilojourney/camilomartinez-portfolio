@@ -95,7 +95,7 @@ export function DailyFetchControl() {
           <div className="mt-8">
             <div className={`p-6 rounded-lg border ${
               result.success 
-                ? 'text-live' 
+                ? 'text-live'
                 : 'text-danger'
             }`}>
               <div className="flex items-center gap-3 mb-4">

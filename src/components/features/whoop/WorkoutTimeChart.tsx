@@ -240,7 +240,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                 y={yScale(time)} 
                 textAnchor="end" 
                 dominantBaseline="middle" 
-                fill="rgb(var(--muted))" 
+                fill="rgb(var(--muted))"
                 fontSize="12"
                 className="font-medium"
               >
@@ -267,14 +267,14 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             x={x} 
             y={height - padding.bottom + 20} 
             textAnchor="middle" 
-            fill="rgb(var(--muted))" 
+            fill="rgb(var(--muted))"
             fontSize="14"
           >
             {month}
           </text>
         ))}
         
-        {/* Goal time line (yellow dotted) - Only show if within visible range */}
+        {/* Only show the goal time when it is within the visible range. */}
         {goalTimeInMinutes >= minTimeValue && goalTimeInMinutes <= maxTimeValue && (
           <line
             x1={padding.left}

@@ -16,7 +16,6 @@ const widths = {
   full: 'max-w-none',
 }
 
-/** Header plus a measured content column. Every public page renders through this. */
 export default function PageShell({ children, currentPage = 'home', maxWidth = 'default', className = '' }: PageShellProps) {
   return (
     <>

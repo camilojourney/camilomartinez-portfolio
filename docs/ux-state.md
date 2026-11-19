@@ -1,6 +1,6 @@
 # Portfolio — UX Current State
 
-Last updated: 2026-03-02
+Last updated: 2026-11-19
 
 ## Pages Built
 
@@ -9,7 +9,7 @@ Last updated: 2026-03-02
 |------|-------|--------|-------|
 | Home | `/` | Built | Hero, skills, featured projects |
 | About | `/about` | Built | Bio, background, philosophy |
-| Projects | `/projects` | Built | Project cards grid |
+| Projects | `/projects` | Built | Project index; see [design system](ux-system.md) |
 | Project: Trading Bot | `/projects/trading-bot` | Built | Pythia/Milo showcase |
 | Project: Fitness Dashboard | `/projects/fitness-dashboard` | Built | WHOOP data project |
 | Project: Social Media Pipeline | `/projects/social-media-pipeline` | Built | Genpeli showcase |
@@ -48,7 +48,6 @@ Last updated: 2026-03-02
 ## Known Issues
 - No UX crew review has been run yet.
 - Some pages may be dev-only (api-test, test-simple) — consider excluding from crew review.
-- Dark-only design — no light mode.
 
 ## Not Built / Planned
 - None currently. All routes have pages.

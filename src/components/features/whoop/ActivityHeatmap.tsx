@@ -626,7 +626,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                         </div>
                         <div className="text-xs mt-1">
                             {hoveredMonth.average_strain >= 9.9 ? 
-                                <span className="text-live">🎯 Goal Achieved!</span> : 
+                                <span className="text-live">🎯 Goal Achieved!</span> :
                                 <span className="text-danger">📈 Below Goal ({(9.9 - hoveredMonth.average_strain).toFixed(1)} short)</span>
                             }
                         </div>

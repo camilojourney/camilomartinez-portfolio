@@ -45,13 +45,13 @@
 | `src/components/ui/` | Base UI primitives (shadcn/ui-style). |
 | `src/components/features/` | Feature-specific component groups. |
 | `src/components/projects/` | Project showcase components. |
-| `src/components/common/` | Shared layout and utility components. |
+| `src/components/shared/` | Shared layout and utility components. |
 | `src/lib/` | Shared utilities, API clients, auth, config. |
 | `src/lib/services/` | Service layer (API integrations). |
 | `src/lib/security/` | Security utilities. |
 | `src/lib/db/` | Database client and queries. |
 | `src/types/` | Shared TypeScript type definitions. |
-| `src/styles/` | Global CSS (animations, scrollbar, globals). |
+| `src/styles/` | Global design tokens, component styles, and animations. |
 | `src/data/` | Static data files (projects, etc.). |
 
 ## Backend (`backend/`)
