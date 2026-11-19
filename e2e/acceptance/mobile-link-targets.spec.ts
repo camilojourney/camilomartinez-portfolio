@@ -41,8 +41,8 @@ for (const width of [390, 1024]) {
               const rect = element.getBoundingClientRect();
               return {
                 text: (element.getAttribute('aria-label') || element.textContent || element.getAttribute('href') || element.tagName).trim().replace(/\s+/g, ' '),
-                width: rect.width,
-                height: rect.height,
+                width: Math.round(rect.width),
+                height: Math.round(rect.height),
                 visible: rect.width > 0 && rect.height > 0 && getComputedStyle(element).visibility !== 'hidden',
               };
             })
