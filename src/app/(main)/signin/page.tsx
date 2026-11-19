@@ -1,17 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import LiquidPage from '@/components/shared/liquid-page';
+import PageShell from '@/components/shared/page-shell';
 import { systemService } from '@/lib/api/config';
 
 export default function SignInPage() {
     const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-
-    // Dynamically import signIn to avoid SSR localStorage errors
-    const handleSignIn = async () => {
-        const { signIn } = await import('next-auth/react');
-        await signIn('whoop');
-    };
 
     useEffect(() => {
         let isMounted = true;
@@ -36,40 +30,38 @@ export default function SignInPage() {
         };
     }, []);
 
+    const statusClass =
+        apiStatus === 'online' ? 'status-live' : apiStatus === 'offline' ? 'status-danger' : 'status-warn';
+    const statusText =
+        apiStatus === 'checking'
+            ? 'Checking FastAPI backend'
+            : apiStatus === 'online'
+                ? 'Backend reachable'
+                : 'Backend offline. Sign-in still works; dashboards may be empty.';
+
     return (
-        <LiquidPage currentPage="apps" backgroundVariant="cool">
-            <div className="text-center space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Sign In</h1>
-                    <p className="text-white/70">
-                        Connect your WHOOP account to access personalized data dashboards.
-                    </p>
-                </div>
+        <PageShell currentPage="apps" maxWidth="narrow">
+            <div className="rise-in max-w-md">
+                <h1 className="display">Sign in</h1>
+                <p className="lede mt-6">Connect your WHOOP account to access personalized data dashboards.</p>
 
                 <button
+                    type="button"
                     onClick={async () => {
+                        // Dynamically import signIn to avoid SSR localStorage errors
                         const { signIn } = await import('next-auth/react');
                         signIn('whoop', { callbackUrl: '/whoop-dashboard' });
                     }}
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold py-3 px-6 rounded-full transition duration-200 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="btn-primary mt-8"
                     disabled={apiStatus === 'checking'}
                 >
                     Sign in with WHOOP
                 </button>
 
-                <p className="text-sm text-white/60">
-                    API status:{' '}
-                    <span className={
-                        apiStatus === 'online'
-                            ? 'text-emerald-300'
-                            : apiStatus === 'offline'
-                                ? 'text-rose-300'
-                                : 'text-amber-300'
-                    }>
-                        {apiStatus === 'checking' ? 'Checking FastAPI backend…' : apiStatus === 'online' ? 'Backend reachable' : 'Backend offline'}
-                    </span>
+                <p className={`status ${statusClass} mt-6`} role="status">
+                    {statusText}
                 </p>
             </div>
-        </LiquidPage>
+        </PageShell>
     );
 }

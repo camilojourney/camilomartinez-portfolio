@@ -116,9 +116,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   // Show loading state during SSR
   if (!isMounted) {
     return (
-      <div className="border-2 border-dashed border-cyan-500/30 rounded-lg p-8 text-center">
-        <div className="text-cyan-400 text-3xl mb-3">⏰</div>
-        <p className="text-white/70 text-lg">Loading workout time data...</p>
+      <div className="border-2 border-dashed rounded-lg p-8 text-center">
+        <div className="text-ink text-3xl mb-3">⏰</div>
+        <p className="text-muted text-lg">Loading workout time data...</p>
       </div>
     );
   }
@@ -127,30 +127,30 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
   const first = data?.[0];
   if (first && typeof first.timeAsMinutes !== 'number') {
     return (
-      <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
-        <div className="text-red-400 text-3xl mb-3">⚠️</div>
-        <p className="text-white/70 text-lg">Error loading workout chart</p>
-        <p className="text-white/50 text-sm mt-2">Invalid workout time data format</p>
+      <div className="border-2 border-dashed rounded-lg p-8 text-center">
+        <div className="text-danger text-3xl mb-3">⚠️</div>
+        <p className="text-muted text-lg">Error loading workout chart</p>
+        <p className="text-muted text-sm mt-2">Invalid workout time data format</p>
       </div>
     );
   }
   
   if (!data || data.length === 0) {
     return (
-      <div className="border-2 border-dashed border-amber-500/30 rounded-lg p-8 text-center">
-        <div className="text-amber-400 text-3xl mb-3">⏰</div>
-        <p className="text-white/70 text-lg">No workout time data available.</p>
-        <p className="text-white/50 text-sm mt-2">Check that your database has workout records.</p>
+      <div className="border-2 border-dashed rounded-lg p-8 text-center">
+        <div className="text-warn text-3xl mb-3">⏰</div>
+        <p className="text-muted text-lg">No workout time data available.</p>
+        <p className="text-muted text-sm mt-2">Check that your database has workout records.</p>
       </div>
     );
   }
 
   if (validData.length === 0) {
     return (
-      <div className="border-2 border-dashed border-red-500/30 rounded-lg p-8 text-center">
-        <div className="text-red-400 text-3xl mb-3">⚠️</div>
-        <p className="text-white/70 text-lg">No valid workout time data.</p>
-        <p className="text-white/50 text-sm mt-2">Data was received but no valid dates were found.</p>
+      <div className="border-2 border-dashed rounded-lg p-8 text-center">
+        <div className="text-danger text-3xl mb-3">⚠️</div>
+        <p className="text-muted text-lg">No valid workout time data.</p>
+        <p className="text-muted text-sm mt-2">Data was received but no valid dates were found.</p>
       </div>
     );
   }
@@ -209,7 +209,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           y1={padding.top}
           x2={padding.left}
           y2={height - padding.bottom}
-          stroke="gray"
+          stroke="rgb(var(--muted))"
           strokeWidth="1"
         />
 
@@ -230,7 +230,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                 y1={yScale(time)}
                 x2={containerWidth - padding.right}
                 y2={yScale(time)}
-                stroke="rgba(255,255,255,0.1)"
+                stroke="rgb(var(--line))"
                 strokeWidth="1"
                 strokeDasharray="4"
               />
@@ -240,7 +240,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                 y={yScale(time)} 
                 textAnchor="end" 
                 dominantBaseline="middle" 
-                fill="rgba(255,255,255,0.6)" 
+                fill="rgb(var(--muted))" 
                 fontSize="12"
                 className="font-medium"
               >
@@ -256,7 +256,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           y1={height - padding.bottom}
           x2={containerWidth - padding.right}
           y2={height - padding.bottom}
-          stroke="gray"
+          stroke="rgb(var(--muted))"
           strokeWidth="1"
         />
         
@@ -267,7 +267,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             x={x} 
             y={height - padding.bottom + 20} 
             textAnchor="middle" 
-            fill="gray" 
+            fill="rgb(var(--muted))" 
             fontSize="14"
           >
             {month}
@@ -460,16 +460,16 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                 : 'translate(-50%, calc(-100% - 12px))'
             }}
           >
-            <div className="bg-black/95 backdrop-blur-sm border-2 border-cyan-400 rounded-lg px-3 py-2 shadow-2xl text-xs min-w-[160px]">
-              <div className="text-white font-medium mb-1">{hoveredWorkout.dateLabel}</div>
-              <div className="text-white/70 mb-1">
+            <div className="bg-surface border border-line rounded-lg px-3 py-2 shadow-2xl text-xs min-w-[160px]">
+              <div className="text-ink font-medium mb-1">{hoveredWorkout.dateLabel}</div>
+              <div className="text-muted mb-1">
                 {hoveredWorkout.timeLabel}
-                <span className="text-white/40"> ({hoveredWorkout.rawTime})</span>
+                <span className="text-muted"> ({hoveredWorkout.rawTime})</span>
               </div>
-              <div className="text-cyan-400 font-medium mb-1">
+              <div className="text-ink font-medium mb-1">
                 {hoveredWorkout.workoutType}
               </div>
-              <div className="text-white/60">
+              <div className="text-muted">
                 {hoveredWorkout.isBeforeGoal ? '✅ Before 8:30 AM' : '⏰ After 8:30 AM'}
               </div>
             </div>
@@ -480,8 +480,8 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
       {/* Legend and Stats */}
       <div className="space-y-4">
         {/* Workout Type Legend */}
-        <div className="flex justify-center items-center gap-6 p-3 bg-black/10 rounded-lg">
-          <div className="text-white/60 text-sm font-medium">Workout Types:</div>
+        <div className="flex justify-center items-center gap-6 p-3 bg-surface-2 rounded-lg">
+          <div className="text-muted text-sm font-medium">Workout Types:</div>
           <div className="flex items-center gap-1">
             <svg width="14" height="14" className="mr-1">
               <path
@@ -492,13 +492,13 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                 opacity="0.8"
               />
             </svg>
-            <span className="text-white/70 text-xs">Running</span>
+            <span className="text-muted text-xs">Running</span>
           </div>
           <div className="flex items-center gap-1">
             <svg width="14" height="14" className="mr-1">
               <circle cx="7" cy="7" r="5" fill="#4ade80" stroke="#22c55e" strokeWidth="1.5" opacity="0.8" />
             </svg>
-            <span className="text-white/70 text-xs">Weightlifting</span>
+            <span className="text-muted text-xs">Weightlifting</span>
           </div>
           <div className="flex items-center gap-1">
             <svg width="14" height="14" className="mr-1">
@@ -510,23 +510,23 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                 opacity="0.8"
               />
             </svg>
-            <span className="text-white/70 text-xs">Boxing</span>
+            <span className="text-muted text-xs">Boxing</span>
           </div>
         </div>
 
         {/* Main Legend */}
-        <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
+        <div className="flex justify-center items-center gap-6 p-4 bg-surface-2 rounded-xl">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-[#4ade80] border border-white/20"></div>
-            <span className="text-white/70 text-sm">Before 8:30 AM (Victory)</span>
+            <div className="w-4 h-4 rounded-full bg-[#4ade80] border border-line"></div>
+            <span className="text-muted text-sm">Before 8:30 AM (Victory)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-[#f87171] border border-white/20"></div>
-            <span className="text-white/70 text-sm">After 8:30 AM (Room for Growth)</span>
+            <div className="w-4 h-4 rounded-full bg-[#f87171] border border-line"></div>
+            <span className="text-muted text-sm">After 8:30 AM (Room for Growth)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
-            <span className="text-white/70 text-sm">Target Time (8:30 AM)</span>
+            <span className="text-muted text-sm">Target Time (8:30 AM)</span>
           </div>
         </div>
 
@@ -582,31 +582,31 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
           })();
           
           return (
-            <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
+            <div className="flex justify-center items-center gap-6 p-4 bg-surface-2 rounded-xl">
               <div className="text-center">
-                <div className="text-white/60 text-sm mb-1">Last 30 Days Average</div>
-                <div className="text-xl font-semibold text-cyan-400">{averageTime}</div>
+                <div className="text-muted text-sm mb-1">Last 30 Days Average</div>
+                <div className="text-xl font-semibold text-ink">{averageTime}</div>
               </div>
               <div className="text-center">
-                <div className="text-white/60 text-sm mb-1">Success Rate</div>
-                <div className="text-xl font-semibold text-cyan-400">{currentMonthSuccessRate.toFixed(1)}%</div>
+                <div className="text-muted text-sm mb-1">Success Rate</div>
+                <div className="text-xl font-semibold text-ink">{currentMonthSuccessRate.toFixed(1)}%</div>
               </div>
               <div className="text-center">
-                <div className="text-white/60 text-sm mb-1">Early Workouts</div>
-                <div className="text-xl font-semibold text-cyan-400">{workoutsBeforeGoal} of {totalWorkouts}</div>
+                <div className="text-muted text-sm mb-1">Early Workouts</div>
+                <div className="text-xl font-semibold text-ink">{workoutsBeforeGoal} of {totalWorkouts}</div>
               </div>
               
               {/* Improvement metric as 4th column */}
               <div className="text-center">
-                <div className="text-white/60 text-sm mb-1">6-Month Trend</div>
+                <div className="text-muted text-sm mb-1">6-Month Trend</div>
                 {improvementData.hasEnoughData ? (
                   <div>
                     <div className={`text-xl font-semibold flex items-center justify-center gap-1 ${
                       improvementData.trend === 'improving' 
-                        ? 'text-green-400'
+                        ? 'text-live'
                         : improvementData.trend === 'declining'
-                        ? 'text-red-400'
-                        : 'text-blue-400'
+                        ? 'text-danger'
+                        : 'text-ink'
                     }`}>
                       <span>
                         {improvementData.improvement > 0 ? '+' : ''}{improvementData.improvement.toFixed(1)}%
@@ -616,12 +616,12 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                          improvementData.trend === 'declining' ? '📉' : '📊'}
                       </span>
                     </div>
-                    <div className="text-xs text-white/40 mt-1">
+                    <div className="text-xs text-muted mt-1">
                       {improvementData.previousSuccessRate?.toFixed(1) || '0.0'}% → {improvementData.currentSuccessRate?.toFixed(1) || '0.0'}%
                     </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-amber-400">Need 2mo+ data</div>
+                  <div className="text-sm text-warn">Need 2mo+ data</div>
                 )}
               </div>
             </div>

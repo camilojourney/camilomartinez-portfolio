@@ -1,234 +1,113 @@
-/* Core animations */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* Route and data-view motion. Visual tokens live in globals.css. */
 
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
-}
-
-@keyframes liquid-float {
-  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
-  25% { transform: translate(20px, -30px) rotate(1deg) scale(1.05); }
-  50% { transform: translate(-15px, 25px) rotate(-0.5deg) scale(0.95); }
-  75% { transform: translate(25px, 15px) rotate(0.5deg) scale(1.02); }
-}
-
-@keyframes concentric-pulse {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.05);
-  }
-}
-
-/* Animation classes */
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out;
-}
-
-.animate-slide-in {
-  animation: slide-in 0.5s ease-out;
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animate-liquid-float {
-  animation: liquid-float 12s ease-in-out infinite;
-}
-
-.animate-concentric {
-  animation: concentric-pulse 8s ease-in-out infinite;
-}
-
-/* Animation delays */
-.animation-delay-2000 { animation-delay: 2s; }
-.animation-delay-3000 { animation-delay: 3s; }
-.animation-delay-4000 { animation-delay: 4s; }
-.animation-delay-6000 { animation-delay: 6s; }
-
-/* Component animations */
-.liquid-glass-nav {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.liquid-glass-button {
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.liquid-glass-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.2), 
-    transparent
-  );
-  transition: left 0.6s ease;
-}
-
-.liquid-glass-button:hover::before {
-  left: 100%;
-}
-
-/* Loading states */
-.loading-skeleton {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  background-size: 200% 100%;
-  animation: loading-shimmer 1.5s infinite;
-}
-
-@keyframes loading-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* ========================================
-   Premium page transition (smooth cross-fade with subtle scale)
-   ======================================== */
 @keyframes page-enter {
   from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.998);
-    filter: blur(4px);
+    opacity: 0.001;
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: none;
   }
-}
-
-.page-transition {
-  animation: page-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .route-transition {
-  animation: page-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: page-enter 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ========================================
-   Chart loading skeleton — premium shimmer
-   ======================================== */
-@keyframes chart-skeleton-pulse {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.chart-skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.02) 0%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  background-size: 200% 100%;
-  animation: chart-skeleton-pulse 2s ease-in-out infinite;
-  border-radius: 1rem;
-}
-
-/* ========================================
-   Number counter animation
-   ======================================== */
-@keyframes count-up {
+@keyframes fade-in {
   from {
-    opacity: 0;
-    transform: translateY(10px);
-    filter: blur(4px);
+    opacity: 0.001;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
+    transform: none;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-message-appear {
+  animation: fade-in 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loading-skeleton,
+.chart-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--surface-2)) 0%,
+    rgb(var(--line)) 50%,
+    rgb(var(--surface-2)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+/* Counters and map reveal (dashboards) */
+@keyframes count-up {
+  from {
+    opacity: 0.001;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
 .animate-count-up {
-  animation: count-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: count-up 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ========================================
-   Premium map loading animation
-   ======================================== */
 @keyframes map-reveal {
   from {
-    opacity: 0;
-    transform: scale(0.95);
-    filter: blur(8px);
+    opacity: 0.001;
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
-    transform: scale(1);
-    filter: blur(0);
+    transform: none;
   }
 }
 
 .animate-map-reveal {
-  animation: map-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: map-reveal 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ========================================
-   Astoria conquest premium loading
-   ======================================== */
 @keyframes conquest-loader-pulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.02); }
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @keyframes conquest-loader-bar {
-  0% { width: 0%; }
-  50% { width: 70%; }
-  100% { width: 100%; }
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 .conquest-loader-pulse {
@@ -239,32 +118,29 @@
   animation: conquest-loader-bar 1.5s ease-in-out infinite;
 }
 
-/* ========================================
-   Stats card hover lift effect
-   ======================================== */
 .stat-card-hover {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 300ms ease;
 }
 
 .stat-card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3),
-              0 0 20px rgba(6, 182, 212, 0.05);
+  border-color: rgb(var(--ink));
 }
 
-/* ========================================
-   prefers-reduced-motion
-   ======================================== */
 @media (prefers-reduced-motion: reduce) {
-  .page-transition,
   .route-transition,
+  .animate-fade-in,
+  .animate-message-appear,
+  .loading-skeleton,
   .chart-skeleton,
   .animate-count-up,
   .animate-map-reveal,
   .conquest-loader-pulse,
   .conquest-loader-bar {
     animation: none !important;
+    opacity: 1;
   }
 
   .stat-card-hover:hover {

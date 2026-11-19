@@ -2,15 +2,10 @@ import { cn } from '@/lib/utils';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
+/** A bordered surface. Elevation is declared once, by the hairline, never by a shadow. */
 export function Card({ className, children, ...props }: CardProps) {
   return (
-    <div
-      className={cn(
-        'rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-[var(--glass-shadow)] backdrop-blur-lg',
-        className
-      )}
-      {...props}
-    >
+    <div className={cn('panel', className)} {...props}>
       {children}
     </div>
   );

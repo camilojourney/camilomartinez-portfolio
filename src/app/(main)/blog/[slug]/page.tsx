@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { CustomMDX } from '@/components/features/blog/mdx'
 import { formatDate, getBlogPosts } from '../utils'
 import { baseUrl } from '@/lib/site'
-import LiquidNav from '@/components/shared/liquid-nav'
+import PageShell from '@/components/shared/page-shell'
 
 interface BlogPost {
   slug: string;
@@ -94,16 +94,7 @@ export default async function Blog({ params }: PageProps) {
   const readingTime = getReadingTime(post.content)
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <LiquidNav currentPage="blog" />
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[#050810]"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-[#080d1c] to-[#050810]"></div>
-        <div className="absolute top-0 left-0 w-full h-full opacity-30">
-          <div className="absolute top-[15%] left-[10%] w-[600px] h-[600px] bg-blue-600/[0.04] rounded-full blur-[160px]"></div>
-          <div className="absolute top-[50%] right-[5%] w-[500px] h-[500px] bg-cyan-500/[0.03] rounded-full blur-[140px]"></div>
-        </div>
-      </div>
+    <PageShell currentPage="blog" maxWidth="narrow">
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -126,63 +117,41 @@ export default async function Blog({ params }: PageProps) {
           }),
         }}
       />
-      <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
-        <div className="max-w-3xl mx-auto">
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-cyan-400 transition-colors duration-200 mb-10"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-            </svg>
-            All posts
-          </Link>
-          <header className="mb-12">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight mb-6">
-              {post.metadata.title}
-            </h1>
-            <div className="flex items-center gap-3 text-sm text-white/40">
-              <time dateTime={post.metadata.publishedAt}>
-                {formatDate(post.metadata.publishedAt)}
-              </time>
-              <span className="w-1 h-1 rounded-full bg-white/20" />
-              <span>{readingTime} min read</span>
-            </div>
-          </header>
-          <article className="prose prose-invert prose-lg prose-p:text-white/70 prose-headings:text-white prose-a:text-cyan-400 prose-strong:text-white/90 prose-code:text-cyan-300 max-w-none">
-            <CustomMDX source={post.content} />
-          </article>
-          <div className="my-16 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <nav className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {prevPost ? (
-              <Link
-                href={`/blog/${prevPost.slug}`}
-                className="group rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.04]"
-              >
-                <span className="text-xs text-white/30 uppercase tracking-wider">Previous</span>
-                <p className="mt-2 text-white/80 font-medium group-hover:text-white transition-colors">
-                  {prevPost.metadata.title}
-                </p>
-              </Link>
-            ) : (
-              <div />
-            )}
-            {nextPost ? (
-              <Link
-                href={`/blog/${nextPost.slug}`}
-                className="group rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 text-right transition-all duration-300 hover:border-cyan-400/30 hover:bg-white/[0.04]"
-              >
-                <span className="text-xs text-white/30 uppercase tracking-wider">Next</span>
-                <p className="mt-2 text-white/80 font-medium group-hover:text-white transition-colors">
-                  {nextPost.metadata.title}
-                </p>
-              </Link>
-            ) : (
-              <div />
-            )}
-          </nav>
+      <Link href="/blog" className="link-quiet mobile-link-target inline-flex items-center gap-2 text-sm">
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+        </svg>
+        All posts
+      </Link>
+      <header className="rise-in mb-10 mt-6 border-b border-line pb-8">
+        <h1 className="display text-[clamp(2.25rem,5vw,3.75rem)]">{post.metadata.title}</h1>
+        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+          <time dateTime={post.metadata.publishedAt}>{formatDate(post.metadata.publishedAt)}</time>
+          <span aria-hidden>·</span>
+          <span>{readingTime} min read</span>
         </div>
-      </div>
-    </div>
+      </header>
+      <article className="prose">
+        <CustomMDX source={post.content} />
+      </article>
+      <nav className="mt-16 grid gap-4 border-t border-line pt-8 md:grid-cols-2" aria-label="Adjacent posts">
+        {prevPost ? (
+          <Link href={`/blog/${prevPost.slug}`} className="panel group p-5 transition-colors hover:border-ink">
+            <span className="text-xs uppercase tracking-wide text-muted">Previous</span>
+            <p className="mt-2 font-medium text-ink group-hover:text-accent">{prevPost.metadata.title}</p>
+          </Link>
+        ) : (
+          <div />
+        )}
+        {nextPost ? (
+          <Link href={`/blog/${nextPost.slug}`} className="panel group p-5 text-right transition-colors hover:border-ink">
+            <span className="text-xs uppercase tracking-wide text-muted">Next</span>
+            <p className="mt-2 font-medium text-ink group-hover:text-accent">{nextPost.metadata.title}</p>
+          </Link>
+        ) : (
+          <div />
+        )}
+      </nav>
+    </PageShell>
   )
 }

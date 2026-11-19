@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Copy, Zap, Sparkles, Twitter, Hash, MessageCircle, Linkedin, Instagram, Facebook, AlertCircle } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Copy, Twitter, Hash, MessageCircle, Linkedin, Instagram, Facebook } from 'lucide-react'
 import Link from 'next/link'
-import LiquidNav from '@/components/shared/liquid-nav'
+import PageShell from '@/components/shared/page-shell'
 import type { LucideIcon } from 'lucide-react'
 
 interface Platform {
@@ -87,241 +85,156 @@ export default function SocialMediaPipelinePage() {
   }
 
   const getPlatformInfo = (key: string) => platforms.find(p => p.key === key)
+  const canGenerate = Boolean(thought.trim()) && selectedPlatforms.length > 0 && !loading
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <LiquidNav currentPage="apps" />
-      {/* Animated Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-pink-900/30 animate-gradient-xy"></div>
-        <div className="absolute top-0 left-0 w-full h-full opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
-        </div>
-      </div>
+    <PageShell currentPage="apps" maxWidth="wide">
+      <Link href="/apps" className="link-quiet mobile-link-target inline-flex items-center gap-2 text-sm">
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+        </svg>
+        All apps
+      </Link>
 
-      <div className="relative pt-24 md:pt-32 px-4 md:px-6 pb-20">
-        {/* Back Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="max-w-7xl mx-auto mb-6"
-        >
-          <Link
-            href="/apps"
-            className="inline-flex items-center space-x-2 text-white/60 hover:text-white transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Apps</span>
-          </Link>
-        </motion.div>
+      <header className="rise-in mt-6 border-b border-line pb-10 md:pb-14">
+        <span className="status status-live">Live</span>
+        <h1 className="display mt-3">Social Media Pipeline</h1>
+        <p className="lede mt-6">
+          Transform raw thoughts into <em>platform-optimized posts</em> for X, Threads, LinkedIn, Instagram, and
+          Facebook.
+        </p>
+        <Link href="/projects/social-media-pipeline" className="link mt-5 inline-block text-sm">
+          Read the case study
+        </Link>
+      </header>
 
-        {/* Hero */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-center mb-16 max-w-5xl mx-auto"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring" }}
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full mb-6"
-          >
-            <Sparkles className="w-4 h-4 text-purple-400" />
-            <span className="text-purple-300 text-sm font-medium">Multi-Platform Generator</span>
-          </motion.div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight">
-            Social Media Pipeline
-          </h1>
-          <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-8">
-            Transform raw thoughts into platform-optimized posts for X, Threads, LinkedIn, Instagram, and Facebook.
-          </p>
-        </motion.section>
+      <div className="grid gap-10 py-10 md:grid-cols-2 md:gap-12 md:py-14">
+        {/* Input */}
+        <section aria-labelledby="input-heading">
+          <h2 id="input-heading" className="title-md">
+            Your raw thought
+          </h2>
+          <p className="caption mt-1">Enter your idea. AI will adapt it for each platform.</p>
 
-        {/* Main Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16"
-        >
-          {/* Input Card */}
-          <Card className="p-8 border-white/10 backdrop-blur-xl bg-gradient-to-br from-white/[0.05] to-white/[0.02]">
-            <div className="mb-6">
-              <div className="flex items-center space-x-2 mb-2">
-                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                <h2 className="text-2xl font-bold text-white">Your Raw Thought</h2>
-              </div>
-              <p className="text-white/60 text-sm">Enter your idea. AI will adapt it for each platform.</p>
-            </div>
+          <label htmlFor="thought" className="sr-only">
+            Your raw thought
+          </label>
+          <textarea
+            id="thought"
+            value={thought}
+            onChange={(e) => setThought(e.target.value)}
+            placeholder="What's on your mind..."
+            className="mt-5 h-40 w-full resize-none rounded-md border border-line-strong bg-surface p-4 text-[0.9375rem] text-ink placeholder:text-muted focus:border-ink focus:outline-none"
+            rows={5}
+          />
 
-            <div className="space-y-6">
-              <div className="relative">
-                <textarea
-                  value={thought}
-                  onChange={(e) => setThought(e.target.value)}
-                  placeholder="What's on your mind..."
-                  className="w-full h-40 p-4 bg-white/[0.05] border border-white/[0.15] rounded-2xl text-white placeholder-white/40 resize-none focus:outline-none focus:border-purple-400/50 focus:bg-white/[0.08] transition-all"
-                  rows={5}
-                />
-              </div>
-
-              {/* Examples */}
-              <div>
-                <p className="text-white/60 text-sm mb-3 font-medium">Examples:</p>
-                <div className="flex flex-wrap gap-2">
-                  {examples.map((example, idx) => (
-                    <motion.button
-                      key={idx}
-                      type="button"
-                      onClick={() => setThought(example)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-xs text-white rounded-full transition-all cursor-pointer"
-                    >
-                      {example}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Platforms */}
-              <div>
-                <p className="text-white/80 font-medium mb-4">Platforms ({selectedPlatforms.length}/6)</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {platforms.map(({ key, label, icon: Icon }) => (
-                    <motion.button
-                      key={key}
-                      type="button"
-                      onClick={() => handleTogglePlatform(key)}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`flex items-center space-x-2 p-3 rounded-xl border transition-all group ${
-                        selectedPlatforms.includes(key)
-                          ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400/40 text-purple-200 shadow-lg shadow-purple-500/20'
-                          : 'bg-white/[0.05] border-white/[0.15] text-white/60 hover:bg-white/[0.1] hover:border-white/30 hover:text-white'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span className="text-sm font-medium">{label}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <motion.button
-                onClick={handleGenerate}
-                disabled={!thought.trim() || selectedPlatforms.length === 0 || loading}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-purple-500/50 disabled:shadow-none"
+          <p className="caption mt-5 mb-2">Examples</p>
+          <div className="flex flex-col gap-2">
+            {examples.map((example) => (
+              <button
+                key={example}
+                type="button"
+                onClick={() => setThought(example)}
+                className="rounded-md border border-line px-3 py-2 text-left text-sm text-muted transition-colors hover:border-ink hover:text-ink"
               >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Generating...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-5 h-5" />
-                    <span>Generate Posts</span>
-                  </>
-                )}
-              </motion.button>
+                {example}
+              </button>
+            ))}
+          </div>
+
+          <fieldset className="mt-6">
+            <legend className="text-sm font-medium text-ink">
+              Platforms <span className="text-muted">({selectedPlatforms.length}/6)</span>
+            </legend>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {platforms.map(({ key, label, icon: Icon }) => {
+                const selected = selectedPlatforms.includes(key)
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => handleTogglePlatform(key)}
+                    className={`flex min-h-11 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${                      selected
+                        ? 'border-ink bg-ink text-page'
+                        : 'border-line-strong text-muted hover:border-ink hover:text-ink'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0" aria-hidden />
+                    <span>{label}</span>
+                  </button>
+                )
+              })}
             </div>
-          </Card>
+          </fieldset>
 
-          {/* Output Card */}
-          <Card className="p-8 border-white/10 backdrop-blur-xl bg-gradient-to-br from-white/[0.05] to-white/[0.02]">
-            <div className="mb-6">
-              <div className="flex items-center space-x-2 mb-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                <h2 className="text-2xl font-bold text-white">Generated Content</h2>
-              </div>
-              <p className="text-white/60 text-sm">Optimized posts ready to copy & post.</p>
+          <button onClick={handleGenerate} disabled={!canGenerate} className="btn-primary mt-6 w-full disabled:opacity-40 sm:w-auto">
+            {loading ? 'Generating...' : 'Generate posts'}
+          </button>
+        </section>
+
+        {/* Output */}
+        <section aria-labelledby="output-heading" aria-live="polite">
+          <h2 id="output-heading" className="title-md">
+            Generated content
+          </h2>
+          <p className="caption mt-1">Optimized posts ready to copy and post.</p>
+
+          {error && (
+            <p role="alert" className="mt-5 rounded-md border border-danger/40 bg-danger/5 px-4 py-3 text-sm text-danger">
+              {error}
+            </p>
+          )}
+
+          {loading ? (
+            <div className="mt-5 space-y-3" aria-label="Generating">
+              {selectedPlatforms.map((p) => (
+                <div key={p} className="loading-skeleton h-28" />
+              ))}
             </div>
-
-            <AnimatePresence>
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="mb-6 p-4 bg-red-500/20 border border-red-400/30 rounded-xl flex items-center space-x-3"
-                >
-                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                  <p className="text-red-300">{error}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {loading ? (
-              <div className="flex flex-col items-center justify-center h-64 text-white/40">
-                <Zap className="w-12 h-12 mb-4 text-purple-400/50 animate-pulse" />
-                <p className="text-lg">Generating your posts...</p>
-              </div>
-            ) : results.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center text-white/40">
-                <Sparkles className="w-16 h-16 mb-4 text-purple-400/30" />
-                <p>Generated posts will appear here</p>
-                <p className="text-sm mt-1">Select platforms above and click Generate</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {results.map(({ platform, content }) => {
-                  const info = getPlatformInfo(platform)
-                  const Icon = info?.icon || Sparkles
-                  return (
-                    <motion.div
-                      key={platform}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="group relative bg-white/[0.05] border border-white/[0.15] rounded-2xl p-6 hover:border-white/30 hover:bg-white/[0.08] transition-all overflow-hidden"
-                    >
-                      {/* Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full" />
-                          <Icon className="w-5 h-5 text-purple-400" />
-                          <span className="font-semibold text-white">{info?.label || platform}</span>
-                        </div>
-                      </div>
-
-                      {/* Copy Button */}
-                      <motion.button
+          ) : results.length === 0 ? (
+            <div className="panel mt-5 flex h-64 flex-col items-center justify-center text-center">
+              <p className="text-ink">Generated posts will appear here</p>
+              <p className="caption mt-1">Select platforms and click Generate</p>
+            </div>
+          ) : (
+            <ul className="row-list mt-5">
+              {results.map(({ platform, content }) => {
+                const info = getPlatformInfo(platform)
+                const Icon = info?.icon ?? MessageCircle
+                return (
+                  <li key={platform} className="py-5 first:pt-0">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
+                        <Icon className="h-4 w-4" aria-hidden />
+                        {info?.label || platform}
+                      </span>
+                      <button
+                        type="button"
                         onClick={() => copyToClipboard(platform, content)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="absolute top-4 right-4 p-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all"
-                        title="Copy to clipboard"
+                        className="btn-secondary btn-sm"
+                        aria-label={`Copy ${info?.label || platform} post`}
                       >
                         {copiedPlatform === platform ? (
-                          <span className="text-green-400 text-xs font-bold">✓ Copied!</span>
+                          'Copied'
                         ) : (
-                          <Copy className="w-4 h-4 text-white/80 group-hover:text-white" />
+                          <>
+                            <Copy className="h-3.5 w-3.5" aria-hidden /> Copy
+                          </>
                         )}
-                      </motion.button>
-
-                      {/* Content */}
-                      <pre className="whitespace-pre-wrap text-white/95 text-sm leading-relaxed mb-4 max-h-48 overflow-y-auto font-sans">
-                        {content}
-                      </pre>
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between pt-4 border-t border-white/10 text-xs text-white/60 mt-auto">
-                        <span>Chars: {content.length}</span>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </div>
-            )}
-          </Card>
-        </motion.div>
+                      </button>
+                    </div>
+                    <pre className="mt-3 max-h-56 overflow-y-auto whitespace-pre-wrap font-sans text-[0.9375rem] leading-relaxed text-ink">
+                      {content}
+                    </pre>
+                    <p className="caption mt-2 text-xs">{content.length} characters</p>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </section>
       </div>
-    </div>
+    </PageShell>
   )
 }

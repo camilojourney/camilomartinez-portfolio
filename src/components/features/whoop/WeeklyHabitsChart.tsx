@@ -49,18 +49,18 @@ interface SummaryStatsProps {
 }
 
 const SummaryStats = ({ avgValue, avgLabel, last4WeeksAvg, totalCount, accentColor }: SummaryStatsProps) => (
-    <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-white/10">
+    <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-line">
         <div className="text-center">
-            <p className="text-xs text-white/50">{avgLabel}</p>
+            <p className="text-xs text-muted">{avgLabel}</p>
             <p className="text-lg font-semibold" style={{ color: accentColor }}>{avgValue}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Last 4 Weeks</p>
-            <p className="text-lg font-semibold text-white/80">{last4WeeksAvg}</p>
+            <p className="text-xs text-muted">Last 4 Weeks</p>
+            <p className="text-lg font-semibold text-ink">{last4WeeksAvg}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Weeks Tracked</p>
-            <p className="text-lg font-semibold text-white/60">{totalCount}</p>
+            <p className="text-xs text-muted">Weeks Tracked</p>
+            <p className="text-lg font-semibold text-muted">{totalCount}</p>
         </div>
     </div>
 );
@@ -74,18 +74,18 @@ interface StabilityStatsProps {
 }
 
 const StabilityStats = ({ avgStdDev, last4WeeksAvg, totalCount, accentColor }: StabilityStatsProps) => (
-    <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-white/10">
+    <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-line">
         <div className="text-center">
-            <p className="text-xs text-white/50">Average Variance</p>
+            <p className="text-xs text-muted">Average Variance</p>
             <p className="text-lg font-semibold" style={{ color: accentColor }}>{avgStdDev}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Last 4 Weeks</p>
-            <p className="text-lg font-semibold text-white/80">{last4WeeksAvg}</p>
+            <p className="text-xs text-muted">Last 4 Weeks</p>
+            <p className="text-lg font-semibold text-ink">{last4WeeksAvg}</p>
         </div>
         <div className="text-center">
-            <p className="text-xs text-white/50">Weeks Tracked</p>
-            <p className="text-lg font-semibold text-white/60">{totalCount}</p>
+            <p className="text-xs text-muted">Weeks Tracked</p>
+            <p className="text-lg font-semibold text-muted">{totalCount}</p>
         </div>
     </div>
 );
@@ -93,8 +93,8 @@ const StabilityStats = ({ avgStdDev, last4WeeksAvg, totalCount, accentColor }: S
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-white p-4 border border-gray-300 rounded shadow-lg">
-                <p className="font-semibold text-sm text-gray-900">
+            <div className="bg-surface p-4 border border-line rounded shadow-lg">
+                <p className="font-semibold text-sm text-muted">
                     Week of {format(parseISO(label), 'MMM d, yyyy')}
                 </p>
                 {payload.map((entry: any, index: number) => {
@@ -114,8 +114,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const StdDevTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
-                <p className="font-semibold text-xs text-gray-900">
+            <div className="bg-surface p-3 border border-line rounded shadow-lg">
+                <p className="font-semibold text-xs text-muted">
                     Week of {format(parseISO(label), 'MMM d')}
                 </p>
                 {payload.map((entry: any, index: number) => {
@@ -238,24 +238,24 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
     return (
         <div className="space-y-8">
             {/* Training Days Chart */}
-            <div className="bg-black/20 border border-blue-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Training Days per Week</h3>
-                <p className="text-sm text-white/60 mb-4">Building strength for longevity</p>
+            <div className="bg-surface-2 border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-ink mb-2">Training Days per Week</h3>
+                <p className="text-sm text-muted mb-4">Building strength for longevity</p>
                 <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                         <XAxis
                             dataKey="weekStart"
                             tickFormatter={formatXAxis}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                             interval="preserveStartEnd"
                         />
                         <YAxis
                             domain={[0, 7]}
                             ticks={[0, 1, 2, 3, 4, 5, 6, 7]}
-                            tick={{ fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                         />
                         <Tooltip content={<CustomTooltip metric="count" />} isAnimationActive={false} />
                         <Line
@@ -279,24 +279,24 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
             </div>
 
             {/* Meditation Sessions Chart */}
-            <div className="bg-black/20 border border-purple-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Meditation Sessions per Week</h3>
-                <p className="text-sm text-white/60 mb-4">Mental clarity for problem-solving</p>
+            <div className="bg-surface-2 border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-ink mb-2">Meditation Sessions per Week</h3>
+                <p className="text-sm text-muted mb-4">Mental clarity for problem-solving</p>
                 <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                         <XAxis
                             dataKey="weekStart"
                             tickFormatter={formatXAxis}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                             interval="preserveStartEnd"
                         />
                         <YAxis
                             domain={[0, 15]}
                             ticks={[0, 3, 6, 9, 12, 15]}
-                            tick={{ fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                         />
                         <Tooltip content={<CustomTooltip metric="count" />} isAnimationActive={false} />
                         <Line
@@ -320,30 +320,30 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
             </div>
 
             {/* Wake Stability Chart (Std Dev only) */}
-            <div className="bg-black/20 border border-cyan-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Wake Stability</h3>
-                <p className="text-sm text-white/60 mb-4">Consistent morning routine - lower variance is better</p>
+            <div className="bg-surface-2 border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-ink mb-2">Wake Stability</h3>
+                <p className="text-sm text-muted mb-4">Consistent morning routine - lower variance is better</p>
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                         <XAxis
                             dataKey="weekStart"
                             tickFormatter={formatXAxis}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                             interval="preserveStartEnd"
                         />
                         <YAxis
                             domain={[0, 2]}
                             ticks={[0, 0.5, 1, 1.5, 2]}
                             tickFormatter={(v) => `±${Math.round(v * 60)}m`}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                         />
                         <Tooltip content={<StdDevTooltip />} isAnimationActive={false} />
                         <Bar
                             dataKey="stdWakeHour"
-                            fill="#06b6d4"
+                            fill="rgb(var(--accent))"
                             fillOpacity={0.7}
                             name="Variance"
                             isAnimationActive={false}
@@ -354,30 +354,30 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                     avgStdDev={wakeStats.avgStd}
                     last4WeeksAvg={wakeStats.last4Avg}
                     totalCount={wakeStats.total}
-                    accentColor="#06b6d4"
+                    accentColor="rgb(var(--accent))"
                 />
             </div>
 
             {/* Workout Consistency Chart (Std Dev only) */}
-            <div className="bg-black/20 border border-green-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Workout Consistency</h3>
-                <p className="text-sm text-white/60 mb-4">Reliable routine = reliable output - lower variance is better</p>
+            <div className="bg-surface-2 border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-ink mb-2">Workout Consistency</h3>
+                <p className="text-sm text-muted mb-4">Reliable routine = reliable output - lower variance is better</p>
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                         <XAxis
                             dataKey="weekStart"
                             tickFormatter={formatXAxis}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                             interval="preserveStartEnd"
                         />
                         <YAxis
                             domain={[0, 3]}
                             ticks={[0, 1, 2, 3]}
                             tickFormatter={(v) => `±${Math.round(v * 60)}m`}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                         />
                         <Tooltip content={<StdDevTooltip />} isAnimationActive={false} />
                         <Bar
@@ -398,25 +398,25 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
             </div>
 
             {/* Sleep Consistency Chart (Std Dev only) */}
-            <div className="bg-black/20 border border-indigo-500/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-white mb-2">Sleep Consistency</h3>
-                <p className="text-sm text-white/60 mb-4">Recovery routine stability - lower variance is better</p>
+            <div className="bg-surface-2 border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-ink mb-2">Sleep Consistency</h3>
+                <p className="text-sm text-muted mb-4">Recovery routine stability - lower variance is better</p>
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={recentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                         <XAxis
                             dataKey="weekStart"
                             tickFormatter={formatXAxis}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                             interval="preserveStartEnd"
                         />
                         <YAxis
                             domain={[0, 2]}
                             ticks={[0, 0.5, 1, 1.5, 2]}
                             tickFormatter={(v) => `±${Math.round(v * 60)}m`}
-                            tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.6)' }}
-                            stroke="rgba(255,255,255,0.2)"
+                            tick={{ fontSize: 12, fill: 'rgb(var(--muted))' }}
+                            stroke="rgb(var(--line))"
                         />
                         <Tooltip content={<StdDevTooltip />} isAnimationActive={false} />
                         <Bar

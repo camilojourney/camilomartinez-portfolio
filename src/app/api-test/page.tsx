@@ -134,10 +134,10 @@ export default function APITestPage() {
 
   const getStatusColor = (status: TestResult['status']) => {
     switch (status) {
-      case 'pending': return 'text-yellow-400';
-      case 'success': return 'text-green-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'pending': return 'text-warn';
+      case 'success': return 'text-live';
+      case 'error': return 'text-danger';
+      default: return 'text-muted';
     }
   };
 
@@ -151,19 +151,19 @@ export default function APITestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">
+          <h1 className="text-4xl font-bold text-ink mb-4">
             FastAPI Backend Connection Test
           </h1>
-          <p className="text-white/70 mb-6">
+          <p className="text-muted mb-6">
             Testing connectivity between frontend and FastAPI backend
           </p>
           <button
             onClick={runTests}
             disabled={isRunning}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-ink px-6 py-3 rounded-lg font-medium transition-colors"
           >
             {isRunning ? 'Running Tests...' : 'Run API Tests'}
           </button>
@@ -175,7 +175,7 @@ export default function APITestPage() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{getStatusIcon(result.status)}</span>
-                  <h3 className="text-xl font-semibold text-white">
+                  <h3 className="text-xl font-semibold text-ink">
                     {result.endpoint}
                   </h3>
                   <span className={`text-sm ${getStatusColor(result.status)}`}>
@@ -183,15 +183,15 @@ export default function APITestPage() {
                   </span>
                 </div>
                 {result.duration && (
-                  <span className="text-sm text-white/50">
+                  <span className="text-sm text-muted">
                     {result.duration}ms
                   </span>
                 )}
               </div>
 
               {result.error && (
-                <div className="bg-red-900/20 border border-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-red-400 text-sm">
+                <div className="bg-red-900/20 border rounded-lg p-4 mb-4">
+                  <p className="text-danger text-sm">
                     <strong>Error:</strong> {result.error}
                   </p>
                 </div>
@@ -199,8 +199,8 @@ export default function APITestPage() {
 
               {result.response && (
                 <div className="bg-slate-800/50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-white/70 mb-2">Response:</h4>
-                  <pre className="text-xs text-white/60 overflow-x-auto">
+                  <h4 className="text-sm font-medium text-muted mb-2">Response:</h4>
+                  <pre className="text-xs text-muted overflow-x-auto">
                     {JSON.stringify(result.response, null, 2)}
                   </pre>
                 </div>
@@ -212,25 +212,25 @@ export default function APITestPage() {
         {testResults.length > 0 && (
           <div className="mt-8 text-center">
             <div className="bg-slate-800/50 rounded-lg p-6 max-w-2xl mx-auto">
-              <h3 className="text-lg font-semibold text-white mb-4">Test Summary</h3>
+              <h3 className="text-lg font-semibold text-ink mb-4">Test Summary</h3>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl text-green-400 font-bold">
+                  <div className="text-2xl text-live font-bold">
                     {testResults.filter(r => r.status === 'success').length}
                   </div>
-                  <div className="text-sm text-white/60">Passed</div>
+                  <div className="text-sm text-muted">Passed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl text-red-400 font-bold">
+                  <div className="text-2xl text-danger font-bold">
                     {testResults.filter(r => r.status === 'error').length}
                   </div>
-                  <div className="text-sm text-white/60">Failed</div>
+                  <div className="text-sm text-muted">Failed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl text-yellow-400 font-bold">
+                  <div className="text-2xl text-warn font-bold">
                     {testResults.filter(r => r.status === 'pending').length}
                   </div>
-                  <div className="text-sm text-white/60">Pending</div>
+                  <div className="text-sm text-muted">Pending</div>
                 </div>
               </div>
             </div>

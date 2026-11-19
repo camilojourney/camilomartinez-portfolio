@@ -95,28 +95,28 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Weekly Miles Chart */}
         {weeklyData.length > 0 && (
-          <div className="bg-black/20 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-white mb-4">Weekly Miles Progress</h3>
+          <div className="bg-surface-2 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-ink mb-4">Weekly Miles Progress</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                   <XAxis
                     dataKey="week"
-                    stroke="#9CA3AF"
+                    stroke="rgb(var(--muted))"
                     fontSize={12}
                   />
                   <YAxis
-                    stroke="#9CA3AF"
+                    stroke="rgb(var(--muted))"
                     fontSize={12}
-                    label={{ value: 'Miles', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#9CA3AF' } }}
+                    label={{ value: 'Miles', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: 'rgb(var(--muted))' } }}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1F2937',
-                      border: '1px solid #374151',
+                      backgroundColor: 'rgb(var(--surface))',
+                      border: '1px solid rgb(var(--line))',
                       borderRadius: '8px',
-                      color: '#F3F4F6'
+                      color: 'rgb(var(--ink))'
                     }}
                     formatter={(value: any) => [`${value} miles`, 'Distance']}
                     labelFormatter={(label: any) => `Week of ${label}`}
@@ -124,10 +124,10 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
                   <Line
                     type="monotone"
                     dataKey="miles"
-                    stroke="#00FFFF"
+                    stroke="rgb(var(--accent))"
                     strokeWidth={3}
-                    dot={{ fill: '#00FFFF', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: '#00FFFF', strokeWidth: 2, fill: '#1F2937' }}
+                    dot={{ fill: 'rgb(var(--accent))', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: 'rgb(var(--accent))', strokeWidth: 2, fill: 'rgb(var(--surface))' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -137,30 +137,30 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
 
         {/* Pace History Chart */}
         {paceData.length > 0 && (
-          <div className="bg-black/20 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-white mb-4">Pace History</h3>
-            <p className="text-sm text-gray-400 mb-4">Lower is faster!</p>
+          <div className="bg-surface-2 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-ink mb-4">Pace History</h3>
+            <p className="text-sm text-muted mb-4">Lower is faster!</p>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={paceData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                   <XAxis
                     dataKey="date"
-                    stroke="#9CA3AF"
+                    stroke="rgb(var(--muted))"
                     fontSize={12}
                   />
                   <YAxis
-                    stroke="#9CA3AF"
+                    stroke="rgb(var(--muted))"
                     fontSize={12}
                     domain={['dataMin - 0.5', 'dataMax + 0.5']}
-                    label={{ value: 'min/km', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#9CA3AF' } }}
+                    label={{ value: 'min/km', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: 'rgb(var(--muted))' } }}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#1F2937',
-                      border: '1px solid #374151',
+                      backgroundColor: 'rgb(var(--surface))',
+                      border: '1px solid rgb(var(--line))',
                       borderRadius: '8px',
-                      color: '#F3F4F6'
+                      color: 'rgb(var(--ink))'
                     }}
                     formatter={(value: any) => {
                       const minutes = Math.floor(value);
@@ -175,7 +175,7 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
                     stroke="#10B981"
                     strokeWidth={3}
                     dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: '#1F2937' }}
+                    activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: 'rgb(var(--surface))' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -221,8 +221,8 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
         />
         <div className="col-span-full space-y-4">
           <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-2">Heart Rate Zones Distribution</h3>
-            <div className="h-4 w-full rounded-full overflow-hidden bg-gray-700 flex">
+            <h3 className="text-sm font-medium text-muted mb-2">Heart Rate Zones Distribution</h3>
+            <div className="h-4 w-full rounded-full overflow-hidden bg-line flex">
               {HEART_RATE_ZONE_DEFINITIONS.map((zone) => {
                 const seconds = zoneTotals[zone.key];
                 if (!seconds || totalZoneSeconds === 0) {
@@ -249,17 +249,17 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
               const percentage = totalZoneSeconds ? (seconds / totalZoneSeconds) * 100 : 0;
 
               return (
-                <div key={zone.key} className="bg-black/15 border border-white/10 rounded-xl p-4 flex gap-3">
+                <div key={zone.key} className="bg-surface-2 border border-line rounded-xl p-4 flex gap-3">
                   <span className={`inline-flex w-1.5 rounded-full ${zone.barClass}`} aria-hidden />
                   <div className="space-y-1">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-white font-semibold">{zone.label}</span>
-                      <span className="text-white/70 text-sm">{zone.name}</span>
+                      <span className="text-ink font-semibold">{zone.label}</span>
+                      <span className="text-muted text-sm">{zone.name}</span>
                     </div>
-                    <p className="text-xs text-white/60">{zone.subtitle}</p>
-                    <p className="text-xs text-white/50">{zone.intensity} · {zone.heartRate}</p>
-                    <p className="text-xs text-white/60">{zone.description}</p>
-                    <p className="text-xs text-white/50">
+                    <p className="text-xs text-muted">{zone.subtitle}</p>
+                    <p className="text-xs text-muted">{zone.intensity} · {zone.heartRate}</p>
+                    <p className="text-xs text-muted">{zone.description}</p>
+                    <p className="text-xs text-muted">
                       {minutes.toFixed(1)} minutes ({percentage.toFixed(1)}%)
                     </p>
                   </div>
@@ -275,11 +275,11 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
 
 function StatCard({ title, value, unit }: { title: string; value: string; unit?: string }) {
   return (
-    <div className="bg-black/20 rounded-lg p-4">
-      <h3 className="text-sm font-medium text-gray-400">{title}</h3>
+    <div className="bg-surface-2 rounded-lg p-4">
+      <h3 className="text-sm font-medium text-muted">{title}</h3>
       <p className="mt-1">
-        <span className="text-2xl font-bold text-cyan-400">{value}</span>
-        {unit && <span className="ml-1 text-sm text-gray-500">{unit}</span>}
+        <span className="text-2xl font-bold text-ink">{value}</span>
+        {unit && <span className="ml-1 text-sm text-muted">{unit}</span>}
       </p>
     </div>
   );

@@ -152,9 +152,9 @@ export default function Chat() {
     return (
         <div className="w-full flex flex-col h-[32rem]">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent relative">
+            <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5 relative">
                 {/* Fade gradient top */}
-                <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-[#050810]/80 to-transparent pointer-events-none z-10"></div>
+                <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-surface to-transparent pointer-events-none z-10"></div>
 
                 {/* Initial bot message */}
                 <div className="flex items-start gap-3 justify-start animate-fade-in">
@@ -163,10 +163,10 @@ export default function Chat() {
                         alt="Camilo's avatar"
                         width={36}
                         height={36}
-                        className="rounded-full border border-white/10 flex-shrink-0"
+                        className="rounded-full border border-line flex-shrink-0"
                     />
-                    <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl rounded-tl-md p-4 max-w-sm">
-                        <p className="text-[14px] text-white/80 leading-relaxed">Hey! Ask me anything about Camilo -- his skills, his story, what he built, or what he is looking for.</p>
+                    <div className="bg-surface-2 rounded-2xl rounded-tl-md p-4 max-w-sm">
+                        <p className="text-[14px] leading-relaxed">Hey! Ask me anything about Camilo -- his skills, his story, what he built, or what he is looking for.</p>
                     </div>
                 </div>
 
@@ -182,18 +182,18 @@ export default function Chat() {
                                 alt="Camilo's avatar"
                                 width={36}
                                 height={36}
-                                className="rounded-full border border-white/10 flex-shrink-0"
+                                className="rounded-full border border-line flex-shrink-0"
                             />
                         )}
                         <div className={`${msg.sender === 'user'
-                            ? 'bg-cyan-500/15 border border-cyan-400/20 rounded-2xl rounded-tr-md'
-                            : 'bg-white/[0.06] border border-white/[0.08] rounded-2xl rounded-tl-md'
+                            ? 'bg-ink text-page rounded-2xl rounded-tr-md'
+                            : 'bg-surface-2 rounded-2xl rounded-tl-md'
                             } p-4 max-w-md`}>
-                            <p className="text-[14px] text-white/80 leading-relaxed">{msg.text}</p>
+                            <p className="text-[14px] leading-relaxed">{msg.text}</p>
                         </div>
                         {msg.sender === 'user' && (
-                            <div className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center flex-shrink-0">
-                                <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-9 h-9 rounded-full border border-line flex items-center justify-center flex-shrink-0">
+                                <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                 </svg>
                             </div>
@@ -209,13 +209,13 @@ export default function Chat() {
                             alt="Camilo's avatar"
                             width={36}
                             height={36}
-                            className="rounded-full border border-white/10 flex-shrink-0"
+                            className="rounded-full border border-line flex-shrink-0"
                         />
-                        <div className="bg-white/[0.06] border border-white/[0.08] rounded-2xl rounded-tl-md p-4">
+                        <div className="bg-surface-2 rounded-2xl rounded-tl-md p-4">
                             <div className="flex space-x-1.5">
-                                <div className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce"></div>
-                                <div className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-                                <div className="w-1.5 h-1.5 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                                <div className="w-1.5 h-1.5 bg-muted rounded-full typing-dot"></div>
+                                <div className="w-1.5 h-1.5 bg-muted rounded-full typing-dot" style={{ animationDelay: '0.15s' }}></div>
+                                <div className="w-1.5 h-1.5 bg-muted rounded-full typing-dot" style={{ animationDelay: '0.3s' }}></div>
                             </div>
                         </div>
                     </div>
@@ -224,7 +224,7 @@ export default function Chat() {
             </div>
 
             {/* Input Bar */}
-            <div className="border-t border-white/[0.06] p-4 md:p-5">
+            <div className="border-t border-line p-4 md:p-5">
                 <form onSubmit={handleSendMessage} className="w-full">
                     <div className="relative flex items-center gap-3">
                         <input
@@ -232,12 +232,13 @@ export default function Chat() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Ask about skills, background, projects..."
-                            className="flex-1 bg-white/[0.04] border border-white/[0.08] text-white placeholder-white/30 rounded-xl px-4 py-3 text-[14px] focus:outline-none focus:ring-1 focus:ring-cyan-500/30 focus:border-cyan-400/30 transition-all duration-200"
+                            className="flex-1 rounded-md border border-line-strong bg-page px-4 py-3 text-[14px] text-ink placeholder:text-muted transition-colors focus:border-ink focus:outline-none"
                         />
                         <button
                             type="submit"
                             disabled={!input.trim()}
-                            className="bg-white/[0.06] border border-white/[0.10] text-white/50 p-3 rounded-xl hover:bg-white/[0.10] hover:text-white/80 hover:border-white/[0.16] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="btn-primary min-h-0 p-3 disabled:cursor-not-allowed disabled:opacity-40"
+                            aria-label="Send message"
                         >
                             <svg
                                 className="w-4.5 h-4.5"
@@ -260,19 +261,19 @@ export default function Chat() {
                 <div className="mt-3 flex flex-wrap gap-2">
                     <button
                         onClick={() => handleSuggestion('What are his technical skills?')}
-                        className="text-[12px] text-white/40 border border-white/[0.06] px-3 py-1.5 rounded-lg hover:bg-white/[0.04] hover:text-white/60 hover:border-white/[0.10] transition-all duration-200"
+                        className="tag min-h-9 cursor-pointer transition-colors hover:border-ink hover:text-ink"
                     >
                         Technical skills
                     </button>
                     <button
                         onClick={() => handleSuggestion('Tell me about Camilo story')}
-                        className="text-[12px] text-white/40 border border-white/[0.06] px-3 py-1.5 rounded-lg hover:bg-white/[0.04] hover:text-white/60 hover:border-white/[0.10] transition-all duration-200"
+                        className="tag min-h-9 cursor-pointer transition-colors hover:border-ink hover:text-ink"
                     >
                         His story
                     </button>
                     <button
                         onClick={() => handleSuggestion('What did he do before tech?')}
-                        className="text-[12px] text-white/40 border border-white/[0.06] px-3 py-1.5 rounded-lg hover:bg-white/[0.04] hover:text-white/60 hover:border-white/[0.10] transition-all duration-200"
+                        className="tag min-h-9 cursor-pointer transition-colors hover:border-ink hover:text-ink"
                     >
                         Before tech
                     </button>

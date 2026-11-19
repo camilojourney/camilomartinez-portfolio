@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import LiquidNav from '@/components/shared/liquid-nav';
+import Link from 'next/link';
+import PageShell from '@/components/shared/page-shell';
 import { AstoriaStats } from '@/components/features/astoria-conquest/AstoriaStats';
 import { MapContainer } from '@/components/features/astoria-conquest/MapContainer';
 import { RunCard } from '@/components/features/astoria-conquest/RunCard';
 import { RunSelector } from '@/components/features/astoria-conquest/RunSelector';
 import { extractZoneDurations } from '@/lib/astoria/zones';
 import ScrollReveal from '@/components/shared/scroll-reveal';
-import TextReveal from '@/components/shared/text-reveal';
-import MagneticButton from '@/components/shared/magnetic-button';
 import type {
   StravaRun,
   RunCardData,
@@ -160,51 +159,37 @@ export function AstoriaConquestClient() {
   // Loading state - premium skeleton
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-        <LiquidNav currentPage="apps" />
-        <div className="pt-32 flex flex-col items-center justify-center px-4">
-          <div className="max-w-7xl w-full">
-            <div className="mb-12 conquest-loader-pulse">
-              <div className="h-12 w-64 bg-white/5 rounded-xl mb-4 mx-auto"></div>
-              <div className="h-6 w-96 bg-white/5 rounded-lg mx-auto"></div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="chart-skeleton h-28 rounded-xl"></div>
-              <div className="chart-skeleton h-28 rounded-xl"></div>
-            </div>
-            <div className="chart-skeleton h-[400px] rounded-xl mb-8 flex items-center justify-center">
-              <div className="text-center">
-                <svg className="animate-spin h-10 w-10 mx-auto text-cyan-400/50 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p className="text-white/40 text-sm">Loading map data...</p>
-                <div className="mt-3 w-48 h-1 bg-white/5 rounded-full overflow-hidden mx-auto">
-                  <div className="h-full bg-gradient-to-r from-cyan-400/40 to-blue-400/40 conquest-loader-bar rounded-full"></div>
-                </div>
-              </div>
-            </div>
+      <PageShell currentPage="apps" maxWidth="full">
+        <div aria-busy="true" aria-label="Loading map data">
+          <div className="border-b border-line pb-10 md:pb-14">
+            <div className="loading-skeleton h-14 max-w-md" />
+            <div className="loading-skeleton mt-6 h-5 max-w-2xl" />
+          </div>
+          <div className="grid gap-6 py-10 md:grid-cols-2 md:py-14">
+            <div className="loading-skeleton h-28" />
+            <div className="loading-skeleton h-28" />
+          </div>
+          <div className="loading-skeleton flex h-[400px] items-center justify-center">
+            <p className="caption">Loading map data...</p>
           </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   // Error state
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Error Loading Data</h1>
-          <p className="text-gray-400 mb-4">{error || 'Unable to load the required data files.'}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-          >
+      <PageShell currentPage="apps" maxWidth="narrow">
+        <div className="max-w-lg" role="alert">
+          <p className="status status-danger">Could not load data</p>
+          <h1 className="display mt-4">Error loading map</h1>
+          <p className="body-muted mt-6">{error || 'Unable to load the required data files.'}</p>
+          <button onClick={() => window.location.reload()} className="btn-primary mt-8">
             Retry
           </button>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
@@ -233,64 +218,40 @@ export function AstoriaConquestClient() {
     : runStats;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
-      <LiquidNav currentPage="apps" />
-
-      {/* Hero Section */}
-      <div className="relative h-[40vh] min-h-[300px] bg-black/40 mt-24 md:mt-32">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-transparent">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-            <ScrollReveal delay={0.1}>
-              <div className="mb-4">
-                <MagneticButton
-                  as="a"
-                  href="/projects/astoria-conquest"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium text-white/70 transition-colors duration-300 hover:border-cyan-400/40 hover:bg-cyan-500/20 hover:text-cyan-200"
-                >
-                  <span>Read how I built this</span>
-                  <span aria-hidden className="text-lg">&#8594;</span>
-                </MagneticButton>
-              </div>
-            </ScrollReveal>
-            <TextReveal as="h1" className="text-5xl md:text-6xl font-bold mb-4" delay={0.2}>
-              Astoria Conquest
-            </TextReveal>
-            <ScrollReveal delay={0.4}>
-              <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">
-                Running every street in Astoria, Queens. Follow my journey as I explore the neighborhood, one run at a time.
-              </p>
-            </ScrollReveal>
-          </div>
+    <PageShell currentPage="apps" maxWidth="full">
+      <header className="rise-in grid gap-8 border-b border-line pb-10 md:grid-cols-12 md:gap-12 md:pb-14">
+        <div className="md:col-span-7">
+          <span className="status status-live">Live, updated weekly</span>
+          <h1 className="display mt-3">Astoria Conquest</h1>
+          <p className="lede mt-6">
+            Running <em>every street</em> in Astoria, Queens. Follow my journey as I explore the neighborhood, one run at a
+            time.
+          </p>
+          <Link href="/projects/astoria-conquest" className="link mt-6 inline-block text-sm">
+            Read how I built this
+          </Link>
         </div>
-      </div>
+        <dl className="grid grid-cols-2 gap-px self-end overflow-hidden rounded-xl border border-line bg-line md:col-span-5">
+          <div className="bg-surface p-5">
+            <dt className="caption">Streets covered</dt>
+            <dd className="mt-1 font-serif text-4xl tabular-nums text-ink">{stats?.percent_complete}%</dd>
+            <dd className="caption mt-1">
+              {stats?.covered_segments} of {stats?.total_segments} streets
+            </dd>
+            <dd className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+              <div className="h-full rounded-full bg-accent transition-all duration-1000" style={{ width: `${stats?.percent_complete || 0}%` }} />
+            </dd>
+          </div>
+          <div className="bg-surface p-5">
+            <dt className="caption">Total distance</dt>
+            <dd className="mt-1 font-serif text-4xl tabular-nums text-ink">{stats?.covered_miles.toFixed(1)} mi</dd>
+            <dd className="caption mt-1">Across {runStats?.total_runs || 0} runs</dd>
+          </div>
+        </dl>
+      </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
-        {/* Progress Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ScrollReveal staggerIndex={0}>
-            <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6 stat-card-hover">
-              <h3 className="text-lg font-semibold text-gray-400">Streets Covered</h3>
-              <p className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{stats?.percent_complete}%</p>
-              <p className="text-sm text-gray-400 mt-1">
-                {stats?.covered_segments} of {stats?.total_segments} streets
-              </p>
-              <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full transition-all duration-1000"
-                  style={{ width: `${stats?.percent_complete || 0}%` }}
-                />
-              </div>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal staggerIndex={1}>
-            <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6 stat-card-hover">
-              <h3 className="text-lg font-semibold text-gray-400">Total Distance</h3>
-              <p className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">{stats?.covered_miles.toFixed(1)} mi</p>
-              <p className="text-sm text-gray-400 mt-1">Across {runStats?.total_runs || 0} runs</p>
-            </div>
-          </ScrollReveal>
-        </div>
+      <div className="space-y-8 py-10 md:py-14">
 
         {/* Run Selector */}
         <ScrollReveal delay={0.1}>
@@ -303,9 +264,9 @@ export function AstoriaConquestClient() {
 
         {/* Map and Run Cards */}
         <ScrollReveal delay={0.15}>
-          <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6">
+          <div className="panel p-4 md:p-6">
             <div className="grid grid-cols-1 xl:grid-cols-[3fr,2fr] gap-6 items-start">
-              <div className="bg-black/10 rounded-lg p-4 aspect-[4/3] animate-map-reveal">
+              <div className="aspect-[4/3] rounded-lg border border-line bg-page p-2 animate-map-reveal">
                 <MapContainer
                   baseMapData={baseMap}
                   coveredStreetsData={coveredStreets || { type: "FeatureCollection", features: [] }}
@@ -337,17 +298,13 @@ export function AstoriaConquestClient() {
 
         {/* Charts and Stats below */}
         <ScrollReveal>
-          <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-6">
+          <div className="panel p-4 md:p-6">
             <AstoriaStats stats={displayedStats} />
           </div>
         </ScrollReveal>
-      </div>
 
-      <ScrollReveal>
-        <p className="text-center text-xs text-gray-500 mt-4 pb-8">
-          Last updated: {stats?.last_updated}
-        </p>
-      </ScrollReveal>
-    </div>
+        <p className="caption text-xs">Last updated: {stats?.last_updated}</p>
+      </div>
+    </PageShell>
   );
 }
