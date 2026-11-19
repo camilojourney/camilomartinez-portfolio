@@ -125,7 +125,9 @@ test.describe('Rendered chart palette', () => {
     });
 
     test(`${theme} trainer charts retain visible categories`, async ({ page }) => {
-      await page.route('**/api/ai/trainer/history*', (route) => route.fulfill({
+      // The client calls the FastAPI route when NEXT_PUBLIC_FASTAPI_URL is set and the
+      // Next.js fallback route otherwise, so the mock must cover both shapes.
+      await page.route(/\/api\/ai[/-]trainer\/history/, (route) => route.fulfill({
         headers: { 'access-control-allow-origin': '*' },
         json: {
           status: 'success',
