@@ -7,7 +7,7 @@ Last updated: 2026-11-19
 ### Main Routes (under `(main)` layout)
 | Page | Route | Status | Notes |
 |------|-------|--------|-------|
-| Home | `/` | Built | Hero, skills, featured projects |
+| Home | `/` | Built | Project showcase; see [design system](ux-system.md#layout-and-components) |
 | About | `/about` | Built | Bio, background, philosophy |
 | Projects | `/projects` | Built | Project index; see [design system](ux-system.md) |
 | Project: Trading Bot | `/projects/trading-bot` | Built | Pythia/Milo showcase |
@@ -18,7 +18,7 @@ Last updated: 2026-11-19
 | Project: Accountability Partner | `/projects/accountability-partner` | Built | Accountability app |
 | Project: HRV Research | `/projects/hrv-research` | Built | Health research |
 | Project: NLP Data Science | `/projects/nlp-data-science` | Built | ML/NLP project |
-| Apps | `/apps` | Built | Live app demos grid |
+| Apps | `/apps` | Built | Live app demos |
 | App: Trading Bot | `/apps/trading-bot` | Built | Live trading interface |
 | App: Fitness Dashboard | `/apps/fitness-dashboard` | Built | Live fitness data |
 | App: Focus Time | `/apps/focus-time` | Built | Live focus tracker |

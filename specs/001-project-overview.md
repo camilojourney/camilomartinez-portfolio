@@ -73,7 +73,7 @@ Frontend (Next.js) → API Routes → Backend (FastAPI)
 
 | Page | Purpose |
 |------|---------|
-| `/` (Home) | Hero + services + case studies grid |
+| `/` (Home) | Project showcase; see the [design system](../docs/ux-system.md#layout-and-components) for layout |
 | `/about` | AI chatbot + background |
 | `/contact` | "Start a Project" — email, LinkedIn, call booking |
 | `/blog` | Technical articles (MDX) |
