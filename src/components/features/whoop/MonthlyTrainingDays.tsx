@@ -144,10 +144,9 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                                     y={y}
                                     width={barWidth}
                                     height={barHeight}
-                                    fill="url(#gradient-purple)"
-                                    opacity="0.9"
+                                    fill="rgb(var(--accent))"
                                     rx="3"
-                                    className="hover:opacity-100 transition-opacity cursor-pointer"
+                                    className="cursor-pointer"
                                 />
 
                                 {/* Value label on top of bar */}
@@ -178,20 +177,13 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                         );
                     })}
 
-                    {/* Gradient definition */}
-                    <defs>
-                        <linearGradient id="gradient-purple" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#a855f7" />
-                            <stop offset="100%" stopColor="#7e22ce" />
-                        </linearGradient>
-                    </defs>
                 </svg>
             </div>
 
             {/* Legend */}
             <div className="flex justify-center items-center gap-6 mt-4 p-4 bg-surface-2 rounded-xl">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-purple-400"></div>
+                    <div className="w-3 h-3 rounded-sm bg-accent"></div>
                     <span className="text-muted text-sm">Training Days per Month</span>
                 </div>
                 <div className="text-muted text-sm">

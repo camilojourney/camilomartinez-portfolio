@@ -127,13 +127,13 @@ const AstoriaMap = ({ baseMapData, coveredStreetsData, selectedRun }: AstoriaMap
           <GeoJSON
             key={`selected-run-${selectedRun?.id || 'none'}`}
             data={selectedRunFeature}
-            style={{ color: '#ff4ff8', weight: 4, opacity: 0.9 }}
+            style={{ color: '#ff4ff8', weight: 4, opacity: 1 }}
           />
         ) : (
           <GeoJSON
             key="all-covered"
             data={coveredStreetsData as FeatureCollection}
-            style={{ color: 'rgb(var(--accent))', weight: 3, opacity: 1 }}
+            style={{ color: 'rgb(var(--map-covered))', weight: 3, opacity: 1 }}
           />
         )}
         <CustomControls />

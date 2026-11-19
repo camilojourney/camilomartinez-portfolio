@@ -87,7 +87,7 @@ export default function ToolsPage() {
             <div className="md:col-span-4">
               <span className={`status ${r.live ? 'status-live' : 'status-warn'}`}>{r.statusLabel}</span>
               <h2 className="title-md mt-2">
-                <ResourceLink r={r} className="hover:text-accent">
+                <ResourceLink r={r} className="mobile-link-target hover:text-accent">
                   {r.title}
                 </ResourceLink>
               </h2>

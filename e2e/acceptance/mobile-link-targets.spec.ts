@@ -12,6 +12,10 @@ for (const width of [390, 1024]) {
       '/blog',
       '/apps',
       '/tools',
+      '/bookshelf',
+      '/apps/fitness-dashboard',
+      '/apps/accountability-partner',
+      '/projects/social-media-pipeline',
       '/apps/focus-time',
       '/projects/focus-time',
       '/projects/hrv-research',
@@ -25,7 +29,14 @@ for (const width of [390, 1024]) {
         await page.waitForLoadState('networkidle');
 
         const failures = await page.evaluate(() => {
-          return Array.from(document.querySelectorAll<HTMLElement>('a.mobile-link-target, a.btn-primary, a.btn-secondary, a.btn-accent, button, [role="button"], input[type="submit"], input[type="button"]'))
+          return Array.from(document.querySelectorAll<HTMLElement>('main a, a.mobile-link-target, a.btn-primary, a.btn-secondary, a.btn-accent, button, [role="button"], input[type="submit"], input[type="button"]'))
+            .filter((element) => {
+              if (element.tagName !== 'A') return true;
+              const parent = element.parentElement;
+              const inSentence = parent?.matches('p, .prose li')
+                && Array.from(parent.childNodes).some((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim());
+              return !inSentence;
+            })
             .map((element) => {
               const rect = element.getBoundingClientRect();
               return {

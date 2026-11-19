@@ -118,6 +118,8 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
                       borderRadius: '8px',
                       color: 'rgb(var(--ink))'
                     }}
+                    itemStyle={{ color: 'rgb(var(--ink))' }}
+                    labelStyle={{ color: 'rgb(var(--ink))' }}
                     formatter={(value: any) => [`${value} miles`, 'Distance']}
                     labelFormatter={(label: any) => `Week of ${label}`}
                   />
@@ -162,6 +164,8 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
                       borderRadius: '8px',
                       color: 'rgb(var(--ink))'
                     }}
+                    itemStyle={{ color: 'rgb(var(--ink))' }}
+                    labelStyle={{ color: 'rgb(var(--ink))' }}
                     formatter={(value: any) => {
                       const minutes = Math.floor(value);
                       const seconds = Math.round((value - minutes) * 60);
@@ -172,10 +176,10 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
                   <Line
                     type="monotone"
                     dataKey="pace"
-                    stroke="#10B981"
+                    stroke="rgb(var(--live))"
                     strokeWidth={3}
-                    dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: 'rgb(var(--surface))' }}
+                    dot={{ fill: 'rgb(var(--live))', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: 'rgb(var(--live))', strokeWidth: 2, fill: 'rgb(var(--surface))' }}
                   />
                 </LineChart>
               </ResponsiveContainer>

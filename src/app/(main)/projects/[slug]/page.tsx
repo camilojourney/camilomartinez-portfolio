@@ -373,7 +373,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                                 <Link
                                     href={appHref}
                                     {...(isExternalAppLink ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                                    className="link"
+                                    className="link mobile-link-target"
                                 >
                                     {isExternalAppLink ? appHref.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '') : appHref}
                                 </Link>

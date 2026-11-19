@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { SPORT_COLORS } from './chart-colors';
 import { MonthlyTrainingDays } from './MonthlyTrainingDays';
 
 interface WorkoutData {
@@ -162,18 +163,6 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
         return processedData.monthlyData.slice(firstIndex, lastIndex + 1);
     }, [processedData.monthlyData]);
 
-    const sportColors = {
-        Weightlifting: 'url(#gradient-green)',
-        Running: 'url(#gradient-blue)',
-        Boxing: 'url(#gradient-orange)'
-    };
-
-    const sportSolidColors = {
-        Weightlifting: '#4ade80',
-        Running: '#3b82f6',
-        Boxing: '#f97316'
-    };
-
     const barChartWidth = 700;
     const barChartHeight = 400;
     const donutChartSize = 300;
@@ -312,7 +301,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                     <h3 className="text-lg font-light text-ink mb-4 text-center">Monthly Training Hours</h3>
 
                     <div className="flex justify-center gap-6 mb-4">
-                        {Object.entries(sportSolidColors).map(([sport, color]) => (
+                        {Object.entries(SPORT_COLORS).map(([sport, color]) => (
                             <div key={sport} className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }}></div>
                                 <span className="text-ink text-sm">{sport}</span>
@@ -326,21 +315,6 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                             className="w-full h-auto min-w-[600px]"
                             preserveAspectRatio="xMidYMid meet"
                         >
-                            <defs>
-                                <linearGradient id="gradient-green" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#4ade80" />
-                                    <stop offset="100%" stopColor="#15803d" />
-                                </linearGradient>
-                                <linearGradient id="gradient-blue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#3b82f6" />
-                                    <stop offset="100%" stopColor="#1d4ed8" />
-                                </linearGradient>
-                                <linearGradient id="gradient-orange" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#f97316" />
-                                    <stop offset="100%" stopColor="#c2410c" />
-                                </linearGradient>
-                            </defs>
-
                             <line x1={padding.left} y1={barChartHeight - padding.bottom} x2={barChartWidth - padding.right} y2={barChartHeight - padding.bottom} stroke="rgb(var(--muted))" strokeWidth="2" />
                             <line x1={padding.left} y1={padding.top} x2={padding.left} y2={barChartHeight - padding.bottom} stroke="rgb(var(--muted))" strokeWidth="2" />
 
@@ -368,7 +342,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
 
                                 return (
                                     <g key={monthIndex} className="bar-group">
-                                        <rect x={groupXStart} y={padding.top + yScale(month.Weightlifting)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Weightlifting)} fill={sportColors.Weightlifting} opacity="0.8" className="bar-anim hover:opacity-100 transition-opacity cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50}ms` }} onMouseEnter={(e) => {
+                                        <rect x={groupXStart} y={padding.top + yScale(month.Weightlifting)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Weightlifting)} fill={SPORT_COLORS.Weightlifting} className="bar-anim cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50}ms` }} onMouseEnter={(e) => {
                                             if (containerRef.current) {
                                                 const containerRect = containerRef.current.getBoundingClientRect();
                                                 const rect = e.currentTarget.getBoundingClientRect();
@@ -382,7 +356,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                                 });
                                             }
                                         }} onMouseLeave={() => setHoveredBar(null)} />
-                                        <rect x={groupXStart + barWidth} y={padding.top + yScale(month.Running)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Running)} fill={sportColors.Running} opacity="0.8" className="bar-anim hover:opacity-100 transition-opacity cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50 + 50}ms` }} onMouseEnter={(e) => {
+                                        <rect x={groupXStart + barWidth} y={padding.top + yScale(month.Running)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Running)} fill={SPORT_COLORS.Running} className="bar-anim cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50 + 50}ms` }} onMouseEnter={(e) => {
                                             if (containerRef.current) {
                                                 const containerRect = containerRef.current.getBoundingClientRect();
                                                 const rect = e.currentTarget.getBoundingClientRect();
@@ -396,7 +370,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                                 });
                                             }
                                         }} onMouseLeave={() => setHoveredBar(null)} />
-                                        <rect x={groupXStart + barWidth * 2} y={padding.top + yScale(month.Boxing)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Boxing)} fill={sportColors.Boxing} opacity="0.8" className="bar-anim hover:opacity-100 transition-opacity cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50 + 100}ms` }} onMouseEnter={(e) => {
+                                        <rect x={groupXStart + barWidth * 2} y={padding.top + yScale(month.Boxing)} width={barWidth} height={barChartHeight - padding.bottom - padding.top - yScale(month.Boxing)} fill={SPORT_COLORS.Boxing} className="bar-anim cursor-pointer" rx="2" style={{ animationDelay: `${monthIndex * 50 + 100}ms` }} onMouseEnter={(e) => {
                                             if (containerRef.current) {
                                                 const containerRect = containerRef.current.getBoundingClientRect();
                                                 const rect = e.currentTarget.getBoundingClientRect();
@@ -442,15 +416,12 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                                         .slice(0, i)
                                                         .reduce((sum, s) => sum + s.percentage, 0) * 100;
                                                     const endPercentage = startPercentage + segment.percentage * 100;
-                                                    return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]} ${startPercentage}% ${endPercentage}%`;
+                                                    return `${SPORT_COLORS[segment.sport as keyof typeof SPORT_COLORS]} ${startPercentage}% ${endPercentage}%`;
                                                 }).join(', ')})`
-                                                : '#4ade80',
-                                            boxShadow: '0 0 20px rgb(var(--surface)) inset, 0 4px 12px rgb(var(--surface))',
+                                                : SPORT_COLORS.Weightlifting,
                                         }}
                                     />
-                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-surface shadow-2xl"
-                                         style={{ boxShadow: '0 0 0 2px rgb(var(--line)), inset 0 2px 8px rgb(var(--surface))' }}
-                                    />
+                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-surface" />
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] rounded-full flex items-center justify-center flex-col animate-scaleIn">
                                         <span className="text-ink text-base font-medium mb-[-2px]">TOTAL</span>
                                         <span className="text-ink text-4xl font-bold mt-1">{formatHours(totalHoursYear)}</span>
@@ -472,7 +443,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                                 <div
                                                     className="w-4 h-4 rounded-full flex-shrink-0"
                                                     style={{
-                                                        backgroundColor: sportSolidColors[sport as keyof typeof sportSolidColors]
+                                                        backgroundColor: SPORT_COLORS[sport as keyof typeof SPORT_COLORS]
                                                     }}
                                                 ></div>
                                                 <span

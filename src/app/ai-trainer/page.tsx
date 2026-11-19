@@ -51,7 +51,7 @@ interface QueryHistory {
   error_message?: string;
 }
 
-const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#3b82f6'];
+const COLORS = ['rgb(var(--live))', 'rgb(var(--danger))', 'rgb(var(--warn))', 'rgb(var(--accent))'];
 
 // Helper function to extract improvement suggestions from analysis text
 const extractImprovementSuggestions = (analysis: string): string[] => {
@@ -326,7 +326,7 @@ export default function AITrainerPage() {
                           }}
                           itemStyle={{ color: 'rgb(var(--ink))' }}
                         />
-                        <Line type="monotone" dataKey="accuracy" stroke="#3B82F6" strokeWidth={2} dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }} />
+                        <Line type="monotone" dataKey="accuracy" stroke="rgb(var(--accent))" strokeWidth={2} dot={{ fill: 'rgb(var(--accent))', strokeWidth: 2, r: 4 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -347,7 +347,7 @@ export default function AITrainerPage() {
                             </text>
                           )}
                           outerRadius={80}
-                          fill="#8884d8"
+                          fill="rgb(var(--accent))"
                           dataKey="value"
                         >
                           {statusData.map((entry, index) => (
@@ -496,8 +496,8 @@ export default function AITrainerPage() {
                         }}
                         itemStyle={{ color: 'rgb(var(--ink))' }}
                       />
-                      <Bar dataKey="responseTime" fill="#8B5CF6" name="Response Time (ms)" />
-                      <Bar dataKey="successRate" fill="#10B981" name="Success Rate (%)" />
+                      <Bar dataKey="responseTime" fill="rgb(var(--accent))" name="Response Time (ms)" />
+                      <Bar dataKey="successRate" fill="rgb(var(--live))" name="Success Rate (%)" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

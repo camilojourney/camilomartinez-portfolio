@@ -26,11 +26,11 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
             // Color based on recovery score
             let color: string;
             if (recovery >= 67) {
-                color = '#10b981'; // Green for good recovery (67%+)
+                color = 'rgb(var(--live))'; // Green for good recovery (67%+)
             } else if (recovery >= 34) {
-                color = '#f59e0b'; // Yellow for moderate recovery (34-66%)
+                color = 'rgb(var(--warn))'; // Yellow for moderate recovery (34-66%)
             } else {
-                color = '#ef4444'; // Red for poor recovery (<34%)
+                color = 'rgb(var(--danger))'; // Red for poor recovery (<34%)
             }
 
             return {
@@ -238,7 +238,6 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                         stroke="rgb(var(--accent))"
                         strokeWidth="2"
                         strokeDasharray="5,5"
-                        opacity="0.8"
                     />
 
                     {/* Data points with entrance animation */}
@@ -249,7 +248,6 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                             cy={padding.top + yScale(point.recovery)}
                             r="5"
                             fill={point.color}
-                            opacity="0.85"
                             className="hover:opacity-100 transition-all duration-200 cursor-pointer"
                             style={{
                                 animation: `count-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 15}ms both`,
@@ -302,19 +300,19 @@ export function StrainVsRecoveryChart({ data }: StrainVsRecoveryProps) {
                     <h3 className="text-base sm:text-lg font-medium text-ink mb-2 sm:mb-4">Recovery Zones</h3>
                     <div className="space-y-2 sm:space-y-3">
                         <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                            <div className="w-4 h-4 bg-live rounded-full"></div>
                             <span className="text-ink text-sm">
                                 Optimal Recovery (67%+): {stats.goodRecoveryDays} days
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                            <div className="w-4 h-4 bg-warn rounded-full"></div>
                             <span className="text-ink text-sm">
                                 Moderate Recovery (34-66%): {stats.moderateRecoveryDays} days
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                            <div className="w-4 h-4 bg-danger rounded-full"></div>
                             <span className="text-ink text-sm">
                                 Poor Recovery (&lt;34%): {stats.poorRecoveryDays} days
                             </span>

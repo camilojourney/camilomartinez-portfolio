@@ -71,7 +71,7 @@ export default function AppsPage() {
               <span className={`status ${app.status === 'live' ? 'status-live' : 'status-warn'}`}>{app.statusLabel}</span>
               <h2 className="title-md mt-2">
                 {app.href ? (
-                  <Link href={app.href} className="hover:text-accent">
+                  <Link href={app.href} className="mobile-link-target hover:text-accent">
                     {app.title}
                   </Link>
                 ) : (

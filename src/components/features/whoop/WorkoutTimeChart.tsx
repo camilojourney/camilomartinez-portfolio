@@ -281,7 +281,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             y1={yScale(goalTimeInMinutes)}
             x2={containerWidth - padding.right}
             y2={yScale(goalTimeInMinutes)}
-            stroke="yellow"
+            stroke="rgb(var(--warn))"
             strokeWidth="2"
             strokeDasharray="6,4"
           />
@@ -297,8 +297,8 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             
             const isBeforeGoal = point.timeAsMinutes <= goalTimeInMinutes;
             const isRecentPoint = i >= sortedData.length - 10;
-            const baseColor = isBeforeGoal ? "#4ade80" : "#f87171";
-            const strokeColor = isRecentPoint ? (isBeforeGoal ? "#22c55e" : "#ef4444") : "none";
+            const baseColor = isBeforeGoal ? "rgb(var(--live))" : "rgb(var(--danger))";
+            const strokeColor = isRecentPoint ? (isBeforeGoal ? "rgb(var(--live))" : "rgb(var(--danger))") : "none";
             
             return (
               <g key={i}>
@@ -307,7 +307,7 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                   y1={yScale(point.timeAsMinutes)}
                   x2={xScale(i, containerWidth)}
                   y2={height - padding.bottom}
-                  stroke={isBeforeGoal ? "#22c55e20" : "#ef444420"}
+                  stroke={isBeforeGoal ? "rgb(var(--live) / 0.12)" : "rgb(var(--danger) / 0.12)"}
                   strokeWidth="1"
                   strokeDasharray="2"
                 />
@@ -357,7 +357,6 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                       fill={baseColor}
                       stroke={strokeColor}
                       strokeWidth={isRecentPoint ? 1.5 : 0}
-                      opacity="0.8"
                     />
                   </g>
                 )}
@@ -369,7 +368,6 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                     fill={baseColor}
                     stroke={strokeColor}
                     strokeWidth={isRecentPoint ? 1.5 : 0}
-                    opacity="0.8"
                     onMouseEnter={e => {
                       if (containerRef.current) {
                         const containerRect = containerRef.current.getBoundingClientRect();
@@ -437,7 +435,6 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
                       fill={baseColor}
                       stroke={strokeColor}
                       strokeWidth={isRecentPoint ? 1.5 : 0}
-                      opacity="0.8"
                     />
                   </g>
                 )}
@@ -486,17 +483,16 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             <svg width="14" height="14" className="mr-1">
               <path
                 d="M 7 1 L 8.5 4.5 L 12 5 L 9.5 7.5 L 10 11 L 7 9 L 4 11 L 4.5 7.5 L 2 5 L 5.5 4.5 Z"
-                fill="#4ade80"
-                stroke="#22c55e"
+                fill="rgb(var(--live))"
+                stroke="rgb(var(--live))"
                 strokeWidth="1"
-                opacity="0.8"
               />
             </svg>
             <span className="text-muted text-xs">Running</span>
           </div>
           <div className="flex items-center gap-1">
             <svg width="14" height="14" className="mr-1">
-              <circle cx="7" cy="7" r="5" fill="#4ade80" stroke="#22c55e" strokeWidth="1.5" opacity="0.8" />
+              <circle cx="7" cy="7" r="5" fill="rgb(var(--live))" stroke="rgb(var(--live))" strokeWidth="1.5" />
             </svg>
             <span className="text-muted text-xs">Weightlifting</span>
           </div>
@@ -504,10 +500,9 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
             <svg width="14" height="14" className="mr-1">
               <path
                 d="M 7 2 L 12 12 L 2 12 Z"
-                fill="#4ade80"
-                stroke="#22c55e"
+                fill="rgb(var(--live))"
+                stroke="rgb(var(--live))"
                 strokeWidth="1.5"
-                opacity="0.8"
               />
             </svg>
             <span className="text-muted text-xs">Boxing</span>
@@ -517,15 +512,15 @@ const WorkoutTimeChart: React.FC<WorkoutTimeChartProps> = ({ data, goalTime }) =
         {/* Main Legend */}
         <div className="flex justify-center items-center gap-6 p-4 bg-surface-2 rounded-xl">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-[#4ade80] border border-line"></div>
+            <div className="w-4 h-4 rounded-full bg-live border border-line"></div>
             <span className="text-muted text-sm">Before 8:30 AM (Victory)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-[#f87171] border border-line"></div>
+            <div className="w-4 h-4 rounded-full bg-danger border border-line"></div>
             <span className="text-muted text-sm">After 8:30 AM (Room for Growth)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
+            <div className="w-4 h-0.5 bg-warn border-dashed"></div>
             <span className="text-muted text-sm">Target Time (8:30 AM)</span>
           </div>
         </div>

@@ -104,7 +104,7 @@ export default function FitnessDashboardClient({
                     <dd>Every 6 hours</dd>
                     <dt>Case study</dt>
                     <dd>
-                        <Link href="/projects/fitness-dashboard" className="link">
+                        <Link href="/projects/fitness-dashboard" className="link mobile-link-target">
                             How this was built
                         </Link>
                     </dd>
@@ -153,7 +153,7 @@ export default function FitnessDashboardClient({
                                         burnout. The dotted line marks my target for daily movement.
                                     </p>
                                     <p className="caption">
-                                        Below: each square is one day. Brighter greens mean higher strain (max 21).
+                                        Below: each square is one day. Higher strain increases the contrast of each green cell (max 21).
                                     </p>
                                     <p className="font-semibold text-accent">
                                         Skills: React Visualization · Real-time Data Processing · SQL Aggregation · Goal Tracking

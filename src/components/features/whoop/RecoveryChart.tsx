@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, ReferenceLine } from 'recharts'
 
 const formatDate = (dateString: string) => {
@@ -85,8 +84,6 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 }
 
 export function RecoveryChart({ data }: RecoveryChartProps) {
-    const [activeIndex, setActiveIndex] = useState<number | null>(null)
-
     const chartData = data.map(item => ({
         date: formatDate(item.created_at),
         recovery: item.score.recovery_score,
@@ -136,21 +133,7 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
                     <BarChart
                         data={chartData}
                         margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
-                        onMouseMove={(state: Record<string, unknown>) => {
-                            if (state?.activeTooltipIndex !== undefined) {
-                                setActiveIndex(state.activeTooltipIndex as number)
-                            }
-                        }}
-                        onMouseLeave={() => setActiveIndex(null)}
                     >
-                        <defs>
-                            {chartData.map((entry, index) => (
-                                <linearGradient key={`grad-${index}`} id={`recovery-gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={getBarColor(entry.recovery)} stopOpacity={1} />
-                                    <stop offset="100%" stopColor={getBarColor(entry.recovery)} stopOpacity={0.4} />
-                                </linearGradient>
-                            ))}
-                        </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" vertical={false} />
                         <XAxis
                             dataKey="date"
@@ -198,9 +181,7 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
                             {chartData.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={`url(#recovery-gradient-${index})`}
-                                    opacity={activeIndex === null || activeIndex === index ? 1 : 0.4}
-                                    style={{ transition: 'opacity 200ms ease' }}
+                                    fill={getBarColor(entry.recovery)}
                                 />
                             ))}
                         </Bar>

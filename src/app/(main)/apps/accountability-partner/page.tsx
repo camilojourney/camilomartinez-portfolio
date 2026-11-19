@@ -178,7 +178,7 @@ export default async function AccountabilityPartnerPage() {
                     <dd>WHOOP API, refreshed every 6 hours</dd>
                     <dt>Case study</dt>
                     <dd>
-                        <Link href="/projects/accountability-partner" className="link">
+                        <Link href="/projects/accountability-partner" className="link mobile-link-target">
                             Why I built this
                         </Link>
                     </dd>

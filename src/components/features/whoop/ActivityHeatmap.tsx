@@ -60,19 +60,10 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const calendarContainerRef = React.useRef<HTMLDivElement>(null);
     const weeklyChartScrollRef = React.useRef<HTMLDivElement>(null);
 
-    // Color and label utility functions (unchanged)
     const getStrainColor = (strain: number): string => {
-        if (strain === 0) return 'bg-surface-2';
-        if (strain < 3) return 'bg-green-900/30';
-        if (strain < 6) return 'bg-green-800/50';
-        if (strain < 8) return 'bg-green-700/60';
-        if (strain < 10) return 'bg-green-600/70';
-        if (strain < 12) return 'bg-green-500/80';
-        if (strain < 14) return 'bg-green-400/90';
-        if (strain < 16) return 'bg-green-400';
-        if (strain < 18) return 'bg-green-300';
-        if (strain < 20) return 'bg-green-200';
-        return 'bg-green-100';
+        if (strain === 0) return 'rgb(var(--surface-2))';
+        const level = [3, 6, 8, 10, 12, 14, 16, 18, 20].filter(threshold => strain >= threshold).length;
+        return `color-mix(in srgb, rgb(var(--live)), rgb(var(--ink)) ${level * 8}%)`;
     };
 
     const getStrainLabel = (strain: number): string => {
@@ -387,7 +378,9 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                         {week.map((day, dayIndex) => (
                                             <div
                                                 key={`${weekIndex}-${dayIndex}`}
-                                                className={`w-3 h-3 rounded-sm transition-transform hover:scale-125 cursor-pointer ${day.date ? (day.strain > 0 ? getStrainColor(day.strain) : 'bg-surface-2/50') : 'bg-transparent'} ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-green-400' : ''}`}
+                                                className={`w-3 h-3 rounded-sm transition-transform hover:scale-125 cursor-pointer ${day.date && day.strain === 0 ? 'border border-muted' : ''} ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-accent' : ''}`}
+                                                style={{ backgroundColor: day.date ? getStrainColor(day.strain) : 'transparent' }}
+                                                title={day.date ? `${day.date}: strain ${day.strain}` : undefined}
                                                 onMouseEnter={e => handleMouseEnter(day, e)}
                                                 onMouseLeave={handleMouseLeave}
                                                 onClick={() => handleClick(day)}
@@ -404,39 +397,30 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                 <div className="flex items-center gap-3 mt-6 text-xs text-muted">
                     <span className="font-light">Less</span>
                     <div className="flex gap-0.5 relative">
-                        <div className="w-2.5 h-2.5 bg-surface-2 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">0: No Activity</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-900/30 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">1-2: Recovery Day</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-800/50 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">3-5: Rest Day</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-700/60 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">6-7: Light Activity</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-600/70 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">8-9: Moderate Activity</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-500/80 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">10-11: Good Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-400/90 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">12-13: Solid Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-400 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">14-15: High Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-300 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">16-17: Very High Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-200 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">18-19: Elite Performance</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-100 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">20-21: Exceptional Performance</div>
-                        </div>
+                        {[
+                            [0, '0'],
+                            [1, '1-2'],
+                            [3, '3-5'],
+                            [6, '6-7'],
+                            [8, '8-9'],
+                            [10, '10-11'],
+                            [12, '12-13'],
+                            [14, '14-15'],
+                            [16, '16-17'],
+                            [18, '18-19'],
+                            [20, '20-21'],
+                        ].map(([strain, range]) => (
+                            <div
+                                key={range}
+                                className={`w-2.5 h-2.5 rounded-sm cursor-help group ${strain === 0 ? 'border border-muted' : ''}`}
+                                style={{ backgroundColor: getStrainColor(Number(strain)) }}
+                                title={`${range}: ${getStrainLabel(Number(strain))}`}
+                            >
+                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">
+                                    {range}: {getStrainLabel(Number(strain))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                     <span className="font-light">More</span>
                 </div>
@@ -456,7 +440,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                             <div className="inline-block min-w-full">
                                 <div className="h-32 relative min-w-max">
                                     {/* Goal Line */}
-                                    <div className="absolute w-full border-t border-dashed" style={{ top: `${100 - (10 / 22) * 100}%`, left: '3.25rem', right: 0 }} />
+                                    <div className="absolute w-full border-t border-dashed border-warn" style={{ top: `${100 - (10 / 22) * 100}%`, left: '3.25rem', right: 0 }} />
                                     
                                     {/* Chart Data Points */}
                                     <div className="absolute inset-0 flex gap-1 ml-[3.25rem] min-w-max">
@@ -472,7 +456,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                                                 top: `calc(${100 - (weekData.averageStrain / 22) * 100}%)`,
                                                                 left: '2px', // Centered in the 3px week column
                                                                 transform: 'translateY(-50%)',
-                                                                backgroundColor: weekData.averageStrain >= 9.9 ? 'rgb(34 197 94)' : 'rgb(239 68 68)'
+                                                                backgroundColor: weekData.averageStrain >= 9.9 ? 'rgb(var(--live))' : 'rgb(var(--danger))'
                                                             }}
                                                             onMouseEnter={e => {
                                                                 if (mainContainerRef.current) {
@@ -522,15 +506,15 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                             {/* Legend */}
                             <div className="flex justify-center items-center gap-6 p-4 bg-surface-2 rounded-xl">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#22c55e]"></div>
+                                    <div className="w-3 h-3 rounded-full bg-live"></div>
                                     <span className="text-muted text-sm">Above Goal (10+)</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#ef4444]"></div>
+                                    <div className="w-3 h-3 rounded-full bg-danger"></div>
                                     <span className="text-muted text-sm">Below Goal</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
+                                    <div className="w-4 h-0.5 bg-warn border-dashed"></div>
                                     <span className="text-muted text-sm">Target (10)</span>
                                 </div>
                             </div>

@@ -259,9 +259,9 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                         <Line
                             type="monotone"
                             dataKey="trainingDays"
-                            stroke="#3b82f6"
+                            stroke="rgb(var(--accent))"
                             strokeWidth={2}
-                            dot={{ fill: '#3b82f6', r: 4 }}
+                            dot={{ fill: 'rgb(var(--accent))', r: 4 }}
                             name="Training Days"
                             isAnimationActive={false}
                         />
@@ -299,9 +299,9 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                         <Line
                             type="monotone"
                             dataKey="meditationCount"
-                            stroke="#8b5cf6"
+                            stroke="rgb(var(--accent))"
                             strokeWidth={2}
-                            dot={{ fill: '#8b5cf6', r: 4 }}
+                            dot={{ fill: 'rgb(var(--accent))', r: 4 }}
                             name="Meditation Sessions"
                             isAnimationActive={false}
                         />
@@ -340,7 +340,6 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                         <Bar
                             dataKey="stdWakeHour"
                             fill="rgb(var(--accent))"
-                            fillOpacity={0.7}
                             name="Variance"
                             isAnimationActive={false}
                         />
@@ -377,8 +376,7 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                         <Tooltip content={<StdDevTooltip />} isAnimationActive={false} />
                         <Bar
                             dataKey="stdWorkoutHour"
-                            fill="#22c55e"
-                            fillOpacity={0.7}
+                            fill="rgb(var(--live))"
                             name="Variance"
                             isAnimationActive={false}
                         />
@@ -415,8 +413,7 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                         <Tooltip content={<StdDevTooltip />} isAnimationActive={false} />
                         <Bar
                             dataKey="stdSleepStartHour"
-                            fill="#8b5cf6"
-                            fillOpacity={0.7}
+                            fill="rgb(var(--accent))"
                             name="Variance"
                             isAnimationActive={false}
                         />

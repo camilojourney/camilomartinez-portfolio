@@ -244,7 +244,7 @@ export default function SocialMediaPipelineProjectPage() {
         body="Transform your thoughts into engaging content while preserving what makes you unique. Want to see how this was built? The technical story covers implementation details with code examples."
         href="/apps/social-media-pipeline"
         label="View live app"
-        secondary={{ href: '/docs/social-media-pipeline-implementation.html', label: 'Read the technical story', external: true }}
+        secondary={{ href: '/docs/social-media-pipeline-implementation.html', label: 'Read the technical story' }}
       />
     </CaseStudy>
   )

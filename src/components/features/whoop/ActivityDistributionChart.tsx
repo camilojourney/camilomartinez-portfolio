@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { SPORT_COLORS } from './chart-colors';
 
 // This interface matches what our database query returns
 interface WorkoutData {
@@ -187,20 +188,6 @@ interface YearlyTotals {
 
     const monthlyChartScrollRef = React.useRef<HTMLDivElement>(null);
 
-    // Colors for each sport
-    const sportColors = {
-        Weightlifting: 'url(#gradient-green)',
-        Running: 'url(#gradient-blue)',
-        Boxing: 'url(#gradient-orange)'
-    };
-
-    // For the legend and solid color needs
-    const sportSolidColors = {
-        Weightlifting: '#4ade80', // Green
-        Running: '#3b82f6',      // Blue
-        Boxing: '#f97316'        // Orange
-    };
-
     // Calculate chart dimensions
     const barChartWidth = 700;
     const barChartHeight = 400;
@@ -374,7 +361,7 @@ interface YearlyTotals {
 
                     {/* Sport Legend */}
                     <div className="flex justify-center gap-6 mb-4">
-                        {Object.entries(sportSolidColors).map(([sport, color]) => (
+                        {Object.entries(SPORT_COLORS).map(([sport, color]) => (
                             <div key={sport} className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }}></div>
                                 <span className="text-ink text-sm">{sport}</span>
@@ -389,22 +376,6 @@ interface YearlyTotals {
                             className="w-full h-auto min-w-[600px]"
                             preserveAspectRatio="xMidYMid meet"
                         >
-                            {/* Define gradients */}
-                            <defs>
-                                <linearGradient id="gradient-green" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#4ade80" />
-                                    <stop offset="100%" stopColor="#15803d" />
-                                </linearGradient>
-                                <linearGradient id="gradient-blue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#3b82f6" />
-                                    <stop offset="100%" stopColor="#1d4ed8" />
-                                </linearGradient>
-                                <linearGradient id="gradient-orange" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#f97316" />
-                                    <stop offset="100%" stopColor="#c2410c" />
-                                </linearGradient>
-                            </defs>
-
                             {/* X-axis */}
                             <line
                                 x1={padding.left}
@@ -489,9 +460,8 @@ interface YearlyTotals {
                                             y={padding.top + yScale(month.Weightlifting)}
                                             width={barWidth}
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Weightlifting)}
-                                            fill={sportColors.Weightlifting}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
+                                            fill={SPORT_COLORS.Weightlifting}
+                                            className="bar-anim cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50}ms` }}
                                             onMouseEnter={(e) => {
@@ -517,9 +487,8 @@ interface YearlyTotals {
                                             y={padding.top + yScale(month.Running)}
                                             width={barWidth}
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Running)}
-                                            fill={sportColors.Running}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
+                                            fill={SPORT_COLORS.Running}
+                                            className="bar-anim cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50 + 50}ms` }}
                                             onMouseEnter={(e) => {
@@ -545,9 +514,8 @@ interface YearlyTotals {
                                             y={padding.top + yScale(month.Boxing)}
                                             width={barWidth}
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Boxing)}
-                                            fill={sportColors.Boxing}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
+                                            fill={SPORT_COLORS.Boxing}
+                                            className="bar-anim cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50 + 100}ms` }}
                                             onMouseEnter={(e) => {
@@ -600,19 +568,14 @@ interface YearlyTotals {
                                                         .slice(0, i)
                                                         .reduce((sum, s) => sum + s.percentage, 0) * 100;
                                                     const endPercentage = startPercentage + segment.percentage * 100;
-                                                    return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]} ${startPercentage}% ${endPercentage}%`;
+                                                    return `${SPORT_COLORS[segment.sport as keyof typeof SPORT_COLORS]} ${startPercentage}% ${endPercentage}%`;
                                                 }).join(', ')})`
-                                                : '#4ade80',
-                                            boxShadow: '0 0 20px rgb(var(--surface)) inset, 0 4px 12px rgb(var(--surface))',
+                                                : SPORT_COLORS.Weightlifting,
                                         }}
                                     />
 
                                     {/* Inner circle cutout (creates donut hole) */}
-                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-surface shadow-2xl"
-                                         style={{
-                                             boxShadow: '0 0 0 2px rgb(var(--line)), inset 0 2px 8px rgb(var(--surface))'
-                                         }}
-                                    />
+                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-surface" />
 
                                     {/* Content overlay (displays total) */}
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] rounded-full flex items-center justify-center flex-col animate-scaleIn">
@@ -648,7 +611,7 @@ interface YearlyTotals {
                                                 <div
                                                     className="w-4 h-4 rounded-full flex-shrink-0"
                                                     style={{
-                                                        backgroundColor: sportSolidColors[sport as keyof typeof sportSolidColors]
+                                                        backgroundColor: SPORT_COLORS[sport as keyof typeof SPORT_COLORS]
                                                     }}
                                                 ></div>
                                                 <span

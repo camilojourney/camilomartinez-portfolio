@@ -64,7 +64,7 @@ export function CaseStudyFigure({ src, alt }: { src: string; alt: string }) {
 }
 
 /** Title in the left column, body in the right. Body is prose, so plain p/ul/strong render correctly. */
-export function CaseStudySection({ title, children, id }: { title: string; children: ReactNode; id?: string }) {
+export function CaseStudySection({ title, children, id }: { title: string; children: ReactNode; id: string }) {
   return (
     <section className="grid gap-4 border-b border-line py-10 md:grid-cols-12 md:gap-12 md:py-14" aria-labelledby={id}>
       <h2 id={id} className="title-md md:col-span-4">
@@ -92,11 +92,10 @@ interface CtaProps {
   body: ReactNode
   href: string
   label: string
-  secondary?: { href: string; label: string; external?: boolean }
+  secondary?: { href: string; label: string }
 }
 
 export function CaseStudyCta({ title, body, href, label, secondary }: CtaProps) {
-  const ext2 = secondary?.external ? { target: '_blank', rel: 'noopener noreferrer' } : {}
   return (
     <section className="py-12 md:py-16" aria-label="Next step">
       <h2 className="title-lg">{title}</h2>
@@ -106,7 +105,7 @@ export function CaseStudyCta({ title, body, href, label, secondary }: CtaProps) 
           {label}
         </Link>
         {secondary && (
-          <Link href={secondary.href} {...ext2} className="btn-secondary">
+          <Link href={secondary.href} target="_blank" rel="noopener noreferrer" className="btn-secondary">
             {secondary.label}
           </Link>
         )}

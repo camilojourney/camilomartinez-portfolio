@@ -155,7 +155,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
             <dd>11-dimension speech scorer built from 46 papers; multi-agent orchestration in production</dd>
             <dt>Email</dt>
             <dd>
-              <a href={MAILTO} className="link">
+              <a href={MAILTO} className="link mobile-link-target">
                 {EMAIL}
               </a>
             </dd>

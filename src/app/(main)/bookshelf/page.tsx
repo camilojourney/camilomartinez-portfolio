@@ -132,7 +132,7 @@ export default function BookshelfPage() {
           <li key={`${book.title}-${index}`} className="grid gap-3 py-7 md:grid-cols-12 md:gap-8 md:py-8">
             <div className="md:col-span-4">
               <h2 className="title-md">
-                <a href={book.amazonLink} target="_blank" rel="noopener noreferrer" className="hover:text-accent">
+                <a href={book.amazonLink} target="_blank" rel="noopener noreferrer" className="mobile-link-target hover:text-accent">
                   {book.title}
                 </a>
               </h2>
