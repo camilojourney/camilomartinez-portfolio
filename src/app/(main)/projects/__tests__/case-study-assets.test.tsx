@@ -9,7 +9,7 @@ import ProjectsShowcase from '@/components/projects/ProjectsShowcase';
 
 /* eslint-disable @next/next/no-img-element */
 vi.mock('next/image', () => ({
-  default: ({ fill: _fill, priority: _priority, src, alt, ...rest }: ComponentPropsWithoutRef<'img'> & {
+  default: ({ fill: _fill, priority: _priority, src, alt, ...rest }: Omit<ComponentPropsWithoutRef<'img'>, 'src'> & {
     fill?: boolean;
     priority?: boolean;
     src: string | { src: string };
@@ -23,7 +23,7 @@ vi.mock('next/image', () => ({
 }));
 
 vi.mock('next/link', () => ({
-  default: ({ href, children, ...rest }: ComponentPropsWithoutRef<'a'> & { href: string | URL }) => (
+  default: ({ href, children, ...rest }: Omit<ComponentPropsWithoutRef<'a'>, 'href'> & { href: string | URL }) => (
     <a href={href instanceof URL ? href.toString() : href} {...rest}>
       {children}
     </a>

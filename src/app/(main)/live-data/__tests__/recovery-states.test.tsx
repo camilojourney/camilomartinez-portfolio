@@ -10,7 +10,7 @@ vi.mock('@/components/features/auth/AuthButtons', () => ({
 }));
 
 const connectedSession = {
-    user: { name: 'Camilo' },
+    user: { id: 'test-user', name: 'Camilo', email: 'camilo@example.com' },
     expires: '2099-01-01',
     accessToken: 'test-token',
 };
