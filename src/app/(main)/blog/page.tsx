@@ -33,9 +33,6 @@ export default function Page() {
         <p className="lede mt-6">
           Thinking through <em>AI systems</em>, engineering practice, and the mental models behind them.
         </p>
-        <a href="/rss" className="link mt-4 inline-block text-sm">
-          RSS feed
-        </a>
       </header>
       <section className="pt-4 md:pt-6" aria-label="All posts">
         <BlogPosts />

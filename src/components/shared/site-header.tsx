@@ -54,7 +54,7 @@ export default function SiteHeader({ currentPage = 'home' }: SiteHeaderProps) {
                 key={item.key}
                 href={item.href}
                 aria-current={isActive ? 'page' : undefined}
-                className={`nav-focus-target mobile-link-target justify-center transition-colors md:min-w-0 ${
+                className={`nav-focus-target mobile-link-target justify-center transition-colors ${
                   isActive ? 'text-ink' : 'text-muted hover:text-ink'
                 }`}
               >

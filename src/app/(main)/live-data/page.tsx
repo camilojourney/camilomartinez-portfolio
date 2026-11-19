@@ -50,9 +50,11 @@ function average(records: any[], pick: (r: any) => number | undefined): number |
 export default async function LiveDataPage() {
     const session = await getServerAuth()
     let whoopData: any = null
-    let dataError: string | null = null
 
     const sessionWithToken = session as typeof session & { accessToken?: string; error?: string }
+    let dataError: string | null = session && (!sessionWithToken?.accessToken || sessionWithToken.error)
+        ? 'Your WHOOP session has expired. Disconnect and reconnect your WHOOP account.'
+        : null
 
     if (sessionWithToken?.accessToken && !sessionWithToken.error) {
         whoopData = await getWhoopData(sessionWithToken.accessToken)
@@ -139,7 +141,7 @@ export default async function LiveDataPage() {
                 )}
 
                 {whoopData && records.length === 0 && (
-                    <div className="panel panel-pad max-w-2xl">
+                    <div className="panel panel-pad max-w-2xl" role="status">
                         <h2 className="title-sm">No recovery data available</h2>
                         <p className="body-muted mt-2">
                             Your WHOOP account is connected, but no recovery data was found. Make sure you have recovery data in
@@ -148,16 +150,6 @@ export default async function LiveDataPage() {
                     </div>
                 )}
 
-                {session && !whoopData && !dataError && (
-                    <div className="space-y-8" aria-busy="true" aria-label="Loading recovery data">
-                        <div className="loading-skeleton h-80" />
-                        <div className="grid gap-6 sm:grid-cols-3">
-                            {[0, 1, 2].map((i) => (
-                                <div key={i} className="loading-skeleton h-28" />
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
         </PageShell>
     )

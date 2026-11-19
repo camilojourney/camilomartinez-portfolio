@@ -85,6 +85,7 @@ function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
           href={href}
           {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           className="link"
+          style={{ color: 'inherit', textDecorationColor: 'currentColor' }}
         >
           {label}
         </a>,

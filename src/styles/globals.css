@@ -30,7 +30,7 @@
   --sh-sign: #6b6a64;
   --sh-string: #0f6e56;
   --sh-keyword: #a3351f;
-  --sh-comment: #8a897f;
+  --sh-comment: rgb(var(--muted));
   --sh-jsxliterals: #4a4e9d;
   --sh-property: #9a4b00;
   --sh-entity: #9a4b00;
@@ -57,7 +57,7 @@ html[data-theme='dark'] {
   --sh-sign: #8d8b83;
   --sh-string: #7fd1b0;
   --sh-keyword: #f0937a;
-  --sh-comment: #8a897f;
+  --sh-comment: rgb(var(--muted));
   --sh-jsxliterals: #b3b8f5;
   --sh-property: #f5b544;
   --sh-entity: #f5b544;
@@ -143,6 +143,7 @@ html[data-theme='dark'] {
     input[type='submit'],
     input[type='button'] {
       min-height: 44px;
+      min-width: 44px;
     }
   }
 }
@@ -251,6 +252,18 @@ html[data-theme='dark'] {
     @apply inline-flex h-10 w-10 items-center justify-center rounded-md border border-line-strong text-muted transition-colors hover:border-ink hover:text-ink;
   }
 
+  @media (pointer: coarse) {
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-accent,
+    .btn-sm,
+    .btn-icon {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
   /* Surfaces */
   .panel {
     @apply rounded-xl border border-line bg-surface;
@@ -341,7 +354,7 @@ html[data-theme='dark'] {
   }
 
   /* Accessible touch targets for inline links on small screens */
-  @media (max-width: 767px) {
+  @media (max-width: 767px), (pointer: coarse) {
     .mobile-link-target {
       @apply inline-flex min-h-11 min-w-11 items-center;
     }

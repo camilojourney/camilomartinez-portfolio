@@ -7,7 +7,7 @@ interface RunSelectorProps {
 }
 
 function chipClass(selected: boolean) {
-  return `min-h-10 whitespace-nowrap rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
+  return `btn whitespace-nowrap border ${
     selected ? 'border-ink bg-ink text-page' : 'border-line-strong text-ink hover:border-ink'
   }`;
 }

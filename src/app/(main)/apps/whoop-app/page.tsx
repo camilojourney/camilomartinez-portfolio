@@ -34,10 +34,12 @@ function average(records: any[], pick: (r: any) => number | undefined): number |
 export default async function LiveDataPage() {
     const session = await getServerAuth()
     let whoopData: any = null
-    let dataError: string | null = null
 
     // Cast session to include accessToken property
     const sessionWithToken = session as typeof session & { accessToken?: string; error?: string }
+    let dataError: string | null = session && (!sessionWithToken?.accessToken || sessionWithToken.error)
+        ? 'Your WHOOP session has expired. Disconnect and reconnect your WHOOP account.'
+        : null
 
     if (sessionWithToken?.accessToken && !sessionWithToken.error) {
         whoopData = await getWhoopData(sessionWithToken.accessToken)
@@ -111,30 +113,43 @@ export default async function LiveDataPage() {
                     </>
                 )}
 
-                {session && records.length === 0 && !dataError && (
-                    <div className="panel panel-pad max-w-2xl" role="status">
-                        <h2 className="title-sm">No recovery records yet</h2>
-                        <p className="body-muted mt-2">
-                            WHOOP has not returned any recovery data for this account. Wear the strap overnight and reload.
-                        </p>
-                    </div>
-                )}
-
                 {session && (
                     <section className={records.length > 0 ? 'border-t border-line pt-10' : ''} aria-labelledby="perf-heading">
-                        <h2 id="perf-heading" className="title-md">Want to track your performance over time?</h2>
+                        <h2 id="perf-heading" className="title-md">Want to Track Your Performance Over Time?</h2>
                         <p className="body-muted mt-2 max-w-lg">
-                            The fitness dashboard uses stored WHOOP data to show strain, sleep performance, recovery, and
-                            workout patterns with historical charts.
+                            Check out the comprehensive performance dashboard with historical charts and insights.
                         </p>
                         <a href="/apps/fitness-dashboard" className="btn-primary mt-5">
-                            Open fitness dashboard
+                            View My Performance Dashboard →
                         </a>
                     </section>
                 )}
 
+                {session && (
+                    <section className="border-t border-line pt-10" aria-labelledby="analytics-heading">
+                        <h2 id="analytics-heading" className="title-md">Advanced Analytics Dashboard</h2>
+                        <p className="body-muted mt-2">
+                            These charts use stored data from your WHOOP account to show insights about strain, sleep performance, recovery, and workout patterns.
+                        </p>
+                        <p className="mt-6 text-ink">📊 Charts Available in Fitness Dashboard</p>
+                        <p className="body-muted mt-2">Visit the Fitness Dashboard to see your beautiful performance charts</p>
+                        <a href="/apps/fitness-dashboard" className="btn-primary mt-5">
+                            Open Fitness Dashboard →
+                        </a>
+                    </section>
+                )}
+
+                {session && (
+                    <section className="border-t border-line pt-10" aria-labelledby="workout-heading">
+                        <h2 id="workout-heading" className="title-md">Workout Analytics</h2>
+                        <p className="body-muted mt-2">
+                            Analyze your workout patterns over time with detailed breakdowns by sport type.
+                        </p>
+                    </section>
+                )}
+
                 {whoopData && records.length === 0 && (
-                    <div className="panel panel-pad max-w-2xl">
+                    <div className="panel panel-pad max-w-2xl" role="status">
                         <h2 className="title-sm">No recovery data available</h2>
                         <p className="body-muted mt-2">
                             Your WHOOP account is connected, but no recovery data was found. Make sure you have recovery data in

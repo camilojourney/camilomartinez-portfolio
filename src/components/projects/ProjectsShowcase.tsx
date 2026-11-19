@@ -78,7 +78,7 @@ function FeatureRow({ p }: { p: ProjectMeta }) {
       <div>
         <span className={`status ${p.status === 'live' ? 'status-live' : ''}`}>{statusLabel[p.status]}</span>
         <h3 className="title-md mt-3">
-          <Link href={p.caseStudyHref} className="hover:text-accent">
+          <Link href={p.caseStudyHref} className="mobile-link-target hover:text-accent">
             {p.title}
           </Link>
         </h3>
@@ -103,7 +103,7 @@ function IndexRow({ p }: { p: ProjectMeta }) {
       <Thumb p={p} sizes="(min-width: 768px) 12vw, 5rem" className="self-start md:col-span-2" />
       <div className="md:col-span-3">
         <h3 className="title-sm">
-          <Link href={p.caseStudyHref} className="hover:text-accent">
+          <Link href={p.caseStudyHref} className="mobile-link-target hover:text-accent">
             {p.title}
           </Link>
         </h3>
@@ -148,7 +148,7 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
         <aside className="rise-in rise-in-2 self-end md:col-span-5" aria-label="At a glance">
           <dl className="facts">
             <dt>Looking for</dt>
-            <dd>Applied AI Engineer roles, full-time</dd>
+            <dd>Open to roles</dd>
             <dt>Location</dt>
             <dd>New York City or US remote</dd>
             <dt>Proof</dt>

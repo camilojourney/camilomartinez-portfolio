@@ -153,7 +153,10 @@ export default function FitnessDashboardClient({
                                         burnout. The dotted line marks my target for daily movement.
                                     </p>
                                     <p className="caption">
-                                        Below: each square is one day. Darker greens mean higher strain (max 21).
+                                        Below: each square is one day. Brighter greens mean higher strain (max 21).
+                                    </p>
+                                    <p className="font-semibold text-accent">
+                                        Skills: React Visualization · Real-time Data Processing · SQL Aggregation · Goal Tracking
                                     </p>
                                 </SectionHeader>
                                 <div className="mt-8">

@@ -12,15 +12,15 @@ const formatDate = (dateString: string) => {
 }
 
 const getBarColor = (recovery: number) => {
-    if (recovery >= 67) return '#22C55E'
-    if (recovery >= 34) return '#FBBF24'
-    return '#EF4444'
+    if (recovery >= 67) return 'rgb(var(--live))'
+    if (recovery >= 34) return 'rgb(var(--warn))'
+    return 'rgb(var(--danger))'
 }
 
 const getBarGlow = (recovery: number) => {
-    if (recovery >= 67) return '0 0 12px rgba(34, 197, 94, 0.4)'
-    if (recovery >= 34) return '0 0 12px rgba(251, 191, 36, 0.3)'
-    return '0 0 12px rgba(239, 68, 68, 0.3)'
+    if (recovery >= 67) return '0 0 12px rgb(var(--live) / 0.4)'
+    if (recovery >= 34) return '0 0 12px rgb(var(--warn) / 0.3)'
+    return '0 0 12px rgb(var(--danger) / 0.3)'
 }
 
 const getRecoveryLabel = (recovery: number) => {
@@ -73,10 +73,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
                         <span className="text-ink font-semibold">{data.rhr} bpm</span>
                     </div>
                     <div className="mt-2 pt-2 border-t border-line">
-                        <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                            backgroundColor: `${getBarColor(recovery)}20`,
-                            color: getBarColor(recovery)
-                        }}>
+                        <span className="bg-surface-2 text-xs px-2 py-0.5 rounded-full" style={{ color: getBarColor(recovery) }}>
                             {getRecoveryLabel(recovery)} Zone
                         </span>
                     </div>
@@ -109,7 +106,7 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                        <div className="w-2 h-2 rounded-full bg-live animate-pulse" />
                         <h3 className="text-xl font-semibold text-ink">7-Day Recovery Trend</h3>
                     </div>
                     <p className="text-muted text-sm">Live recovery scores from WHOOP API</p>
@@ -175,15 +172,15 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
                         />
                         <ReferenceLine
                             y={67}
-                            stroke="rgba(34, 197, 94, 0.3)"
+                            stroke="rgb(var(--live))"
                             strokeDasharray="4 4"
-                            label={{ value: 'Green Zone', fill: 'rgba(34, 197, 94, 0.5)', fontSize: 10, position: 'insideTopRight' }}
+                            label={{ value: 'Green Zone', fill: 'rgb(var(--live))', fontSize: 10, position: 'insideTopRight' }}
                         />
                         <ReferenceLine
                             y={34}
-                            stroke="rgba(239, 68, 68, 0.3)"
+                            stroke="rgb(var(--danger))"
                             strokeDasharray="4 4"
-                            label={{ value: 'Red Zone', fill: 'rgba(239, 68, 68, 0.5)', fontSize: 10, position: 'insideBottomRight' }}
+                            label={{ value: 'Red Zone', fill: 'rgb(var(--danger))', fontSize: 10, position: 'insideBottomRight' }}
                         />
                         <Tooltip
                             content={<CustomTooltip />}
@@ -214,15 +211,15 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
             {/* Recovery zone legend */}
             <div className="flex justify-center gap-6 mt-4 pt-4 border-t border-line">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(34,197,94,0.4)' }} />
+                    <div className="w-3 h-3 rounded-full bg-live" />
                     <span className="text-muted text-xs">Green (67%+)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(251,191,36,0.4)' }} />
+                    <div className="w-3 h-3 rounded-full bg-warn" />
                     <span className="text-muted text-xs">Yellow (34-66%)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(239,68,68,0.4)' }} />
+                    <div className="w-3 h-3 rounded-full bg-danger" />
                     <span className="text-muted text-xs">Red (&lt;34%)</span>
                 </div>
             </div>

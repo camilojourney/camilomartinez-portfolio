@@ -163,7 +163,7 @@ export default function APITestPage() {
           <button
             onClick={runTests}
             disabled={isRunning}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-ink px-6 py-3 rounded-lg font-medium transition-colors"
+            className="btn-accent disabled:opacity-50"
           >
             {isRunning ? 'Running Tests...' : 'Run API Tests'}
           </button>
@@ -190,7 +190,7 @@ export default function APITestPage() {
               </div>
 
               {result.error && (
-                <div className="bg-red-900/20 border rounded-lg p-4 mb-4">
+                <div className="bg-surface border border-danger rounded-lg p-4 mb-4">
                   <p className="text-danger text-sm">
                     <strong>Error:</strong> {result.error}
                   </p>
@@ -198,7 +198,7 @@ export default function APITestPage() {
               )}
 
               {result.response && (
-                <div className="bg-slate-800/50 rounded-lg p-4">
+                <div className="bg-surface-2 rounded-lg p-4">
                   <h4 className="text-sm font-medium text-muted mb-2">Response:</h4>
                   <pre className="text-xs text-muted overflow-x-auto">
                     {JSON.stringify(result.response, null, 2)}
@@ -211,7 +211,7 @@ export default function APITestPage() {
 
         {testResults.length > 0 && (
           <div className="mt-8 text-center">
-            <div className="bg-slate-800/50 rounded-lg p-6 max-w-2xl mx-auto">
+            <div className="bg-surface-2 rounded-lg p-6 max-w-2xl mx-auto">
               <h3 className="text-lg font-semibold text-ink mb-4">Test Summary</h3>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">

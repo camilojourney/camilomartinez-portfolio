@@ -64,7 +64,7 @@ export function AccountabilityDashboard({
                                     type="button"
                                     onClick={() => setSelectedYear(year)}
                                     aria-pressed={selectedYear === year}
-                                    className={`min-h-10 rounded-md px-5 py-2 text-sm font-medium transition-colors ${selectedYear === year
+                                    className={`btn px-5 ${selectedYear === year
                                         ? 'bg-ink text-page'
                                         : 'text-muted hover:text-ink'
                                         }`}

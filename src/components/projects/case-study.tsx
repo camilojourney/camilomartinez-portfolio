@@ -3,12 +3,11 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import PageShell from '@/components/shared/page-shell'
 
-type Tone = 'live' | 'warn' | 'none'
+type Tone = 'live' | 'warn'
 
 const toneClass: Record<Tone, string> = {
   live: 'status-live',
   warn: 'status-warn',
-  none: '',
 }
 
 /** Page frame for a narrative case study: header, hairline sections, closing call to action. */
@@ -31,37 +30,35 @@ interface HeaderProps {
   tone?: Tone
   title: string
   lede: ReactNode
-  facts?: Array<[string, ReactNode]>
+  facts: Array<[string, ReactNode]>
   actions?: ReactNode
 }
 
 export function CaseStudyHeader({ status, tone = 'live', title, lede, facts, actions }: HeaderProps) {
   return (
     <header className="rise-in mt-6 grid gap-8 border-b border-line pb-10 md:grid-cols-12 md:gap-12 md:pb-14">
-      <div className={facts ? 'md:col-span-8' : 'md:col-span-10'}>
+      <div className="md:col-span-8">
         <span className={`status ${toneClass[tone]}`}>{status}</span>
         <h1 className="display mt-3 text-[clamp(2.25rem,5vw,3.75rem)]">{title}</h1>
         <p className="lede mt-6">{lede}</p>
         {actions && <div className="mt-8 flex flex-wrap gap-3">{actions}</div>}
       </div>
-      {facts && (
-        <dl className="facts self-end md:col-span-4">
-          {facts.map(([k, v]) => (
-            <div key={k} className="contents">
-              <dt>{k}</dt>
-              <dd>{v}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      <dl className="facts self-end md:col-span-4">
+        {facts.map(([k, v]) => (
+          <div key={k} className="contents">
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
     </header>
   )
 }
 
-export function CaseStudyFigure({ src, alt, contain = true }: { src: string; alt: string; contain?: boolean }) {
+export function CaseStudyFigure({ src, alt }: { src: string; alt: string }) {
   return (
-    <figure className={`thumb mt-10 aspect-[2/1] md:mt-14 ${contain ? 'thumb-contain' : ''}`}>
-      <Image src={src} alt={alt} fill sizes="(min-width: 1280px) 72rem, 100vw" className={contain ? 'object-contain' : 'object-cover'} priority />
+    <figure className="thumb thumb-contain mt-10 aspect-[2/1] md:mt-14">
+      <Image src={src} alt={alt} fill sizes="(min-width: 1280px) 72rem, 100vw" className="object-contain" priority />
     </figure>
   )
 }
@@ -95,19 +92,17 @@ interface CtaProps {
   body: ReactNode
   href: string
   label: string
-  external?: boolean
   secondary?: { href: string; label: string; external?: boolean }
 }
 
-export function CaseStudyCta({ title, body, href, label, external, secondary }: CtaProps) {
-  const ext = external ? { target: '_blank', rel: 'noopener noreferrer' } : {}
+export function CaseStudyCta({ title, body, href, label, secondary }: CtaProps) {
   const ext2 = secondary?.external ? { target: '_blank', rel: 'noopener noreferrer' } : {}
   return (
     <section className="py-12 md:py-16" aria-label="Next step">
       <h2 className="title-lg">{title}</h2>
       <p className="body-muted mt-3 max-w-xl">{body}</p>
       <div className="mt-6 flex flex-wrap gap-3">
-        <Link href={href} {...ext} className="btn-primary">
+        <Link href={href} className="btn-primary">
           {label}
         </Link>
         {secondary && (

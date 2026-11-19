@@ -259,7 +259,7 @@ export default function ChatWidget() {
           role="dialog"
           aria-label="Chat with Camilo's assistant"
           onKeyDown={(event) => {
-            if (event.key === 'Escape') setOpen(false);
+            if (event.key === 'Escape') closeChat();
           }}
           className="panel flex w-[min(360px,calc(100vw-40px))] flex-col overflow-hidden shadow-2xl shadow-black/10"
           style={{ height: 'min(480px, calc(100dvh - 120px))' }}
@@ -280,7 +280,7 @@ export default function ChatWidget() {
             </div>
             <button
               onClick={closeChat}
-              className="flex h-8 w-8 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+              className="btn-icon shrink-0 hover:bg-surface-2"
               aria-label="Close chat"
             >
               <X className="h-4 w-4" />
@@ -357,7 +357,7 @@ export default function ChatWidget() {
                 onClick={() => send()}
                 disabled={loading || rateLimitUntil !== null || !input.trim()}
                 aria-label="Send message"
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-ink text-page transition-colors hover:bg-accent hover:text-accent-ink disabled:opacity-30"
+                className="btn-primary h-11 w-11 flex-shrink-0 p-0 disabled:opacity-30"
               >
                 {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
               </button>
@@ -372,12 +372,12 @@ export default function ChatWidget() {
           tabIndex={0}
           onClick={openFromTeaser}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
               e.preventDefault();
               openFromTeaser();
             }
           }}
-          className={`animate-fade-in relative max-w-[240px] cursor-pointer select-none rounded-xl bg-ink py-2.5 pl-3.5 pr-8 text-[13px] leading-snug text-page shadow-lg ${
+          className={`animate-fade-in relative max-w-[240px] cursor-pointer select-none rounded-xl bg-ink py-3 pl-3.5 pr-14 text-[13px] leading-snug text-page shadow-lg ${
             hint ? '' : 'hidden md:block'
           }`}
         >
@@ -387,7 +387,7 @@ export default function ChatWidget() {
               setShowTeaser(false);
             }}
             aria-label="Dismiss"
-            className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded text-page/60 transition-colors hover:text-page"
+            className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded text-page transition-colors"
           >
             <X className="h-3.5 w-3.5" />
           </button>

@@ -25,7 +25,7 @@ export function BlogPosts() {
             </time>
             <div className="md:col-span-9">
               <h2 className="title-md">
-                <Link href={`/blog/${post.slug}`} className="hover:text-accent">
+                <Link href={`/blog/${post.slug}`} className="mobile-link-target hover:text-accent">
                   {post.metadata.title}
                 </Link>
               </h2>

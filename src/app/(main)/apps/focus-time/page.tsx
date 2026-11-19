@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Brain } from 'lucide-react'
 import PageShell from '@/components/shared/page-shell'
 
 const MAC_DOWNLOAD =
@@ -76,6 +77,28 @@ export default function FocusTimeDownloadPage() {
           <Image src="/images/previews_main/Hyper-awareness.png" alt="Focus Time logo" fill sizes="(min-width: 768px) 40vw, 100vw" priority />
         </div>
       </header>
+
+      <section className="grid gap-8 border-b border-line py-12 md:grid-cols-3 md:py-16" aria-label="Focus Time benefits">
+        {[
+          ['Boost Awareness', 'Periodic check-ins every 15 minutes'],
+          ['Sharpen Focus', 'Stay grounded during hyperfocus'],
+          ['Enhance Insights', 'Review your focus patterns'],
+        ].map(([title, description]) => (
+          <div key={title}>
+            <h2 className="title-md">{title}</h2>
+            <p className="body-muted mt-3">{description}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="border-b border-line py-12 md:py-16" aria-labelledby="preview-heading">
+        <h2 id="preview-heading" className="title-lg">App Preview</h2>
+        <div className="panel relative mt-6 flex aspect-video items-center justify-center bg-surface-2">
+          <Brain className="h-16 w-16 text-muted" aria-hidden />
+          <span className="tag absolute left-4 top-4 bg-surface text-ink">🧠 15:00</span>
+          <span className="tag absolute bottom-4 right-4 bg-surface text-ink">Check-in ready</span>
+        </div>
+      </section>
 
       <section className="border-b border-line py-12 md:py-16" aria-labelledby="features-heading">
         <h2 id="features-heading" className="title-lg">

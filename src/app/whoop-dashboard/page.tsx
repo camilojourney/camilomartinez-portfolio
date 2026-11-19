@@ -361,7 +361,7 @@ export default function WhoopDashboard() {
                                 </p>
                                 <button
                                     onClick={() => signIn('whoop')}
-                                    className="group btn-primary border text-ink font-medium py-4 px-12 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/25"
+                                    className="group btn-primary border font-medium py-4 px-12 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/25"
                                 >
                                     <span className="flex items-center justify-center gap-3 text-lg">
                                         🏃‍♂️ Connect WHOOP Account
@@ -459,7 +459,7 @@ export default function WhoopDashboard() {
                                             runHistoricalCollection();
                                         }}
                                         disabled={loading.historical}
-                                        className="w-full group btn-primary border text-ink font-medium py-4 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                        className="w-full group btn-primary border font-medium py-4 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                     >
                                         {loading.historical ? (
                                             <span className="flex items-center justify-center gap-3">
@@ -538,7 +538,7 @@ export default function WhoopDashboard() {
                                     <button
                                         onClick={runDailyCollection}
                                         disabled={loading.daily}
-                                        className="w-full group btn-primary border text-ink font-medium py-4 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                        className="w-full group btn-primary border font-medium py-4 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                     >
                                         {loading.daily ? (
                                             <span className="flex items-center justify-center gap-3">
@@ -768,7 +768,7 @@ export default function WhoopDashboard() {
                                     <div className="flex flex-wrap gap-4">
                                         <a
                                             href="/apps/fitness-dashboard"
-                                            className="btn-primary border text-ink font-light py-3 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/25"
+                                            className="btn-primary border font-light py-3 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/25"
                                         >
                                             📈 Open Fitness Dashboard
                                         </a>

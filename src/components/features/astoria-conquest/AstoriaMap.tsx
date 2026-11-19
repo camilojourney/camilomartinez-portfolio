@@ -40,7 +40,7 @@ function CustomControls() {
       {/* Zoom In */}
       <button
         onClick={handleZoomIn}
-        className="w-10 h-10 bg-surface-2 hover:bg-surface border border-line rounded shadow-lg flex items-center justify-center text-muted hover:text-page transition-all duration-200 hover:scale-105"
+        className="btn-icon bg-surface-2 hover:bg-surface shadow-lg"
         title="Zoom in"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@ function CustomControls() {
       {/* Zoom Out */}
       <button
         onClick={handleZoomOut}
-        className="w-10 h-10 bg-surface-2 hover:bg-surface border border-line rounded shadow-lg flex items-center justify-center text-muted hover:text-page transition-all duration-200 hover:scale-105"
+        className="btn-icon bg-surface-2 hover:bg-surface shadow-lg"
         title="Zoom out"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@ function CustomControls() {
       {/* Center View */}
       <button
         onClick={handleCenterView}
-        className="w-10 h-10 bg-surface-2 hover:bg-surface border border-line rounded shadow-lg flex items-center justify-center text-muted hover:text-page transition-all duration-200 hover:scale-105"
+        className="btn-icon bg-surface-2 hover:bg-surface shadow-lg"
         title="Center view"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

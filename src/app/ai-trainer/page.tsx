@@ -317,12 +317,14 @@ export default function AITrainerPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                         <XAxis dataKey="cycle" stroke="rgb(var(--muted))" />
                         <YAxis stroke="rgb(var(--muted))" />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'rgb(var(--surface))',
+                            color: 'rgb(var(--ink))',
                             border: '1px solid rgb(var(--line))',
                             borderRadius: '8px'
-                          }} 
+                          }}
+                          itemStyle={{ color: 'rgb(var(--ink))' }}
                         />
                         <Line type="monotone" dataKey="accuracy" stroke="#3B82F6" strokeWidth={2} dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }} />
                       </LineChart>
@@ -339,7 +341,11 @@ export default function AITrainerPage() {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={(props: any) => `${props.name || ''} ${((props.percent || 0) * 100).toFixed(0)}%`}
+                          label={({ name, percent, x, y, textAnchor }) => (
+                            <text x={x} y={y} textAnchor={textAnchor} fill="rgb(var(--ink))">
+                              {name || ''} {((percent || 0) * 100).toFixed(0)}%
+                            </text>
+                          )}
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="value"
@@ -348,7 +354,10 @@ export default function AITrainerPage() {
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: 'rgb(var(--surface))', color: 'rgb(var(--ink))', border: '1px solid rgb(var(--line))' }}
+                          itemStyle={{ color: 'rgb(var(--ink))' }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -478,12 +487,14 @@ export default function AITrainerPage() {
                       <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
                       <XAxis dataKey="cycle" stroke="rgb(var(--muted))" />
                       <YAxis stroke="rgb(var(--muted))" />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgb(var(--surface))',
+                          color: 'rgb(var(--ink))',
                           border: '1px solid rgb(var(--line))',
                           borderRadius: '8px'
-                        }} 
+                        }}
+                        itemStyle={{ color: 'rgb(var(--ink))' }}
                       />
                       <Bar dataKey="responseTime" fill="#8B5CF6" name="Response Time (ms)" />
                       <Bar dataKey="successRate" fill="#10B981" name="Success Rate (%)" />

@@ -45,14 +45,13 @@ interface SummaryStatsProps {
     avgLabel: string;
     last4WeeksAvg: string;
     totalCount: number;
-    accentColor: string;
 }
 
-const SummaryStats = ({ avgValue, avgLabel, last4WeeksAvg, totalCount, accentColor }: SummaryStatsProps) => (
+const SummaryStats = ({ avgValue, avgLabel, last4WeeksAvg, totalCount }: SummaryStatsProps) => (
     <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-line">
         <div className="text-center">
             <p className="text-xs text-muted">{avgLabel}</p>
-            <p className="text-lg font-semibold" style={{ color: accentColor }}>{avgValue}</p>
+            <p className="text-lg font-semibold text-accent">{avgValue}</p>
         </div>
         <div className="text-center">
             <p className="text-xs text-muted">Last 4 Weeks</p>
@@ -70,14 +69,13 @@ interface StabilityStatsProps {
     avgStdDev: string;
     last4WeeksAvg: string;
     totalCount: number;
-    accentColor: string;
 }
 
-const StabilityStats = ({ avgStdDev, last4WeeksAvg, totalCount, accentColor }: StabilityStatsProps) => (
+const StabilityStats = ({ avgStdDev, last4WeeksAvg, totalCount }: StabilityStatsProps) => (
     <div className="flex justify-center gap-8 mt-4 pt-4 border-t border-line">
         <div className="text-center">
             <p className="text-xs text-muted">Average Variance</p>
-            <p className="text-lg font-semibold" style={{ color: accentColor }}>{avgStdDev}</p>
+            <p className="text-lg font-semibold text-accent">{avgStdDev}</p>
         </div>
         <div className="text-center">
             <p className="text-xs text-muted">Last 4 Weeks</p>
@@ -99,7 +97,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 </p>
                 {payload.map((entry: any, index: number) => {
                     return (
-                        <p key={index} className="text-sm" style={{ color: entry.color }}>
+                        <p key={index} className="text-sm text-ink">
                             {entry.name}: <span className="font-semibold">{entry.value}</span>
                         </p>
                     );
@@ -121,7 +119,7 @@ const StdDevTooltip = ({ active, payload, label }: any) => {
                 {payload.map((entry: any, index: number) => {
                     const minutes = Math.round((entry.value || 0) * 60);
                     return (
-                        <p key={index} className="text-xs" style={{ color: entry.color }}>
+                        <p key={index} className="text-xs text-ink">
                             Std Dev: <span className="font-semibold">±{minutes} min</span>
                         </p>
                     );
@@ -274,7 +272,6 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                     avgLabel="Weekly Average"
                     last4WeeksAvg={trainingStats.last4Avg}
                     totalCount={trainingStats.total}
-                    accentColor="#3b82f6"
                 />
             </div>
 
@@ -315,7 +312,6 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                     avgLabel="Weekly Average"
                     last4WeeksAvg={meditationStats.last4Avg}
                     totalCount={meditationStats.total}
-                    accentColor="#8b5cf6"
                 />
             </div>
 
@@ -354,7 +350,6 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                     avgStdDev={wakeStats.avgStd}
                     last4WeeksAvg={wakeStats.last4Avg}
                     totalCount={wakeStats.total}
-                    accentColor="rgb(var(--accent))"
                 />
             </div>
 
@@ -393,7 +388,6 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                     avgStdDev={workoutStats.avgStd}
                     last4WeeksAvg={workoutStats.last4Avg}
                     totalCount={workoutStats.total}
-                    accentColor="#22c55e"
                 />
             </div>
 
@@ -432,7 +426,6 @@ export function WeeklyHabitsChart({ data, selectedYear }: WeeklyHabitsChartProps
                     avgStdDev={sleepStats.avgStd}
                     last4WeeksAvg={sleepStats.last4Avg}
                     totalCount={sleepStats.total}
-                    accentColor="#8b5cf6"
                 />
             </div>
         </div>

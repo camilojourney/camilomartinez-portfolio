@@ -267,7 +267,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                             onClick={() => setSelectedYear(year)}
                             className={`px-4 py-2 rounded-xl text-sm transition-all ${
                                 selectedYear === year
-                                    ? 'bg-purple-400 text-page font-medium'
+                                    ? 'bg-accent text-accent-ink font-medium'
                                     : 'text-muted hover:bg-surface-2'
                             }`}
                         >
@@ -448,7 +448,7 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                             boxShadow: '0 0 20px rgb(var(--surface)) inset, 0 4px 12px rgb(var(--surface))',
                                         }}
                                     />
-                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-[#1a1625] shadow-2xl"
+                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-surface shadow-2xl"
                                          style={{ boxShadow: '0 0 0 2px rgb(var(--line)), inset 0 2px 8px rgb(var(--surface))' }}
                                     />
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] rounded-full flex items-center justify-center flex-col animate-scaleIn">
@@ -472,17 +472,11 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                                 <div
                                                     className="w-4 h-4 rounded-full flex-shrink-0"
                                                     style={{
-                                                        backgroundColor: sportSolidColors[sport as keyof typeof sportSolidColors],
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
+                                                        backgroundColor: sportSolidColors[sport as keyof typeof sportSolidColors]
                                                     }}
                                                 ></div>
                                                 <span
                                                     className="text-ink text-sm md:text-base"
-                                                    style={{
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
-                                                    }}
                                                 >
                                                     {sport}
                                                 </span>
@@ -490,19 +484,11 @@ export function TrainingAnalytics({ workoutData, monthlyTrainingDays }: Training
                                             <div className="flex flex-col items-end flex-shrink-0">
                                                 <span
                                                     className="text-ink text-sm md:text-base"
-                                                    style={{
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
-                                                    }}
                                                 >
                                                     {formatHours(hours)}h
                                                 </span>
                                                 <span
                                                     className="text-muted text-xs"
-                                                    style={{
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
-                                                    }}
                                                 >
                                                     {sessions} sessions
                                                 </span>

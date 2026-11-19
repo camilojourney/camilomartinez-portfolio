@@ -237,7 +237,7 @@ export default function Chat() {
                         <button
                             type="submit"
                             disabled={!input.trim()}
-                            className="btn-primary min-h-0 p-3 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="btn-primary h-11 w-11 shrink-0 p-3 disabled:cursor-not-allowed disabled:opacity-40"
                             aria-label="Send message"
                         >
                             <svg
@@ -261,19 +261,19 @@ export default function Chat() {
                 <div className="mt-3 flex flex-wrap gap-2">
                     <button
                         onClick={() => handleSuggestion('What are his technical skills?')}
-                        className="tag min-h-9 cursor-pointer transition-colors hover:border-ink hover:text-ink"
+                        className="btn-secondary btn-sm"
                     >
                         Technical skills
                     </button>
                     <button
                         onClick={() => handleSuggestion('Tell me about Camilo story')}
-                        className="tag min-h-9 cursor-pointer transition-colors hover:border-ink hover:text-ink"
+                        className="btn-secondary btn-sm"
                     >
                         His story
                     </button>
                     <button
                         onClick={() => handleSuggestion('What did he do before tech?')}
-                        className="tag min-h-9 cursor-pointer transition-colors hover:border-ink hover:text-ink"
+                        className="btn-secondary btn-sm"
                     >
                         Before tech
                     </button>
