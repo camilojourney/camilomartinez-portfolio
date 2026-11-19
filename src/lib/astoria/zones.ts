@@ -9,7 +9,6 @@ export interface HeartRateZoneDefinition {
   heartRate: string
   description: string
   barClass: string
-  dotClass: string
 }
 
 export const HEART_RATE_ZONE_DEFINITIONS: HeartRateZoneDefinition[] = [
@@ -21,8 +20,7 @@ export const HEART_RATE_ZONE_DEFINITIONS: HeartRateZoneDefinition[] = [
     intensity: '0–50% effort',
     heartRate: 'Up to 95 bpm',
     description: 'Easy movement, stretching, walking. Minimal cardiovascular load.',
-    barClass: 'bg-gray-600',
-    dotClass: 'bg-gray-600',
+    barClass: 'bg-slate-500',
   },
   {
     key: 'zone1',
@@ -32,8 +30,7 @@ export const HEART_RATE_ZONE_DEFINITIONS: HeartRateZoneDefinition[] = [
     intensity: '50–60% effort',
     heartRate: '95–114 bpm',
     description: 'Comfortable pace with steady breathing. Ideal for recovery runs or long endurance work.',
-    barClass: 'bg-blue-400',
-    dotClass: 'bg-blue-400',
+    barClass: 'bg-sky-600',
   },
   {
     key: 'zone2',
@@ -43,8 +40,7 @@ export const HEART_RATE_ZONE_DEFINITIONS: HeartRateZoneDefinition[] = [
     intensity: '60–70% effort',
     heartRate: '114–133 bpm',
     description: 'Sustainable pace that builds aerobic capacity and efficient fat utilisation.',
-    barClass: 'bg-green-400',
-    dotClass: 'bg-green-400',
+    barClass: 'bg-emerald-600',
   },
   {
     key: 'zone3',
@@ -54,8 +50,7 @@ export const HEART_RATE_ZONE_DEFINITIONS: HeartRateZoneDefinition[] = [
     intensity: '70–80% effort',
     heartRate: '133–152 bpm',
     description: 'Challenging but repeatable efforts that improve efficiency and stamina.',
-    barClass: 'bg-yellow-400',
-    dotClass: 'bg-yellow-400',
+    barClass: 'bg-amber-700',
   },
   {
     key: 'zone4',
@@ -65,8 +60,7 @@ export const HEART_RATE_ZONE_DEFINITIONS: HeartRateZoneDefinition[] = [
     intensity: '80–90% effort',
     heartRate: '152–171 bpm',
     description: 'High exertion intervals that build power, lactate tolerance, and VO₂ max.',
-    barClass: 'bg-orange-400',
-    dotClass: 'bg-orange-400',
+    barClass: 'bg-orange-600',
   },
   {
     key: 'zone5',
@@ -76,8 +70,7 @@ export const HEART_RATE_ZONE_DEFINITIONS: HeartRateZoneDefinition[] = [
     intensity: '90–100% effort',
     heartRate: '171–190 bpm',
     description: 'Peak intensity sprints and finishing kicks. Reserved for short, maximal bursts.',
-    barClass: 'bg-red-500',
-    dotClass: 'bg-red-500',
+    barClass: 'bg-red-600',
   },
 ]
 

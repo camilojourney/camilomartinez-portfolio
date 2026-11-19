@@ -226,7 +226,7 @@ export function AstoriaStats({ stats }: AstoriaStatsProps) {
         <div className="col-span-full space-y-4">
           <div>
             <h3 className="text-sm font-medium text-muted mb-2">Heart Rate Zones Distribution</h3>
-            <div className="h-4 w-full rounded-full overflow-hidden bg-line flex">
+            <div className="h-4 w-full rounded-full overflow-hidden bg-surface-2 flex">
               {HEART_RATE_ZONE_DEFINITIONS.map((zone) => {
                 const seconds = zoneTotals[zone.key];
                 if (!seconds || totalZoneSeconds === 0) {

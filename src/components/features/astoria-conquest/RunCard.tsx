@@ -81,7 +81,7 @@ export function RunCard({ run, isSelected, onClick }: RunCardProps) {
       </div>
 
       <div className="mt-3 space-y-2">
-        <div className="h-2 w-full rounded-full overflow-hidden bg-line flex">
+        <div className="h-2 w-full rounded-full overflow-hidden bg-surface-2 flex">
           {HEART_RATE_ZONE_DEFINITIONS.map((zone) => {
             const minutes = run.heart_rate_zones[zone.key]
             if (!minutes || totalRunSeconds === 0) {
@@ -104,7 +104,7 @@ export function RunCard({ run, isSelected, onClick }: RunCardProps) {
         <div className="grid grid-cols-1 gap-1 text-xs text-muted">
           {HEART_RATE_ZONE_DEFINITIONS.map((zone) => (
             <div key={zone.key} className="flex items-center gap-2">
-              <span className={`inline-flex h-2 w-2 rounded-full ${zone.dotClass}`} aria-hidden />
+              <span className={`inline-flex h-2 w-2 rounded-full ${zone.barClass}`} aria-hidden />
               <span>
                 {zone.label} · {zone.name}{' '}
                 {run.heart_rate_zones[zone.key]

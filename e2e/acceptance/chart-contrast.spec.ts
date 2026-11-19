@@ -154,14 +154,32 @@ test.describe('Rendered chart palette', () => {
       };
       await page.route('**/api/astoria/**', (route) => route.fulfill({ json: route.request().url().endsWith('/stats') ? {
         summary: { covered_miles: 1, total_miles: 10, covered_segments: 1, total_segments: 10, percent_complete: 10, last_updated: '2026-01-15', total_runs: 2 },
-        runs: [1, 2].map((id) => ({ id, run_number: id, name: `Test run ${id}`, date: `2026-01-0${id}T12:00:00Z`, distance_meters: 5000, duration_seconds: 1800 + id * 60, polyline: polyline.encode([[40.769, -73.918], [40.774, -73.910]]) })),
+        runs: [1, 2].map((id) => ({ id, run_number: id, name: `Test run ${id}`, date: `2026-01-0${id}T12:00:00Z`, distance_meters: 5000, duration_seconds: 1800 + id * 60, heart_rate_zones: { rest: 300, light: 300, moderate: 300, hard: 300, peak: 300, max: 300 }, polyline: polyline.encode([[40.769, -73.918], [40.774, -73.910]]) })),
       } : streets }));
       await page.goto('/apps/astoria-conquest');
       await page.evaluate((theme) => document.documentElement.setAttribute('data-theme', theme), theme);
       const covered = page.locator('.leaflet-overlay-pane path[stroke-width="3"]');
       await expect(covered).toBeVisible();
       const colors = [await covered.evaluate((node) => getComputedStyle(node).stroke)];
+      const card = page.getByRole('heading', { name: /^Run #\d+$/ }).first().locator('../../..');
+      const zones = page.getByRole('heading', { name: 'Heart Rate Zones Distribution', exact: true }).locator('../..');
+      const checkZonePalette = async () => {
+        const palettes: string[][] = [];
+        for (const consumer of [card, zones]) {
+          const swatches = consumer.locator('span[aria-hidden]');
+          await expect(swatches).toHaveCount(6);
+          const keys = await expectGraphicalContrast(swatches, 'backgroundColor');
+          const palette = keys.map(({ color }) => color.join(','));
+          expect(new Set(palette).size).toBe(6);
+          palettes.push(palette);
+          const bars = await expectGraphicalContrast(consumer.locator('[title^="Zone "]'), 'backgroundColor');
+          for (const { color } of bars) expect(palette).toContain(color.join(','));
+        }
+        expect(palettes[0]).toEqual(palettes[1]);
+      };
+      await checkZonePalette();
       await page.getByRole('button', { name: 'Run #1', exact: true }).click();
+      await checkZonePalette();
       const selected = page.locator('.leaflet-overlay-pane path[stroke-width="4"]');
       await expect(selected).toBeAttached();
       colors.push(await selected.evaluate((node) => getComputedStyle(node).stroke));
@@ -191,6 +209,9 @@ test.describe('Rendered chart palette', () => {
       expect(text[0]!.ratio).toBeGreaterThanOrEqual(4.5);
       await expectGraphicalContrast(dot, 'fill');
       await page.screenshot({ path: `test-results/map-palette-${theme}.png` });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await checkZonePalette();
+      await card.screenshot({ path: `test-results/zone-palette-${theme}-mobile.png`, animations: 'disabled' });
     });
   }
 });

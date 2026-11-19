@@ -38,47 +38,64 @@ test('keyboard activation of the teaser still opens chat', async ({ page }) => {
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
-test('Escape cancels a pending chat and allows another question', async ({ page }) => {
-  let release: () => void = () => {};
-  const pending = new Promise<void>((resolve) => { release = resolve; });
-  let requests = 0;
-  await page.route('**/api/chat', async (route) => {
-    requests += 1;
-    if (requests === 1) {
-      await pending;
-      await route.abort().catch(() => {});
-      return;
-    }
-    await route.fulfill({
-      contentType: 'text/event-stream',
-      body: 'data: {"content":"Ready for another question."}\n\ndata: [DONE]\n\n',
+for (const submission of ['input', 'send', 'suggestion', 'retry']) {
+  test(`Escape cancels a pending ${submission} request and allows another question`, async ({ page }) => {
+    let release: () => void = () => {};
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    let requests = 0;
+    const pendingRequest = submission === 'retry' ? 2 : 1;
+    await page.route('**/api/chat', async (route) => {
+      requests += 1;
+      if (submission === 'retry' && requests === 1) {
+        await route.fulfill({ status: 503, json: { error: 'Temporarily unavailable' } });
+        return;
+      }
+      if (requests === pendingRequest) {
+        await pending;
+        await route.abort().catch(() => {});
+        return;
+      }
+      await route.fulfill({
+        contentType: 'text/event-stream',
+        body: 'data: {"content":"Ready for another question."}\n\ndata: [DONE]\n\n',
+      });
     });
-  });
 
-  try {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'Chat with AI assistant', exact: true }).click();
-    const input = page.getByRole('textbox', { name: 'Your question' });
-    await input.fill('Tell me about your work');
-    await page.getByRole('button', { name: 'Send message', exact: true }).click();
-    await expect(input).toBeDisabled();
-    await expect.poll(() => requests).toBe(1);
-    await page.getByRole('dialog').getByRole('button', { name: 'Close chat', exact: true }).focus();
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Chat with AI assistant', exact: true }).click();
-    await expect(input).toBeEnabled();
-    await expect(page.getByLabel('Thinking', { exact: true })).toHaveCount(0);
-    release();
-    await input.fill('Another question');
-    await input.press('Enter');
-    await expect(page.getByRole('dialog')).toContainText('Ready for another question.');
-    await expect(input).toBeEnabled();
-  } finally {
-    release();
-    await page.unrouteAll({ behavior: 'wait' });
-  }
-});
+    try {
+      await page.goto('/');
+      await page.getByRole('button', { name: 'Chat with AI assistant', exact: true }).click();
+      const input = page.getByRole('textbox', { name: 'Your question' });
+      if (submission === 'suggestion') {
+        await page.getByRole('button', { name: "What's your speech ML pipeline?", exact: true }).press('Enter');
+      } else {
+        await input.fill('Tell me about your work');
+        if (submission === 'send') {
+          await page.getByRole('button', { name: 'Send message', exact: true }).click();
+        } else {
+          await input.press('Enter');
+        }
+        if (submission === 'retry') {
+          await page.getByRole('button', { name: 'Retry last question', exact: true }).press('Enter');
+        }
+      }
+      await expect(input).toBeDisabled();
+      await expect.poll(() => requests).toBe(pendingRequest);
+      await page.keyboard.press('Escape');
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Chat with AI assistant', exact: true }).click();
+      await expect(input).toBeEnabled();
+      await expect(page.getByLabel('Thinking', { exact: true })).toHaveCount(0);
+      release();
+      await input.fill('Another question');
+      await input.press('Enter');
+      await expect(page.getByRole('dialog')).toContainText('Ready for another question.');
+      await expect(input).toBeEnabled();
+    } finally {
+      release();
+      await page.unrouteAll({ behavior: 'wait' });
+    }
+  });
+}
 
 for (const theme of ['light', 'dark'] as const) {
   test(`${theme} semantic text pairs and rendered chat links retain AA contrast`, async ({ page }) => {

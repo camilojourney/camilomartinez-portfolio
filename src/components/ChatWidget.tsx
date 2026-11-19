@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2, X } from 'lucide-react';
 import Image from 'next/image';
 import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK } from '@/data/recruiter';
@@ -130,16 +130,6 @@ export default function ChatWidget() {
     });
   }
 
-  function removePendingAssistantMessage() {
-    setMessages((p) => {
-      const last = p[p.length - 1];
-      if (last?.role === 'assistant' && !last.content) {
-        return p.slice(0, -1);
-      }
-      return p;
-    });
-  }
-
   async function send(text?: string) {
     const msg = (text ?? input).trim();
     if (!msg || loading || rateLimitUntil !== null) return;
@@ -237,15 +227,27 @@ export default function ChatWidget() {
     if (open) setHint(false);
   }, [open]);
 
-  function closeChat() {
+  const closeChat = useCallback(() => {
     if (abortRef.current) {
       abortRef.current.abort();
-      removePendingAssistantMessage();
+      setMessages((previous) => {
+        const last = previous[previous.length - 1];
+        return last?.role === 'assistant' && !last.content ? previous.slice(0, -1) : previous;
+      });
     }
     abortRef.current = null;
     setLoading(false);
     setOpen(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeChat();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, closeChat]);
 
   function openFromTeaser() {
     setOpen(true);
@@ -258,9 +260,6 @@ export default function ChatWidget() {
         <div
           role="dialog"
           aria-label="Chat with Camilo's assistant"
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') closeChat();
-          }}
           className="panel flex w-[min(360px,calc(100vw-40px))] flex-col overflow-hidden shadow-2xl shadow-black/10"
           style={{ height: 'min(480px, calc(100dvh - 120px))' }}
         >
