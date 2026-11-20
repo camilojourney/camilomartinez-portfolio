@@ -188,13 +188,27 @@ export function measureSingletPair(theta: number, randomValue: number = Math.ran
   }
 }
 
-export function formatBlochReadout(theta: number, measured: boolean): BlochReadout {
-  const a = Math.cos(theta / 2)
-  const b = Math.sin(theta / 2)
+function formatStateExpansion(theta: number, phi: number): string {
+  const a = Math.cos(theta / 2).toFixed(2)
+  const magnitude = Math.sin(theta / 2)
+  const real = Number((magnitude * Math.cos(phi)).toFixed(2))
+  const imaginary = Number((magnitude * Math.sin(phi)).toFixed(2))
+
+  if (imaginary === 0) {
+    return `${a}|0⟩ ${real < 0 ? '-' : '+'} ${Math.abs(real).toFixed(2)}|1⟩`
+  }
+  if (real === 0) {
+    return `${a}|0⟩ ${imaginary < 0 ? '-' : '+'} ${Math.abs(imaginary).toFixed(2)}i|1⟩`
+  }
+  return `${a}|0⟩ + (${real.toFixed(2)}${imaginary < 0 ? '-' : '+'}${Math.abs(imaginary).toFixed(2)}i)|1⟩`
+}
+
+export function formatBlochReadout(theta: number, phi: number, measured: boolean): BlochReadout {
+  const partner = antipodeState(theta, phi)
   return {
-    a: a.toFixed(2),
-    b: b.toFixed(2),
-    p0Percent: Math.round(a * a * 100),
+    a: formatStateExpansion(theta, phi),
+    b: formatStateExpansion(partner.theta, partner.phi),
+    p0Percent: Math.round(Math.cos(theta / 2) ** 2 * 100),
     measured,
   }
 }

@@ -158,11 +158,37 @@ describe('pointer steering, measurement, and readout formatting', () => {
     }
   })
 
-  it('formats the initial readout and measurement tally matching the approved mock', () => {
-    const readout = formatBlochReadout(INITIAL_BLOCH_STATE.theta, false)
+  it.each([
+    [0, '+ 0.71', '- 0.71'],
+    [Math.PI / 2, '+ 0.71i', '- 0.71i'],
+    [Math.PI, '- 0.71', '+ 0.71'],
+    [3 * Math.PI / 2, '- 0.71i', '+ 0.71i'],
+    [Math.PI / 4, '+ (0.50+0.50i)', '+ (-0.50-0.50i)'],
+    [-Math.PI / 4, '+ (0.50-0.50i)', '+ (-0.50+0.50i)'],
+    [3 * Math.PI / 4, '+ (-0.50+0.50i)', '+ (0.50-0.50i)'],
+    [5 * Math.PI / 4, '+ (-0.50-0.50i)', '+ (0.50+0.50i)'],
+    [-4 * Math.PI, '+ 0.71', '- 0.71'],
+  ] as const)('includes opposite relative phases at azimuth %s', (phi, aTerm, bTerm) => {
+    expect(formatBlochReadout(Math.PI / 2, phi, true)).toEqual({
+      a: `0.71|0⟩ ${aTerm}|1⟩`,
+      b: `0.71|0⟩ ${bTerm}|1⟩`,
+      p0Percent: 50,
+      measured: true,
+    })
+  })
+
+  it.each([0, Math.PI])('keeps polar readouts finite and probabilities complementary at theta %s', (theta) => {
+    const readout = formatBlochReadout(theta, 0, true)
+    expect(readout.a).toBe(theta === 0 ? '1.00|0⟩ + 0.00|1⟩' : '0.00|0⟩ + 1.00|1⟩')
+    expect(readout.b).toBe(theta === 0 ? '0.00|0⟩ - 1.00|1⟩' : '1.00|0⟩ + 0.00|1⟩')
+    expect(readout.p0Percent).toBe(theta === 0 ? 100 : 0)
+  })
+
+  it('formats the initial complex expansions and measurement tally', () => {
+    const readout = formatBlochReadout(INITIAL_BLOCH_STATE.theta, INITIAL_BLOCH_STATE.phi, false)
     expect(readout).toEqual({
-      a: '0.90',
-      b: '0.43',
+      a: '0.90|0⟩ + (0.36-0.25i)|1⟩',
+      b: '0.43|0⟩ + (-0.74+0.51i)|1⟩',
       p0Percent: 81,
       measured: false,
     })

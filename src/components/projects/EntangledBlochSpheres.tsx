@@ -42,7 +42,7 @@ const INITIAL_WAVE_PATH = buildEntanglementWavePath(
   0,
   0,
 )
-const INITIAL_READOUT = formatBlochReadout(INITIAL_BLOCH_STATE.theta, false)
+const INITIAL_READOUT = formatBlochReadout(INITIAL_BLOCH_STATE.theta, INITIAL_BLOCH_STATE.phi, false)
 
 const HOLD_DURATION_MS = 1100
 const FLASH_DURATION_MS = 1000
@@ -146,14 +146,13 @@ function paintBlochState(
   )
 
   const isMeasured = state.heldUntil > 0
-  const readout = formatBlochReadout(state.theta, isMeasured)
+  const readout = formatBlochReadout(state.theta, state.phi, isMeasured)
   const key = `${readout.a}|${readout.b}|${readout.p0Percent}|${isMeasured ? 1 : 0}`
-  // Skip DOM text writes during idle drift when theta and measurement state are unchanged.
   if (key === lastReadoutKey.current) return
 
   lastReadoutKey.current = key
-  if (readoutEls.a) readoutEls.a.textContent = `A: ${readout.a}|0⟩ + ${readout.b}|1⟩`
-  if (readoutEls.b) readoutEls.b.textContent = `B: ${readout.b}|0⟩ + ${readout.a}|1⟩`
+  if (readoutEls.a) readoutEls.a.textContent = `A: ${readout.a}`
+  if (readoutEls.b) readoutEls.b.textContent = `B: ${readout.b}`
   if (readoutEls.p) readoutEls.p.textContent = `P(A=0) = ${readout.p0Percent}%`
   readoutEls.measured?.classList.toggle('hidden', !isMeasured)
 }
@@ -177,6 +176,9 @@ function advanceBlochFrame(
 
   state.phase += dt * WAVE_SPEED_RAD_PER_SEC
   if (!state.pointerNear && state.heldUntil === 0) {
+    if (state.tTheta === 0 || state.tTheta === Math.PI) {
+      state.tTheta = INITIAL_BLOCH_STATE.theta
+    }
     state.tPhi += dt * IDLE_DRIFT_RAD_PER_SEC
   }
 
@@ -205,7 +207,7 @@ function applyPointerSteer(
   const steered = steerFromPointer(x, y, layout)
   state.tSwell = steered.swell
   state.pointerNear = steered.pointerNear
-  if (state.heldUntil === 0) {
+  if (steered.pointerNear && state.heldUntil === 0) {
     state.tTheta = steered.theta
     state.tPhi = steered.phi
   }
@@ -576,22 +578,22 @@ export default function EntangledBlochSpheres() {
         </svg>
       </button>
       <div className="entangled-foot">
-        <p className="font-mono tabular-nums" aria-hidden="true">
+        <p className="flex max-w-full flex-wrap gap-x-3 gap-y-1 font-mono tabular-nums [overflow-wrap:anywhere]" aria-hidden="true">
           <span
             ref={(el) => {
               readoutRefs.current.a = el
             }}
-            className="mr-3 inline-block whitespace-nowrap"
+            className="max-w-full"
           >
-            A: {INITIAL_READOUT.a}|0⟩ + {INITIAL_READOUT.b}|1⟩
+            A: {INITIAL_READOUT.a}
           </span>
           <span
             ref={(el) => {
               readoutRefs.current.b = el
             }}
-            className="mr-3 inline-block whitespace-nowrap"
+            className="max-w-full"
           >
-            B: {INITIAL_READOUT.b}|0⟩ + {INITIAL_READOUT.a}|1⟩
+            B: {INITIAL_READOUT.b}
           </span>
           <span
             ref={(el) => {
@@ -605,7 +607,7 @@ export default function EntangledBlochSpheres() {
             ref={(el) => {
               readoutRefs.current.measured = el
             }}
-            className="ml-3 hidden whitespace-nowrap"
+            className="hidden whitespace-nowrap"
           >
             measured
           </span>
