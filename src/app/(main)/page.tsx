@@ -6,5 +6,5 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
-  return <ProjectsShowcase currentPage="projects" />
+  return <ProjectsShowcase currentPage="projects" showEntangledSpheres />
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import PageShell from '@/components/shared/page-shell'
+import EntangledBlochSpheres from '@/components/projects/EntangledBlochSpheres'
 import { projects, type ProjectMeta, type ProjectStatus } from '@/data/projects'
 import { EMAIL, GITHUB, LINKEDIN, MAILTO } from '@/lib/site'
 
@@ -120,7 +121,13 @@ function IndexRow({ p }: { p: ProjectMeta }) {
   )
 }
 
-export default function ProjectsShowcase({ currentPage = 'projects' }: { currentPage?: NavKey }) {
+export default function ProjectsShowcase({
+  currentPage = 'projects',
+  showEntangledSpheres = false,
+}: {
+  currentPage?: NavKey
+  showEntangledSpheres?: boolean
+}) {
   return (
     <PageShell currentPage={currentPage} maxWidth="full" className="pt-0 md:pt-0">
       {/* Hero */}
@@ -165,12 +172,22 @@ export default function ProjectsShowcase({ currentPage = 'projects' }: { current
 
       {/* Featured */}
       <section className="border-b border-line py-12 md:py-20" aria-labelledby="featured-heading">
-        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 md:mb-12">
-          <h2 id="featured-heading" className="title-lg">
-            Selected work
-          </h2>
-          <p className="caption">Production systems, research to deployment</p>
-        </div>
+        {showEntangledSpheres ? (
+          <div className="entangled-head mb-8 md:mb-12">
+            <h2 id="featured-heading" className="title-lg">
+              Selected work
+            </h2>
+            <EntangledBlochSpheres />
+            <p className="caption">Production systems, research to deployment</p>
+          </div>
+        ) : (
+          <div className="mb-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 md:mb-12">
+            <h2 id="featured-heading" className="title-lg">
+              Selected work
+            </h2>
+            <p className="caption">Production systems, research to deployment</p>
+          </div>
+        )}
         <div className="row-list">
           {featured.map((p) => (
             <FeatureRow key={p.slug} p={p} />
