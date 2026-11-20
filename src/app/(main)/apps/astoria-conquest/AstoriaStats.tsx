@@ -61,7 +61,7 @@ export default function AstoriaStats({ stats }: AstoriaStatsProps) {
   return (
     <div className="space-y-8">
       <ScrollReveal>
-        <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold mb-6 text-ink">
           Training Analysis
         </h2>
       </ScrollReveal>
@@ -70,14 +70,14 @@ export default function AstoriaStats({ stats }: AstoriaStatsProps) {
       <ScrollReveal delay={0.1}>
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-300">Heart Rate Distribution</h3>
-            <div className="text-sm text-gray-400 bg-white/5 px-3 py-1 rounded-lg">
-              Avg HR: <span className="text-cyan-400 font-medium">{Math.round(stats.avg_heart_rate)} bpm</span>
+            <h3 className="text-lg font-semibold text-muted">Heart Rate Distribution</h3>
+            <div className="text-sm text-muted bg-surface-2 px-3 py-1 rounded-lg">
+              Avg HR: <span className="text-ink font-medium">{Math.round(stats.avg_heart_rate)} bpm</span>
             </div>
           </div>
 
           {/* Zone Distribution Bar */}
-          <div className="h-8 bg-black/40 rounded-full overflow-hidden flex shadow-inner">
+          <div className="h-8 bg-surface-2 rounded-full overflow-hidden flex shadow-inner">
             {zonePercentages.map((percentage, idx) => (
               <div
                 key={idx}
@@ -89,7 +89,7 @@ export default function AstoriaStats({ stats }: AstoriaStatsProps) {
               >
                 {/* Percentage label on hover */}
                 {percentage > 8 && (
-                  <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-black/70 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-page opacity-0 group-hover:opacity-100 transition-opacity">
                     {Math.round(percentage)}%
                   </span>
                 )}
@@ -104,15 +104,15 @@ export default function AstoriaStats({ stats }: AstoriaStatsProps) {
               const minutes = zoneMinutes[idx] ?? 0;
               const percentage = zonePercentages[idx] ?? 0;
               return (
-                <div key={idx} className="flex flex-col items-center p-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                <div key={idx} className="flex flex-col items-center p-2 rounded-lg bg-surface-2 hover:bg-surface-2 transition-colors">
                   <div className="flex items-center gap-2 mb-1">
                     <div
                       className="w-3 h-3 rounded-full shadow-lg"
                       style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}40` }}
                     />
-                    <span className="text-sm text-gray-300 font-medium">{zone}</span>
+                    <span className="text-sm text-muted font-medium">{zone}</span>
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted">
                     {minutes}min ({Math.round(percentage)}%)
                   </span>
                 </div>
@@ -125,17 +125,17 @@ export default function AstoriaStats({ stats }: AstoriaStatsProps) {
       {/* Additional Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Avg Pace', value: `${avgPace}`, unit: 'min/mi', color: 'text-cyan-400' },
-          { label: 'Max HR', value: `${stats.max_heart_rate}`, unit: 'bpm', color: 'text-pink-400' },
-          { label: 'Total Time', value: `${Math.round(stats.total_time / 3600)}`, unit: 'hours', color: 'text-purple-400' },
-          { label: 'Total Runs', value: `${stats.total_runs}`, unit: 'runs', color: 'text-green-400' },
+          { label: 'Avg Pace', value: `${avgPace}`, unit: 'min/mi', color: 'text-ink' },
+          { label: 'Max HR', value: `${stats.max_heart_rate}`, unit: 'bpm', color: 'text-ink' },
+          { label: 'Total Time', value: `${Math.round(stats.total_time / 3600)}`, unit: 'hours', color: 'text-ink' },
+          { label: 'Total Runs', value: `${stats.total_runs}`, unit: 'runs', color: 'text-live' },
         ].map((stat, idx) => (
           <ScrollReveal key={idx} staggerIndex={idx} staggerDelay={0.08}>
-            <div className="bg-black/20 backdrop-blur-sm border border-white/5 rounded-xl p-4 stat-card-hover">
-              <div className="text-sm text-gray-400 mb-1">{stat.label}</div>
+            <div className="bg-surface-2 border border-line rounded-xl p-4 stat-card-hover">
+              <div className="text-sm text-muted mb-1">{stat.label}</div>
               <div className={`text-2xl font-bold ${stat.color}`}>
                 {stat.value}
-                <span className="text-sm font-normal text-gray-500 ml-1">{stat.unit}</span>
+                <span className="text-sm font-normal text-muted ml-1">{stat.unit}</span>
               </div>
             </div>
           </ScrollReveal>

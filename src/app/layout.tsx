@@ -1,16 +1,23 @@
 import '@/styles/globals.css'
 import '@/styles/animations.css'
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
+import { Inter, Instrument_Serif } from 'next/font/google'
+import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-import { baseUrl } from '@/lib/site'
-// AuthProvider removed - not currently used, and imports next-auth which causes SSR issues
-// import AuthProvider from '@/components/features/auth/AuthProvider'
-import LiquidNav from '@/components/shared/liquid-nav'
+import { baseUrl, EMAIL, GITHUB, LINKEDIN, X_PROFILE } from '@/lib/site'
 import Footer from '@/components/shared/footer'
-// import { GlobalChatbot } from '@/components/features/GlobalChatbot' // Temporarily hidden
-import ChatWidget from "@/components/ChatWidget";
+import ChatWidget from '@/components/ChatWidget'
+import { cn } from '@/lib/utils'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
+const instrumentSerif = Instrument_Serif({
+  weight: '400',
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -79,8 +86,6 @@ export const metadata: Metadata = {
   category: 'Technology',
 }
 
-import { cn } from '@/lib/utils'
-
 export default function RootLayout({
   children,
 }: {
@@ -103,11 +108,7 @@ export default function RootLayout({
       addressRegion: 'NY',
       addressCountry: 'US',
     },
-    sameAs: [
-      'https://github.com/camilojourney',
-      'https://www.linkedin.com/in/camilomartinez-ai/',
-      'https://x.com/camilojourney',
-    ],
+    sameAs: [GITHUB, LINKEDIN, X_PROFILE],
     knowsAbout: [
       'Audio/Speech ML',
       'Multi-Agent Systems',
@@ -123,7 +124,7 @@ export default function RootLayout({
       'TypeScript',
     ],
     image: `${baseUrl}/og-image.png`,
-    email: 'mailto:juancamilomabe@gmail.com',
+    email: `mailto:${EMAIL}`,
   }
 
   const websiteSchema = {
@@ -132,7 +133,7 @@ export default function RootLayout({
     '@id': `${baseUrl}/#website`,
     name: 'Juan Camilo Martinez',
     url: baseUrl,
-    description: 'Applied AI engineering portfolio — audio/speech ML, multi-agent systems, production pipelines',
+    description: 'Applied AI engineering portfolio: audio/speech ML, multi-agent systems, production pipelines',
     author: { '@id': `${baseUrl}/#person` },
   }
 
@@ -142,32 +143,35 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(
-        'text-black bg-white dark:text-white dark:bg-black',
-        GeistSans.variable
-      )}
+      className={cn(inter.variable, instrumentSerif.variable, GeistMono.variable)}
     >
       <head>
+        {/* Theme resolves before paint: saved choice, else the OS preference. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
                   var t = localStorage.getItem('theme');
-                  if (!t) t = 'dark';
+                  if (t !== 'light' && t !== 'dark') {
+                    t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
                   document.documentElement.setAttribute('data-theme', t);
-                } catch (e) {}
+                } catch (e) {
+                  document.documentElement.setAttribute('data-theme', 'light');
+                }
               })();
             `,
           }}
         />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#131311" media="(prefers-color-scheme: dark)" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="msapplication-TileColor" content="#000000" />
+        <meta name="msapplication-TileColor" content="#f7f6f2" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
         <script
           type="application/ld+json"
@@ -175,16 +179,12 @@ export default function RootLayout({
           suppressHydrationWarning
         />
       </head>
-      <body
-        suppressHydrationWarning
-        className={cn("min-h-screen bg-background font-sans text-foreground antialiased", GeistSans.className)}
-      >
+      <body suppressHydrationWarning className="min-h-screen bg-page font-sans text-ink antialiased">
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        {/* <AuthProvider suppressHydrationWarning> */}
-        <div className="min-h-screen flex flex-col">
-          <main id="main-content" className="flex-1 w-full" tabIndex={-1}>
+        <div className="flex min-h-screen flex-col">
+          <main id="main-content" className="w-full flex-1" tabIndex={-1}>
             {children}
           </main>
           <Footer />
@@ -196,7 +196,6 @@ export default function RootLayout({
             </>
           )}
         </div>
-        {/* </AuthProvider> */}
       </body>
     </html>
   )

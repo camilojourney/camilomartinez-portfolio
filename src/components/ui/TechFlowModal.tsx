@@ -17,19 +17,19 @@ export function TechFlowModal({ isOpen, onClose, title, imageUrl, description, d
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-2"
       onClick={onClose}
     >
       <div 
-        className="relative max-w-6xl w-full bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-white/10"
+        className="relative max-w-6xl w-full bg-surface-2 rounded-2xl shadow-2xl overflow-hidden border border-line"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <h3 className="text-2xl font-bold text-white">{title}</h3>
+        <div className="flex items-center justify-between p-6 border-b border-line">
+          <h3 className="text-2xl font-bold text-ink">{title}</h3>
           <button
             onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
+            className="text-muted hover:text-ink transition-colors p-2 hover:bg-surface-2 rounded-lg"
             aria-label="Close modal"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,13 +41,13 @@ export function TechFlowModal({ isOpen, onClose, title, imageUrl, description, d
         {/* Content */}
         <div className="p-6 max-h-[80vh] overflow-y-auto">
           {description && (
-            <p className="text-white/70 mb-6 text-lg leading-relaxed text-center">
+            <p className="text-muted mb-6 text-lg leading-relaxed text-center">
               {description}
             </p>
           )}
           
           {/* Tech Flow Diagram */}
-          <div className="relative w-full bg-white rounded-xl overflow-hidden shadow-xl">
+          <div className="relative w-full bg-surface rounded-xl overflow-hidden shadow-xl">
             <Image
               src={imageUrl}
               alt={title}
@@ -61,13 +61,13 @@ export function TechFlowModal({ isOpen, onClose, title, imageUrl, description, d
         </div>
 
         {/* Footer with Action Buttons */}
-        <div className="flex justify-center items-center gap-4 p-6 border-t border-white/10 bg-black/20">
+        <div className="flex justify-center items-center gap-4 p-6 border-t border-line bg-surface-2">
           {demoUrl && (
             <a
               href={demoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-3 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
+              className="px-8 py-3 text-ink font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
             >
               <span>Try Live App</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ export function TechFlowModal({ isOpen, onClose, title, imageUrl, description, d
           
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+            className="px-6 py-2 bg-surface-2 hover:bg-surface-2 text-ink rounded-lg transition-colors"
           >
             Close
           </button>

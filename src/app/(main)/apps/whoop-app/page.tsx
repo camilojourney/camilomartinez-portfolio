@@ -2,7 +2,7 @@
 import { getServerAuth } from "@/lib/auth-server"
 import { AuthButtons } from "@/components/features/auth/AuthButtons"
 import { RecoveryChart } from "@/components/features/whoop/RecoveryChart"
-import LiquidPage from '@/components/shared/liquid-page'
+import PageShell from '@/components/shared/page-shell'
 
 async function getWhoopData(accessToken: string): Promise<any> {
     try {
@@ -25,13 +25,21 @@ async function getWhoopData(accessToken: string): Promise<any> {
     }
 }
 
+function average(records: any[], pick: (r: any) => number | undefined): number | null {
+    if (!records.length) return null
+    const value = Math.round(records.reduce((sum, r) => sum + (pick(r) || 0), 0) / records.length)
+    return Number.isFinite(value) && value > 0 ? value : null
+}
+
 export default async function LiveDataPage() {
     const session = await getServerAuth()
     let whoopData: any = null
-    let dataError: string | null = null
 
     // Cast session to include accessToken property
     const sessionWithToken = session as typeof session & { accessToken?: string; error?: string }
+    let dataError: string | null = session && (!sessionWithToken?.accessToken || sessionWithToken.error)
+        ? 'Your WHOOP session has expired. Disconnect and reconnect your WHOOP account.'
+        : null
 
     if (sessionWithToken?.accessToken && !sessionWithToken.error) {
         whoopData = await getWhoopData(sessionWithToken.accessToken)
@@ -41,182 +49,115 @@ export default async function LiveDataPage() {
         }
     }
 
-    return (
-        <LiquidPage currentPage="about" backgroundVariant="cool">
-            {/* Main content card */}
-            <section className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 md:p-12 max-w-6xl w-full shadow-2xl shadow-black/20">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-extralight text-white mb-6 drop-shadow-lg">
-                        Live WHOOP Data Demo
-                    </h1>
-                    <div className="w-24 h-px bg-gradient-to-r from-transparent via-orange-400/60 to-transparent mx-auto mb-8"></div>
-                    <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-3xl mx-auto font-light">
-                        This is a live demonstration of integrating real-time fitness data from the WHOOP API.
-                        Connect your WHOOP account to see your actual recovery data visualized in real-time.
-                    </p>
-                </div>
+    const records: any[] = whoopData?.records ?? []
+    const latestRecovery = records[0]?.score?.recovery_score
+    const avgHrv = average(records, (r) => r.score?.hrv_rmssd_ms)
+    const avgRhr = average(records, (r) => r.score?.resting_heart_rate)
 
-                {/* Auth Section */}
-                <div className="text-center mb-12">
+    return (
+        <PageShell currentPage="apps" maxWidth="wide">
+            <header className="rise-in border-b border-line pb-10 md:pb-14">
+                <h1 className="display">Live WHOOP data demo</h1>
+                <p className="lede mt-6">
+                    A live demonstration of integrating real-time fitness data from the WHOOP API. Connect your WHOOP
+                    account to see your actual recovery data visualized in real time.
+                </p>
+                <div className="mt-8">
                     <AuthButtons />
                 </div>
+            </header>
 
-                {/* Data Visualization Section */}
+            <div className="space-y-10 py-10 md:py-14">
                 {!session && (
-                    <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8 text-center">
-                        <svg className="w-16 h-16 text-orange-400/50 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        <h3 className="text-xl font-semibold text-white mb-2">Connect Your WHOOP Account</h3>
-                        <p className="text-white/60 leading-relaxed">
-                            Click the button above to securely connect your WHOOP account and see your live recovery data visualized below.
+                    <div className="panel panel-pad max-w-2xl">
+                        <h2 className="title-sm">Connect your WHOOP account</h2>
+                        <p className="body-muted mt-2">
+                            Click the button above to securely connect your WHOOP account and see your live recovery data
+                            visualized below.
                         </p>
                     </div>
                 )}
 
                 {dataError && (
-                    <div className="liquid-glass-card backdrop-blur-lg bg-red-500/10 border border-red-400/20 rounded-2xl p-6 mb-8">
-                        <div className="flex items-center gap-3 text-red-300">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                            <span className="font-medium">Error: {dataError}</span>
-                        </div>
-                    </div>
+                    <p role="alert" className="max-w-2xl rounded-md border border-danger/40 bg-danger/5 px-4 py-3 text-sm text-danger">
+                        Error: {dataError}
+                    </p>
                 )}
 
-                {whoopData && whoopData.records && whoopData.records.length > 0 && (
-                    <div className="space-y-8">
-                        {/* Recovery Chart */}
-                        <RecoveryChart data={whoopData.records} />
+                {records.length > 0 && (
+                    <>
+                        <RecoveryChart data={records} />
 
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="liquid-glass-card backdrop-blur-lg bg-green-500/10 border border-green-400/20 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                                    <span className="text-green-300 font-medium text-sm">Latest Recovery</span>
+                        <dl className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
+                            {[
+                                { label: 'Latest recovery', value: latestRecovery != null ? `${latestRecovery}%` : 'N/A', note: new Date(records[0]?.created_at).toLocaleDateString() },
+                                { label: 'Avg HRV', value: avgHrv != null ? `${avgHrv} ms` : 'N/A', note: '7-day average' },
+                                { label: 'Avg RHR', value: avgRhr != null ? `${avgRhr} bpm` : 'N/A', note: '7-day average' },
+                            ].map((s) => (
+                                <div key={s.label} className="bg-surface p-6">
+                                    <dt className="caption">{s.label}</dt>
+                                    <dd className="mt-2 font-serif text-4xl text-ink tabular-nums">{s.value}</dd>
+                                    <dd className="caption mt-1">{s.note}</dd>
                                 </div>
-                                <div className="text-2xl font-bold text-white mb-1">
-                                    {whoopData.records[0]?.score?.recovery_score || 'N/A'}%
-                                </div>
-                                <div className="text-white/60 text-sm">
-                                    {new Date(whoopData.records[0]?.created_at).toLocaleDateString()}
-                                </div>
-                            </div>
+                            ))}
+                        </dl>
 
-                            <div className="liquid-glass-card backdrop-blur-lg bg-blue-500/10 border border-blue-400/20 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                                    <span className="text-blue-300 font-medium text-sm">Avg HRV</span>
-                                </div>
-                                <div className="text-2xl font-bold text-white mb-1">
-                                    {Math.round(whoopData.records.reduce((sum: number, record: any) => sum + (record.score.hrv_rmssd_ms || 0), 0) / whoopData.records.length) || 'N/A'} ms
-                                </div>
-                                <div className="text-white/60 text-sm">7-day average</div>
-                            </div>
-
-                            <div className="liquid-glass-card backdrop-blur-lg bg-purple-500/10 border border-purple-400/20 rounded-2xl p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
-                                    <span className="text-purple-300 font-medium text-sm">Avg RHR</span>
-                                </div>
-                                <div className="text-2xl font-bold text-white mb-1">
-                                    {Math.round(whoopData.records.reduce((sum: number, record: any) => sum + (record.score.resting_heart_rate || 0), 0) / whoopData.records.length) || 'N/A'} bpm
-                                </div>
-                                <div className="text-white/60 text-sm">7-day average</div>
-                            </div>
-                        </div>
-
-                        {/* Raw Data Toggle */}
-                        <details className="liquid-glass-card backdrop-blur-lg bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden">
-                            <summary className="p-6 cursor-pointer hover:bg-white/[0.03] transition-colors">
-                                <span className="text-white font-medium">View Raw API Data</span>
-                                <span className="text-white/60 text-sm ml-2">(for developers)</span>
+                        <details className="panel overflow-hidden">
+                            <summary className="cursor-pointer px-6 py-4 text-sm font-medium text-ink hover:bg-surface-2">
+                                View raw API data <span className="text-muted">(for developers)</span>
                             </summary>
-                            <div className="border-t border-white/[0.08] p-6 bg-black/20">
-                                <pre className="text-xs text-white/80 whitespace-pre-wrap overflow-x-auto">
-                                    {JSON.stringify(whoopData, null, 2)}
-                                </pre>
-                            </div>
+                            <pre className="overflow-x-auto border-t border-line bg-page p-6 font-mono text-xs text-muted">
+                                {JSON.stringify(whoopData, null, 2)}
+                            </pre>
                         </details>
-                    </div>
+                    </>
                 )}
 
-                {/* Advanced Analytics Section - Always show if user is authenticated */}
                 {session && (
-                    <div className="mt-12 space-y-8">
-                        {/* Personal Dashboard Link */}
-                        <div className="liquid-glass-card backdrop-blur-lg bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-2xl p-8 text-center">
-                            <h2 className="text-2xl font-semibold text-white mb-4">
-                                Want to Track Your Performance Over Time?
-                            </h2>
-                            <p className="text-white/70 mb-6">
-                                Check out the comprehensive performance dashboard with historical charts and insights.
-                            </p>
-                            <a
-                                href="/apps/fitness-dashboard"
-                                className="inline-block bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-lg hover:bg-purple-500/30 transition-colors"
-                            >
-                                View My Performance Dashboard →
-                            </a>
-                        </div>
-
-                        {/* Strain vs Sleep Chart */}
-                        <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8">
-                            <h2 className="text-2xl font-semibold text-white mb-6 text-center">
-                                Advanced Analytics Dashboard
-                            </h2>
-                            <p className="text-white/70 text-center mb-8">
-                                These charts use stored data from your WHOOP account to show insights about strain, sleep performance, recovery, and workout patterns.
-                            </p>
-                            <div className="text-center py-12">
-                                <div className="text-white/60 text-lg mb-4">📊 Charts Available in Fitness Dashboard</div>
-                                <div className="text-white/40 mb-6">Visit the Fitness Dashboard to see your beautiful performance charts</div>
-                                <a
-                                    href="/apps/fitness-dashboard"
-                                    className="inline-block bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 text-purple-300 px-6 py-3 rounded-lg hover:bg-purple-500/30 transition-colors"
-                                >
-                                    Open Fitness Dashboard →
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* Workout Analytics */}
-                        <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8">
-                            <h2 className="text-2xl font-semibold text-white mb-6 text-center">
-                                Workout Analytics
-                            </h2>
-                            <p className="text-white/70 text-center mb-8">
-                                Analyze your workout patterns over time with detailed breakdowns by sport type.
-                            </p>
-
-                            {/* Workout Count Chart */}
-                            <div className="mb-12">
-                                {/* Workout Count Chart removed */}
-                            </div>
-
-                            {/* Workout Hours Chart */}
-                            <div>
-                                {/* Workout Hours Chart removed */}
-                            </div>
-                        </div>
-                    </div>
+                    <section className={records.length > 0 ? 'border-t border-line pt-10' : ''} aria-labelledby="perf-heading">
+                        <h2 id="perf-heading" className="title-md">Want to Track Your Performance Over Time?</h2>
+                        <p className="body-muted mt-2 max-w-lg">
+                            Check out the comprehensive performance dashboard with historical charts and insights.
+                        </p>
+                        <a href="/apps/fitness-dashboard" className="btn-primary mt-5">
+                            View My Performance Dashboard →
+                        </a>
+                    </section>
                 )}
 
-                {whoopData && (!whoopData.records || whoopData.records.length === 0) && (
-                    <div className="liquid-glass-card backdrop-blur-lg bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8 text-center">
-                        <svg className="w-16 h-16 text-cyan-400/50 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        <h3 className="text-xl font-semibold text-white mb-2">No Recovery Data Available</h3>
-                        <p className="text-white/60 leading-relaxed">
-                            Your WHOOP account is connected, but no recovery data was found. Make sure you have recovery data in your WHOOP app.
+                {session && (
+                    <section className="border-t border-line pt-10" aria-labelledby="analytics-heading">
+                        <h2 id="analytics-heading" className="title-md">Advanced Analytics Dashboard</h2>
+                        <p className="body-muted mt-2">
+                            These charts use stored data from your WHOOP account to show insights about strain, sleep performance, recovery, and workout patterns.
+                        </p>
+                        <p className="mt-6 text-ink">📊 Charts Available in Fitness Dashboard</p>
+                        <p className="body-muted mt-2">Visit the Fitness Dashboard to see your beautiful performance charts</p>
+                        <a href="/apps/fitness-dashboard" className="btn-primary mt-5">
+                            Open Fitness Dashboard →
+                        </a>
+                    </section>
+                )}
+
+                {session && (
+                    <section className="border-t border-line pt-10" aria-labelledby="workout-heading">
+                        <h2 id="workout-heading" className="title-md">Workout Analytics</h2>
+                        <p className="body-muted mt-2">
+                            Analyze your workout patterns over time with detailed breakdowns by sport type.
+                        </p>
+                    </section>
+                )}
+
+                {whoopData && records.length === 0 && (
+                    <div className="panel panel-pad max-w-2xl" role="status">
+                        <h2 className="title-sm">No recovery data available</h2>
+                        <p className="body-muted mt-2">
+                            Your WHOOP account is connected, but no recovery data was found. Make sure you have recovery data in
+                            your WHOOP app.
                         </p>
                     </div>
                 )}
-            </section>
-        </LiquidPage>
+            </div>
+        </PageShell>
     )
 }

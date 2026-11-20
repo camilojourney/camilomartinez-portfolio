@@ -52,7 +52,7 @@ function ChatMessage({ message }: { message: Message }) {
       line = line.replace(/_(.*?)_/g, '<em class="italic">$1</em>');
 
       // Inline code: `code`
-      line = line.replace(/`([^`]+)`/g, '<code class="bg-black/30 px-1.5 py-0.5 rounded text-cyan-300">$1</code>');
+      line = line.replace(/`([^`]+)`/g, '<code class="bg-surface-2 px-1.5 py-0.5 rounded text-ink">$1</code>');
 
       // Bullet points
       if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
@@ -84,8 +84,8 @@ function ChatMessage({ message }: { message: Message }) {
       <div
         className={`max-w-[85%] md:max-w-[90%] px-3.5 py-2.5 rounded-2xl space-y-2.5 ${
           isUser
-            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
-            : 'bg-white/8 text-slate-100 border border-white/10 backdrop-blur-sm'
+            ? 'text-ink shadow-lg'
+            : 'bg-surface-2 text-slate-100 border border-line '
         }`}
       >
         <div
@@ -96,7 +96,7 @@ function ChatMessage({ message }: { message: Message }) {
         {!isUser && (hasDataPayload || message.payload?.explanation) && (
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
+            className="text-xs text-ink hover:text-ink transition-colors flex items-center gap-1"
           >
             {showDetails ? '▼' : '▶'} {showDetails ? 'Hide' : 'Show'} Details
           </button>
@@ -107,7 +107,7 @@ function ChatMessage({ message }: { message: Message }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="text-xs bg-black/20 border border-white/15 rounded-lg p-2.5 overflow-x-auto backdrop-blur-sm"
+            className="text-xs bg-surface-2 border border-line rounded-lg p-2.5 overflow-x-auto"
           >
             {JSON.stringify(dataPayload, null, 2)}
           </motion.pre>
@@ -118,20 +118,20 @@ function ChatMessage({ message }: { message: Message }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="text-xs text-gray-300 space-y-1 bg-black/10 rounded-lg p-2.5 border border-white/10"
+            className="text-xs text-muted space-y-1 bg-surface-2 rounded-lg p-2.5 border border-line"
           >
-            <p><span className="font-semibold text-cyan-400">💭 Thought:</span> {message.payload.explanation.thought}</p>
-            <p><span className="font-semibold text-blue-400">📋 Plan:</span> {message.payload.explanation.plan}</p>
-            <p><span className="font-semibold text-purple-400">🔍 SQL:</span> <code className="block break-words text-cyan-200 mt-1 bg-black/20 p-1.5 rounded">{message.payload.explanation.sql}</code></p>
+            <p><span className="font-semibold text-ink">💭 Thought:</span> {message.payload.explanation.thought}</p>
+            <p><span className="font-semibold text-ink">📋 Plan:</span> {message.payload.explanation.plan}</p>
+            <p><span className="font-semibold text-ink">🔍 SQL:</span> <code className="block break-words text-ink mt-1 bg-surface-2 p-1.5 rounded">{message.payload.explanation.sql}</code></p>
           </motion.div>
         )}
 
         {!isUser && message.payload?.metadata && (
-          <div className="text-xs text-gray-400 flex items-center gap-2">
+          <div className="text-xs text-muted flex items-center gap-2">
             <span className="flex items-center gap-1">
               📊 {message.payload.metadata.rowCount} rows
             </span>
-            <span className="text-gray-500">·</span>
+            <span className="text-muted">·</span>
             <span className="flex items-center gap-1">
               ⚡ {Math.round(message.payload.metadata.latencyMs)}ms
             </span>
@@ -151,7 +151,7 @@ function TypingIndicator() {
       exit={{ opacity: 0, y: -10 }}
       className="flex justify-start"
     >
-      <div className="bg-white/8 text-slate-100 border border-white/10 backdrop-blur-sm px-4 py-3 rounded-2xl">
+      <div className="bg-surface-2 text-slate-100 border border-line px-4 py-3 rounded-2xl">
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
             <motion.div
@@ -170,7 +170,7 @@ function TypingIndicator() {
               transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
             />
           </div>
-          <span className="text-xs text-gray-400">AI is thinking...</span>
+          <span className="text-xs text-muted">AI is thinking...</span>
         </div>
       </div>
     </motion.div>
@@ -357,15 +357,15 @@ export function Chatbot() {
               <ChatMessage message={msg} />
 
               {msg.role === 'assistant' && msg.historyId && (
-                <div className="flex justify-end gap-1.5 text-xs text-gray-400">
+                <div className="flex justify-end gap-1.5 text-xs text-muted">
                   <button
                     type="button"
                     onClick={() => handleFeedbackClick(msg, 1)}
                     disabled={feedbackSubmittingFor === msg.id}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all backdrop-blur-sm ${
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all ${
                       msg.feedback === 1
-                        ? 'bg-green-500/20 text-green-300 border-green-500/40'
-                        : 'border-white/20 hover:border-green-400 hover:text-green-200 hover:bg-green-500/10'
+                        ? 'text-live '
+                        : 'border-line hover:border-green-400 hover:text-live hover:'
                     }`}
                   >
                     👍 Helpful
@@ -374,10 +374,10 @@ export function Chatbot() {
                     type="button"
                     onClick={() => handleFeedbackClick(msg, -1)}
                     disabled={feedbackSubmittingFor === msg.id}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all backdrop-blur-sm ${
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all ${
                       msg.feedback === -1
-                        ? 'bg-red-500/20 text-red-300 border-red-500/40'
-                        : 'border-white/20 hover:border-red-400 hover:text-red-200 hover:bg-red-500/10'
+                        ? 'text-danger '
+                        : 'border-line hover:border-red-400 hover:text-danger hover:'
                     }`}
                   >
                     👎 Needs work
@@ -396,13 +396,13 @@ export function Chatbot() {
       </div>
 
       <div className="mb-4">
-        <p className="text-sm text-white/60 mb-3">Try asking:</p>
+        <p className="text-sm text-muted mb-3">Try asking:</p>
         <div className="flex flex-wrap gap-2">
           {suggestedQuestions.map((question, index) => (
             <button
               key={index}
               onClick={() => setInput(question)}
-              className="px-3 py-2 text-xs bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm"
+              className="px-3 py-2 text-xs bg-surface-2 hover:bg-surface-2 border border-line hover:border-ink rounded-xl text-muted hover:text-ink transition-all duration-200"
             >
               {question}
             </button>
@@ -424,16 +424,16 @@ export function Chatbot() {
           }}
           placeholder="Ask anything about Camilo's fitness or projects..."
           disabled={isLoading}
-          className="flex-1 bg-white/5 border border-white/20 rounded-full px-3.5 py-2.5 text-sm text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="flex-1 bg-surface-2 border border-line rounded-full px-3.5 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={isLoading}
-          className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full px-5 py-2.5 text-sm disabled:opacity-50 hover:from-cyan-400 hover:to-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
+          className="text-ink rounded-full px-5 py-2.5 text-sm disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
         >
           {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-line border-t-white rounded-full animate-spin" />
           ) : (
             'Send'
           )}

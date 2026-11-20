@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Loader2, X } from 'lucide-react';
 import Image from 'next/image';
 import { CHAT_UNAVAILABLE_RECRUITER_FALLBACK } from '@/data/recruiter';
@@ -130,16 +130,6 @@ export default function ChatWidget() {
     });
   }
 
-  function removePendingAssistantMessage() {
-    setMessages((p) => {
-      const last = p[p.length - 1];
-      if (last?.role === 'assistant' && !last.content) {
-        return p.slice(0, -1);
-      }
-      return p;
-    });
-  }
-
   async function send(text?: string) {
     const msg = (text ?? input).trim();
     if (!msg || loading || rateLimitUntil !== null) return;
@@ -237,79 +227,81 @@ export default function ChatWidget() {
     if (open) setHint(false);
   }, [open]);
 
-  function closeChat() {
+  const closeChat = useCallback(() => {
     if (abortRef.current) {
       abortRef.current.abort();
-      removePendingAssistantMessage();
+      setMessages((previous) => {
+        const last = previous[previous.length - 1];
+        return last?.role === 'assistant' && !last.content ? previous.slice(0, -1) : previous;
+      });
     }
     abortRef.current = null;
     setLoading(false);
     setOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeChat();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, closeChat]);
+
+  function openFromTeaser() {
+    setOpen(true);
+    setShowTeaser(false);
   }
 
   return (
-    <div data-chat-widget className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div data-chat-widget className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3 md:bottom-6 md:right-6">
       {open && (
         <div
-          className="w-[min(360px,calc(100vw-48px))] flex flex-col rounded-3xl shadow-2xl shadow-black/40 overflow-hidden backdrop-blur-2xl"
-          style={{
-            height: 480,
-            background: 'rgba(8, 10, 20, 0.92)',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
+          role="dialog"
+          aria-label="Chat with Camilo's assistant"
+          className="panel flex w-[min(360px,calc(100vw-40px))] flex-col overflow-hidden shadow-2xl shadow-black/10"
+          style={{ height: 'min(480px, calc(100dvh - 120px))' }}
         >
-          <div
-            className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
-          >
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <div className="flex items-center gap-2.5">
               <Image
                 src="/bot-avatar.png"
-                alt="AI Assistant"
+                alt=""
                 width={28}
                 height={28}
-                className="rounded-full"
+                className="rounded-full border border-line"
               />
               <div>
-                <p className="text-white text-sm font-semibold leading-none">AI Assistant</p>
-                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                  Applied AI Engineer
-                </p>
+                <p className="text-sm font-semibold leading-none text-ink">Ask Camilo</p>
+                <p className="mt-1 text-xs text-muted">Applied AI Engineer</p>
               </div>
             </div>
             <button
               onClick={closeChat}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-white/30 hover:text-white/70 hover:bg-white/5 transition-colors"
+              className="btn-icon shrink-0 hover:bg-surface-2"
               aria-label="Close chat"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          <div
-            className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
-            style={{ scrollbarWidth: 'none' }}
-          >
+          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
                   data-chat-message-role={m.role}
-                  className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    m.role === 'user' ? 'text-white rounded-br-sm' : 'rounded-bl-sm'
+                  className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                    m.role === 'user' ? 'rounded-br-sm bg-ink text-page' : 'rounded-bl-sm bg-surface-2 text-ink'
                   }`}
-                  style={
-                    m.role === 'user'
-                      ? { background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }
-                      : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.85)' }
-                  }
                 >
                   {m.content ? (
                     <div>{renderChatContent(m.content)}</div>
                   ) : loading && i === messages.length - 1 ? (
-                    <span className="flex gap-1 items-center h-4">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce" style={{ animationDelay: '200ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/60 animate-bounce" style={{ animationDelay: '400ms' }} />
+                    <span className="flex h-4 items-center gap-1" aria-label="Thinking">
+                      <span className="h-1.5 w-1.5 typing-dot rounded-full bg-muted" style={{ animationDelay: '0ms' }} />
+                      <span className="h-1.5 w-1.5 typing-dot rounded-full bg-muted" style={{ animationDelay: '200ms' }} />
+                      <span className="h-1.5 w-1.5 typing-dot rounded-full bg-muted" style={{ animationDelay: '400ms' }} />
                     </span>
                   ) : null}
                 </div>
@@ -322,7 +314,7 @@ export default function ChatWidget() {
                   <button
                     key={q}
                     onClick={() => send(q)}
-                    className="text-left text-xs px-3 py-3 rounded-xl transition-all duration-200 text-white/50 border border-white/[0.08] hover:text-white/80 hover:border-cyan-400/40 hover:bg-cyan-500/5"
+                    className="rounded-md border border-line px-3 py-3 text-left text-xs text-muted transition-colors hover:border-ink hover:text-ink"
                   >
                     {q}
                   </button>
@@ -334,7 +326,7 @@ export default function ChatWidget() {
               <button
                 type="button"
                 onClick={() => send(lastFailedPrompt)}
-                className="text-left text-xs px-3 py-3 rounded-xl transition-all duration-200 text-cyan-100 border border-cyan-400/30 hover:border-cyan-300/60 hover:bg-cyan-500/10"
+                className="rounded-md border border-accent px-3 py-3 text-left text-xs text-accent transition-colors hover:bg-accent hover:text-accent-ink"
               >
                 Retry last question
               </button>
@@ -343,14 +335,8 @@ export default function ChatWidget() {
             <div ref={bottomRef} />
           </div>
 
-          <div className="px-3 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <div
-              className="flex items-center gap-2 rounded-xl px-3 py-2"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }}
-            >
+          <div className="border-t border-line px-3 py-3">
+            <div className="flex items-center gap-2 rounded-md border border-line-strong bg-page px-3 py-1.5 focus-within:border-ink">
               <input
                 ref={inputRef}
                 value={input}
@@ -363,20 +349,16 @@ export default function ChatWidget() {
                 }}
                 disabled={loading || rateLimitUntil !== null}
                 placeholder="Ask anything..."
-                className="flex-1 bg-transparent text-sm text-white/80 placeholder-white/25 outline-none disabled:opacity-50"
+                aria-label="Your question"
+                className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted disabled:opacity-50"
               />
               <button
                 onClick={() => send()}
                 disabled={loading || rateLimitUntil !== null || !input.trim()}
                 aria-label="Send message"
-                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 disabled:opacity-30"
-                style={{ background: 'linear-gradient(135deg, #06b6d4, #3b82f6)' }}
+                className="btn-primary h-11 w-11 flex-shrink-0 p-0 disabled:opacity-30"
               >
-                {loading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-                ) : (
-                  <Send className="w-3.5 h-3.5 text-white" />
-                )}
+                {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
               </button>
             </div>
           </div>
@@ -385,24 +367,18 @@ export default function ChatWidget() {
 
       {!open && showTeaser && (
         <div
-          onClick={() => {
-            setOpen(true);
-            setShowTeaser(false);
+          role="button"
+          tabIndex={0}
+          onClick={openFromTeaser}
+          onKeyDown={(e) => {
+            if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              openFromTeaser();
+            }
           }}
-          className="cursor-pointer select-none backdrop-blur-2xl"
-          style={{
-            background: 'rgba(8, 10, 20, 0.92)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: 16,
-            padding: '10px 14px',
-            fontSize: 13,
-            color: 'rgba(255,255,255,0.85)',
-            maxWidth: 240,
-            lineHeight: 1.45,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            animation: 'fadeSlideUp 0.3s ease',
-            position: 'relative',
-          }}
+          className={`animate-fade-in relative max-w-[240px] cursor-pointer select-none rounded-xl bg-ink py-3 pl-3.5 pr-14 text-[13px] leading-snug text-page shadow-lg ${
+            hint ? '' : 'hidden md:block'
+          }`}
         >
           <button
             onClick={(e) => {
@@ -410,43 +386,17 @@ export default function ChatWidget() {
               setShowTeaser(false);
             }}
             aria-label="Dismiss"
-            style={{
-              position: 'absolute',
-              top: 4,
-              right: 4,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 24,
-              height: 24,
-              borderRadius: 6,
-              color: 'rgba(255,255,255,0.3)',
-            }}
+            className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded text-page transition-colors"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="h-3.5 w-3.5" />
           </button>
           Built a speech ML pipeline from 46 papers. Ask me about it.
-          <div
-            style={{
-              position: 'absolute',
-              bottom: -7,
-              right: 22,
-              width: 0,
-              height: 0,
-              borderLeft: '7px solid transparent',
-              borderRight: '7px solid transparent',
-              borderTop: '7px solid rgba(8, 10, 20, 0.92)',
-            }}
+          <span
+            aria-hidden
+            className="absolute -bottom-[7px] right-[22px] h-0 w-0 border-l-[7px] border-r-[7px] border-t-[7px] border-l-transparent border-r-transparent border-t-ink"
           />
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeSlideUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
 
       <button
         onClick={() => {
@@ -457,24 +407,14 @@ export default function ChatWidget() {
           }
           setShowTeaser(false);
         }}
-        className="flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-105"
-        style={{
-          width: 60,
-          height: 60,
-          borderRadius: '50%',
-          background: open ? 'rgba(255,255,255,0.1)' : 'transparent',
-          border: open ? '1px solid rgba(255,255,255,0.1)' : 'none',
-          overflow: 'hidden',
-          padding: 0,
-          cursor: 'pointer',
-          backdropFilter: 'blur(12px)',
-        }}
+        className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-line bg-surface p-0 text-ink shadow-lg transition-transform hover:scale-105"
         aria-label={open ? 'Close chat' : 'Chat with AI assistant'}
+        aria-expanded={open}
       >
         {open ? (
-          <X className="w-5 h-5 text-white/70" />
+          <X className="h-5 w-5" />
         ) : (
-          <Image src="/bot-avatar.png" alt="Chat" width={60} height={60} className="rounded-full object-cover" />
+          <Image src="/bot-avatar.png" alt="" width={56} height={56} className="h-full w-full rounded-full object-cover" />
         )}
       </button>
     </div>

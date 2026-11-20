@@ -1,5 +1,6 @@
 import { AccountabilityDashboard } from '@/components/features/whoop/AccountabilityDashboard';
-import LiquidNav from '@/components/shared/liquid-nav';
+import Link from 'next/link';
+import PageShell from '@/components/shared/page-shell';
 
 // Configure Incremental Static Regeneration (ISR) with 6-hour revalidation
 export const dynamic = 'auto';
@@ -160,46 +161,37 @@ export default async function AccountabilityPartnerPage() {
     const weeklyHabitsData = await getWeeklyHabitsData();
 
     return (
-        <div className="min-h-screen relative overflow-hidden">
-            {/* Navigation */}
-            <LiquidNav currentPage="apps" />
-
-            {/* Animated Background */}
-            <div className="fixed inset-0 -z-10">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-amber-900/20 to-orange-900/30 animate-gradient-xy"></div>
-                <div className="absolute top-0 left-0 w-full h-full opacity-20">
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        <PageShell currentPage="apps" maxWidth="full">
+            <header className="rise-in grid gap-8 border-b border-line pb-10 md:grid-cols-12 md:gap-12 md:pb-14">
+                <div className="md:col-span-8">
+                    <span className="status status-live">Public commitment tracker</span>
+                    <h1 className="display mt-3">Accountability Partner</h1>
+                    <p className="lede mt-6">
+                        My public accountability board for the morning workout challenge. <em>Every workout, every morning</em>,
+                        for everyone to see.
+                    </p>
                 </div>
-            </div>
+                <dl className="facts self-end md:col-span-4">
+                    <dt>Rule</dt>
+                    <dd>Work out before 8:30 AM, every day</dd>
+                    <dt>Source</dt>
+                    <dd>WHOOP API, refreshed every 6 hours</dd>
+                    <dt>Case study</dt>
+                    <dd>
+                        <Link href="/projects/accountability-partner" className="link mobile-link-target">
+                            Why I built this
+                        </Link>
+                    </dd>
+                </dl>
+            </header>
 
-            {/* Main Content */}
-            <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
-                <div className="max-w-7xl mx-auto">
-                    {/* Hero Section */}
-                    <div className="text-center mb-20">
-                        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200 bg-clip-text text-transparent leading-tight">
-                            Accountability Partner
-                        </h1>
-                        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 rounded-full px-8 py-4 mb-8">
-                            <span className="w-3 h-3 bg-amber-400 rounded-full animate-pulse"></span>
-                            <span className="text-amber-300 font-semibold text-lg tracking-wide">Public Commitment Tracker</span>
-                        </div>
-                        <p className="text-xl md:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
-                            My public accountability board for the morning workout challenge.{' '}
-                            <span className="text-amber-400 font-semibold">Every workout</span>,{' '}
-                            <span className="text-orange-400 font-semibold">every morning</span>,{' '}
-                            <span className="text-amber-300 font-semibold">for everyone to see</span>.
-                        </p>
-                    </div>
-
-                    {/* All dashboard content with year toggle - client component */}
-                    <AccountabilityDashboard
-                        weeklyMetrics={weeklyMetrics}
-                        weeklyHabitsData={weeklyHabitsData}
-                    />
-                </div>
+            <div className="py-10 md:py-14">
+                {/* All dashboard content with year toggle - client component */}
+                <AccountabilityDashboard
+                    weeklyMetrics={weeklyMetrics}
+                    weeklyHabitsData={weeklyHabitsData}
+                />
             </div>
-        </div>
+        </PageShell>
     );
 }

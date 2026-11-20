@@ -41,5 +41,9 @@ test.describe('Case Study Pages', () => {
     const response = await page.goto('/projects/social-media-pipeline');
     expect(response?.status()).toBeLessThan(400);
     await expect(page.getByRole('heading', { name: 'Social Media Pipeline' })).toBeVisible();
+    const technicalStory = page.getByRole('link', { name: 'Read the technical story', exact: true });
+    await expect(technicalStory).toHaveAttribute('target', '_blank');
+    await expect(technicalStory).toHaveAttribute('rel', 'noopener noreferrer');
+    await expect(page.getByRole('region', { name: 'Built with', exact: true })).toBeVisible();
   });
 });

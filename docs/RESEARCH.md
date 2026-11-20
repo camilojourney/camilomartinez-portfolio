@@ -73,11 +73,7 @@ Strava API ──→ strava-*-sync (cron) ──→ Vercel Postgres
 - Dynamic routes: WHOOP app (auth-gated), Astoria Conquest (Strava data)
 
 ### Key Components
-- **Liquid nav** — animated navigation bar
-- **Liquid background** — particle animation background
-- **WHOOP dashboard** — interactive fitness analytics with charts
-- **Astoria Conquest** — Strava GPS data → neighborhood street coverage map
-- **AI Chatbot** — streaming conversational interface on About page
+See [Frontend components](../ARCHITECTURE.md#components-srccomponents) for the current component owners.
 
 ### Tech Stack
 - Next.js 14 (App Router)

@@ -44,19 +44,19 @@ export function DailyFetchControl() {
   };
 
   return (
-    <Card className="p-8 border-white/10 hover:border-blue-400/30 transition-all duration-300">
+    <Card className="p-8 border-line hover:transition-all duration-300">
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 rounded-full px-6 py-3 mb-6">
+        <div className="inline-flex items-center gap-3 border rounded-full px-6 py-3 mb-6">
           <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-          <span className="text-blue-300 font-semibold tracking-wide">Data Pipeline Control</span>
+          <span className="text-ink font-semibold tracking-wide">Data Pipeline Control</span>
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-ink">
           Daily Data Sync
         </h2>
-        <p className="text-white/70 text-lg max-w-3xl mx-auto leading-relaxed">
+        <p className="text-muted text-lg max-w-3xl mx-auto leading-relaxed">
           Manually trigger the daily WHOOP data collection pipeline. This connects to the same cron job that runs automatically at 3 PM daily.
-          <span className="block mt-2 text-blue-400 font-semibold">Real-time Token Refresh • Multi-user Data Processing • Error Handling</span>
-          <span className="block mt-1 text-blue-300 text-sm">Skills: API Integration, Cron Jobs, Data Pipeline Engineering, Error Recovery</span>
+          <span className="block mt-2 text-ink font-semibold">Real-time Token Refresh • Multi-user Data Processing • Error Handling</span>
+          <span className="block mt-1 text-ink text-sm">Skills: API Integration, Cron Jobs, Data Pipeline Engineering, Error Recovery</span>
         </p>
       </div>
 
@@ -66,7 +66,7 @@ export function DailyFetchControl() {
           <button
             onClick={() => handleDailyFetch(true)}
             disabled={isLoading}
-            className="px-8 py-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-400/30 rounded-lg text-blue-300 font-semibold hover:from-blue-500/30 hover:to-indigo-500/30 hover:border-blue-400/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-4 border rounded-lg text-ink font-semibold hover:transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Running...' : 'Test Connection (Dry Run)'}
           </button>
@@ -74,7 +74,7 @@ export function DailyFetchControl() {
           <button
             onClick={() => handleDailyFetch(false)}
             disabled={isLoading}
-            className="px-8 py-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-lg text-green-300 font-semibold hover:from-green-500/30 hover:to-emerald-500/30 hover:border-green-400/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-4 border rounded-lg text-live font-semibold hover:transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Syncing...' : 'Sync Latest Data'}
           </button>
@@ -83,8 +83,8 @@ export function DailyFetchControl() {
         {/* Loading State */}
         {isLoading && (
           <div className="text-center">
-            <div className="inline-flex items-center gap-3 text-white/60">
-              <div className="w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+            <div className="inline-flex items-center gap-3 text-muted">
+              <div className="w-5 h-5 border-2 border-t-blue-400 rounded-full animate-spin"></div>
               <span>Processing data pipeline...</span>
             </div>
           </div>
@@ -95,8 +95,8 @@ export function DailyFetchControl() {
           <div className="mt-8">
             <div className={`p-6 rounded-lg border ${
               result.success 
-                ? 'bg-green-500/10 border-green-400/30 text-green-300' 
-                : 'bg-red-500/10 border-red-400/30 text-red-300'
+                ? 'text-live'
+                : 'text-danger'
             }`}>
               <div className="flex items-center gap-3 mb-4">
                 {result.success ? (
@@ -127,7 +127,7 @@ export function DailyFetchControl() {
                     result.error.includes('RefreshAccessTokenError') ||
                     result.error.includes('invalid_request') ||
                     result.error.includes('400 Bad Request')) && (
-                    <div className="p-4 bg-yellow-500/10 border border-yellow-400/20 rounded text-yellow-300 text-sm">
+                    <div className="p-4 border rounded text-warn text-sm">
                       <div className="flex items-start gap-3">
                         <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 15.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -138,13 +138,13 @@ export function DailyFetchControl() {
                           <div className="flex gap-2">
                             <button 
                               onClick={() => window.location.href = '/signin'}
-                              className="px-3 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-400/30 rounded text-xs font-medium transition-colors"
+                              className="px-3 py-1.5 hover:border rounded text-xs font-medium transition-colors"
                             >
                               Re-authenticate with WHOOP
                             </button>
                             <button 
                               onClick={() => window.location.href = '/whoop-dashboard'}
-                              className="px-3 py-1.5 bg-gray-500/20 hover:bg-gray-500/30 border border-gray-400/30 rounded text-xs font-medium transition-colors"
+                              className="px-3 py-1.5 bg-gray-500/20 hover:bg-gray-500/30 border border-line/30 rounded text-xs font-medium transition-colors"
                             >
                               Go to Dashboard
                             </button>
@@ -159,7 +159,7 @@ export function DailyFetchControl() {
               {result.data && (
                 <div className="space-y-3">
                   {result.data.dryRun && (
-                    <div className="p-4 bg-blue-500/10 border border-blue-400/20 rounded text-blue-300 text-sm">
+                    <div className="p-4 border rounded text-ink text-sm">
                       <strong>Dry Run:</strong> Connection test successful. No data was actually fetched.
                     </div>
                   )}
@@ -192,7 +192,7 @@ export function DailyFetchControl() {
                       <h4 className="font-semibold mb-3">User Results:</h4>
                       <div className="space-y-2">
                         {result.data.data.userResults.map((user: any, index: number) => (
-                          <div key={index} className="p-3 bg-white/5 rounded border border-white/10 text-sm">
+                          <div key={index} className="p-3 bg-surface-2 rounded border border-line text-sm">
                             <div className="font-medium">{user.userName}</div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-xs opacity-80">
                               <span>Cycles: {user.newCycles || 0}</span>

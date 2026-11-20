@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, ReferenceLine } from 'recharts'
 
 const formatDate = (dateString: string) => {
@@ -12,15 +11,15 @@ const formatDate = (dateString: string) => {
 }
 
 const getBarColor = (recovery: number) => {
-    if (recovery >= 67) return '#22C55E'
-    if (recovery >= 34) return '#FBBF24'
-    return '#EF4444'
+    if (recovery >= 67) return 'rgb(var(--live))'
+    if (recovery >= 34) return 'rgb(var(--warn))'
+    return 'rgb(var(--danger))'
 }
 
 const getBarGlow = (recovery: number) => {
-    if (recovery >= 67) return '0 0 12px rgba(34, 197, 94, 0.4)'
-    if (recovery >= 34) return '0 0 12px rgba(251, 191, 36, 0.3)'
-    return '0 0 12px rgba(239, 68, 68, 0.3)'
+    if (recovery >= 67) return '0 0 12px rgb(var(--live) / 0.4)'
+    if (recovery >= 34) return '0 0 12px rgb(var(--warn) / 0.3)'
+    return '0 0 12px rgb(var(--danger) / 0.3)'
 }
 
 const getRecoveryLabel = (recovery: number) => {
@@ -53,30 +52,27 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
         const recovery = data.recovery
         return (
             <div
-                className="bg-black/95 backdrop-blur-xl border border-white/15 rounded-xl p-4 shadow-2xl min-w-[200px]"
+                className="bg-surface border border-line rounded-xl p-4 shadow-2xl min-w-[200px]"
                 style={{ boxShadow: getBarGlow(recovery) }}
             >
-                <p className="text-white/90 text-sm font-medium mb-3 border-b border-white/10 pb-2">{label}</p>
+                <p className="text-ink text-sm font-medium mb-3 border-b border-line pb-2">{label}</p>
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-4">
-                        <span className="text-white/60 text-sm">Recovery</span>
+                        <span className="text-muted text-sm">Recovery</span>
                         <span className="text-lg font-bold" style={{ color: getBarColor(recovery) }}>
                             {recovery}%
                         </span>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                        <span className="text-white/60 text-sm">HRV</span>
-                        <span className="text-cyan-400 font-semibold">{data.hrv?.toFixed(0)} ms</span>
+                        <span className="text-muted text-sm">HRV</span>
+                        <span className="text-ink font-semibold">{data.hrv?.toFixed(0)} ms</span>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                        <span className="text-white/60 text-sm">Resting HR</span>
-                        <span className="text-purple-400 font-semibold">{data.rhr} bpm</span>
+                        <span className="text-muted text-sm">Resting HR</span>
+                        <span className="text-ink font-semibold">{data.rhr} bpm</span>
                     </div>
-                    <div className="mt-2 pt-2 border-t border-white/10">
-                        <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                            backgroundColor: `${getBarColor(recovery)}20`,
-                            color: getBarColor(recovery)
-                        }}>
+                    <div className="mt-2 pt-2 border-t border-line">
+                        <span className="bg-surface-2 text-xs px-2 py-0.5 rounded-full" style={{ color: getBarColor(recovery) }}>
                             {getRecoveryLabel(recovery)} Zone
                         </span>
                     </div>
@@ -88,8 +84,6 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 }
 
 export function RecoveryChart({ data }: RecoveryChartProps) {
-    const [activeIndex, setActiveIndex] = useState<number | null>(null)
-
     const chartData = data.map(item => ({
         date: formatDate(item.created_at),
         recovery: item.score.recovery_score,
@@ -104,32 +98,32 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
         : 0
 
     return (
-        <div className="liquid-glass-card backdrop-blur-xl bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6 shadow-lg">
+        <div className="panel bg-surface-2 border border-line rounded-2xl p-6 shadow-lg">
             {/* Header with live stats */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                        <h3 className="text-xl font-semibold text-white">7-Day Recovery Trend</h3>
+                        <div className="w-2 h-2 rounded-full bg-live animate-pulse" />
+                        <h3 className="text-xl font-semibold text-ink">7-Day Recovery Trend</h3>
                     </div>
-                    <p className="text-white/50 text-sm">Live recovery scores from WHOOP API</p>
+                    <p className="text-muted text-sm">Live recovery scores from WHOOP API</p>
                 </div>
                 <div className="flex gap-4">
-                    <div className="text-center px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] stat-card-hover">
+                    <div className="text-center px-4 py-2 rounded-xl bg-surface-2 border border-line stat-card-hover">
                         <div className="text-2xl font-bold" style={{ color: getBarColor(latestRecovery) }}>
                             {latestRecovery}%
                         </div>
-                        <div className="text-white/50 text-xs font-medium">Today</div>
+                        <div className="text-muted text-xs font-medium">Today</div>
                     </div>
-                    <div className="text-center px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] stat-card-hover">
-                        <div className="text-2xl font-bold text-cyan-400">{avgRecovery.toFixed(0)}%</div>
-                        <div className="text-white/50 text-xs font-medium">7d Avg</div>
+                    <div className="text-center px-4 py-2 rounded-xl bg-surface-2 border border-line stat-card-hover">
+                        <div className="text-2xl font-bold text-ink">{avgRecovery.toFixed(0)}%</div>
+                        <div className="text-muted text-xs font-medium">7d Avg</div>
                     </div>
-                    <div className="text-center px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] stat-card-hover">
-                        <div className={`text-2xl font-bold ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className="text-center px-4 py-2 rounded-xl bg-surface-2 border border-line stat-card-hover">
+                        <div className={`text-2xl font-bold ${trend >= 0 ? 'text-live' : 'text-danger'}`}>
                             {trend >= 0 ? '+' : ''}{trend}
                         </div>
-                        <div className="text-white/50 text-xs font-medium">Change</div>
+                        <div className="text-muted text-xs font-medium">Change</div>
                     </div>
                 </div>
             </div>
@@ -139,55 +133,41 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
                     <BarChart
                         data={chartData}
                         margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
-                        onMouseMove={(state: Record<string, unknown>) => {
-                            if (state?.activeTooltipIndex !== undefined) {
-                                setActiveIndex(state.activeTooltipIndex as number)
-                            }
-                        }}
-                        onMouseLeave={() => setActiveIndex(null)}
                     >
-                        <defs>
-                            {chartData.map((entry, index) => (
-                                <linearGradient key={`grad-${index}`} id={`recovery-gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={getBarColor(entry.recovery)} stopOpacity={1} />
-                                    <stop offset="100%" stopColor={getBarColor(entry.recovery)} stopOpacity={0.4} />
-                                </linearGradient>
-                            ))}
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" vertical={false} />
                         <XAxis
                             dataKey="date"
-                            stroke="rgba(255,255,255,0.4)"
+                            stroke="rgb(var(--muted))"
                             fontSize={11}
                             tickLine={false}
-                            axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                            tick={{ fill: 'rgba(255,255,255,0.5)' }}
+                            axisLine={{ stroke: 'rgb(var(--line))' }}
+                            tick={{ fill: 'rgb(var(--muted))' }}
                         />
                         <YAxis
-                            stroke="rgba(255,255,255,0.4)"
+                            stroke="rgb(var(--muted))"
                             fontSize={11}
                             domain={[0, 100]}
                             ticks={[0, 25, 50, 75, 100]}
                             tickLine={false}
                             axisLine={false}
                             tickFormatter={(v: number) => `${v}%`}
-                            tick={{ fill: 'rgba(255,255,255,0.5)' }}
+                            tick={{ fill: 'rgb(var(--muted))' }}
                         />
                         <ReferenceLine
                             y={67}
-                            stroke="rgba(34, 197, 94, 0.3)"
+                            stroke="rgb(var(--live))"
                             strokeDasharray="4 4"
-                            label={{ value: 'Green Zone', fill: 'rgba(34, 197, 94, 0.5)', fontSize: 10, position: 'insideTopRight' }}
+                            label={{ value: 'Green Zone', fill: 'rgb(var(--live))', fontSize: 10, position: 'insideTopRight' }}
                         />
                         <ReferenceLine
                             y={34}
-                            stroke="rgba(239, 68, 68, 0.3)"
+                            stroke="rgb(var(--danger))"
                             strokeDasharray="4 4"
-                            label={{ value: 'Red Zone', fill: 'rgba(239, 68, 68, 0.5)', fontSize: 10, position: 'insideBottomRight' }}
+                            label={{ value: 'Red Zone', fill: 'rgb(var(--danger))', fontSize: 10, position: 'insideBottomRight' }}
                         />
                         <Tooltip
                             content={<CustomTooltip />}
-                            cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                            cursor={{ fill: 'rgb(var(--line))' }}
                             isAnimationActive={true}
                             animationDuration={150}
                         />
@@ -201,9 +181,7 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
                             {chartData.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={`url(#recovery-gradient-${index})`}
-                                    opacity={activeIndex === null || activeIndex === index ? 1 : 0.4}
-                                    style={{ transition: 'opacity 200ms ease' }}
+                                    fill={getBarColor(entry.recovery)}
                                 />
                             ))}
                         </Bar>
@@ -212,18 +190,18 @@ export function RecoveryChart({ data }: RecoveryChartProps) {
             </div>
 
             {/* Recovery zone legend */}
-            <div className="flex justify-center gap-6 mt-4 pt-4 border-t border-white/[0.06]">
+            <div className="flex justify-center gap-6 mt-4 pt-4 border-t border-line">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(34,197,94,0.4)' }} />
-                    <span className="text-white/60 text-xs">Green (67%+)</span>
+                    <div className="w-3 h-3 rounded-full bg-live" />
+                    <span className="text-muted text-xs">Green (67%+)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(251,191,36,0.4)' }} />
-                    <span className="text-white/60 text-xs">Yellow (34-66%)</span>
+                    <div className="w-3 h-3 rounded-full bg-warn" />
+                    <span className="text-muted text-xs">Yellow (34-66%)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500 shadow-lg" style={{ boxShadow: '0 0 6px rgba(239,68,68,0.4)' }} />
-                    <span className="text-white/60 text-xs">Red (&lt;34%)</span>
+                    <div className="w-3 h-3 rounded-full bg-danger" />
+                    <span className="text-muted text-xs">Red (&lt;34%)</span>
                 </div>
             </div>
         </div>

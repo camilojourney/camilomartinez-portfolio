@@ -5,7 +5,7 @@ export function BlogPosts() {
   const allBlogs = getBlogPosts()
 
   return (
-    <div className="space-y-4">
+    <div className="row-list">
       {allBlogs
         .sort((a, b) => {
           if (
@@ -16,25 +16,24 @@ export function BlogPosts() {
           return 1
         })
         .map((post) => (
-          <Link
-            key={post.slug}
-            className="group block rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/[0.16] hover:bg-white/[0.05] hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cyan-500/[0.05]"
-            href={`/blog/${post.slug}`}
-          >
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-white/40 font-medium tabular-nums">
-                {formatDate(post.metadata.publishedAt, false)}
-              </p>
-              <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300 transition-colors duration-200">
-                {post.metadata.title}
-              </h3>
+          <article key={post.slug} className="grid gap-1 py-6 md:grid-cols-12 md:gap-8">
+            <time
+              dateTime={post.metadata.publishedAt}
+              className="text-sm tabular-nums text-muted md:col-span-3 md:pt-1"
+            >
+              {formatDate(post.metadata.publishedAt, false)}
+            </time>
+            <div className="md:col-span-9">
+              <h2 className="title-md">
+                <Link href={`/blog/${post.slug}`} className="mobile-link-target hover:text-accent">
+                  {post.metadata.title}
+                </Link>
+              </h2>
               {post.metadata.summary && (
-                <p className="text-sm text-white/50 leading-relaxed line-clamp-2">
-                  {post.metadata.summary}
-                </p>
+                <p className="body-muted mt-2 line-clamp-2 text-[0.9375rem]">{post.metadata.summary}</p>
               )}
             </div>
-          </Link>
+          </article>
         ))}
     </div>
   )

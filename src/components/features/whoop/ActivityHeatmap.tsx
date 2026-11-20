@@ -60,19 +60,10 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     const calendarContainerRef = React.useRef<HTMLDivElement>(null);
     const weeklyChartScrollRef = React.useRef<HTMLDivElement>(null);
 
-    // Color and label utility functions (unchanged)
     const getStrainColor = (strain: number): string => {
-        if (strain === 0) return 'bg-gray-900';
-        if (strain < 3) return 'bg-green-900/30';
-        if (strain < 6) return 'bg-green-800/50';
-        if (strain < 8) return 'bg-green-700/60';
-        if (strain < 10) return 'bg-green-600/70';
-        if (strain < 12) return 'bg-green-500/80';
-        if (strain < 14) return 'bg-green-400/90';
-        if (strain < 16) return 'bg-green-400';
-        if (strain < 18) return 'bg-green-300';
-        if (strain < 20) return 'bg-green-200';
-        return 'bg-green-100';
+        if (strain === 0) return 'rgb(var(--surface-2))';
+        const level = [3, 6, 8, 10, 12, 14, 16, 18, 20].filter(threshold => strain >= threshold).length;
+        return `color-mix(in srgb, rgb(var(--live)), rgb(var(--ink)) ${level * 8}%)`;
     };
 
     const getStrainLabel = (strain: number): string => {
@@ -335,36 +326,36 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
     }, [weeks.length, weeklyStrainData.length, selectedYear]);
 
     return (
-        <div ref={mainContainerRef} className="liquid-glass-card relative backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8">
+        <div ref={mainContainerRef} className="panel relative bg-surface-2 border border-line rounded-xl p-8">
             {/* Header, Year Selector, Stats Summary (Unchanged) */}
 
             <div className="mt-1 mb-3 flex items-center justify-center">
-                <div className="flex items-center gap-1 bg-white/[0.03] p-2 rounded-2xl">
+                <div className="flex items-center gap-1 bg-surface-2 p-2 rounded-2xl">
                     {availableYears.map(year => (
-                        <button key={year} onClick={() => setSelectedYear(year)} className={`px-4 py-2 rounded-xl text-sm ${selectedYear === year ? 'bg-green-400 text-black' : 'text-white/70 hover:bg-white/5'}`}>
+                        <button key={year} onClick={() => setSelectedYear(year)} className={`px-4 py-2 rounded-xl text-sm ${selectedYear === year ? 'bg-ink text-page' : 'text-muted hover:bg-surface-2'}`}>
                             {year}
                         </button>
                     ))}
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="text-center"><div className="text-3xl font-light text-green-400">{totalActiveDays}</div><div className="text-white/60 text-sm">Active Days</div></div>
-                <div className="text-center"><div className="text-3xl font-light text-green-400">{(averageStrain || 0).toFixed(1)}</div><div className="text-white/60 text-sm">Avg Strain</div></div>
+                <div className="text-center"><div className="text-3xl font-light text-live">{totalActiveDays}</div><div className="text-muted text-sm">Active Days</div></div>
+                <div className="text-center"><div className="text-3xl font-light text-live">{(averageStrain || 0).toFixed(1)}</div><div className="text-muted text-sm">Avg Strain</div></div>
                 <div className="text-center">
-                    <div className="text-3xl font-light text-green-400">{weeklySuccessRate.toFixed(0)}%</div>
-                    <div className="text-white/60 text-sm">Weeks at Goal</div>
-                    <div className="text-white/40 text-xs mt-1">{weeksAtGoal}/{totalWeeks} weeks ≥10</div>
+                    <div className="text-3xl font-light text-live">{weeklySuccessRate.toFixed(0)}%</div>
+                    <div className="text-muted text-sm">Weeks at Goal</div>
+                    <div className="text-muted text-xs mt-1">{weeksAtGoal}/{totalWeeks} weeks ≥10</div>
                 </div>
             </div>
             
             {/* Calendar */}
             <div ref={calendarContainerRef} className="relative overflow-hidden">
-                <div ref={scrollContainerRef} className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-green-400/30">
+                <div ref={scrollContainerRef} className="overflow-x-auto pb-4">
                     <div className="inline-block mx-auto">
                         {/* Heatmap Month labels - NOW perfectly aligned */}
                         <div className="flex gap-1 mb-2 ml-[3.25rem] min-w-max">
                             {weeks.map((_, weekIndex) => (
-                                <div key={weekIndex} className="w-3 text-xs text-white/50 text-left">
+                                <div key={weekIndex} className="w-3 text-xs text-muted text-left">
                                     {monthLabels.get(weekIndex) || ''}
                                 </div>
                             ))}
@@ -372,9 +363,9 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
 
                         <div className="flex gap-1 min-w-max">
                             {/* Weekday labels */}
-                            <div className="flex flex-col gap-1 mr-3 sticky left-0 z-10 bg-slate-900/80 backdrop-blur-sm px-1.5 py-0.5 rounded-r-md shadow-lg">
+                            <div className="flex flex-col gap-1 mr-3 sticky left-0 z-10 bg-surface px-1.5 py-0.5 rounded-r-md shadow-lg">
                                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
-                                    <div key={index} className="w-6 h-3 flex items-center text-xs text-white/90 font-medium">
+                                    <div key={index} className="w-6 h-3 flex items-center text-xs text-ink font-medium">
                                         {(index === 1 && 'Mon') || (index === 3 && 'Wed') || (index === 5 && 'Fri')}
                                     </div>
                                 ))}
@@ -387,7 +378,9 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                         {week.map((day, dayIndex) => (
                                             <div
                                                 key={`${weekIndex}-${dayIndex}`}
-                                                className={`w-3 h-3 rounded-sm transition-transform hover:scale-125 cursor-pointer ${day.date ? (day.strain > 0 ? getStrainColor(day.strain) : 'bg-gray-900/50') : 'bg-transparent'} ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-green-400' : ''}`}
+                                                className={`w-3 h-3 rounded-sm transition-transform hover:scale-125 cursor-pointer ${day.date && day.strain === 0 ? 'border border-muted' : ''} ${hoveredDay?.date === day.date || selectedDay?.date === day.date ? 'ring-2 ring-accent' : ''}`}
+                                                style={{ backgroundColor: day.date ? getStrainColor(day.strain) : 'transparent' }}
+                                                title={day.date ? `${day.date}: strain ${day.strain}` : undefined}
                                                 onMouseEnter={e => handleMouseEnter(day, e)}
                                                 onMouseLeave={handleMouseLeave}
                                                 onClick={() => handleClick(day)}
@@ -401,42 +394,33 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                 </div>
                 
                 {/* Legend */}
-                <div className="flex items-center gap-3 mt-6 text-xs text-white/60">
+                <div className="flex items-center gap-3 mt-6 text-xs text-muted">
                     <span className="font-light">Less</span>
                     <div className="flex gap-0.5 relative">
-                        <div className="w-2.5 h-2.5 bg-gray-900 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">0: No Activity</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-900/30 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">1-2: Recovery Day</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-800/50 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">3-5: Rest Day</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-700/60 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">6-7: Light Activity</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-600/70 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">8-9: Moderate Activity</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-500/80 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">10-11: Good Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-400/90 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">12-13: Solid Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-400 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">14-15: High Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-300 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">16-17: Very High Training</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-200 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">18-19: Elite Performance</div>
-                        </div>
-                        <div className="w-2.5 h-2.5 bg-green-100 rounded-sm cursor-help group">
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/90 text-white px-2 py-1 rounded text-xs whitespace-nowrap">20-21: Exceptional Performance</div>
-                        </div>
+                        {[
+                            [0, '0'],
+                            [1, '1-2'],
+                            [3, '3-5'],
+                            [6, '6-7'],
+                            [8, '8-9'],
+                            [10, '10-11'],
+                            [12, '12-13'],
+                            [14, '14-15'],
+                            [16, '16-17'],
+                            [18, '18-19'],
+                            [20, '20-21'],
+                        ].map(([strain, range]) => (
+                            <div
+                                key={range}
+                                className={`w-2.5 h-2.5 rounded-sm cursor-help group ${strain === 0 ? 'border border-muted' : ''}`}
+                                style={{ backgroundColor: getStrainColor(Number(strain)) }}
+                                title={`${range}: ${getStrainLabel(Number(strain))}`}
+                            >
+                                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface text-ink px-2 py-1 rounded text-xs whitespace-nowrap">
+                                    {range}: {getStrainLabel(Number(strain))}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                     <span className="font-light">More</span>
                 </div>
@@ -445,18 +429,18 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                 {weeklyStrainData && weeklyStrainData.length > 0 && (
                     <div className="mt-8">
                         <div className="text-center mb-4">
-                            <h3 className="text-lg text-cyan-400">Weekly Average Strain: Chasing the 10 Goal ⚡</h3>
-                            <p className="text-sm text-white/60">
+                            <h3 className="text-lg text-ink">Weekly Average Strain: Chasing the 10 Goal ⚡</h3>
+                            <p className="text-sm text-muted">
                                 Each dot represents my weekly average strain. Consistency above 10 means optimal fitness growth.
                             </p>
                         </div>
                         
                         {/* Scrollable chart container */}
-                        <div ref={weeklyChartScrollRef} className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-green-400/30 scrollbar-track-white/5">
+                        <div ref={weeklyChartScrollRef} className="overflow-x-auto pb-4">
                             <div className="inline-block min-w-full">
                                 <div className="h-32 relative min-w-max">
                                     {/* Goal Line */}
-                                    <div className="absolute w-full border-t border-yellow-400/50 border-dashed" style={{ top: `${100 - (10 / 22) * 100}%`, left: '3.25rem', right: 0 }} />
+                                    <div className="absolute w-full border-t border-dashed border-warn" style={{ top: `${100 - (10 / 22) * 100}%`, left: '3.25rem', right: 0 }} />
                                     
                                     {/* Chart Data Points */}
                                     <div className="absolute inset-0 flex gap-1 ml-[3.25rem] min-w-max">
@@ -472,7 +456,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                                                 top: `calc(${100 - (weekData.averageStrain / 22) * 100}%)`,
                                                                 left: '2px', // Centered in the 3px week column
                                                                 transform: 'translateY(-50%)',
-                                                                backgroundColor: weekData.averageStrain >= 9.9 ? 'rgb(34 197 94)' : 'rgb(239 68 68)'
+                                                                backgroundColor: weekData.averageStrain >= 9.9 ? 'rgb(var(--live))' : 'rgb(var(--danger))'
                                                             }}
                                                             onMouseEnter={e => {
                                                                 if (mainContainerRef.current) {
@@ -509,7 +493,7 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                 {/* Chart Month labels - Aligned with heatmap */}
                                 <div className="flex gap-1 mt-2 ml-[3.25rem] min-w-max">
                                    {weeks.map((_, weekIndex) => (
-                                        <div key={weekIndex} className="w-3 text-xs text-white/50 text-left">
+                                        <div key={weekIndex} className="w-3 text-xs text-muted text-left">
                                             {monthLabels.get(weekIndex) || ''}
                                         </div>
                                     ))}
@@ -520,18 +504,18 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                         {/* Weekly Strain Legend and Stats */}
                         <div className="mt-6 flex flex-col gap-4">
                             {/* Legend */}
-                            <div className="flex justify-center items-center gap-6 p-4 bg-black/20 rounded-xl">
+                            <div className="flex justify-center items-center gap-6 p-4 bg-surface-2 rounded-xl">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#22c55e]"></div>
-                                    <span className="text-white/70 text-sm">Above Goal (10+)</span>
+                                    <div className="w-3 h-3 rounded-full bg-live"></div>
+                                    <span className="text-muted text-sm">Above Goal (10+)</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full bg-[#ef4444]"></div>
-                                    <span className="text-white/70 text-sm">Below Goal</span>
+                                    <div className="w-3 h-3 rounded-full bg-danger"></div>
+                                    <span className="text-muted text-sm">Below Goal</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-4 h-0.5 bg-yellow-400 border-dashed"></div>
-                                    <span className="text-white/70 text-sm">Target (10)</span>
+                                    <div className="w-4 h-0.5 bg-warn border-dashed"></div>
+                                    <span className="text-muted text-sm">Target (10)</span>
                                 </div>
                             </div>
 
@@ -546,23 +530,23 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                 const averageStrain = last12Weeks.reduce((sum, week) => sum + week.averageStrain, 0) / totalWeeks;
 
                                 return (
-                                    <div className="flex justify-center items-center gap-8 p-4 bg-black/20 rounded-xl">
+                                    <div className="flex justify-center items-center gap-8 p-4 bg-surface-2 rounded-xl">
                                         <div className="text-center">
-                                            <div className="text-white/60 text-sm mb-1">Last 3 Months</div>
-                                            <div className="text-xl font-semibold text-cyan-400">{successRate.toFixed(1)}%</div>
-                                            <div className="text-white/60 text-xs">Success Rate</div>
+                                            <div className="text-muted text-sm mb-1">Last 3 Months</div>
+                                            <div className="text-xl font-semibold text-ink">{successRate.toFixed(1)}%</div>
+                                            <div className="text-muted text-xs">Success Rate</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-white/60 text-sm mb-1">Weeks at Goal</div>
-                                            <div className="text-xl font-semibold text-cyan-400">{successfulWeeks} of {totalWeeks}</div>
-                                            <div className="text-white/60 text-xs">Last 12 Weeks</div>
+                                            <div className="text-muted text-sm mb-1">Weeks at Goal</div>
+                                            <div className="text-xl font-semibold text-ink">{successfulWeeks} of {totalWeeks}</div>
+                                            <div className="text-muted text-xs">Last 12 Weeks</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-white/60 text-sm mb-1">Average Strain</div>
-                                            <div className="text-xl font-semibold text-cyan-400">
+                                            <div className="text-muted text-sm mb-1">Average Strain</div>
+                                            <div className="text-xl font-semibold text-ink">
                                                 {averageStrain.toFixed(1)}
                                             </div>
-                                            <div className={`text-xs ${averageStrain >= TARGET_STRAIN ? 'text-green-400' : 'text-red-400'}`}>
+                                            <div className={`text-xs ${averageStrain >= TARGET_STRAIN ? 'text-live' : 'text-danger'}`}>
                                                 {averageStrain >= TARGET_STRAIN ? 'At Goal! 🎯' : `${(TARGET_STRAIN - averageStrain).toFixed(1)} Below Goal`}
                                             </div>
                                         </div>
@@ -586,8 +570,8 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                         transform: 'translate(-50%, calc(-100% - 8px))',
                     }}
                 >
-                    <div className="bg-black/95 backdrop-blur-sm border-2 border-green-400 rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
-                        <div className="text-white text-sm font-medium mb-2">
+                    <div className="bg-surface border border-line rounded-lg p-3 shadow-2xl min-w-[180px] max-w-[220px]">
+                        <div className="text-ink text-sm font-medium mb-2">
                             {new Date(hoveredDay.date + 'T00:00:00').toLocaleDateString('en-US', {
                                 weekday: 'short',
                                 month: 'short',
@@ -595,17 +579,17 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                                 year: 'numeric'
                             })}
                         </div>
-                        <div className="border-t border-gray-600 pt-2">
+                        <div className="border-t border-line pt-2">
                             {hoveredDay.strain > 0 ? (
                                 <>
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-gray-300 text-sm">Strain:</span>
-                                        <span className="text-green-400 text-lg font-bold">{hoveredDay.strain.toFixed(1)}</span>
+                                        <span className="text-muted text-sm">Strain:</span>
+                                        <span className="text-live text-lg font-bold">{hoveredDay.strain.toFixed(1)}</span>
                                     </div>
-                                    <div className="text-green-300 text-xs font-medium">{getStrainLabel(hoveredDay.strain)}</div>
+                                    <div className="text-live text-xs font-medium">{getStrainLabel(hoveredDay.strain)}</div>
                                 </>
                             ) : (
-                                <div className="text-gray-400 text-sm text-center">No Activity</div>
+                                <div className="text-muted text-sm text-center">No Activity</div>
                             )}
                         </div>
                     </div>
@@ -622,28 +606,28 @@ export function ActivityHeatmap({ data, monthlyData }: ActivityHeatmapProps) {
                         transform: 'translate(-50%, calc(-100% - 8px))'
                     }}
                 >
-                    <div className="bg-black/95 backdrop-blur-sm border-2 border-yellow-400 rounded-lg p-3 shadow-2xl min-w-[160px]">
-                        <div className="text-white text-sm font-medium mb-1">
+                    <div className="bg-surface border border-line rounded-lg p-3 shadow-2xl min-w-[160px]">
+                        <div className="text-ink text-sm font-medium mb-1">
                             {hoveredMonth.label}
                         </div>
-                        <div className="text-xs text-gray-400 mb-2">
+                        <div className="text-xs text-muted mb-2">
                             {new Date(hoveredMonth.weekStart + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                             {' → '}
                             {new Date(hoveredMonth.weekEnd + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-gray-300 text-sm">Average Strain:</span>
-                            <span className="text-yellow-400 text-lg font-bold">
+                            <span className="text-muted text-sm">Average Strain:</span>
+                            <span className="text-warn text-lg font-bold">
                                 {hoveredMonth.average_strain.toFixed(1)}
                             </span>
                         </div>
-                        <div className="text-xs text-gray-400 border-t border-gray-600 pt-2">
+                        <div className="text-xs text-muted border-t border-line pt-2">
                             Goal: 10.0+ strain per week
                         </div>
                         <div className="text-xs mt-1">
                             {hoveredMonth.average_strain >= 9.9 ? 
-                                <span className="text-green-400">🎯 Goal Achieved!</span> : 
-                                <span className="text-red-400">📈 Below Goal ({(9.9 - hoveredMonth.average_strain).toFixed(1)} short)</span>
+                                <span className="text-live">🎯 Goal Achieved!</span> :
+                                <span className="text-danger">📈 Below Goal ({(9.9 - hoveredMonth.average_strain).toFixed(1)} short)</span>
                             }
                         </div>
                     </div>

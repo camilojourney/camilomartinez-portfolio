@@ -72,7 +72,7 @@ test.describe('public chatbot resilience', () => {
     await page.getByRole('button', { name: 'Send message' }).click();
 
     await expect(page.getByText(/AI service is temporarily unavailable/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: /juancamilomabe@gmail.com/i })).toHaveAttribute('href', 'mailto:juancamilomabe@gmail.com');
+    await expect(page.locator('[data-chat-widget]').getByRole('link', { name: /juancamilomabe@gmail.com/i })).toHaveAttribute('href', 'mailto:juancamilomabe@gmail.com');
 
     await page.getByRole('button', { name: 'Retry last question' }).click();
     await expect(page.getByText('Back online.')).toBeVisible();
@@ -276,16 +276,15 @@ test.describe('public route accessibility and integrity', () => {
     });
   }
 
-  test('mobile navigation control is named and related to its menu', async ({ page }) => {
+  test('primary navigation is visible on mobile without a disclosure menu', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
 
-    const openButton = page.getByRole('button', { name: 'Open navigation menu' });
-    await expect(openButton).toHaveAttribute('aria-expanded', 'false');
-    await expect(openButton).toHaveAttribute('aria-controls', 'mobile-navigation-menu');
-    await openButton.click();
-    await expect(page.getByRole('button', { name: 'Close navigation menu' })).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('#mobile-navigation-menu')).toBeVisible();
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+    for (const name of ['Work', 'About', 'Blog', 'Contact']) {
+      await expect(nav.getByRole('link', { name })).toBeVisible();
+    }
+    await expect(page.getByRole('button', { name: /Switch to (dark|light) theme/ })).toBeVisible();
   });
 
   test('footer links keep mobile touch target height without page overflow', async ({ page }) => {

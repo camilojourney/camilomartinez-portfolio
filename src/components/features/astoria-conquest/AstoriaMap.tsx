@@ -40,7 +40,7 @@ function CustomControls() {
       {/* Zoom In */}
       <button
         onClick={handleZoomIn}
-        className="w-10 h-10 bg-white/90 hover:bg-white border border-gray-300 rounded shadow-lg flex items-center justify-center text-gray-700 hover:text-black transition-all duration-200 hover:scale-105"
+        className="btn-icon bg-surface-2 hover:bg-surface shadow-lg"
         title="Zoom in"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@ function CustomControls() {
       {/* Zoom Out */}
       <button
         onClick={handleZoomOut}
-        className="w-10 h-10 bg-white/90 hover:bg-white border border-gray-300 rounded shadow-lg flex items-center justify-center text-gray-700 hover:text-black transition-all duration-200 hover:scale-105"
+        className="btn-icon bg-surface-2 hover:bg-surface shadow-lg"
         title="Zoom out"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@ function CustomControls() {
       {/* Center View */}
       <button
         onClick={handleCenterView}
-        className="w-10 h-10 bg-white/90 hover:bg-white border border-gray-300 rounded shadow-lg flex items-center justify-center text-gray-700 hover:text-black transition-all duration-200 hover:scale-105"
+        className="btn-icon bg-surface-2 hover:bg-surface shadow-lg"
         title="Center view"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,13 +127,13 @@ const AstoriaMap = ({ baseMapData, coveredStreetsData, selectedRun }: AstoriaMap
           <GeoJSON
             key={`selected-run-${selectedRun?.id || 'none'}`}
             data={selectedRunFeature}
-            style={{ color: '#ff4ff8', weight: 4, opacity: 0.9 }}
+            style={{ color: '#ff4ff8', weight: 4, opacity: 1 }}
           />
         ) : (
           <GeoJSON
             key="all-covered"
             data={coveredStreetsData as FeatureCollection}
-            style={{ color: '#00FFFF', weight: 3, opacity: 1 }}
+            style={{ color: 'rgb(var(--map-covered))', weight: 3, opacity: 1 }}
           />
         )}
         <CustomControls />

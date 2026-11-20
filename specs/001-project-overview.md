@@ -38,7 +38,7 @@ Consulting site and technical showcase. Demonstrates AI engineering capability w
 
 ### Frontend
 - **Framework**: Next.js 16 (App Router, Turbopack)
-- **UI**: React 19, Tailwind CSS 3.4, custom glassmorphism design system
+- **UI**: React 19, Tailwind CSS 3.4; see the [design system](../docs/ux-system.md) for visual styling
 - **Charts/Maps**: Recharts 3, Leaflet + React-Leaflet 5, Turf.js 7
 - **Auth**: NextAuth v5 beta
 - **Other**: MDX for blog/case studies, OpenAI JS SDK for OpenAI-compatible chat completions
@@ -73,7 +73,7 @@ Frontend (Next.js) → API Routes → Backend (FastAPI)
 
 | Page | Purpose |
 |------|---------|
-| `/` (Home) | Hero + services + case studies grid |
+| `/` (Home) | Project showcase; see the [design system](../docs/ux-system.md#layout-and-components) for layout |
 | `/about` | AI chatbot + background |
 | `/contact` | "Start a Project" — email, LinkedIn, call booking |
 | `/blog` | Technical articles (MDX) |

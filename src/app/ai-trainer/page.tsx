@@ -51,7 +51,7 @@ interface QueryHistory {
   error_message?: string;
 }
 
-const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#3b82f6'];
+const COLORS = ['rgb(var(--live))', 'rgb(var(--danger))', 'rgb(var(--warn))', 'rgb(var(--accent))'];
 
 // Helper function to extract improvement suggestions from analysis text
 const extractImprovementSuggestions = (analysis: string): string[] => {
@@ -201,7 +201,7 @@ export default function AITrainerPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -212,7 +212,7 @@ export default function AITrainerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+    <div className="min-h-screen text-ink">
       <div className="container mx-auto px-6 py-12">
         {/* Header */}
         <motion.div
@@ -220,10 +220,10 @@ export default function AITrainerPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold text-ink mb-4">
             AI Trainer Dashboard
           </h1>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-muted text-lg max-w-2xl mx-auto">
             Monitor and improve your AI query engine performance through automated evaluation cycles
           </p>
         </motion.div>
@@ -237,7 +237,7 @@ export default function AITrainerPage() {
           <button
             onClick={runEvaluationCycle}
             disabled={isRunning}
-            className="relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm border border-white/10"
+            className="relative px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border border-line"
           >
             {isRunning ? (
               <span className="flex items-center gap-3">
@@ -256,15 +256,15 @@ export default function AITrainerPage() {
 
         {/* Navigation Tabs */}
         <div className="flex justify-center mb-8">
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-1 border border-white/10">
+          <div className="bg-surface-2 rounded-xl p-1 border border-line">
             {['overview', 'cycles', 'insights'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as typeof activeTab)}
                 className={`px-6 py-3 rounded-lg capitalize transition-all duration-300 ${
                   activeTab === tab
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    ? 'text-ink shadow-lg'
+                    : 'text-muted hover:text-ink hover:bg-surface-2'
                 }`}
               >
                 {tab}
@@ -285,23 +285,23 @@ export default function AITrainerPage() {
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
-                  { label: 'Total Cycles', value: stats.totalCycles, color: 'from-blue-500 to-blue-600' },
-                  { label: 'Avg Accuracy', value: `${stats.avgAccuracy.toFixed(1)}%`, color: 'from-green-500 to-green-600' },
-                  { label: 'Total Queries', value: stats.totalQueries, color: 'from-purple-500 to-purple-600' },
-                  { label: 'Success Rate', value: `${stats.successRate.toFixed(1)}%`, color: 'from-orange-500 to-orange-600' },
+                  { label: 'Total Cycles', value: stats.totalCycles, color: '' },
+                  { label: 'Avg Accuracy', value: `${stats.avgAccuracy.toFixed(1)}%`, color: '' },
+                  { label: 'Total Queries', value: stats.totalQueries, color: '' },
+                  { label: 'Success Rate', value: `${stats.successRate.toFixed(1)}%`, color: '' },
                 ].map((stat, index) => (
                   <motion.div
                     key={stat.label}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10"
+                    className="bg-surface-2 rounded-xl p-6 border border-line"
                   >
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4`}>
-                      <div className="w-6 h-6 bg-white rounded opacity-80" />
+                    <div className={`w-12 h-12 rounded-lg ${stat.color} flex items-center justify-center mb-4`}>
+                      <div className="w-6 h-6 bg-surface rounded opacity-80" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
-                    <p className="text-gray-400">{stat.label}</p>
+                    <h3 className="text-2xl font-bold text-ink mb-1">{stat.value}</h3>
+                    <p className="text-muted">{stat.label}</p>
                   </motion.div>
                 ))}
               </div>
@@ -310,28 +310,30 @@ export default function AITrainerPage() {
               {chartData.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Accuracy Trend */}
-                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold mb-6 text-white">Accuracy Trend</h3>
+                  <div className="bg-surface-2 rounded-xl p-6 border border-line">
+                    <h3 className="text-xl font-semibold mb-6 text-ink">Accuracy Trend</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis dataKey="cycle" stroke="#9CA3AF" />
-                        <YAxis stroke="#9CA3AF" />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)', 
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
+                        <XAxis dataKey="cycle" stroke="rgb(var(--muted))" />
+                        <YAxis stroke="rgb(var(--muted))" />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'rgb(var(--surface))',
+                            color: 'rgb(var(--ink))',
+                            border: '1px solid rgb(var(--line))',
                             borderRadius: '8px'
-                          }} 
+                          }}
+                          itemStyle={{ color: 'rgb(var(--ink))' }}
                         />
-                        <Line type="monotone" dataKey="accuracy" stroke="#3B82F6" strokeWidth={2} dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }} />
+                        <Line type="monotone" dataKey="accuracy" stroke="rgb(var(--accent))" strokeWidth={2} dot={{ fill: 'rgb(var(--accent))', strokeWidth: 2, r: 4 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
 
                   {/* Status Distribution */}
-                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold mb-6 text-white">Cycle Status Distribution</h3>
+                  <div className="bg-surface-2 rounded-xl p-6 border border-line">
+                    <h3 className="text-xl font-semibold mb-6 text-ink">Cycle Status Distribution</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
@@ -339,16 +341,23 @@ export default function AITrainerPage() {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={(props: any) => `${props.name || ''} ${((props.percent || 0) * 100).toFixed(0)}%`}
+                          label={({ name, percent, x, y, textAnchor }) => (
+                            <text x={x} y={y} textAnchor={textAnchor} fill="rgb(var(--ink))">
+                              {name || ''} {((percent || 0) * 100).toFixed(0)}%
+                            </text>
+                          )}
                           outerRadius={80}
-                          fill="#8884d8"
+                          fill="rgb(var(--accent))"
                           dataKey="value"
                         >
                           {statusData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip
+                          contentStyle={{ backgroundColor: 'rgb(var(--surface))', color: 'rgb(var(--ink))', border: '1px solid rgb(var(--line))' }}
+                          itemStyle={{ color: 'rgb(var(--ink))' }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -358,17 +367,17 @@ export default function AITrainerPage() {
           )}
 
           {activeTab === 'cycles' && (
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+            <div className="bg-surface-2 rounded-xl border border-line overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-white/5">
+                  <thead className="bg-surface-2">
                     <tr>
-                      <th className="text-left p-4 text-gray-300">Cycle ID</th>
-                      <th className="text-left p-4 text-gray-300">Status</th>
-                      <th className="text-left p-4 text-gray-300">Questions</th>
-                      <th className="text-left p-4 text-gray-300">Success Rate</th>
-                      <th className="text-left p-4 text-gray-300">Avg Response Time</th>
-                      <th className="text-left p-4 text-gray-300">Created</th>
+                      <th className="text-left p-4 text-muted">Cycle ID</th>
+                      <th className="text-left p-4 text-muted">Status</th>
+                      <th className="text-left p-4 text-muted">Questions</th>
+                      <th className="text-left p-4 text-muted">Success Rate</th>
+                      <th className="text-left p-4 text-muted">Avg Response Time</th>
+                      <th className="text-left p-4 text-muted">Created</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -378,30 +387,30 @@ export default function AITrainerPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="border-t border-white/10 hover:bg-white/5 transition-colors"
+                        className="border-t border-line hover:bg-surface-2 transition-colors"
                       >
-                        <td className="p-4 font-mono text-sm text-blue-400">{cycle.id.slice(0, 8)}...</td>
+                        <td className="p-4 font-mono text-sm text-ink">{cycle.id.slice(0, 8)}...</td>
                         <td className="p-4">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            cycle.status === 'completed' ? 'bg-green-500/20 text-green-400' :
-                            cycle.status === 'running' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-red-500/20 text-red-400'
+                            cycle.status === 'completed' ? 'text-live' :
+                            cycle.status === 'running' ? 'text-warn' :
+                            'text-danger'
                           }`}>
                             {cycle.status}
                           </span>
                         </td>
-                        <td className="p-4 text-gray-300">{cycle.total_questions}</td>
-                        <td className="p-4 text-gray-300">
+                        <td className="p-4 text-muted">{cycle.total_questions}</td>
+                        <td className="p-4 text-muted">
                           {cycle.total_questions > 0 ? `${((cycle.successful_queries / cycle.total_questions) * 100).toFixed(1)}%` : 'N/A'}
                         </td>
-                        <td className="p-4 text-gray-300">{cycle.avg_response_time || 0}ms</td>
-                        <td className="p-4 text-gray-300">{new Date(cycle.created_at).toLocaleString()}</td>
+                        <td className="p-4 text-muted">{cycle.avg_response_time || 0}ms</td>
+                        <td className="p-4 text-muted">{new Date(cycle.created_at).toLocaleString()}</td>
                       </motion.tr>
                     ))}
                   </tbody>
                 </table>
                 {cycles.length === 0 && (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-muted">
                     No evaluation cycles found. Run your first cycle to get started!
                   </div>
                 )}
@@ -418,10 +427,10 @@ export default function AITrainerPage() {
                 const firstPattern = errorPatterns?.[0];
                 if (!latestCycle || !errorPatterns || errorPatterns.length === 0 || !firstPattern) return null;
                 return (
-                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold mb-6 text-white">Latest Analysis Report</h3>
+                  <div className="bg-surface-2 rounded-xl p-6 border border-line">
+                    <h3 className="text-xl font-semibold mb-6 text-ink">Latest Analysis Report</h3>
                     <div className="prose prose-invert max-w-none">
-                      <div className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+                      <div className="text-muted text-sm leading-relaxed whitespace-pre-line">
                         {firstPattern}
                       </div>
                     </div>
@@ -430,39 +439,39 @@ export default function AITrainerPage() {
               })()}
 
               {/* Quick Insights Summary */}
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                <h3 className="text-xl font-semibold mb-4 text-white">Performance Insights</h3>
+              <div className="bg-surface-2 rounded-xl p-6 border border-line">
+                <h3 className="text-xl font-semibold mb-4 text-ink">Performance Insights</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-medium text-gray-300 mb-3">Common Error Patterns</h4>
+                    <h4 className="font-medium text-muted mb-3">Common Error Patterns</h4>
                     <div className="space-y-2">
-                      <div className="text-sm text-red-400 bg-red-500/10 rounded-lg p-3">
+                      <div className="text-sm text-danger rounded-lg p-3">
                         <strong>API Stability Issues:</strong> 70% of failures due to 500 Internal Server Errors
                       </div>
-                      <div className="text-sm text-red-400 bg-red-500/10 rounded-lg p-3">
+                      <div className="text-sm text-danger rounded-lg p-3">
                         <strong>Schema Mismatches:</strong> Missing columns like 'workout_date', 'user_id', 'start_time'
                       </div>
-                      <div className="text-sm text-red-400 bg-red-500/10 rounded-lg p-3">
+                      <div className="text-sm text-danger rounded-lg p-3">
                         <strong>Query Formation:</strong> Incorrect aggregation functions and WHERE clauses
                       </div>
-                      <div className="text-sm text-red-400 bg-red-500/10 rounded-lg p-3">
+                      <div className="text-sm text-danger rounded-lg p-3">
                         <strong>Date Functions:</strong> Using table names instead of column names in DATE() functions
                       </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-300 mb-3">Improvement Suggestions</h4>
+                    <h4 className="font-medium text-muted mb-3">Improvement Suggestions</h4>
                     <div className="space-y-2">
-                      <div className="text-sm text-blue-400 bg-blue-500/10 rounded-lg p-3">
+                      <div className="text-sm text-ink rounded-lg p-3">
                         <strong>Schema Updates:</strong> Enhance descriptions with correct column names and relationships
                       </div>
-                      <div className="text-sm text-blue-400 bg-blue-500/10 rounded-lg p-3">
+                      <div className="text-sm text-ink rounded-lg p-3">
                         <strong>Query Validation:</strong> Implement pre-execution validation for SQL syntax
                       </div>
-                      <div className="text-sm text-blue-400 bg-blue-500/10 rounded-lg p-3">
+                      <div className="text-sm text-ink rounded-lg p-3">
                         <strong>System Prompts:</strong> Add examples for aggregation functions and time-based queries
                       </div>
-                      <div className="text-sm text-blue-400 bg-blue-500/10 rounded-lg p-3">
+                      <div className="text-sm text-ink rounded-lg p-3">
                         <strong>Error Handling:</strong> Improve API stability and graceful error recovery
                       </div>
                     </div>
@@ -471,22 +480,24 @@ export default function AITrainerPage() {
               </div>
 
               {chartData.length > 1 && (
-                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold mb-6 text-white">Response Time vs Success Rate</h3>
+                <div className="bg-surface-2 rounded-xl p-6 border border-line">
+                  <h3 className="text-xl font-semibold mb-6 text-ink">Response Time vs Success Rate</h3>
                   <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="cycle" stroke="#9CA3AF" />
-                      <YAxis stroke="#9CA3AF" />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'rgba(15, 23, 42, 0.9)', 
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--line))" />
+                      <XAxis dataKey="cycle" stroke="rgb(var(--muted))" />
+                      <YAxis stroke="rgb(var(--muted))" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgb(var(--surface))',
+                          color: 'rgb(var(--ink))',
+                          border: '1px solid rgb(var(--line))',
                           borderRadius: '8px'
-                        }} 
+                        }}
+                        itemStyle={{ color: 'rgb(var(--ink))' }}
                       />
-                      <Bar dataKey="responseTime" fill="#8B5CF6" name="Response Time (ms)" />
-                      <Bar dataKey="successRate" fill="#10B981" name="Success Rate (%)" />
+                      <Bar dataKey="responseTime" fill="rgb(var(--accent))" name="Response Time (ms)" />
+                      <Bar dataKey="successRate" fill="rgb(var(--live))" name="Success Rate (%)" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

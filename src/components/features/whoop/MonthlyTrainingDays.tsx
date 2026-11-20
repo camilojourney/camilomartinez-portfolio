@@ -58,14 +58,14 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
     };
 
     return (
-        <div className="w-full bg-black/20 rounded-2xl p-6 mt-6">
-            <h3 className="text-lg font-light text-white mb-2 text-center">Monthly Training Days</h3>
-            <p className="text-white/60 text-sm mb-4 text-center">
+        <div className="w-full bg-surface-2 rounded-2xl p-6 mt-6">
+            <h3 className="text-lg font-light text-ink mb-2 text-center">Monthly Training Days</h3>
+            <p className="text-muted text-sm mb-4 text-center">
                 How many days per month did I train?
             </p>
 
             {/* Scrollable chart container */}
-            <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-purple-400/30">
+            <div className="overflow-x-auto pb-4">
                 <svg
                     viewBox={`0 0 ${chartWidth} ${chartHeight}`}
                     className="w-full h-auto"
@@ -78,7 +78,7 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                         y1={padding.top}
                         x2={padding.left}
                         y2={chartHeight - padding.bottom}
-                        stroke="rgba(255,255,255,0.3)"
+                        stroke="rgb(var(--muted))"
                         strokeWidth="2"
                     />
 
@@ -88,7 +88,7 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                         y1={chartHeight - padding.bottom}
                         x2={chartWidth - padding.right}
                         y2={chartHeight - padding.bottom}
-                        stroke="rgba(255,255,255,0.3)"
+                        stroke="rgb(var(--muted))"
                         strokeWidth="2"
                     />
 
@@ -99,7 +99,7 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                                 x={padding.left - 10}
                                 y={padding.top + yScale(days)}
                                 textAnchor="end"
-                                fill="rgba(255,255,255,0.6)"
+                                fill="rgb(var(--muted))"
                                 fontSize="12"
                                 dominantBaseline="middle"
                             >
@@ -110,7 +110,7 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                                 y1={padding.top + yScale(days)}
                                 x2={chartWidth - padding.right}
                                 y2={padding.top + yScale(days)}
-                                stroke="rgba(255,255,255,0.1)"
+                                stroke="rgb(var(--line))"
                                 strokeWidth="1"
                                 strokeDasharray="4,4"
                             />
@@ -122,7 +122,7 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                         x={15}
                         y={chartHeight / 2}
                         textAnchor="middle"
-                        fill="rgba(255,255,255,0.8)"
+                        fill="rgb(var(--muted))"
                         fontSize="12"
                         fontWeight="300"
                         transform={`rotate(-90, 15, ${chartHeight / 2})`}
@@ -144,10 +144,9 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                                     y={y}
                                     width={barWidth}
                                     height={barHeight}
-                                    fill="url(#gradient-purple)"
-                                    opacity="0.9"
+                                    fill="rgb(var(--accent))"
                                     rx="3"
-                                    className="hover:opacity-100 transition-opacity cursor-pointer"
+                                    className="cursor-pointer"
                                 />
 
                                 {/* Value label on top of bar */}
@@ -156,7 +155,7 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                                         x={x + barWidth / 2}
                                         y={y - 5}
                                         textAnchor="middle"
-                                        fill="rgba(255,255,255,0.9)"
+                                        fill="rgb(var(--muted))"
                                         fontSize="11"
                                         fontWeight="500"
                                     >
@@ -169,7 +168,7 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                                     x={x + barWidth / 2}
                                     y={chartHeight - padding.bottom + 15}
                                     textAnchor="middle"
-                                    fill="rgba(255,255,255,0.6)"
+                                    fill="rgb(var(--muted))"
                                     fontSize="12"
                                 >
                                     {monthData.month}
@@ -178,23 +177,16 @@ export function MonthlyTrainingDays({ data, selectedYear }: MonthlyTrainingDaysP
                         );
                     })}
 
-                    {/* Gradient definition */}
-                    <defs>
-                        <linearGradient id="gradient-purple" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#a855f7" />
-                            <stop offset="100%" stopColor="#7e22ce" />
-                        </linearGradient>
-                    </defs>
                 </svg>
             </div>
 
             {/* Legend */}
-            <div className="flex justify-center items-center gap-6 mt-4 p-4 bg-black/20 rounded-xl">
+            <div className="flex justify-center items-center gap-6 mt-4 p-4 bg-surface-2 rounded-xl">
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-purple-400"></div>
-                    <span className="text-white/70 text-sm">Training Days per Month</span>
+                    <div className="w-3 h-3 rounded-sm bg-accent"></div>
+                    <span className="text-muted text-sm">Training Days per Month</span>
                 </div>
-                <div className="text-white/60 text-sm">
+                <div className="text-muted text-sm">
                     Max: 31 days
                 </div>
             </div>

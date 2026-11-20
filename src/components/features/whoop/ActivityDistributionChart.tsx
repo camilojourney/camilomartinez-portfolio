@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { SPORT_COLORS } from './chart-colors';
 
 // This interface matches what our database query returns
 interface WorkoutData {
@@ -187,20 +188,6 @@ interface YearlyTotals {
 
     const monthlyChartScrollRef = React.useRef<HTMLDivElement>(null);
 
-    // Colors for each sport
-    const sportColors = {
-        Weightlifting: 'url(#gradient-green)',
-        Running: 'url(#gradient-blue)',
-        Boxing: 'url(#gradient-orange)'
-    };
-
-    // For the legend and solid color needs
-    const sportSolidColors = {
-        Weightlifting: '#4ade80', // Green
-        Running: '#3b82f6',      // Blue
-        Boxing: '#f97316'        // Orange
-    };
-
     // Calculate chart dimensions
     const barChartWidth = 700;
     const barChartHeight = 400;
@@ -302,13 +289,13 @@ interface YearlyTotals {
 
     if (!data || data.length === 0) {
         return (
-            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 text-center">
-                <div className="text-white/60">
+            <div className="panel bg-surface-2 border border-line rounded-xl p-8 text-center">
+                <div className="text-muted">
                     <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <h3 className="text-xl font-light mb-3 text-white">No Activity Data Yet</h3>
-                    <p className="text-white/70 font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
+                    <h3 className="text-xl font-light mb-3 text-ink">No Activity Data Yet</h3>
+                    <p className="text-muted font-light text-base leading-relaxed mb-6 max-w-2xl mx-auto">
                         Your workout distribution will appear here once you have some weightlifting, running, or boxing activities recorded.
                     </p>
                 </div>
@@ -317,18 +304,18 @@ interface YearlyTotals {
     }
 
     return (
-        <div ref={containerRef} className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-3 sm:p-8 relative">
+        <div ref={containerRef} className="panel bg-surface-2 border border-line rounded-xl p-3 sm:p-8 relative">
             {/* Year Selector */}
             <div className="mt-1 mb-6 flex items-center justify-center">
-                <div className="flex items-center gap-1 bg-white/[0.03] p-2 rounded-2xl">
+                <div className="flex items-center gap-1 bg-surface-2 p-2 rounded-2xl">
                     {availableYears.map(year => (
                         <button
                             key={year}
                             onClick={() => setSelectedYear(year)}
                             className={`px-4 py-2 rounded-xl text-sm transition-all ${
                                 selectedYear === year
-                                    ? 'bg-purple-400 text-black font-medium'
-                                    : 'text-white/70 hover:bg-white/5'
+                                    ? 'bg-accent text-accent-ink font-medium'
+                                    : 'text-muted hover:bg-surface-2'
                             }`}
                         >
                             {year}
@@ -369,15 +356,15 @@ interface YearlyTotals {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Monthly Bar Chart (2/3 width) */}
-                <div className="lg:col-span-2 bg-black/20 rounded-2xl p-2 sm:p-6">
-                    <h3 className="text-lg font-light text-white mb-4 text-center">Monthly Training Hours</h3>
+                <div className="lg:col-span-2 bg-surface-2 rounded-2xl p-2 sm:p-6">
+                    <h3 className="text-lg font-light text-ink mb-4 text-center">Monthly Training Hours</h3>
 
                     {/* Sport Legend */}
                     <div className="flex justify-center gap-6 mb-4">
-                        {Object.entries(sportSolidColors).map(([sport, color]) => (
+                        {Object.entries(SPORT_COLORS).map(([sport, color]) => (
                             <div key={sport} className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }}></div>
-                                <span className="text-white/80 text-sm">{sport}</span>
+                                <span className="text-ink text-sm">{sport}</span>
                             </div>
                         ))}
                     </div>
@@ -389,29 +376,13 @@ interface YearlyTotals {
                             className="w-full h-auto min-w-[600px]"
                             preserveAspectRatio="xMidYMid meet"
                         >
-                            {/* Define gradients */}
-                            <defs>
-                                <linearGradient id="gradient-green" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#4ade80" />
-                                    <stop offset="100%" stopColor="#15803d" />
-                                </linearGradient>
-                                <linearGradient id="gradient-blue" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#3b82f6" />
-                                    <stop offset="100%" stopColor="#1d4ed8" />
-                                </linearGradient>
-                                <linearGradient id="gradient-orange" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#f97316" />
-                                    <stop offset="100%" stopColor="#c2410c" />
-                                </linearGradient>
-                            </defs>
-
                             {/* X-axis */}
                             <line
                                 x1={padding.left}
                                 y1={barChartHeight - padding.bottom}
                                 x2={barChartWidth - padding.right}
                                 y2={barChartHeight - padding.bottom}
-                                stroke="rgba(255,255,255,0.3)"
+                                stroke="rgb(var(--muted))"
                                 strokeWidth="2"
                             />
 
@@ -421,7 +392,7 @@ interface YearlyTotals {
                                 y1={padding.top}
                                 x2={padding.left}
                                 y2={barChartHeight - padding.bottom}
-                                stroke="rgba(255,255,255,0.3)"
+                                stroke="rgb(var(--muted))"
                                 strokeWidth="2"
                             />
 
@@ -432,7 +403,7 @@ interface YearlyTotals {
                                         x={padding.left - 10}
                                         y={padding.top + yScale(hours)}
                                         textAnchor="end"
-                                        fill="rgba(255,255,255,0.6)"
+                                        fill="rgb(var(--muted))"
                                         fontSize="12"
                                         dominantBaseline="middle"
                                     >
@@ -443,7 +414,7 @@ interface YearlyTotals {
                                         y1={padding.top + yScale(hours)}
                                         x2={padding.left}
                                         y2={padding.top + yScale(hours)}
-                                        stroke="rgba(255,255,255,0.3)"
+                                        stroke="rgb(var(--muted))"
                                         strokeWidth="1"
                                     />
                                 </g>
@@ -456,7 +427,7 @@ interface YearlyTotals {
                                     x={padding.left + i * barGroupWidth + barGroupWidth / 2}
                                     y={barChartHeight - padding.bottom + 20}
                                     textAnchor="middle"
-                                    fill="rgba(255,255,255,0.6)"
+                                    fill="rgb(var(--muted))"
                                     fontSize="12"
                                 >
                                     {month.name}
@@ -468,7 +439,7 @@ interface YearlyTotals {
                                 x={20}
                                 y={barChartHeight / 2}
                                 textAnchor="middle"
-                                fill="rgba(255,255,255,0.8)"
+                                fill="rgb(var(--muted))"
                                 fontSize="14"
                                 fontWeight="300"
                                 transform={`rotate(-90, 20, ${barChartHeight / 2})`}
@@ -489,9 +460,8 @@ interface YearlyTotals {
                                             y={padding.top + yScale(month.Weightlifting)}
                                             width={barWidth}
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Weightlifting)}
-                                            fill={sportColors.Weightlifting}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
+                                            fill={SPORT_COLORS.Weightlifting}
+                                            className="bar-anim cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50}ms` }}
                                             onMouseEnter={(e) => {
@@ -517,9 +487,8 @@ interface YearlyTotals {
                                             y={padding.top + yScale(month.Running)}
                                             width={barWidth}
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Running)}
-                                            fill={sportColors.Running}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
+                                            fill={SPORT_COLORS.Running}
+                                            className="bar-anim cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50 + 50}ms` }}
                                             onMouseEnter={(e) => {
@@ -545,9 +514,8 @@ interface YearlyTotals {
                                             y={padding.top + yScale(month.Boxing)}
                                             width={barWidth}
                                             height={barChartHeight - padding.bottom - padding.top - yScale(month.Boxing)}
-                                            fill={sportColors.Boxing}
-                                            opacity="0.8"
-                                            className="bar-anim hover:opacity-100 transition-opacity cursor-pointer"
+                                            fill={SPORT_COLORS.Boxing}
+                                            className="bar-anim cursor-pointer"
                                             rx="2"
                                             style={{ animationDelay: `${monthIndex * 50 + 100}ms` }}
                                             onMouseEnter={(e) => {
@@ -572,17 +540,17 @@ interface YearlyTotals {
                         </svg>
                     </div>
                 </div>                {/* Yearly Donut Chart (1/3 width) */}
-                <div className="lg:col-span-1 bg-black/20 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center gap-4">
-                    <h3 className="text-lg font-light text-white mb-2 text-center">Yearly Distribution</h3>
+                <div className="lg:col-span-1 bg-surface-2 rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center gap-4">
+                    <h3 className="text-lg font-light text-ink mb-2 text-center">Yearly Distribution</h3>
 
                                         <div className="flex flex-col items-center">
                         {/* Conic Gradient Donut Chart - Only render client-side to avoid hydration issues */}
                         {!isMounted ? (
                             // Skeleton loader while mounting
                             <div className="relative w-full max-w-[300px] aspect-square flex items-center justify-center">
-                                <div className="w-[85%] h-[85%] rounded-full relative bg-white/5 animate-pulse">
-                                    <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-black/40 rounded-full flex items-center justify-center flex-col">
-                                        <span className="text-white/90 text-base font-medium">LOADING</span>
+                                <div className="w-[85%] h-[85%] rounded-full relative bg-surface-2 animate-pulse">
+                                    <div className="absolute inset-0 m-auto w-[50%] h-[50%] bg-surface-2 rounded-full flex items-center justify-center flex-col">
+                                        <span className="text-ink text-base font-medium">LOADING</span>
                                     </div>
                                 </div>
                             </div>
@@ -600,34 +568,29 @@ interface YearlyTotals {
                                                         .slice(0, i)
                                                         .reduce((sum, s) => sum + s.percentage, 0) * 100;
                                                     const endPercentage = startPercentage + segment.percentage * 100;
-                                                    return `${sportSolidColors[segment.sport as keyof typeof sportSolidColors]} ${startPercentage}% ${endPercentage}%`;
+                                                    return `${SPORT_COLORS[segment.sport as keyof typeof SPORT_COLORS]} ${startPercentage}% ${endPercentage}%`;
                                                 }).join(', ')})`
-                                                : '#4ade80',
-                                            boxShadow: '0 0 20px rgba(0,0,0,0.3) inset, 0 4px 12px rgba(0,0,0,0.4)',
+                                                : SPORT_COLORS.Weightlifting,
                                         }}
                                     />
 
                                     {/* Inner circle cutout (creates donut hole) */}
-                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-[#1a1625] shadow-2xl"
-                                         style={{
-                                             boxShadow: '0 0 0 2px rgba(255,255,255,0.1), inset 0 2px 8px rgba(0,0,0,0.6)'
-                                         }}
-                                    />
+                                    <div className="absolute inset-0 m-auto w-[58%] h-[58%] rounded-full bg-surface" />
 
                                     {/* Content overlay (displays total) */}
                                     <div className="absolute inset-0 m-auto w-[50%] h-[50%] rounded-full flex items-center justify-center flex-col animate-scaleIn">
                                         {/* "TOTAL" text */}
-                                        <span className="text-white/90 text-base font-medium mb-[-2px]">
+                                        <span className="text-ink text-base font-medium mb-[-2px]">
                                             TOTAL
                                         </span>
 
                                         {/* THIS IS THE TOTAL HOURS NUMBER displayed prominently */}
-                                        <span className="text-white text-4xl font-bold mt-1">
+                                        <span className="text-ink text-4xl font-bold mt-1">
                                             {formatHours(totalHoursYear)}
                                         </span>
 
                                         {/* "HOURS" text */}
-                                        <span className="text-white/90 text-base font-medium mt-1">
+                                        <span className="text-ink text-base font-medium mt-1">
                                             HOURS
                                         </span>
                                     </div>
@@ -648,37 +611,23 @@ interface YearlyTotals {
                                                 <div
                                                     className="w-4 h-4 rounded-full flex-shrink-0"
                                                     style={{
-                                                        backgroundColor: sportSolidColors[sport as keyof typeof sportSolidColors],
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
+                                                        backgroundColor: SPORT_COLORS[sport as keyof typeof SPORT_COLORS]
                                                     }}
                                                 ></div>
                                                 <span
-                                                    className="text-white/80 text-sm md:text-base"
-                                                    style={{
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
-                                                    }}
+                                                    className="text-ink text-sm md:text-base"
                                                 >
                                                     {sport}
                                                 </span>
                                             </div>
                                             <div className="flex flex-col items-end flex-shrink-0">
                                                 <span
-                                                    className="text-white/80 text-sm md:text-base"
-                                                    style={{
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
-                                                    }}
+                                                    className="text-ink text-sm md:text-base"
                                                 >
                                                     {formatHours(hours)}h
                                                 </span>
                                                 <span
-                                                    className="text-white/50 text-xs"
-                                                    style={{
-                                                        animation: `fadeIn 0.3s ease-out forwards ${i * 100 + 300}ms`,
-                                                        opacity: 0
-                                                    }}
+                                                    className="text-muted text-xs"
                                                 >
                                                     {sessions} sessions
                                                 </span>
@@ -701,27 +650,27 @@ interface YearlyTotals {
                         transform: 'translate(-50%, calc(-100% - 12px))'
                     }}
                 >
-                    <div className="bg-black/95 backdrop-blur-sm border-2 border-purple-400 rounded-lg p-3 shadow-2xl min-w-[200px]">
-                        <div className="text-white text-sm font-semibold mb-2">
+                    <div className="bg-surface border-2 border-purple-400 rounded-lg p-3 shadow-2xl min-w-[200px]">
+                        <div className="text-ink text-sm font-semibold mb-2">
                             {hoveredBar.month} - {hoveredBar.sport}
                         </div>
-                        <div className="border-t border-purple-400/30 pt-2 space-y-1">
+                        <div className="border-t pt-2 space-y-1">
                             <div className="flex items-center justify-between">
-                                <span className="text-gray-300 text-xs">Total Hours:</span>
-                                <span className="text-purple-400 text-base font-bold">
+                                <span className="text-muted text-xs">Total Hours:</span>
+                                <span className="text-ink text-base font-bold">
                                     {hoveredBar.hours.toFixed(1)}h
                                 </span>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-gray-300 text-xs">Sessions:</span>
-                                <span className="text-pink-400 text-base font-bold">
+                                <span className="text-muted text-xs">Sessions:</span>
+                                <span className="text-ink text-base font-bold">
                                     {hoveredBar.sessions}
                                 </span>
                             </div>
                             {hoveredBar.sessions > 0 && (
-                                <div className="flex items-center justify-between border-t border-purple-400/20 pt-1 mt-1">
-                                    <span className="text-gray-400 text-xs">Avg per session:</span>
-                                    <span className="text-cyan-400 text-sm font-semibold">
+                                <div className="flex items-center justify-between border-t pt-1 mt-1">
+                                    <span className="text-muted text-xs">Avg per session:</span>
+                                    <span className="text-ink text-sm font-semibold">
                                         {(hoveredBar.hours / hoveredBar.sessions).toFixed(1)}h
                                     </span>
                                 </div>

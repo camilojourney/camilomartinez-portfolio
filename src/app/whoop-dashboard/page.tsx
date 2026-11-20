@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import LiquidNav from '@/components/shared/liquid-nav';
+import SiteHeader from '@/components/shared/site-header';
 import { ApiClient, analyticsService, integrationService } from '@/lib/api/config';
 
 export const dynamic = 'force-dynamic';
@@ -301,13 +301,13 @@ export default function WhoopDashboard() {
     if (status === 'loading') {
         return (
             <div className="min-h-screen relative overflow-hidden">
-                <LiquidNav currentPage="apps" />
+                <SiteHeader currentPage="apps" />
                 {/* Animated Background */}
                 <div className="fixed inset-0 -z-10">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
+                    <div className="absolute inset-0 animate-gradient-xy"></div>
                     <div className="absolute top-0 left-0 w-full h-full opacity-20">
-                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+                        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow"></div>
+                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
                     </div>
                 </div>
 
@@ -315,7 +315,7 @@ export default function WhoopDashboard() {
                 <div className="pt-32 md:pt-40 px-4 md:px-6 pb-20">
                     <div className="max-w-md mx-auto text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-                        <p className="text-white/80 font-light">Loading...</p>
+                        <p className="text-ink font-light">Loading...</p>
                     </div>
                 </div>
             </div>
@@ -324,13 +324,13 @@ export default function WhoopDashboard() {
 
     return (
         <div className="min-h-screen relative overflow-hidden">
-            <LiquidNav currentPage="apps" />
+            <SiteHeader currentPage="apps" />
             {/* Animated Background */}
             <div className="fixed inset-0 -z-10">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 animate-gradient-xy"></div>
+                <div className="absolute inset-0 animate-gradient-xy"></div>
                 <div className="absolute top-0 left-0 w-full h-full opacity-20">
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+                    <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow"></div>
+                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
                 </div>
             </div>
 
@@ -339,29 +339,29 @@ export default function WhoopDashboard() {
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-20">
-                        <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent leading-tight">
+                        <h1 className="text-5xl md:text-7xl font-bold mb-8 text-ink leading-tight">
                             WHOOP Analytics
                         </h1>
-                        <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-12">
+                        <p className="text-xl md:text-2xl text-ink max-w-3xl mx-auto leading-relaxed mb-12">
                             Data Collection & Monitoring Dashboard
                         </p>
                     </div>
 
                     {/* Authentication Section */}
-                    <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8 mb-8">
-                        <h2 className="text-2xl font-light text-white mb-6 flex items-center gap-3">
+                    <div className="panel bg-surface-2 border border-line rounded-xl p-8 mb-8">
+                        <h2 className="text-2xl font-light text-ink mb-6 flex items-center gap-3">
                             <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
                             Authentication
                         </h2>
 
                         {!session ? (
                             <div className="text-center">
-                                <p className="text-white/70 mb-8 font-light text-lg">
+                                <p className="text-muted mb-8 font-light text-lg">
                                     Connect your WHOOP account to begin data synchronization
                                 </p>
                                 <button
                                     onClick={() => signIn('whoop')}
-                                    className="group liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-purple-500/20 to-violet-500/20 border border-purple-400/30 text-white font-medium py-4 px-12 rounded-2xl hover:from-purple-400/30 hover:to-violet-400/30 hover:border-purple-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/25"
+                                    className="group btn-primary border font-medium py-4 px-12 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/25"
                                 >
                                     <span className="flex items-center justify-center gap-3 text-lg">
                                         🏃‍♂️ Connect WHOOP Account
@@ -374,15 +374,15 @@ export default function WhoopDashboard() {
                         ) : (
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-green-400 font-medium text-lg flex items-center gap-3">
+                                    <p className="text-live font-medium text-lg flex items-center gap-3">
                                         <span className="w-3 h-3 bg-green-400 rounded-full"></span>
                                         Connected as {session.user?.name}
                                     </p>
-                                    <p className="text-white/60 font-light">{session.user?.email}</p>
+                                    <p className="text-muted font-light">{session.user?.email}</p>
                                 </div>
                                 <button
                                     onClick={() => signOut()}
-                                    className="liquid-glass-secondary backdrop-blur-xl bg-white/[0.04] border border-white/[0.15] text-white/90 font-medium py-3 px-6 rounded-2xl hover:bg-white/[0.08] hover:border-white/[0.25] hover:text-white transition-all duration-300"
+                                    className="btn-secondary bg-surface-2 border border-line text-ink font-medium py-3 px-6 rounded-2xl hover:bg-surface-2 hover:border-ink hover:text-ink transition-all duration-300"
                                 >
                                     Disconnect
                                 </button>
@@ -394,7 +394,7 @@ export default function WhoopDashboard() {
                         <>
                             {/* Sync Status Banner */}
                             {syncStatus && (
-                                <div className={`liquid-glass-card backdrop-blur-2xl border rounded-3xl p-6 mb-8 ${syncStatus.user_sync?.needs_sync
+                                <div className={`panel border rounded-xl p-6 mb-8 ${syncStatus.user_sync?.needs_sync
                                     ? 'bg-yellow-500/[0.08] border-yellow-400/[0.2]'
                                     : 'bg-green-500/[0.08] border-green-400/[0.2]'
                                     }`}>
@@ -403,10 +403,10 @@ export default function WhoopDashboard() {
                                             <span className={`w-3 h-3 rounded-full ${syncStatus.user_sync?.needs_sync ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'
                                                 }`}></span>
                                             <div>
-                                                <h3 className="text-lg font-medium text-white">
+                                                <h3 className="text-lg font-medium text-ink">
                                                     {syncStatus.user_sync?.needs_sync ? 'Sync Recommended' : 'Data Up to Date'}
                                                 </h3>
-                                                <p className="text-white/70 font-light text-sm">
+                                                <p className="text-muted font-light text-sm">
                                                     {syncStatus.user_sync?.last_activity
                                                         ? `Last activity: ${formatDate(syncStatus.user_sync.last_activity)}`
                                                         : 'No recent activity found'
@@ -415,8 +415,8 @@ export default function WhoopDashboard() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-white/60 font-light text-xs">Next auto-check: 2:00 PM UTC</p>
-                                            <p className="text-white/50 font-light text-xs">
+                                            <p className="text-muted font-light text-xs">Next auto-check: 2:00 PM UTC</p>
+                                            <p className="text-muted font-light text-xs">
                                                 {syncStatus.automatic_sync?.last_check
                                                     ? `Last check: ${formatDate(syncStatus.automatic_sync.last_check)}`
                                                     : 'No automatic checks yet'
@@ -426,11 +426,11 @@ export default function WhoopDashboard() {
                                     </div>
 
                                     {syncStatus.recommendations && syncStatus.recommendations.length > 0 && (
-                                        <div className="mt-4 pt-4 border-t border-white/10">
-                                            <ul className="text-white/70 font-light text-sm space-y-1">
+                                        <div className="mt-4 pt-4 border-t border-line">
+                                            <ul className="text-muted font-light text-sm space-y-1">
                                                 {syncStatus.recommendations.map((rec: string, i: number) => (
                                                     <li key={i} className="flex items-center gap-2">
-                                                        <span className="w-1 h-1 bg-white/40 rounded-full"></span>
+                                                        <span className="w-1 h-1 bg-surface-2 rounded-full"></span>
                                                         {rec}
                                                     </li>
                                                 ))}
@@ -443,11 +443,11 @@ export default function WhoopDashboard() {
                             {/* Data Collection Controls */}
                             <div className="grid lg:grid-cols-2 gap-8 mb-8">
                                 {/* Historical Collection */}
-                                <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8">
-                                    <h2 className="text-2xl font-light text-white mb-4 flex items-center gap-3">
+                                <div className="panel bg-surface-2 border border-line rounded-xl p-8">
+                                    <h2 className="text-2xl font-light text-ink mb-4 flex items-center gap-3">
                                         📊 Historical Data Collection
                                     </h2>
-                                    <p className="text-white/70 mb-8 font-light leading-relaxed">
+                                    <p className="text-muted mb-8 font-light leading-relaxed">
                                         Import your complete WHOOP history. Run this once to collect all historical cycles, sleep, and recovery data.
                                     </p>
 
@@ -459,7 +459,7 @@ export default function WhoopDashboard() {
                                             runHistoricalCollection();
                                         }}
                                         disabled={loading.historical}
-                                        className="w-full group liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 text-white font-medium py-4 px-6 rounded-2xl hover:from-blue-400/30 hover:to-cyan-400/30 hover:border-blue-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                        className="w-full group btn-primary border font-medium py-4 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                     >
                                         {loading.historical ? (
                                             <span className="flex items-center justify-center gap-3">
@@ -479,17 +479,17 @@ export default function WhoopDashboard() {
                                     {/* Debug button */}
                                     <button
                                         onClick={checkSessionStatus}
-                                        className="w-full mt-3 liquid-glass-secondary backdrop-blur-xl bg-white/[0.04] border border-white/[0.15] text-white/90 font-medium py-2 px-4 rounded-xl hover:bg-white/[0.08] hover:border-white/[0.25] hover:text-white transition-all duration-300"
+                                        className="w-full mt-3 btn-secondary bg-surface-2 border border-line text-ink font-medium py-2 px-4 rounded-xl hover:bg-surface-2 hover:border-ink hover:text-ink transition-all duration-300"
                                     >
                                         🔍 Test Connection
                                     </button>
 
                                     {historicalResult && (
-                                        <div className="mt-6 p-6 backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl">
-                                            <h3 className="font-medium text-white mb-4">Historical Collection Results:</h3>
+                                        <div className="mt-6 p-6 bg-surface-2 border border-line rounded-2xl">
+                                            <h3 className="font-medium text-ink mb-4">Historical Collection Results:</h3>
 
                                             {/* Always show success metrics */}
-                                            <div className="text-green-400 space-y-3 font-light mb-6">
+                                            <div className="text-live space-y-3 font-light mb-6">
                                                 <p className="flex items-center gap-3">
                                                     <span className="w-2 h-2 bg-green-400 rounded-full"></span>
                                                     Cycles: {historicalResult.totalCycles || historicalResult.newCycles || 0} processed
@@ -510,9 +510,9 @@ export default function WhoopDashboard() {
 
                                             {/* Show errors if any exist */}
                                             {historicalResult.errors && historicalResult.errors.length > 0 && (
-                                                <div className="border-t border-white/10 pt-4">
-                                                    <h4 className="text-yellow-400 font-medium mb-3">Warnings:</h4>
-                                                    <div className="text-yellow-400 space-y-2">
+                                                <div className="border-t border-line pt-4">
+                                                    <h4 className="text-warn font-medium mb-3">Warnings:</h4>
+                                                    <div className="text-warn space-y-2">
                                                         {historicalResult.errors.map((error, i) => (
                                                             <p key={i} className="flex items-center gap-2 font-light text-sm">
                                                                 <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
@@ -527,18 +527,18 @@ export default function WhoopDashboard() {
                                 </div>
 
                                 {/* Daily Collection */}
-                                <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8">
-                                    <h2 className="text-2xl font-light text-white mb-4 flex items-center gap-3">
+                                <div className="panel bg-surface-2 border border-line rounded-xl p-8">
+                                    <h2 className="text-2xl font-light text-ink mb-4 flex items-center gap-3">
                                         📅 Daily Data Collection
                                     </h2>
-                                    <p className="text-white/70 mb-8 font-light leading-relaxed">
+                                    <p className="text-muted mb-8 font-light leading-relaxed">
                                         Sync recent data from the last 3 days. Use this daily to keep your analytics current and complete.
                                     </p>
 
                                     <button
                                         onClick={runDailyCollection}
                                         disabled={loading.daily}
-                                        className="w-full group liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-white font-medium py-4 px-6 rounded-2xl hover:from-green-400/30 hover:to-emerald-400/30 hover:border-green-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                        className="w-full group btn-primary border font-medium py-4 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                     >
                                         {loading.daily ? (
                                             <span className="flex items-center justify-center gap-3">
@@ -556,18 +556,18 @@ export default function WhoopDashboard() {
                                     </button>
 
                                     {dailyResult && (
-                                        <div className="mt-6 p-6 backdrop-blur-xl bg-white/[0.03] border border-white/[0.1] rounded-2xl">
-                                            <h3 className="font-medium text-white mb-4">Daily Collection Results:</h3>
+                                        <div className="mt-6 p-6 bg-surface-2 border border-line rounded-2xl">
+                                            <h3 className="font-medium text-ink mb-4">Daily Collection Results:</h3>
 
                                             {/* Summary information */}
                                             {(dailyResult.totalUsers || dailyResult.successfulUsers || dailyResult.failedUsers) && (
-                                                <div className="text-cyan-400 space-y-2 font-light mb-6 pb-4 border-b border-white/10">
+                                                <div className="text-ink space-y-2 font-light mb-6 pb-4 border-b border-line">
                                                     <p className="flex items-center gap-3">
                                                         <span className="w-2 h-2 bg-cyan-400 rounded-full"></span>
                                                         Users processed: {dailyResult.successfulUsers || 0} of {dailyResult.totalUsers || 0}
                                                     </p>
                                                     {(dailyResult.failedUsers || 0) > 0 && (
-                                                        <p className="flex items-center gap-3 text-yellow-400">
+                                                        <p className="flex items-center gap-3 text-warn">
                                                             <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
                                                             Failed users: {dailyResult.failedUsers}
                                                         </p>
@@ -576,7 +576,7 @@ export default function WhoopDashboard() {
                                             )}
 
                                             {/* Data collection metrics */}
-                                            <div className="text-green-400 space-y-3 font-light mb-6">
+                                            <div className="text-live space-y-3 font-light mb-6">
                                                 <p className="flex items-center gap-3">
                                                     <span className="w-2 h-2 bg-green-400 rounded-full"></span>
                                                     Cycles: {dailyResult.totalCycles || dailyResult.newCycles || 0} processed
@@ -597,9 +597,9 @@ export default function WhoopDashboard() {
 
                                             {/* Show errors if any exist */}
                                             {dailyResult.errors && dailyResult.errors.length > 0 && (
-                                                <div className="border-t border-white/10 pt-4">
-                                                    <h4 className="text-yellow-400 font-medium mb-3">Warnings:</h4>
-                                                    <div className="text-yellow-400 space-y-2">
+                                                <div className="border-t border-line pt-4">
+                                                    <h4 className="text-warn font-medium mb-3">Warnings:</h4>
+                                                    <div className="text-warn space-y-2">
                                                         {dailyResult.errors.map((error, i) => (
                                                             <p key={i} className="flex items-center gap-2 font-light text-sm">
                                                                 <span className="w-2 h-2 bg-yellow-400 rounded-full"></span>
@@ -615,16 +615,16 @@ export default function WhoopDashboard() {
                             </div>
 
                             {/* Analytics Section */}
-                            <div className="liquid-glass-card backdrop-blur-2xl bg-white/[0.06] border border-white/[0.1] rounded-3xl p-8">
+                            <div className="panel bg-surface-2 border border-line rounded-xl p-8">
                                 <div className="flex items-center justify-between mb-8">
-                                    <h2 className="text-2xl font-light text-white flex items-center gap-3">
+                                    <h2 className="text-2xl font-light text-ink flex items-center gap-3">
                                         <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
                                         Data Analytics & Status
                                     </h2>
                                     <button
                                         onClick={getDebugInfo}
                                         disabled={loading.debug}
-                                        className="liquid-glass-secondary backdrop-blur-xl bg-white/[0.04] border border-white/[0.15] text-white/90 font-medium py-3 px-6 rounded-2xl hover:bg-white/[0.08] hover:border-white/[0.25] hover:text-white transition-all duration-300 disabled:opacity-50"
+                                        className="btn-secondary bg-surface-2 border border-line text-ink font-medium py-3 px-6 rounded-2xl hover:bg-surface-2 hover:border-ink hover:text-ink transition-all duration-300 disabled:opacity-50"
                                     >
                                         {loading.debug ? (
                                             <span className="flex items-center gap-2">
@@ -641,57 +641,57 @@ export default function WhoopDashboard() {
                                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                                         {/* User Info */}
                                         {debugInfo.user && (
-                                            <div className="backdrop-blur-xl bg-blue-500/[0.1] border border-blue-400/[0.2] rounded-2xl p-6">
-                                                <h3 className="font-medium text-blue-300 mb-4 flex items-center gap-2">
+                                            <div className="bg-blue-500/[0.1] border border-blue-400/[0.2] rounded-2xl p-6">
+                                                <h3 className="font-medium text-ink mb-4 flex items-center gap-2">
                                                     👤 User Profile
                                                 </h3>
-                                                <p className="text-white/80 font-light text-sm mb-2">ID: {debugInfo.user.user_id}</p>
-                                                <p className="text-white/80 font-light text-sm">Name: {debugInfo.user.first_name} {debugInfo.user.last_name}</p>
+                                                <p className="text-ink font-light text-sm mb-2">ID: {debugInfo.user.user_id}</p>
+                                                <p className="text-ink font-light text-sm">Name: {debugInfo.user.first_name} {debugInfo.user.last_name}</p>
                                             </div>
                                         )}
 
                                         {/* Cycles */}
-                                        <div className="backdrop-blur-xl bg-green-500/[0.1] border border-green-400/[0.2] rounded-2xl p-6">
-                                            <h3 className="font-medium text-green-300 mb-4 flex items-center gap-2">
+                                        <div className="bg-green-500/[0.1] border border-green-400/[0.2] rounded-2xl p-6">
+                                            <h3 className="font-medium text-live mb-4 flex items-center gap-2">
                                                 🔄 Cycles
                                             </h3>
-                                            <p className="text-white/80 font-light text-sm mb-2">Total: {debugInfo.data_counts?.cycles || 0}</p>
-                                            <p className="text-white/60 font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_cycle)}</p>
+                                            <p className="text-ink font-light text-sm mb-2">Total: {debugInfo.data_counts?.cycles || 0}</p>
+                                            <p className="text-muted font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_cycle)}</p>
                                         </div>
 
                                         {/* Sleep */}
-                                        <div className="backdrop-blur-xl bg-purple-500/[0.1] border border-purple-400/[0.2] rounded-2xl p-6">
-                                            <h3 className="font-medium text-purple-300 mb-4 flex items-center gap-2">
+                                        <div className="bg-purple-500/[0.1] border border-purple-400/[0.2] rounded-2xl p-6">
+                                            <h3 className="font-medium text-ink mb-4 flex items-center gap-2">
                                                 😴 Sleep
                                             </h3>
-                                            <p className="text-white/80 font-light text-sm mb-2">Total: {debugInfo.data_counts?.sleep || 0}</p>
-                                            <p className="text-white/60 font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_sleep)}</p>
+                                            <p className="text-ink font-light text-sm mb-2">Total: {debugInfo.data_counts?.sleep || 0}</p>
+                                            <p className="text-muted font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_sleep)}</p>
                                         </div>
 
                                         {/* Recovery */}
-                                        <div className="backdrop-blur-xl bg-orange-500/[0.1] border border-orange-400/[0.2] rounded-2xl p-6">
-                                            <h3 className="font-medium text-orange-300 mb-4 flex items-center gap-2">
+                                        <div className="bg-orange-500/[0.1] border border-orange-400/[0.2] rounded-2xl p-6">
+                                            <h3 className="font-medium text-warn mb-4 flex items-center gap-2">
                                                 💪 Recovery
                                             </h3>
-                                            <p className="text-white/80 font-light text-sm mb-2">Total: {debugInfo.data_counts?.recovery || 0}</p>
-                                            <p className="text-white/60 font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_recovery)}</p>
+                                            <p className="text-ink font-light text-sm mb-2">Total: {debugInfo.data_counts?.recovery || 0}</p>
+                                            <p className="text-muted font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_recovery)}</p>
                                         </div>
 
                                         {/* Workouts */}
-                                        <div className="backdrop-blur-xl bg-red-500/[0.1] border border-red-400/[0.2] rounded-2xl p-6">
-                                            <h3 className="font-medium text-red-300 mb-4 flex items-center gap-2">
+                                        <div className="bg-red-500/[0.1] border border-red-400/[0.2] rounded-2xl p-6">
+                                            <h3 className="font-medium text-danger mb-4 flex items-center gap-2">
                                                 🏋️ Workouts
                                             </h3>
-                                            <p className="text-white/80 font-light text-sm mb-2">Total: {debugInfo.data_counts?.workouts || 0}</p>
-                                            <p className="text-white/60 font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_workout)}</p>
+                                            <p className="text-ink font-light text-sm mb-2">Total: {debugInfo.data_counts?.workouts || 0}</p>
+                                            <p className="text-muted font-light text-xs">Latest: {formatDate(debugInfo.latest_dates?.latest_workout)}</p>
                                         </div>
 
                                         {/* Database Status */}
-                                        <div className="backdrop-blur-xl bg-gray-500/[0.1] border border-gray-400/[0.2] rounded-2xl p-6">
-                                            <h3 className="font-medium text-gray-300 mb-4 flex items-center gap-2">
+                                        <div className="bg-gray-500/[0.1] border border-line/[0.2] rounded-2xl p-6">
+                                            <h3 className="font-medium text-muted mb-4 flex items-center gap-2">
                                                 🗄️ Database
                                             </h3>
-                                            <p className="text-white/80 font-light text-sm mb-2">
+                                            <p className="text-ink font-light text-sm mb-2">
                                                 {debugInfo.database_status ? (
                                                     <span className="flex items-center gap-2">
                                                         <span className="w-2 h-2 bg-green-400 rounded-full"></span>
@@ -705,7 +705,7 @@ export default function WhoopDashboard() {
                                                 )}
                                             </p>
                                             {debugInfo.schema_status && (
-                                                <p className="text-white/60 font-light text-xs flex items-center gap-2">
+                                                <p className="text-muted font-light text-xs flex items-center gap-2">
                                                     <span className="w-1 h-1 bg-green-400 rounded-full"></span>
                                                     Schema Valid
                                                 </p>
@@ -713,11 +713,11 @@ export default function WhoopDashboard() {
                                         </div>
 
                                         {/* API Status */}
-                                        <div className="backdrop-blur-xl bg-yellow-500/[0.1] border border-yellow-400/[0.2] rounded-2xl p-6">
-                                            <h3 className="font-medium text-yellow-300 mb-4 flex items-center gap-2">
+                                        <div className="bg-yellow-500/[0.1] border border-yellow-400/[0.2] rounded-2xl p-6">
+                                            <h3 className="font-medium text-warn mb-4 flex items-center gap-2">
                                                 🌐 API Status
                                             </h3>
-                                            <p className="text-white/80 font-light text-sm mb-2">
+                                            <p className="text-ink font-light text-sm mb-2">
                                                 {debugInfo.api_status ? (
                                                     <span className="flex items-center gap-2">
                                                         <span className="w-2 h-2 bg-green-400 rounded-full"></span>
@@ -731,7 +731,7 @@ export default function WhoopDashboard() {
                                                 )}
                                             </p>
                                             {debugInfo.rate_limit && (
-                                                <p className="text-white/60 font-light text-xs flex items-center gap-2">
+                                                <p className="text-muted font-light text-xs flex items-center gap-2">
                                                     <span className="w-1 h-1 bg-green-400 rounded-full"></span>
                                                     Rate Limit OK
                                                 </p>
@@ -739,19 +739,19 @@ export default function WhoopDashboard() {
                                         </div>
 
                                         {/* Last Sync */}
-                                        <div className="backdrop-blur-xl bg-indigo-500/[0.1] border border-indigo-400/[0.2] rounded-2xl p-6">
-                                            <h3 className="font-medium text-indigo-300 mb-4 flex items-center gap-2">
+                                        <div className="bg-indigo-500/[0.1] border border-indigo-400/[0.2] rounded-2xl p-6">
+                                            <h3 className="font-medium text-ink mb-4 flex items-center gap-2">
                                                 🕒 Last Sync
                                             </h3>
-                                            <p className="text-white/80 font-light text-sm">
+                                            <p className="text-ink font-light text-sm">
                                                 {debugInfo.last_sync ? formatDate(debugInfo.last_sync) : 'Never'}
                                             </p>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-center text-white/60 py-16">
+                                    <div className="text-center text-muted py-16">
                                         <div className="mb-4">
-                                            <svg className="w-16 h-16 text-white/30 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-16 h-16 text-muted mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                             </svg>
                                         </div>
@@ -760,15 +760,15 @@ export default function WhoopDashboard() {
                                 )}
 
                                 {/* Quick Actions */}
-                                <div className="mt-8 pt-8 border-t border-white/10">
-                                    <h3 className="font-medium text-white mb-6 flex items-center gap-3">
+                                <div className="mt-8 pt-8 border-t border-line">
+                                    <h3 className="font-medium text-ink mb-6 flex items-center gap-3">
                                         <span className="w-2 h-2 bg-cyan-400 rounded-full"></span>
                                         Quick Actions
                                     </h3>
                                     <div className="flex flex-wrap gap-4">
                                         <a
                                             href="/apps/fitness-dashboard"
-                                            className="liquid-glass-primary backdrop-blur-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-white font-light py-3 px-6 rounded-2xl hover:from-cyan-400/30 hover:to-blue-400/30 hover:border-cyan-300/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/25"
+                                            className="btn-primary border font-light py-3 px-6 rounded-2xl hover:transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/25"
                                         >
                                             📈 Open Fitness Dashboard
                                         </a>

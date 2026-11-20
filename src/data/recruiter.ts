@@ -1,8 +1,10 @@
+import { EMAIL } from '@/lib/site';
+
 export const RECRUITER_FACTS = {
   targetRoles: 'Applied AI Engineer roles',
   location: 'NYC',
   workModes: 'remote/hybrid teams',
-  email: 'juancamilomabe@gmail.com',
+  email: EMAIL,
 } as const;
 
 export const CHAT_UNAVAILABLE_RECRUITER_FALLBACK =

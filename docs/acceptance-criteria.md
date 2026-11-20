@@ -12,9 +12,9 @@ Each scenario follows **Given-When-Then**:
 
 ---
 
-## 1. Project Cards - Featured Work (Tier 1)
+## 1. Featured Work (Tier 1)
 
-### AC-001: Invoz card renders
+### AC-001: Invoz entry renders
 **Priority:** P0
 
 Given the user navigates to /projects
@@ -23,7 +23,7 @@ Then "Invoz" title is visible
 And "Audio/Speech ML" tag is visible
 And a "View live app" link exists
 
-### AC-002: Holus content engine card renders
+### AC-002: Holus content engine entry renders
 **Priority:** P0
 
 Given the user navigates to /projects
@@ -33,7 +33,7 @@ And "Publishing API" tag is visible
 And "Federated publishing API" text is in the description
 And a "Try content generator" link exists
 
-### AC-003: Holus Observatory card renders (separate from Holus)
+### AC-003: Holus Observatory entry renders (separate from Holus)
 **Priority:** P0
 
 Given the user navigates to /projects
@@ -46,16 +46,16 @@ And the internal case study remains available
 
 ---
 
-## 2. Project Cards - More Projects (Tier 2)
+## 2. More Projects (Tier 2)
 
-### AC-004: Pilaster card renders
+### AC-004: Pilaster entry renders
 **Priority:** P1
 
 Given the user navigates to /projects
 When the page loads
 Then "Pilaster" title is visible
 
-### AC-005: Genpeli card renders
+### AC-005: Genpeli entry renders
 **Priority:** P1
 
 Given the user navigates to /projects
@@ -63,21 +63,21 @@ When the page loads
 Then "Genpeli" title is visible
 And "Video AI" tag is visible
 
-### AC-006: Job Tracker CRM card renders
+### AC-006: Job Tracker CRM entry renders
 **Priority:** P1
 
 Given the user navigates to /projects
 When the page loads
 Then "Job Tracker CRM" title is visible
 
-### AC-007: Holusight card renders
+### AC-007: Holusight entry renders
 **Priority:** P1
 
 Given the user navigates to /projects
 When the page loads
 Then "Holusight" title is visible
 
-### AC-008: AI Advisory Board card renders
+### AC-008: AI Advisory Board entry renders
 **Priority:** P1
 
 Given the user navigates to /projects
@@ -160,13 +160,13 @@ Then "Social Media Pipeline" title is visible
 
 ## 5. Navigation
 
-### AC-017: Projects grid → case study → back
+### AC-017: Projects index → case study → back
 **Priority:** P0
 
 Given the user navigates to /projects
-When the user clicks "Case study" on the Holus Observatory card
+When the user clicks "Case study" on the Holus Observatory entry
 Then the user is on /projects/holus-observatory
-When the user clicks "Back to Projects"
+When the user clicks "All projects"
 Then the user is on /projects
 
 ### AC-018: About page loads
@@ -260,7 +260,7 @@ And it does not offer an immediate retry of the rate-limited question
 **Priority:** P1
 
 Given a chat request is in flight
-When the user submits the same prompt again or closes the chatbot
+When the user submits the same prompt again or closes the chatbot, including by pressing Escape
 Then no duplicate request is sent
 And closing the chatbot cancels the in-flight request without leaving an empty assistant message
 
@@ -273,7 +273,7 @@ And closing the chatbot cancels the in-flight request without leaving an empty a
 
 Given the viewport is 375x667
 When the user navigates to /projects
-Then project cards are visible and do not overflow horizontally
+Then project entries are visible and do not overflow horizontally
 
 ### AC-028: About page on mobile
 **Priority:** P1
@@ -282,10 +282,11 @@ Given the viewport is 375x667
 When the user navigates to /about
 Then content is visible and does not overflow horizontally
 
-### AC-029: Ordinary mobile links meet the minimum touch target
+### AC-029: Touch links and controls meet the minimum target
 **Priority:** P0
 
-Given the viewport is 390x844
-When the user visits the portfolio, projects, about, contact, Holus, Holus Observatory, or Holusight routes
-Then every visible ordinary link marked as a mobile link target is at least 44x44 pixels
-And no route overflows horizontally or reflows beyond the 390-pixel viewport
+Given a touch viewport of 390x844 or 1024x844
+When the user visits the routes covered by the [touch-target acceptance suite](../e2e/acceptance/mobile-link-targets.spec.ts)
+Then every visible standalone link and actionable control is at least 44x44 pixels
+And inline prose links are excluded from the standalone-link check
+And no route overflows horizontally beyond the viewport

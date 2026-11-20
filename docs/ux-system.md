@@ -1,84 +1,67 @@
-# Portfolio — Design System
+# Portfolio - Design System
 
 ## Identity
-- **Product**: Camilo Martinez Portfolio — AI Engineer & Full-Stack Developer
+- **Product**: Camilo Martinez Portfolio - AI Engineer & Full-Stack Developer
 - **Audience**: Recruiters, hiring managers, potential clients, tech community
 - **Tone**: Professional, modern, tech-forward, personal brand
 
-## Color System (HSL)
+## Visual Direction
 
-Dark-only design. No light mode toggle.
+An editorial paper-and-ink design with one cobalt accent. Light is the primary
+visual direction, with a complete dark palette. Hairline-separated rows and
+measured reading columns replace decorative glass surfaces and floating blobs.
+See [Appearance and Navigation](../README.md#appearance-and-navigation) for the
+visitor-facing theme and mobile navigation behavior.
 
-| Token | HSL Value | Hex | Use |
-|-------|-----------|-----|-----|
-| `--background` | 240 10% 3.9% | #0A0E27 | Page background (dark slate) |
-| `--foreground` | 0 0% 98% | #FAFAFA | Primary text (near white) |
-| `--primary` | 0 0% 98% | #FAFAFA | Primary actions |
-| `--secondary` | 240 3.7% 15.9% | #292E3E | Secondary surfaces |
-| `--muted-foreground` | 240 3.8% 46.1% | #758DA3 | Subtle text |
-| `--accent` | 210 40% 96.1% | — | Accent highlights (light cyan) |
+## Color and Surface Tokens
 
-### Liquid Glass Colors
-| Token | Value | Use |
-|-------|-------|-----|
-| `--glass-bg` | rgba(100, 116, 139, 0.1) | Glass surface |
-| `--glass-border` | rgba(255, 255, 255, 0.1) | Glass edge |
-| `--glass-shadow` | rgba(0, 0, 0, 0.37) | Glass depth |
+[src/styles/globals.css](../src/styles/globals.css) owns the palette, syntax
+highlighting, radii, focus treatment, and component styles. Tokens are RGB
+triplets in `:root`, overridden by `html[data-theme='dark']`.
+[tailwind.config.js](../tailwind.config.js) maps them to opacity-compatible
+semantic utilities; use these instead of hard-coded light/dark colors.
 
-### Syntax Highlighting
-- Class: #4c97f8 (blue), String: #0fa295 (teal), Keyword: #f47067 (red)
-- Property: #e25a1c (orange), Comment: #a19595 (brown), JSX: #6266d1 (purple)
+- Use `page`, `surface`, and `surface-2` for the page and layered surfaces.
+- Use `ink` and `muted` for readable text, `line` for separators, and
+  `line-strong` for control boundaries.
+- Use `accent` with `accent-ink` for highlighted actions; `live`, `warn`, and
+  `danger` communicate status rather than adding decorative accents.
+- Chart text and tooltip items must retain readable semantic foregrounds instead
+  of inheriting series colors. Contrast coverage lives in the
+  [chart acceptance suite](../e2e/acceptance/chart-contrast.spec.ts) and
+  [semantic text regressions](../e2e/acceptance/redesign-regressions.spec.ts).
 
 ## Typography
 
-| Element | Font | Weight | Tracking |
-|---------|------|--------|----------|
-| Body | Geist Sans | 400 | -0.02em |
-| Headings | Geist Sans | 600-700 | -0.03em |
-| Code | Geist Mono / SF Mono | 400 | normal |
+Instrument Serif gives display headings an editorial character; Inter handles
+body copy and interface text; Geist Mono is used for code. Font loading is owned
+by [the root layout](../src/app/layout.tsx), with font-family mappings in
+[the Tailwind config](../tailwind.config.js). Type scales, tracking, and prose
+measure are defined alongside the component styles in `globals.css`, not in a
+second table here.
 
-Line-height: 1.6 (body), 1.2 (headings)
-Font features: cv03, cv04, cv11
+## Layout and Components
 
-## Spacing & Radius
+The [architecture component map](../ARCHITECTURE.md#components-srccomponents)
+owns shared layout and case-study component locations. The root layout owns the
+skip link, main landmark, footer, and floating chat widget. Pages use measured
+content columns and hairline sections; data-heavy views retain bordered panels.
+The project index uses featured rows followed by compact supporting rows.
 
-| Token | Value |
-|-------|-------|
-| `--radius` | 0.75rem (12px) |
-| Cards | 12px |
-| Buttons | 8px |
-| Pills | 20px |
+Use shared button, panel, status, tag, thumbnail, and prose styles rather than
+introducing page-specific glass shells. Icons use Lucide and inline SVG; charts
+use Recharts and custom SVG.
 
-## Components
+## Motion and Accessibility
 
-**Library**: Minimal — custom-built with CVA + Radix Slot
-**Icons**: Not specified (likely inline SVG)
-**No chart library** — custom CSS/SVG where needed
+Subtle entrances and data-loading motion are defined in
+[globals.css](../src/styles/globals.css) and
+[animations.css](../src/styles/animations.css). React scroll entrances use
+[ScrollReveal](../src/components/shared/scroll-reveal.tsx). Reduced-motion
+visibility and hydration regressions are covered by the
+[skip-link and motion suite](../e2e/acceptance/a11y-skip-and-motion.spec.ts).
 
-**Liquid Glass System** (signature design pattern):
-- `.liquid-glass` — base glassmorphism (blur 16px)
-- `.liquid-glass-card` — enhanced blur + shadow (blur 32px)
-- `.liquid-glass-nav` — navigation (blur 24px)
-- `.liquid-glass-primary` — primary CTA with cyan glow
-- `.liquid-glass-project` — project showcase
-- `.liquid-glass-blog` — blog post cards
-
-## Animations
-
-| Name | Duration | Use |
-|------|----------|-----|
-| `fade-in` | — | Fade + upward slide |
-| `slide-in` | — | Slide left + fade |
-| `blob` | 7s | Organic blob motion |
-| `liquid-float` | 12s | Floating + rotation |
-| `concentric-pulse` | 8s | Pulsing scale |
-| `gradient-xy` | 15s | 2D gradient animation |
-| `pulse-slow` | 4s | Slow opacity pulse |
-
-Delay classes: 2000ms, 3000ms, 4000ms, 6000ms
-
-## Layout
-- Dark-only, no theme toggle
-- Full-page sections with liquid glass overlays
-- Focus ring: cyan glow rgba(6, 182, 212, 0.5)
-- Custom scrollbar styling
+Keep visible keyboard focus and readable text in both themes. Touch-target and
+chat-dismissal contracts are maintained in
+[the acceptance criteria](acceptance-criteria.md#8-responsiveness) and
+[chatbot criteria](acceptance-criteria.md#ac-026c-chatbot-cancels-abandoned-or-duplicate-requests).

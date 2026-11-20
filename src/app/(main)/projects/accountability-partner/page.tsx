@@ -1,86 +1,94 @@
-import Link from 'next/link'
-import Image from 'next/image'
-import StandardPage from '@/components/shared/standard-page'
-import { Card } from '@/components/ui/Card'
+import {
+  CaseStudy,
+  CaseStudyCta,
+  CaseStudyFigure,
+  CaseStudyHeader,
+  CaseStudySection,
+} from '@/components/projects/case-study'
 
 export default function AccountabilityPartnerProject() {
   return (
-    <StandardPage currentPage="projects" maxWidth="default">
-      <div className="space-y-12">
-        <header className="text-center space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/20 px-4 py-2 text-amber-200 text-sm font-medium">
-            <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse" />
-            Live System
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-            Accountability Partner: Public Morning Workout Tracker
-          </h1>
-          <p className="text-lg md:text-xl text-white/70 leading-relaxed">
-            A public commitment board tracking my daily morning workout challenge. Every workout, every morning, visible to everyone.
-          </p>
-        </header>
+    <CaseStudy>
+      <CaseStudyHeader
+        status="Live system"
+        title="Accountability Partner: public morning workout tracker"
+        lede="A public commitment board tracking my daily morning workout challenge. Every workout, every morning, visible to everyone."
+        facts={[
+          ['Started', 'October 2025'],
+          ['Rule', 'Work out before 8:30 AM, every day'],
+          ['Source', 'WHOOP API, refreshed every 6 hours'],
+        ]}
+      />
 
-        <Card className="border-white/10 bg-white/[0.05] overflow-hidden">
-          <div className="relative w-full h-64 md:h-80 bg-black">
-            <Image
-              src="/images/previews_main/accountable.png"
-              alt="Morning workout accountability tracker preview"
-              fill
-              className="object-contain object-center md:scale-95 scale-95"
-              priority
-            />
-          </div>
-        </Card>
+      <CaseStudyFigure src="/images/previews_main/accountable.png" alt="Morning workout accountability tracker preview" />
 
-        <Card className="border-white/10 bg-white/[0.05] p-8 md:p-10 space-y-6">
-          <h2 className="text-2xl md:text-3xl font-semibold text-white">The Challenge</h2>
-          <p className="text-white/70 leading-relaxed text-base md:text-lg">
-            In October 2025, I made a commitment: work out before 8:30 AM every single day. But personal promises are easy to break in private. This project makes my commitment public—a digital accountability partner that tracks every workout time and displays them for everyone to see.
+      <div className="mt-6 md:mt-10">
+        <CaseStudySection title="The challenge" id="challenge">
+          <p>
+            In October 2025, I made a commitment: work out before 8:30 AM every single day. But personal promises are
+            easy to break in private. This project makes my commitment public, a digital accountability partner that
+            tracks every workout time and displays them for everyone to see.
           </p>
-        </Card>
+        </CaseStudySection>
 
-        <Card className="border-white/10 bg-white/[0.05] p-8 md:p-10 space-y-6">
-          <h2 className="text-2xl md:text-3xl font-semibold text-white">Why Morning Workouts Matter</h2>
-          <p className="text-white/70 leading-relaxed text-base md:text-lg mb-4">
-            "Win the morning, win the day" isn't just a cliché—it's a foundational principle for peak performance. Early morning exercise:
+        <CaseStudySection title="Why morning workouts matter" id="why">
+          <p>
+            &ldquo;Win the morning, win the day&rdquo; isn&apos;t just a cliché. It&apos;s a foundational principle for
+            peak performance. Early morning exercise:
           </p>
-          <ul className="list-disc list-inside space-y-3 text-white/70 text-base md:text-lg">
-            <li><span className="text-white/90 font-medium">Sets the tone</span> for discipline and momentum throughout the day</li>
-            <li><span className="text-white/90 font-medium">Eliminates excuses</span> before work, meetings, or fatigue can derail plans</li>
-            <li><span className="text-white/90 font-medium">Builds consistency</span> through non-negotiable morning rituals</li>
-            <li><span className="text-white/90 font-medium">Creates accountability</span> when tracked publicly</li>
+          <ul>
+            <li>
+              <strong>Sets the tone</strong> for discipline and momentum throughout the day
+            </li>
+            <li>
+              <strong>Eliminates excuses</strong> before work, meetings, or fatigue can derail plans
+            </li>
+            <li>
+              <strong>Builds consistency</strong> through non-negotiable morning rituals
+            </li>
+            <li>
+              <strong>Creates accountability</strong> when tracked publicly
+            </li>
           </ul>
-        </Card>
+        </CaseStudySection>
 
-        <Card className="border-white/10 bg-white/[0.05] p-8 md:p-10 space-y-6">
-          <h2 className="text-2xl md:text-3xl font-semibold text-white">Technical Implementation</h2>
-          <ul className="list-disc list-inside space-y-4 text-white/70 text-base md:text-lg">
-            <li><span className="text-white/90 font-medium">WHOOP API integration</span> automatically pulls workout start times</li>
-            <li><span className="text-white/90 font-medium">Timezone normalization</span> converts UTC timestamps to New York time for accurate tracking</li>
-            <li><span className="text-white/90 font-medium">Interactive visualization</span> displays workout times with color-coded success/failure markers</li>
-            <li><span className="text-white/90 font-medium">Real-time updates</span> via ISR (Incremental Static Regeneration) every 6 hours</li>
-            <li><span className="text-white/90 font-medium">Goal tracking</span> with clear visual indicators for before/after 8:30 AM threshold</li>
+        <CaseStudySection title="Technical implementation" id="implementation">
+          <ul>
+            <li>
+              <strong>WHOOP API integration</strong> automatically pulls workout start times
+            </li>
+            <li>
+              <strong>Timezone normalization</strong> converts UTC timestamps to New York time for accurate tracking
+            </li>
+            <li>
+              <strong>Interactive visualization</strong> displays workout times with color-coded success and failure
+              markers
+            </li>
+            <li>
+              <strong>Real-time updates</strong> via Incremental Static Regeneration every 6 hours
+            </li>
+            <li>
+              <strong>Goal tracking</strong> with clear visual indicators for the 8:30 AM threshold
+            </li>
           </ul>
-        </Card>
+        </CaseStudySection>
 
-        <Card className="border-white/10 bg-white/[0.05] p-8 md:p-10 space-y-6">
-          <h2 className="text-2xl md:text-3xl font-semibold text-white">The Power of Public Accountability</h2>
-          <p className="text-white/70 leading-relaxed text-base md:text-lg">
-            Making this data public transforms a personal goal into a public commitment. The psychological impact is profound—knowing that my workout times are visible creates an additional layer of motivation beyond personal discipline. This isn't about perfection; it's about consistency, transparency, and building a system that makes it harder to break promises to myself.
+        <CaseStudySection title="The power of public accountability" id="public">
+          <p>
+            Making this data public transforms a personal goal into a public commitment. The psychological impact is
+            profound. Knowing that my workout times are visible creates an additional layer of motivation beyond
+            personal discipline. This isn&apos;t about perfection. It&apos;s about consistency, transparency, and
+            building a system that makes it harder to break promises to myself.
           </p>
-        </Card>
-
-        <Card className="border-white/10 bg-gradient-to-br from-amber-500/15 to-orange-500/10 border-amber-400/30 p-8 md:p-10 text-center space-y-4">
-          <h3 className="text-2xl font-semibold text-white">Track my progress</h3>
-          <p className="text-white/70">See how I'm doing with my morning workout commitment in real-time.</p>
-          <Link
-            href="/apps/accountability-partner"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3 text-white font-medium transition-all duration-300 hover:scale-105 hover:border-amber-300/60 hover:text-amber-100"
-          >
-            View Live Tracker →
-          </Link>
-        </Card>
+        </CaseStudySection>
       </div>
-    </StandardPage>
+
+      <CaseStudyCta
+        title="Track my progress"
+        body="See how I'm doing with my morning workout commitment in real time."
+        href="/apps/accountability-partner"
+        label="View live tracker"
+      />
+    </CaseStudy>
   )
 }

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import ProjectsShowcase from '@/components/projects/ProjectsShowcase'
 
 export const metadata: Metadata = {
-  title: 'Projects | Camilo Martinez',
+  title: 'Work',
   description: 'Live applications and prototypes showcasing data engineering and AI systems.',
 }
 

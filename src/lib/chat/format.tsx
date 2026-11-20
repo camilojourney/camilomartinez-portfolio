@@ -84,7 +84,8 @@ function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
           key={`${keyPrefix}-link-${index}`}
           href={href}
           {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          className="text-cyan-300 underline decoration-cyan-300/40 underline-offset-2 hover:text-cyan-100"
+          className="link"
+          style={{ color: 'inherit', textDecorationColor: 'currentColor' }}
         >
           {label}
         </a>,
@@ -104,7 +105,7 @@ function renderBoldSegments(text: string, keyPrefix: string): ReactNode[] {
   return parts.flatMap((part, index): ReactNode[] => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return [
-        <strong key={`${keyPrefix}-bold-${index}`} className="font-semibold text-white/95">
+        <strong key={`${keyPrefix}-bold-${index}`} className="font-semibold text-current">
           {renderInlineMarkdown(part.slice(2, -2), `${keyPrefix}-bold-${index}`)}
         </strong>,
       ];
@@ -125,7 +126,7 @@ export function renderChatContent(text: string): ReactNode {
     if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
       return (
         <div key={key} className="my-0.5 flex gap-1.5">
-          <span aria-hidden className="shrink-0 text-white/40">•</span>
+          <span aria-hidden className="shrink-0 opacity-60">•</span>
           <span>{renderBoldSegments(trimmed.slice(2), key)}</span>
         </div>
       );

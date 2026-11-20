@@ -37,6 +37,39 @@ test.describe('Accessibility: skip link, focus rings, reduced motion', () => {
     expect(outline).not.toBe('none');
   });
 
+  // About exercises the same server-rendered reveal wrappers as the populated
+  // fitness dashboard, without requiring private health records in the test DB.
+  for (const theme of ['light', 'dark']) {
+    for (const reducedMotion of ['reduce', 'no-preference'] as const) {
+      test(`server-rendered sections stay painted in ${theme} with ${reducedMotion} motion`, async ({ page }) => {
+        const errors: string[] = [];
+        page.on('console', (message) => {
+          if (message.type() === 'error') errors.push(message.text());
+        });
+        page.on('pageerror', (error) => errors.push(error.message));
+        await page.emulateMedia({ reducedMotion });
+        await page.addInitScript((theme) => localStorage.setItem('theme', theme), theme);
+        await page.goto('/about');
+
+        for (const name of ['The real version', 'Timeline', 'What I build with', 'How I work', 'Ask me anything']) {
+          const heading = page.getByRole('heading', { name, exact: true });
+          await heading.scrollIntoViewIfNeeded();
+          await expect(heading).toBeVisible();
+          // Playwright's visibility check allows opacity: 0, including on ancestors.
+          await expect.poll(() => heading.evaluate((element) => {
+            let opacity = 1;
+            for (let node: Element | null = element; node; node = node.parentElement) {
+              opacity *= Number(getComputedStyle(node).opacity);
+            }
+            return opacity;
+          }), { message: `${name} must actually be painted after scrolling` }).toBe(1);
+        }
+
+        expect(errors).toEqual([]);
+      });
+    }
+  }
+
   test('animations are disabled when prefers-reduced-motion is set', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');

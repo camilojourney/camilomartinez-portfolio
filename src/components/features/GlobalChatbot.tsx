@@ -56,35 +56,35 @@ export function GlobalChatbot() {
             onClick={toggleChatbot}
             className="group relative w-16 h-16 rounded-full liquid-glass-button overflow-hidden shadow-2xl"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+              background: 'linear-gradient(135deg, rgb(var(--line)), rgb(var(--line)))',
               backdropFilter: 'blur(20px) saturate(180%)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+              border: '1px solid rgb(var(--line))',
+              boxShadow: '0 8px 32px rgb(var(--surface)), inset 0 1px 0 rgb(var(--line))',
             }}
           >
             {/* Animated gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 via-blue-500/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
             {/* Ripple effect */}
-            <div className="absolute inset-0 rounded-full bg-white/10 scale-0 group-active:scale-100 transition-transform duration-200" />
+            <div className="absolute inset-0 rounded-full bg-surface-2 scale-0 group-active:scale-100 transition-transform duration-200" />
 
             {/* AI Icon */}
             <div className="relative z-10 flex items-center justify-center w-full h-full">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
 
             {/* Pulse effect */}
-            <div className="absolute inset-0 rounded-full border-2 border-cyan-400/50 animate-ping" />
+            <div className="absolute inset-0 rounded-full border border-line/50 animate-ping" />
           </button>
 
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg"
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg"
           >
-            <span className="text-xs font-bold text-white">AI</span>
+            <span className="text-xs font-bold text-ink">AI</span>
           </motion.div>
         </motion.div>
       )}
@@ -112,23 +112,23 @@ export function GlobalChatbot() {
               style={{
                 background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95))',
                 backdropFilter: 'blur(20px) saturate(180%)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+                border: '1px solid rgb(var(--line))',
+                boxShadow: '0 25px 50px rgb(var(--surface)), inset 0 1px 0 rgb(var(--line))',
               }}
             >
               {!isMinimized && (
                 <>
                   {/* Header */}
-                  <div className="flex items-center justify-between p-4 border-b border-white/10">
+                  <div className="flex items-center justify-between p-4 border-b border-line">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white">AI Assistant</h3>
-                        <p className="text-xs text-gray-400">Powered by RAG · Strava & WHOOP</p>
+                        <h3 className="font-semibold text-ink">AI Assistant</h3>
+                        <p className="text-xs text-muted">Powered by RAG · Strava & WHOOP</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -136,17 +136,17 @@ export function GlobalChatbot() {
                         href="/projects/rag-system"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors px-2 py-1 rounded border border-cyan-400/30 hover:border-cyan-300/50 hover:bg-cyan-400/10"
+                        className="text-xs text-ink hover:text-ink transition-colors px-2 py-1 rounded border hover:"
                       >
                         Read case study →
                       </a>
                       <button
                         onClick={() => setIsMinimized(true)}
-                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-muted hover:text-ink transition-colors"
                         style={{
-                          background: 'rgba(255,255,255,0.05)',
+                          background: 'rgb(var(--line))',
                           backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255,255,255,0.1)',
+                          border: '1px solid rgb(var(--line))',
                         }}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,11 +155,11 @@ export function GlobalChatbot() {
                       </button>
                       <button
                         onClick={closeChatbot}
-                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                        className="w-8 h-8 rounded-full liquid-glass-button-small flex items-center justify-center text-muted hover:text-ink transition-colors"
                         style={{
-                          background: 'rgba(255,255,255,0.05)',
+                          background: 'rgb(var(--line))',
                           backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255,255,255,0.1)',
+                          border: '1px solid rgb(var(--line))',
                         }}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,12 +182,12 @@ export function GlobalChatbot() {
                   onClick={() => setIsMinimized(false)}
                 >
                   <div className="flex flex-col items-center text-center">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center mb-1">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center mb-1">
+                      <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <span className="text-xs text-white font-medium">AI Chat</span>
+                    <span className="text-xs text-ink font-medium">AI Chat</span>
                   </div>
                 </div>
               )}
@@ -204,7 +204,7 @@ export function GlobalChatbot() {
 
         .liquid-glass-button:hover {
           transform: translateY(-2px);
-          box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+          box-shadow: 0 12px 40px rgb(var(--surface)), inset 0 1px 0 rgb(var(--muted));
         }
 
         .liquid-glass-button:active {
@@ -216,7 +216,7 @@ export function GlobalChatbot() {
         }
 
         .liquid-glass-button-small:hover {
-          background: rgba(255,255,255,0.1) !important;
+          background: rgb(var(--line)) !important;
           transform: scale(1.1);
         }
 
