@@ -81,6 +81,7 @@ interface AnimationState {
   heldUntil: number
   pairs: number
   pointerNear: boolean
+  heldArrowKeys: Set<string>
 }
 
 function emptySphereRefs(): SphereRefs {
@@ -175,7 +176,7 @@ function advanceBlochFrame(
   }
 
   state.phase += dt * WAVE_SPEED_RAD_PER_SEC
-  if (!state.pointerNear && state.heldUntil === 0) {
+  if (!state.pointerNear && state.heldArrowKeys.size === 0 && state.heldUntil === 0) {
     if (state.tTheta === 0 || state.tTheta === Math.PI) {
       state.tTheta = INITIAL_BLOCH_STATE.theta
     }
@@ -232,7 +233,7 @@ function applyKeyRotation(key: string, state: AnimationState): boolean {
   if (!action) return false
   action()
   state.heldUntil = 0
-  state.pointerNear = true
+  state.heldArrowKeys.add(key)
   return true
 }
 
@@ -294,6 +295,7 @@ export default function EntangledBlochSpheres() {
     heldUntil: 0,
     pairs: 0,
     pointerNear: false,
+    heldArrowKeys: new Set(),
   })
 
   const paint = useCallback(() => {
@@ -452,8 +454,15 @@ export default function EntangledBlochSpheres() {
     [kick],
   )
 
+  const handleKeyUp = useCallback(
+    (event: KeyboardEvent<HTMLButtonElement>) => {
+      if (stateRef.current.heldArrowKeys.delete(event.key)) kick()
+    },
+    [kick],
+  )
+
   const handleBlur = useCallback(() => {
-    stateRef.current.pointerNear = false
+    stateRef.current.heldArrowKeys.clear()
     if (!reducedMotionRef.current) kick()
   }, [kick])
 
@@ -468,6 +477,7 @@ export default function EntangledBlochSpheres() {
         onPointerLeave={handlePointerLeave}
         onClick={handleMeasure}
         onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
         onBlur={handleBlur}
       >
         <svg

@@ -216,7 +216,7 @@ test.describe('Entangled Bloch spheres (Concept 4) on home page', () => {
           await page.mouse.move(box!.x + (pole === 0 ? 52 : box!.width - 52), box!.y + 54);
         } else {
           for (let step = 0; step < 15; step += 1) {
-            await button.press(pole === 0 ? 'ArrowUp' : 'ArrowDown');
+            await page.keyboard.down(pole === 0 ? 'ArrowUp' : 'ArrowDown');
           }
         }
 
@@ -230,7 +230,10 @@ test.describe('Entangled Bloch spheres (Concept 4) on home page', () => {
         }
 
         await page.mouse.move(0, 0);
-        await button.evaluate((el) => el.blur());
+        if (source === 'keyboard') {
+          await page.keyboard.up(pole === 0 ? 'ArrowUp' : 'ArrowDown');
+        }
+        await expect(button).toBeFocused();
         await page.clock.runFor(1000);
         const recovered = await vectorOffsets(widget);
         expect(Math.abs(recovered[0].y)).toBeLessThan(38);
@@ -242,6 +245,119 @@ test.describe('Entangled Bloch spheres (Concept 4) on home page', () => {
       });
     }
   }
+
+  for (const [arrow, measure, pole] of [
+    ['ArrowLeft', 'Space', 0],
+    ['ArrowRight', 'Enter', 1],
+    ['ArrowUp', 'Enter', 0],
+    ['ArrowDown', 'Space', 1],
+  ] as const) {
+    for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+      test(`releases ${arrow} before ${measure} measurement while focused with ${reducedMotion} motion`, async ({ page }) => {
+        await page.clock.install({ time: new Date('2026-11-20T00:00:00Z') });
+        await page.emulateMedia({ reducedMotion });
+        await page.setViewportSize({ width: 800, height: 900 });
+        await page.goto('/');
+        await page.waitForLoadState('networkidle');
+        const widget = page.getByTestId('entangled-bloch-spheres');
+        await widget.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+        await page.clock.pauseAt(new Date('2026-11-20T00:01:00Z'));
+        await page.mouse.move(0, 0);
+        await page.evaluate((randomValue) => { Math.random = () => randomValue; }, pole === 0 ? 0 : 0.999999);
+        const button = widget.getByRole('button');
+        await button.focus();
+        await button.press(arrow);
+        await page.clock.runFor(100);
+        await button.press(measure);
+        const collapsed = await vectorOffsets(widget);
+        expect(collapsed[0].x).toBeCloseTo(0, 1);
+        expect(collapsed[0].y).toBeCloseTo(pole === 0 ? -40 : 40, 1);
+        const wave = widget.locator('path.entangled-wave');
+        const measuredWave = await wave.getAttribute('d');
+        await page.clock.runFor(1000);
+        await expect(widget.getByText('measured', { exact: true })).toBeVisible();
+        expect(await vectorOffsets(widget)).toEqual(collapsed);
+
+        await page.clock.runFor(1000);
+        await expect(button).toBeFocused();
+        await expect(widget.getByText('measured', { exact: true })).toBeHidden();
+        const recovered = await vectorOffsets(widget);
+        if (reducedMotion === 'reduce') {
+          expect(recovered).toEqual(collapsed);
+          expect(await wave.getAttribute('d')).toBe(measuredWave);
+        } else {
+          expect(Math.abs(recovered[0].y)).toBeLessThan(38);
+          expect(recovered[0].x + recovered[1].x).toBeCloseTo(0, 1);
+          expect(recovered[0].y + recovered[1].y).toBeCloseTo(0, 1);
+          await page.clock.runFor(500);
+          expect(await vectorOffsets(widget)).not.toEqual(recovered);
+        }
+      });
+    }
+  }
+
+  test('suspends idle drift until the last held arrow is released and releases held arrows on blur', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-11-20T00:00:00Z') });
+    await page.setViewportSize({ width: 800, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const widget = page.getByTestId('entangled-bloch-spheres');
+    await widget.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.clock.pauseAt(new Date('2026-11-20T00:01:00Z'));
+    await page.mouse.move(0, 0);
+    const button = widget.getByRole('button');
+    await button.focus();
+    await page.keyboard.down('ArrowLeft');
+    await page.keyboard.down('ArrowUp');
+    await button.press('Space');
+    const collapsed = await vectorOffsets(widget);
+    await page.clock.runFor(1500);
+    expect(await vectorOffsets(widget)).toEqual(collapsed);
+    await page.keyboard.up('ArrowLeft');
+    await page.clock.runFor(500);
+    expect(await vectorOffsets(widget)).toEqual(collapsed);
+    await page.keyboard.up('ArrowUp');
+    await page.clock.runFor(1000);
+    await expect(button).toBeFocused();
+    expect(Math.abs((await vectorOffsets(widget))[0].y)).toBeLessThan(38);
+
+    await page.keyboard.down('ArrowRight');
+    await button.press('Enter');
+    const held = await vectorOffsets(widget);
+    await page.clock.runFor(1500);
+    expect(await vectorOffsets(widget)).toEqual(held);
+    await page.getByLabel('At a glance').getByRole('link', { name: /juancamilomabe@gmail\.com/i }).focus();
+    await page.clock.runFor(1000);
+    expect(Math.abs((await vectorOffsets(widget))[0].y)).toBeLessThan(38);
+    await page.keyboard.up('ArrowRight');
+  });
+
+  test('preserves actual pointer proximity through arrow release and keyboard blur', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-11-20T00:00:00Z') });
+    await page.setViewportSize({ width: 800, height: 900 });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const widget = page.getByTestId('entangled-bloch-spheres');
+    await widget.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await page.clock.pauseAt(new Date('2026-11-20T00:01:00Z'));
+    const button = widget.getByRole('button');
+    await button.focus();
+    const box = await button.boundingBox();
+    await page.mouse.move(box!.x + 52, box!.y + 54);
+    await page.clock.runFor(1000);
+    await button.press('ArrowDown');
+    await page.clock.runFor(1000);
+    await button.press('Space');
+    const collapsed = await vectorOffsets(widget);
+    await page.clock.runFor(1500);
+    expect(await vectorOffsets(widget)).toEqual(collapsed);
+    await button.evaluate((el) => el.blur());
+    await page.clock.runFor(1000);
+    expect(await vectorOffsets(widget)).toEqual(collapsed);
+    await page.mouse.move(0, 0);
+    await page.clock.runFor(1000);
+    expect(Math.abs((await vectorOffsets(widget))[0].y)).toBeLessThan(38);
+  });
 
   test('holds a still frame under prefers-reduced-motion while remaining interactive', async ({ page }) => {
     await page.clock.install({ time: new Date('2026-11-20T00:00:00Z') });
@@ -276,7 +392,7 @@ test.describe('Entangled Bloch spheres (Concept 4) on home page', () => {
     await expect(widget.getByRole('status')).toContainText('1 pair measured, opposite every time.');
     const collapsed = await vectorOffsets(widget);
     const measuredWave = await wave.getAttribute('d');
-    await button.evaluate((el) => el.blur());
+    await expect(button).toBeFocused();
     await page.clock.runFor(1800);
     expect(await vectorOffsets(widget)).toEqual(collapsed);
     expect(await wave.getAttribute('d')).toBe(measuredWave);
