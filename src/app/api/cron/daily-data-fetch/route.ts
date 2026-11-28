@@ -147,21 +147,22 @@ async function fetchUser(userId: number, accessToken: string, dbService: WhoopDa
     const finished = finishedRecords({ cycles, sleeps, recoveries, workouts }, endOfYesterday(now));
 
     // Order matters. A sleep row points at its cycle, and a recovery row at its cycle
-    // and its sleep. Recoveries go last and oldest first, so the newest stored recovery
-    // marks how far the stored data is complete: the next run resumes from it.
+    // and its sleep. Recoveries go last, one at a time and oldest first, and the first
+    // one that cannot be stored stops the run. So nothing newer than a missing recovery
+    // is ever stored, and the newest stored recovery marks how far the stored data is
+    // complete: the next run resumes from it.
     await dbService.upsertCycles(finished.cycles);
     await dbService.upsertSleeps(finished.sleeps, finished.sleepCycles);
     await dbService.upsertWorkouts(finished.workouts);
-    const recovery = await dbService.upsertRecoveries(finished.recoveries);
-    if (recovery.errors.length > 0) {
-        throw new Error(`${recovery.errors.length} recoveries were not stored: ${recovery.errors.join('; ')}`);
+    for (const recovery of finished.recoveries) {
+        await dbService.upsertRecovery(recovery);
     }
 
     const stored = {
         from,
         newCycles: finished.cycles.length,
         newSleep: finished.sleeps.length,
-        newRecovery: recovery.newRecoveryCount,
+        newRecovery: finished.recoveries.filter((recovery) => recovery.score).length,
         newWorkouts: finished.workouts.length,
         waiting: finished.waiting
     };

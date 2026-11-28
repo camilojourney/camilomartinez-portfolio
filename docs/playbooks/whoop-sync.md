@@ -11,6 +11,8 @@ The rules live in `src/lib/services/whoop-daily-sync.ts`.
 - A run reads from midnight (UTC) two days ago. If the newest stored recovery is
   older than that, a run was missed, and it reads from a day before that recovery.
   The first run after an outage therefore refills all of it.
+- Recoveries are stored oldest first, and a run stops at the first one it cannot
+  store. Nothing newer is stored after it, so the next run reads it again.
 - It stores finished days only. The cycle a person is in has no end yet, so its
   recovery waits for a later run (`waiting` in the answer).
 - A user whose data could not be stored makes the endpoint answer 500, and the

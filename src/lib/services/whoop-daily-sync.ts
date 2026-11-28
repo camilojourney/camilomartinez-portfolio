@@ -35,7 +35,8 @@ export function parseSince(asked: string, now: Date): Date | null {
  * Normally that is midnight two days ago. When the newest stored recovery is older
  * than that, a run was missed, and reading starts a day before that recovery, so the
  * first run after an outage refills all of it. Recoveries are stored last and oldest
- * first, so everything before the newest stored one is already complete.
+ * first, and a run stops at the first one it cannot store, so everything before the
+ * newest stored one is already complete.
  *
  * `since` overrides both. It is the only way to refill a hole that lies behind
  * newer data.
@@ -44,8 +45,7 @@ export function syncWindowStart(now: Date, newestStoredRecovery: Date | null, si
     if (since) return since;
     const usual = utcMidnight(now, USUAL_DAYS_BACK);
     if (!newestStoredRecovery) return usual;
-    const resume = new Date(newestStoredRecovery.getTime() - DAY_MS);
-    return resume < usual ? resume : usual;
+    return newestStoredRecovery < usual ? new Date(newestStoredRecovery.getTime() - DAY_MS) : usual;
 }
 
 export interface WhoopRecords {

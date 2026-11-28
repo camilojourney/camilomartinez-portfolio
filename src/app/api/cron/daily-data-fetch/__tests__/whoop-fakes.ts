@@ -180,7 +180,7 @@ const violates = (table: string, constraint: string) =>
  * and refusing what the real tables refuse (backend/alembic/versions 0001 and 0010):
  * a sleep may point only at a stored cycle, and a recovery only at a stored cycle
  * and a stored sleep. Like the real service it skips a cycle or recovery with no
- * score, and collects a refused recovery as an error instead of throwing.
+ * score, and throws when it refuses a row.
  */
 export class FakeStore {
     readonly cycles = new Map<number, WhoopCycle>();
@@ -204,6 +204,11 @@ export class FakeStore {
     /** Make the database refuse the recovery of the cycle that starts on `day`. */
     refuseRecovery(day: string): void {
         this.refused.add(cycleId(day));
+    }
+
+    /** Let the database accept the recovery of the cycle that starts on `day` again. */
+    acceptRecovery(day: string): void {
+        this.refused.delete(cycleId(day));
     }
 
     /** The days that are complete: cycle, recovery, and the sleep tied to that cycle. */
@@ -259,30 +264,12 @@ export class FakeStore {
         }
     }
 
-    async upsertRecoveries(recoveries: WhoopRecovery[]): Promise<{ newRecoveryCount: number; errors: string[] }> {
-        const errors: string[] = [];
-        let stored = 0;
-        for (const recovery of recoveries) {
-            if (!recovery.score) continue;
-            const accepted =
-                this.cycles.has(recovery.cycle_id) && this.sleeps.has(recovery.sleep_id) && !this.refused.has(recovery.cycle_id);
-            if (!accepted) {
-                errors.push(`Recovery for cycle ${recovery.cycle_id} failed`);
-                continue;
-            }
-            this.recoveries.set(recovery.cycle_id, recovery);
-            this.writes.push(`recovery ${recovery.created_at.slice(0, 10)}`);
-            stored += 1;
-        }
-        return { newRecoveryCount: stored, errors };
-    }
-
-    async updateSleepCycleRelationships(recoveries: WhoopRecovery[]): Promise<void> {
-        for (const { sleep_id, cycle_id } of recoveries) {
-            const row = this.sleeps.get(sleep_id);
-            if (!row) continue;
-            if (!this.cycles.has(cycle_id)) throw violates('whoop_sleep', 'whoop_sleep_cycle_id_fkey');
-            row.cycleId = cycle_id;
-        }
+    async upsertRecovery(recovery: WhoopRecovery): Promise<void> {
+        if (!recovery.score) return;
+        if (!this.cycles.has(recovery.cycle_id)) throw violates('whoop_recovery', 'fk_whoop_recovery_cycle_id');
+        if (!this.sleeps.has(recovery.sleep_id)) throw violates('whoop_recovery', 'whoop_recovery_sleep_id_fkey');
+        if (this.refused.has(recovery.cycle_id)) throw new Error(`the database refused the recovery of cycle ${recovery.cycle_id}`);
+        this.recoveries.set(recovery.cycle_id, recovery);
+        this.writes.push(`recovery ${recovery.created_at.slice(0, 10)}`);
     }
 }

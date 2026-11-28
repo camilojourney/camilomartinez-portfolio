@@ -219,19 +219,30 @@ describe('the daily WHOOP fetch', () => {
         expect(store.writes).toEqual([]);
     });
 
-    it('answers 500 when the database refuses a recovery, and still stores the others', async () => {
+    it('stops at a recovery the database refuses, and the next run stores it and the days after it', async () => {
         whoopAt('2026-11-28T19:17:00.000Z', '2026-11-20', 9);
         store.hold(nights('2026-11-20', 3, new Date('2026-11-23T19:00:00.000Z')));
         store.refuseRecovery('2026-11-25');
 
+        const failed = await run();
+
+        expect(failed.status).toBe(500);
+        expect(failed.body.success).toBe(false);
+        expect(failed.body.data?.failedUsers).toBe(1);
+        expect(failed.body.data?.errors.join(' ')).toContain(`the database refused the recovery of cycle ${cycleId('2026-11-25')}`);
+        // Nothing newer than the refused recovery is stored, so the next run reads it again.
+        expect(store.completeDays()).toEqual(daysBetween('2026-11-20', '2026-11-24'));
+        expect(store.recoveries.has(cycleId('2026-11-26'))).toBe(false);
+        expect(store.recoveries.has(cycleId('2026-11-27'))).toBe(false);
+        vi.useRealTimers();
+
+        store.acceptRecovery('2026-11-25');
+        whoopAt('2026-11-29T19:17:00.000Z', '2026-11-20', 10);
         const { status, body } = await run();
 
-        expect(status).toBe(500);
-        expect(body.data?.failedUsers).toBe(1);
-        expect(body.data?.errors.join(' ')).toContain(`Recovery for cycle ${cycleId('2026-11-25')} failed`);
-        expect(store.recoveries.has(cycleId('2026-11-25'))).toBe(false);
-        expect(store.recoveries.has(cycleId('2026-11-26'))).toBe(true);
-        expect(store.recoveries.has(cycleId('2026-11-27'))).toBe(true);
+        expect(status).toBe(200);
+        expect(body.data?.userResults[0]?.from).toBe('2026-11-23T12:00:00.000Z');
+        expect(store.completeDays()).toEqual(daysBetween('2026-11-20', '2026-11-28'));
     });
 
     it('refuses a call without the cron secret and reads and stores nothing', async () => {

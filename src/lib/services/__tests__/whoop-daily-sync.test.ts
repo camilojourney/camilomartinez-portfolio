@@ -10,9 +10,11 @@ describe('where a run starts reading', () => {
     const now = at('2026-11-28T19:17:00.000Z');
 
     it('starts at midnight two days ago when the stored data is up to date', () => {
-        const yesterdaysRecovery = at('2026-11-27T12:00:00.000Z');
+        // Yesterday's recovery is stored by this run, so the newest one stored before it
+        // is from the day before.
+        const newestAfterYesterdaysRun = at('2026-11-26T12:00:00.000Z');
 
-        expect(syncWindowStart(now, yesterdaysRecovery, null)).toEqual(at('2026-11-26T00:00:00.000Z'));
+        expect(syncWindowStart(now, newestAfterYesterdaysRun, null)).toEqual(at('2026-11-26T00:00:00.000Z'));
     });
 
     it('starts at midnight two days ago when nothing is stored yet', () => {
@@ -25,11 +27,9 @@ describe('where a run starts reading', () => {
         expect(syncWindowStart(now, lastBeforeTheOutage, null)).toEqual(at('2026-08-05T12:00:00.000Z'));
     });
 
-    it('keeps the usual start when the newest stored recovery is exactly a day inside it', () => {
-        // A recovery a day after the usual start resumes exactly at the usual start.
-        expect(syncWindowStart(now, at('2026-11-27T00:00:00.000Z'), null)).toEqual(at('2026-11-26T00:00:00.000Z'));
-        // One millisecond older, and the run reaches back by that millisecond.
-        expect(syncWindowStart(now, at('2026-11-26T23:59:59.999Z'), null)).toEqual(at('2026-11-25T23:59:59.999Z'));
+    it('keeps the usual start for a recovery exactly at it, and resumes a day before one a millisecond older', () => {
+        expect(syncWindowStart(now, at('2026-11-26T00:00:00.000Z'), null)).toEqual(at('2026-11-26T00:00:00.000Z'));
+        expect(syncWindowStart(now, at('2026-11-25T23:59:59.999Z'), null)).toEqual(at('2026-11-24T23:59:59.999Z'));
     });
 
     it('starts where since says, whatever is stored', () => {
