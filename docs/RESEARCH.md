@@ -54,15 +54,8 @@ Strava API ──→ strava-*-sync (cron) ──→ Vercel Postgres
                                          (GPS → street coverage)
 ```
 
-### Cron Jobs (6 Scheduled)
-| Job | Frequency | Purpose |
-|-----|-----------|---------|
-| daily-data-fetch | Daily | WHOOP data pull |
-| strava-monday-sync | Weekly (Mon) | Strava activity sync |
-| strava-weekly-sync | Weekly | Full weekly sync |
-| astoria-update | Daily | Recompute street coverage |
-| refresh-views | Daily | Materialize database views |
-| evaluate-chats | Daily | Score chatbot conversations |
+### Cron Jobs
+The cron routes and what schedules them are listed in [ARCHITECTURE.md](../ARCHITECTURE.md#api-routes-srcappapi).
 
 ## 3. Frontend Architecture
 

@@ -168,7 +168,7 @@ GitHub Actions (cron-daily-data-fetch.yml, daily at 19:17 UTC)
 ### Strava / Astoria Pipeline
 
 ```
-Vercel Cron (weekly) OR manual trigger
+Manual trigger (no scheduled caller in this repository)
   → /api/strava/sync/weekly
     → Strava API (activities with GPS)
       → Vercel Postgres (strava_runs table)
