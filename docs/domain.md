@@ -29,7 +29,7 @@ Personal portfolio + live fitness analytics platform. Dual-purpose site: profess
 
 - **Exposing auth tokens in Next.js client bundle:** `NEXTAUTH_SECRET`, `WHOOP_CLIENT_SECRET`, `STRAVA_CLIENT_SECRET` are server-side only. `NEXT_PUBLIC_` vars are visible in the browser — never use NEXT_PUBLIC_ for secrets.
 - **Polling WHOOP/Strava in request handlers:** These APIs have rate limits. Ingestion happens via cron jobs, not on page load. Pages read from the database, not from the APIs.
-- **Breaking ingestion without testing:** The cron jobs (`cron-daily-data-fetch.yml`) are the heartbeat of the dashboard. A code change that breaks the cron silently fails for 24 hours before anyone notices.
+- **Breaking ingestion without testing:** The cron jobs (`cron-daily-data-fetch.yml`) are the heartbeat of the dashboard. A fetch that cannot store a user's data answers 500 and fails its scheduled run, so it is seen. A schedule that stops firing shows nothing at all: it did so from August to November 2026. See [playbooks/whoop-sync.md](playbooks/whoop-sync.md).
 - **Adding large client-side JavaScript bundles:** Hurts Core Web Vitals. Use server components where possible, lazy load heavy client components.
 - **Making fitness data public before enabling the flag:** The default is private. A deploy that enables public access by accident exposes personal health data.
 

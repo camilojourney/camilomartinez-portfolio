@@ -388,20 +388,12 @@ export class WhoopDatabaseService {
         }
     }
 
-    // Get latest data timestamps for incremental sync
-    async getLatestCycleDate(userId: number, db = sql): Promise<Date | null> {
+    // When WHOOP created the newest recovery stored for this user. The daily fetch
+    // stores recoveries last, so it resumes from this point after a missed run.
+    async getLatestRecoveryDate(userId: number, db = sql): Promise<Date | null> {
         const result = await db`
-            SELECT MAX(end_time) as latest_date
-            FROM whoop_cycles
-            WHERE user_id = ${userId};
-        `;
-        return result.rows[0]?.latest_date ? new Date(result.rows[0].latest_date) : null;
-    }
-
-    async getLatestWorkoutDate(userId: number, db = sql): Promise<Date | null> {
-        const result = await db`
-            SELECT MAX(end_time) as latest_date
-            FROM whoop_workouts
+            SELECT MAX(created_at) as latest_date
+            FROM whoop_recovery
             WHERE user_id = ${userId};
         `;
         return result.rows[0]?.latest_date ? new Date(result.rows[0].latest_date) : null;
