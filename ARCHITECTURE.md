@@ -73,14 +73,14 @@ Next.js App Router. All public pages live under `src/app/(main)/`.
 | `auth/whoop/refresh` | WHOOP OAuth token refresh |
 | `auth/strava/` | Strava OAuth flow (authorize → callback) |
 | `strava/sync/` | Historical and weekly Strava sync triggers |
-| `cron/` | 6 scheduled jobs called by Vercel Cron |
+| `cron/` | 6 scheduled jobs called by GitHub Actions |
 | `chat/` | AI chatbot (streaming, feedback, evaluation) |
 | `astoria/` | Strava GPS data → map overlay computation |
 | `actions/` | Manual data fetch triggers |
 | `health/` | Health check endpoint |
 
 **Cron jobs** (called by `.github/workflows/`):
-- `daily-data-fetch` — WHOOP data pull
+- `daily-data-fetch` — WHOOP data pull. Resumes from the newest stored recovery, so a missed run is refilled by the next one. Recovery: [docs/playbooks/whoop-sync.md](docs/playbooks/whoop-sync.md)
 - `strava-monday-sync` — Weekly Strava activity sync
 - `strava-weekly-sync` — Full weekly sync
 - `astoria-update` — Recompute Astoria street coverage
@@ -157,7 +157,7 @@ backend/app/
 ### WHOOP Data Pipeline
 
 ```
-Vercel Cron (daily)
+GitHub Actions (cron-daily-data-fetch.yml, daily at 19:17 UTC)
   → /api/cron/daily-data-fetch
     → WHOOP API (HRV, sleep, recovery, strain)
       → Vercel Postgres

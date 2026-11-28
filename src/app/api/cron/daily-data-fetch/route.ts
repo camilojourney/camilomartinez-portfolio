@@ -3,7 +3,23 @@ import { sql } from '@/lib/db/db';
 import { WhoopV2Client } from '@/lib/whoop';
 import { WhoopDatabaseService } from '@/lib/db/whoop-database';
 import { TokenRefreshService } from '@/lib/services/token-refresh-service';
-import { auth } from '@/lib/auth';
+import { endOfYesterday, finishedRecords, parseSince, syncWindowStart } from '@/lib/services/whoop-daily-sync';
+
+// The run that follows an outage reads every missed day, which takes longer than a daily run.
+export const maxDuration = 300;
+
+interface UserResult {
+    userId: number;
+    userName: string;
+    /** Where this run started reading. */
+    from: string;
+    newCycles: number;
+    newSleep: number;
+    newRecovery: number;
+    newWorkouts: number;
+    /** Recoveries left for a later run because their cycle has not finished. */
+    waiting: number;
+}
 
 function isAuthorized(req: Request): boolean {
     const url = new URL(req.url);
@@ -27,100 +43,29 @@ async function handleDailyFetch(request: Request) {
         return NextResponse.json({ ok: true, endpoint: 'daily-data-fetch', dryRun: true, timestamp: new Date().toISOString() });
     }
 
-    try {
-        console.log('[DAILY-FETCH] Starting daily data fetch for all users...');
-        
-        const dbService = new WhoopDatabaseService();
-        const tokenService = new TokenRefreshService();
-        
-        // STEP 1: Refresh all user tokens FIRST (daily refresh strategy)
-        console.log('[DAILY-FETCH] Step 1: Refreshing all user tokens...');
-        const tokenRefreshResults = await tokenService.refreshAllUserTokens();
-        console.log(`[DAILY-FETCH] Token refresh complete: ${tokenRefreshResults.successful} successful, ${tokenRefreshResults.failed} failed`);
-        
-        if (tokenRefreshResults.errors.length > 0) {
-            console.warn('[DAILY-FETCH] Token refresh errors:', tokenRefreshResults.errors);
-        }
-        
-        // STEP 2: Get all users with fresh tokens
-        const users = await dbService.getAllUsersWithTokens();
-        console.log(`[DAILY-FETCH] Step 2: Found ${users.length} users for data fetch`);
-
-        if (users.length === 0) {
-            throw new Error('No users with tokens found in database. Users need to authenticate via OAuth flow first.');
-        }
-
-        const results = {
-            totalUsers: users.length,
-            successfulUsers: 0,
-            failedUsers: 0,
-            userResults: [] as any[],
-            errors: [] as string[],
-            tokenRefreshResults: {
-                successful: tokenRefreshResults.successful,
-                failed: tokenRefreshResults.failed,
-                errors: tokenRefreshResults.errors
-            }
-        };
-
-        // STEP 3: Process each user with their fresh tokens
-        console.log('[DAILY-FETCH] Step 3: Processing data for all users...');
-        for (const user of users) {
-            try {
-                console.log(`[DAILY-FETCH] Processing user: ${user.first_name} ${user.last_name} (${user.id})`);
-                
-                // Use the tokens that were just refreshed (should be fresh)
-                if (!user.access_token) {
-                    const error = `No access token available for user ${user.id} after refresh - needs re-authentication`;
-                    console.error(`[DAILY-FETCH] ${error}`);
-                    results.errors.push(error);
-                    results.failedUsers++;
-                    continue;
-                }
-
-                // Process data for this user with fresh token
-                const userResult = await processUserData(user.id, user.access_token, dbService);
-                results.userResults.push({
-                    userId: user.id,
-                    userName: `${user.first_name} ${user.last_name}`,
-                    ...userResult
-                });
-                results.successfulUsers++;
-
-            } catch (error) {
-                const errorMsg = `Error processing user ${user.id}: ${error instanceof Error ? error.message : String(error)}`;
-                console.error(`[DAILY-FETCH] ${errorMsg}`);
-                results.errors.push(errorMsg);
-                results.failedUsers++;
-            }
-
-            // Small delay between users to avoid rate limiting
-            if (users.length > 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        }
-
-        console.log(`[DAILY-FETCH] Completed: ${results.successfulUsers}/${results.totalUsers} users processed successfully`);
-        console.log('[DAILY-FETCH] Refreshing materialized views for downstream analytics...');
-
-        let refreshWarning: string | null = null;
-        try {
-            await sql`SELECT refresh_all_materialized_views();`;
-            console.log('[DAILY-FETCH] Materialized views refreshed successfully.');
-        } catch (refreshError) {
-            refreshWarning = `Materialized view refresh failed: ${refreshError instanceof Error ? refreshError.message : 'Unknown error'}`;
-            console.error('[DAILY-FETCH] Failed to refresh materialized views:', refreshError);
-            console.warn('[DAILY-FETCH] Continuing because WHOOP raw data fetch already completed.');
-        }
-
-        console.log('[DAILY-FETCH] Summary: Tokens refreshed → Data fetched → Job complete');
-
+    const now = new Date();
+    const asked = url.searchParams.get('since');
+    const since = asked === null ? null : parseSince(asked, now);
+    if (asked !== null && !since) {
         return NextResponse.json({
-            success: true,
+            success: false,
+            error: 'since must be a day that has begun, written YYYY-MM-DD'
+        }, { status: 400 });
+    }
+
+    try {
+        const results = await fetchAllUsers(now, since);
+        const refreshWarning = await refreshViews();
+
+        // A user whose data was not stored fails the request, so the scheduled job
+        // that called it fails too and the failure is seen.
+        const success = results.failedUsers === 0;
+        return NextResponse.json({
+            success,
             data: results,
             refreshWarning,
             timestamp: new Date().toISOString()
-        });
+        }, { status: success ? 200 : 500 });
 
     } catch (error) {
         console.error('[DAILY-FETCH] Error:', error);
@@ -139,126 +84,99 @@ export async function GET(request: Request) {
     return handleDailyFetch(request);
 }
 
-// Helper function to process data for a single user
-async function processUserData(userId: number, accessToken: string, dbService: WhoopDatabaseService) {
-    // Initialize WHOOP client with user's token
-    const whoopClient = new WhoopV2Client(accessToken);
-    
-    // Test the token first with a simple call
-    const userProfile = await whoopClient.getUserProfile();
-    await dbService.upsertUser(userProfile);
+async function fetchAllUsers(now: Date, since: Date | null) {
+    const dbService = new WhoopDatabaseService();
+
+    // Refresh every user's token first (daily refresh strategy)
+    const tokenRefreshResults = await new TokenRefreshService().refreshAllUserTokens();
+    console.log(`[DAILY-FETCH] Token refresh: ${tokenRefreshResults.successful} successful, ${tokenRefreshResults.failed} failed`);
+    if (tokenRefreshResults.errors.length > 0) {
+        console.warn('[DAILY-FETCH] Token refresh errors:', tokenRefreshResults.errors);
+    }
+
+    const users = await dbService.getAllUsersWithTokens();
+    if (users.length === 0) {
+        throw new Error('No users with tokens found in database. Users need to authenticate via OAuth flow first.');
+    }
 
     const results = {
-        user: userProfile,
-        newCycles: 0,
-        newSleep: 0,
-        newRecovery: 0,
-        newWorkouts: 0
+        totalUsers: users.length,
+        successfulUsers: 0,
+        failedUsers: 0,
+        userResults: [] as UserResult[],
+        errors: [] as string[],
+        tokenRefreshResults,
     };
 
-    // Set up date range: ONLY fetch prior 2 complete days (exclude today to avoid incomplete data)
-    const now = new Date();
-    
-    // Yesterday (complete day): start of yesterday to end of yesterday
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    const startOfYesterday = new Date(yesterday);
-    startOfYesterday.setHours(0, 0, 0, 0);
-    const endOfYesterday = new Date(yesterday);
-    endOfYesterday.setHours(23, 59, 59, 999);
-    
-    // Day before yesterday (complete day): 2 days ago full day
-    const dayBeforeYesterday = new Date(now);
-    dayBeforeYesterday.setDate(now.getDate() - 2);
-    const startOfDayBeforeYesterday = new Date(dayBeforeYesterday);
-    startOfDayBeforeYesterday.setHours(0, 0, 0, 0);
-    
-    // Fetch range: from start of 2 days ago to end of yesterday (excludes today)
-    const fetchStartDate = startOfDayBeforeYesterday;
-    const fetchEndDate = endOfYesterday;
+    for (const user of users) {
+        try {
+            if (!user.access_token) {
+                throw new Error('No access token available after refresh - needs re-authentication');
+            }
+            const stored = await fetchUser(user.id, user.access_token, dbService, now, since);
+            results.userResults.push({ userId: user.id, userName: `${user.first_name} ${user.last_name}`, ...stored });
+            results.successfulUsers++;
+        } catch (error) {
+            const errorMsg = `Error processing user ${user.id}: ${error instanceof Error ? error.message : String(error)}`;
+            console.error(`[DAILY-FETCH] ${errorMsg}`);
+            results.errors.push(errorMsg);
+            results.failedUsers++;
+        }
 
-    console.log(`[DAILY-FETCH] User ${userId}: Fetching COMPLETE data only`);
-    console.log(`[DAILY-FETCH] Date range: ${fetchStartDate.toISOString()} to ${fetchEndDate.toISOString()}`);
-    console.log(`[DAILY-FETCH] Day before yesterday: ${dayBeforeYesterday.toDateString()}`);
-    console.log(`[DAILY-FETCH] Yesterday: ${yesterday.toDateString()}`);
-    console.log(`[DAILY-FETCH] Today (${now.toDateString()}) is EXCLUDED to avoid incomplete data`);
+        // Small delay between users to avoid rate limiting
+        if (users.length > 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
 
-    // First, get all data in parallel for the date range (2 complete prior days only)
-    const [recoveryRecords, sleepRecords, workoutRecords] = await Promise.all([
-        whoopClient.getAllRecovery(fetchStartDate.toISOString()),
-        whoopClient.getAllSleep(fetchStartDate.toISOString()),
-        whoopClient.getAllWorkouts(fetchStartDate.toISOString())
+    console.log(`[DAILY-FETCH] Completed: ${results.successfulUsers}/${results.totalUsers} users processed successfully`);
+    return results;
+}
+
+async function fetchUser(userId: number, accessToken: string, dbService: WhoopDatabaseService, now: Date, since: Date | null) {
+    const whoopClient = new WhoopV2Client(accessToken);
+    await dbService.upsertUser(await whoopClient.getUserProfile());
+
+    const from = syncWindowStart(now, await dbService.getLatestRecoveryDate(userId), since).toISOString();
+    const [cycles, sleeps, recoveries, workouts] = await Promise.all([
+        whoopClient.getAllCycles(from),
+        whoopClient.getAllSleep(from),
+        whoopClient.getAllRecovery(from),
+        whoopClient.getAllWorkouts(from)
     ]);
+    const finished = finishedRecords({ cycles, sleeps, recoveries, workouts }, endOfYesterday(now));
 
-    // Extract cycle IDs from recovery records and fetch cycle data
-    const uniqueCycleIds = Array.from(new Set(recoveryRecords.map(r => r.cycle_id)));
-    const cycleData = (await Promise.all(
-        uniqueCycleIds.map(id => whoopClient.getCycleById(id).catch(() => null))
-    )).filter((c: any): c is Exclude<typeof c, null> => c !== null);
+    // Order matters. A sleep row points at its cycle, and a recovery row at its cycle
+    // and its sleep. Recoveries go last and oldest first, so the newest stored recovery
+    // marks how far the stored data is complete: the next run resumes from it.
+    await dbService.upsertCycles(finished.cycles);
+    await dbService.upsertSleeps(finished.sleeps, finished.sleepCycles);
+    await dbService.upsertWorkouts(finished.workouts);
+    const recovery = await dbService.upsertRecoveries(finished.recoveries);
+    if (recovery.errors.length > 0) {
+        throw new Error(`${recovery.errors.length} recoveries were not stored: ${recovery.errors.join('; ')}`);
+    }
 
-    // Filter data for COMPLETED records within our 2-day range (must have end times)
-    const filteredSleep = sleepRecords.filter(item => {
-        if (!item.end) return false; // Skip sleep without end time  
-        const endDate = new Date(item.end);
-        return endDate >= fetchStartDate && endDate <= fetchEndDate;
-    });
-
-    const filteredRecovery = recoveryRecords.filter(item => {
-        if (!item.created_at) return false; // Skip recovery without created_at
-        const createdDate = new Date(item.created_at);
-        return createdDate >= fetchStartDate && createdDate <= fetchEndDate;
-    });
-
-    // Get cycle IDs referenced by filtered recovery records to ensure we include all needed cycles
-    const recoveryCycleIds = new Set(filteredRecovery.map(recovery => recovery.cycle_id).filter(Boolean));
-    
-    // Filter cycles: include cycles that end in our window OR are referenced by recovery in our window
-    const filteredCycles = cycleData.filter((cycle: { end: string, id: string }) => {
-        if (!cycle.end) return false; // Skip cycles without end time
-        const endDate = new Date(cycle.end);
-        const isInDateRange = endDate >= fetchStartDate && endDate <= fetchEndDate;
-        const isReferencedByRecovery = recoveryCycleIds.has(parseInt(cycle.id));
-        return isInDateRange || isReferencedByRecovery; // Include if in range OR referenced by recovery
-    });
-
-    const filteredWorkouts = workoutRecords.filter(item => {
-        if (!item.end) return false; // Skip workouts without end time
-        const endDate = new Date(item.end);
-        return endDate >= fetchStartDate && endDate <= fetchEndDate;
-    });
-
-    // Detailed logging of what's being filtered
-    console.log(`[DAILY-FETCH] User ${userId} filtering results:
-        Cycles: ${cycleData.length} fetched → ${filteredCycles.length} filtered
-        Sleep: ${sleepRecords.length} fetched → ${filteredSleep.length} filtered
-        Recovery: ${recoveryRecords.length} fetched → ${filteredRecovery.length} filtered
-        Workouts: ${workoutRecords.length} fetched → ${filteredWorkouts.length} filtered
-    `);
-
-    // Store the filtered data SEQUENTIALLY to respect foreign key dependencies
-    // 1. Insert cycles first (no dependencies)
-    await dbService.upsertCycles(filteredCycles);
-    
-    // 2. Insert sleep data (we'll update its cycle_id later using recovery data)
-    await dbService.upsertSleeps(filteredSleep);
-    
-    // 3. Insert workouts (no dependencies)  
-    await dbService.upsertWorkouts(filteredWorkouts);
-    
-    // 4. Insert recovery LAST (depends on sleep_id being available)
-    const recoveryResult = await dbService.upsertRecoveries(filteredRecovery);
-
-    // 5. Update sleep-cycle relationships using the recovery data
-    await dbService.updateSleepCycleRelationships(filteredRecovery);
-
-    const actualResults = {
-        newCycles: filteredCycles.length,
-        newSleep: filteredSleep.length,
-        newRecovery: recoveryResult.newRecoveryCount,
-        newWorkouts: filteredWorkouts.length
+    const stored = {
+        from,
+        newCycles: finished.cycles.length,
+        newSleep: finished.sleeps.length,
+        newRecovery: recovery.newRecoveryCount,
+        newWorkouts: finished.workouts.length,
+        waiting: finished.waiting
     };
+    console.log(`[DAILY-FETCH] User ${userId} stored:`, stored);
+    return stored;
+}
 
-    console.log(`[DAILY-FETCH] User ${userId} processed: ${filteredCycles.length} cycles, ${filteredSleep.length} sleep, ${actualResults.newRecovery} recovery, ${filteredWorkouts.length} workouts`);
-
-    return actualResults;
+// The dashboards read the tables directly; the views feed other analytics, so a
+// failed refresh is reported and does not fail the fetch.
+async function refreshViews(): Promise<string | null> {
+    try {
+        await sql`SELECT refresh_all_materialized_views();`;
+        return null;
+    } catch (refreshError) {
+        console.error('[DAILY-FETCH] Failed to refresh materialized views:', refreshError);
+        return `Materialized view refresh failed: ${refreshError instanceof Error ? refreshError.message : 'Unknown error'}`;
+    }
 }

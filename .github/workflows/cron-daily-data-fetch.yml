@@ -2,9 +2,15 @@ name: Cron - Daily Data Fetch
 
 on:
   schedule:
-    # 19:00 UTC daily (matches previous Vercel cron schedule)
-    - cron: '0 19 * * *'
+    # 19:17 UTC daily. Not on the hour: GitHub delays, and can drop, scheduled
+    # runs queued at the start of an hour.
+    - cron: '17 19 * * *'
   workflow_dispatch:
+    inputs:
+      since:
+        description: 'Refill from this day (YYYY-MM-DD, UTC). Leave empty for the normal daily run.'
+        required: false
+        type: string
 
 concurrency:
   group: cron-daily-data-fetch
@@ -17,14 +23,41 @@ jobs:
       - name: Trigger daily WHOOP fetch
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ENDPOINT: https://www.camilomartinez.co/api/cron/daily-data-fetch
+          SINCE: ${{ inputs.since }}
         run: |
           if [ -z "$CRON_SECRET" ]; then
             echo "CRON_SECRET is not set. Skipping."
             exit 0
           fi
 
-          curl -fLsS -X POST \
+          since=()
+          if [ -n "$SINCE" ]; then
+            since=(--url-query "since=${SINCE}")
+          fi
+
+          # The endpoint answers 500 when a user's data was not stored. curl then
+          # exits non-zero, and this job fails with it.
+          status=0
+          answer=$(curl --fail-with-body -LsS -X POST \
             -H "x-cron-secret: ${CRON_SECRET}" \
             -H "Content-Type: application/json" \
             --max-time 600 \
-            "https://www.camilomartinez.co/api/cron/daily-data-fetch"
+            "${since[@]}" \
+            "$ENDPOINT") || status=$?
+
+          # This log is public and the answer names the user, so print the counts
+          # and the errors only.
+          summary='{
+            success, error,
+            users: .data.totalUsers, stored: .data.successfulUsers, failed: .data.failedUsers,
+            runs: [.data.userResults[]? | {from, newCycles, newSleep, newRecovery, newWorkouts, waiting}],
+            errors: [.data.errors[]? | sub("user [0-9]+"; "user")],
+            tokens: (.data.tokenRefreshResults? | {successful, failed}?),
+            refreshWarning
+          }'
+          if ! jq "$summary" <<<"$answer"; then
+            echo "The endpoint did not answer in JSON. It said:"
+            head -c 300 <<<"$answer"
+          fi
+          exit "$status"
